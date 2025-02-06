@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>FAQ - Часто задаваемые вопросы</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <!-- jQuery и Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+  <div class="container mt-4">
+    <h1>FAQ - Часто задаваемые вопросы</h1>
+    <div id="faqAccordion" class="accordion"></div>
+  </div>
+  <script>
+    fetch("/faq")
+      .then(response => response.json())
+      .then(data => {
+        const faqList = data.faq;
+        const accordion = document.getElementById("faqAccordion");
+        faqList.forEach((item, index) => {
+          // Используем script_id как вопрос и script_name как ответ
+          const question = item.script_id || "";
+          const answer = item.script_name || "";
+          const card = document.createElement("div");
+          card.className = "card mb-2";
+          card.innerHTML = `
+            <div class="card-header" id="heading${index}">
+              <h2 class="mb-0">
+                <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse${index}" aria-expanded="false" aria-controls="collapse${index}">
+                  ${question}
+                </button>
+              </h2>
+            </div>
+            <div id="collapse${index}" class="collapse" aria-labelledby="heading${index}" data-parent="#faqAccordion">
+              <div class="card-body">
+                ${answer}
+                <!-- Можно добавить вывод script_type, script_text и т.д. при необходимости -->
+              </div>
+            </div>
+          `;
+          accordion.appendChild(card);
+        });
+      })
+      .catch(error => console.error("Ошибка загрузки FAQ:", error));
+  </script>
+</body>
+</html>

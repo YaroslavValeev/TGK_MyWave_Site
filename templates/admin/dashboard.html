@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Админ-панель{% endblock %}
+{% block content %}
+    <header>
+        <h1>Добро пожаловать в админ-панель, {{ user.username if user.is_authenticated else 'Гость' }}!</h1>
+        <nav>
+            <a href="{{ url_for('home') }}">Главная</a> |
+            <a href="{{ url_for('admin_panel.logout') }}">Выйти</a>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <h2>Управление контентом</h2>
+            <ul>
+                <li><a href="{{ url_for('admin_panel.edit_schedule') }}">Редактировать расписание</a></li>
+                <li><a href="{{ url_for('admin_panel.manage_users') }}">Управление пользователями</a></li>
+                <li><a href="{{ url_for('admin_panel.analytics') }}">Аналитика сайта</a></li>
+            </ul>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 MyWave. Все права защищены.</p>
+    </footer>
+{% endblock %}

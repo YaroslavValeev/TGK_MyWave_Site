@@ -1,0 +1,4 @@
+<h2>Аналитика сайта</h2>
+{% for data in analytics %}
+    <p>{{ data.metric }}: {{ data.value }}</p>
+{% endfor %}
