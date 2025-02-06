@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <section class="thank-you">
+        <h2>Спасибо за заявку!</h2>
+        <p>Мы свяжемся с вами в ближайшее время.</p>
+        <a href="{{ url_for('home') }}" class="btn">Вернуться на главную</a>
+    </section>
+{% endblock %}

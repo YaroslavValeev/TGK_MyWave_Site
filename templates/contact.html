@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <section class="contact">
+        <h2>Свяжитесь с нами</h2>
+        <p>Оставьте заявку, и мы перезвоним вам.</p>
+
+        <form action="{{ url_for('contact') }}" method="post">
+            <label for="user_name">Ваше имя:</label>
+            <input type="text" id="user_name" name="user_name" required>
+
+            <label for="user_contact">Телефон или Telegram:</label>
+            <input type="text" id="user_contact" name="user_contact" required>
+
+            <label for="user_message">Сообщение:</label>
+            <textarea id="user_message" name="user_message" required></textarea>
+
+            <button type="submit" class="btn">Отправить</button>
+        </form>
+    </section>
+{% endblock %}

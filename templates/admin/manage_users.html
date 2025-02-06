@@ -1,0 +1,8 @@
+<h2>Управление пользователями</h2>
+<form method="POST">
+    Имя пользователя: <input type="text" name="username"><br>
+    <button type="submit">Добавить пользователя</button>
+</form>
+{% for user in users %}
+    <p>{{ user.username }}</p>
+{% endfor %}

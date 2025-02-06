@@ -1,0 +1,23 @@
+<<<<<<< HEAD
+.env
+__pycache__/
+instance/
+*.pyc
+*.pyo
+*.pyd
+.env.*
+.DS_Store
+.vscode/
+.idea/
+=======
+.env
+__pycache__/
+instance/
+*.pyc
+*.pyo
+*.pyd
+.env.*
+.DS_Store
+.vscode/
+.idea/
+>>>>>>> 1a630d3 (Добавлен код сайта)

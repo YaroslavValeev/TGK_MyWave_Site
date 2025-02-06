@@ -1,0 +1,94 @@
+EMS
+Training Documentation
+for the Event Organisers
+October 21, 2021 / PWF / Update July 11, 2022
+Page 2 of 4
+EMS and the Event Organisers
+Please have a look at the video tutorial “EMS Role and function of the Organiser”
+1. If not yet done, become an EMS user
+This will allow you to work with the EMS system. If you haven’t received an invitation to become a user yet
+or you are not sure whether you are in the EMS system, please contact your National Federation for more
+information. Each National Federation has at least one EMS Administrator who can help you. The
+procedure is easy: you receive a mail from your Federation and you just have to click “I agree” and follow
+the instructions to enter your confidential password to confirm your EMS membership.
+2. EMS makes it easy for you
+EMS offers already a number of functions which serve the Organisers to administer their competitions:
+• Publication of competitions details and bulletins
+• Control of Athletes participations
+• Waiting List management
+• Jury Panel invitations
+• Emails to Jury Panel and participants
+• Download of competition information, Jury Panel and participants to scoring system
+• Publication of competition results
+• Publication scoring system reports (start lists, event schedules, participant lists, team results)
+• Download to Excel.
+• More supporting functions are planned in future (e.g. collection of Entry Fees, etc.).
+To make sure that everything runs smoothly, please:
+- Register your competitions in EMS before the season start according to the deadlines of your
+Confederation/Federation. The competitions need to be approved by your Federation. In some
+Federations the registration is done centrally by the Federation
+• When a competition is created in EMS, very important:
+- In the “Organiser Contact Person” section please click your Name in the “Assigned Organiser
+(User)” box. Only the User assigned in this box has full access right to the competition details and
+can fulfil the functions as mentioned above
+- The “Entry Status” is set to “Registrations Pending” in the “Entry Options”. Set it to “Registration
+Open” once Athletes are allowed to register to the event
+- Ask your participants to register to your competition directly in EMS. This way you avoid manual entry
+forms and Excel based participants lists. If a participant cannot register because his/her name is not in
+EMS, contact your EMS Federation Administrator
+• Please note that all participants for Ranking List competitions must hold a valid IWWF Licence*. Please
+draw their attention to this obligation in the competition bulletin/information you are publishing. If you
+ask your participants to register in EMS directly, the IWWF Licence* check is done automatically
+Page 3 of 4
+- If your competition is “Invitational”, please register your participants in EMS and if a participant is
+missing in EMS, contact your EMS Federation Administrator
+- EMS offers the Organiser of a competition to manage the Jury Panel invitation process through EMS.
+It is no more necessary to write individual/manual emails:
+- Invite your Officials through EMS in the Jury Panel tab (“+Add Official” button). The Official
+will receive an email and is requested to accept or reject the invitation in his Jury Panel
+EMS menu through appropriate buttons.
+- Officials should regularly consult their “My Jury Panels” menu function in EMS and check
+whether they have not responded to invitations. If not, we recommend that you remind
+them to confirm the invitation through the “Accept” or “Reject” button
+- As long as the Official has not responded his status in the Jury Panel is “Invited by
+Fed/Organiser”. Depending on his answer the status will change to “Accepted” or
+“Rejected”
+- If an Official is missing in EMS, contact your EMS Federation Administrator to have him
+registered
+- Verify regularly the status of the Jury Panel of your competitions. If there are open answers
+remind the Officials to respond
+- The Official can ask in EMS for the participation as a Jury Panel member. In this case, the
+Organiser will see his request in the Jury Panel with status “Requested by Official”. The
+buttons “Accept” or “Reject” are available to respond to their requests. The Official will
+receive an appropriate email
+- Very important: In order that Scorers/Calculators or Assistant Scorers/Calculators can fulfil their
+duties in EMS (download the competition to the scoring system and upload the results from the
+scoring system to EMS, etc.), they must be accepted Officials in the Jury Panel. If not, we
+recommend that you remind them to do so
+- In order to avoid problems please be informed that the Scorers/Calculators must register their
+participants and Jury Panel in EMS and download them to the scoring system. Therefore, the
+Scorers/Calculators:
+- SHOULD NOT add any Official or any Athlete directly in the scoring system
+- SHOULD NOT create a competition directly in the scoring system
+It is possible to add last minute arrivals in EMS and the Scorers/Calculators can do an incremental
+download of Athletes and Officials to the scoring system. This makes sure that the data is correctly
+registered in the scoring system and the upload of results to EMS will work without errors. As said
+above, this will also automatically check whether the participants hold an IWWF Licence* for Ranking
+List competitions.
+• Attention! If an Athlete is exceptionally registered directly in the scoring system and has no IWWF
+Licence*, it will block the entire results upload in EMS
+• Last but not least, purchasing an IWWF License* is very quick and easy and can be done on site on a
+smartphone. If the Athlete do not find his name in the database to purchase his license, please contact
+your EMS Federation Administrator.
+3. Questions, Problems?
+Please contact your EMS Federation Administrators who can help you further.
+_______________________
+EMS Project Team
+https://ems.iwwf.sport/
+Page 4 of 4
+* IWW Licence required for competitions based on Homologation Codes:
+- Barefoot/Waterski: Record Capability, Ranking List
+- Cableski: Record Capability, Normal, WBW International
+- Wakeboard Boat: 3 to 6 Stars
+- Wakeboard Cable: Titled Events participation
+- Wakesurf: Currently no Licence required
