@@ -1,25 +1,28 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <!-- Обязательные метатеги -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <!-- SEO метатеги -->
-    <meta name="description" content="MyWave – лидер в организации профессиональных тренировок по вейксерфингу и вейкбордингу. Запишитесь на занятия, получите консультации от экспертов, изучите спортивные методики и вдохновитесь лучшими тренировками в мире водного спорта.">
+    <meta name="description" content="MyWave — лидер в организации профессиональных тренировок по вейксерфингу и вейкбордингу. Запишитесь на занятия, получите консультации от экспертов, изучите спортивные методики и вдохновитесь лучшими тренировками в мире водного спорта.">
     <meta name="keywords" content="вейксерфинг, вейкбординг, тренировки, водный спорт, профессиональные тренировки, фитнес, инструктор, спортивные методики, MyWave, занятия на воде">
     <meta name="robots" content="index, follow">
+    
+    <!-- Заголовок страницы (будет переопределяться в дочерних шаблонах) -->
     <title>{% block title %}MyWave{% endblock %}</title>
     
-    <!-- Фавикон -->
-    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
-
-    <!-- Google Fonts -->
+    <!-- Фавикон: убедитесь, что файл favicon.ico находится в static/images/ -->
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    
+    <!-- Подключение шрифта Pangolin с Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Выбран шрифт Roboto, можно заменить на другой по вкусу -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet">
 
     <!-- Google Analytics -->
-    <!-- Замените GA_MEASUREMENT_ID, если нужно, либо передавайте через контекст -->
+    <!-- Если у вас есть реальный ID, замените 475892491 на него или передавайте через контекст -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=475892491"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -50,10 +53,13 @@
         </div>
     </noscript>
     
+    <!-- Подключение CSS (файл style.css должен находиться в static/css/) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
     {% block head %}{% endblock %}
 </head>
 <body>
+    <!-- Шапка сайта -->
     <header>
         <div class="logo">
             <h1>MyWave</h1>
@@ -71,12 +77,71 @@
         </nav>
     </header>
 
+    <!-- Основной контент страницы -->
     <main>
         {% block content %}{% endblock %}
     </main>
 
+    <!-- Подвал сайта -->
     <footer>
         <p>&copy; 2025 MyWave | Все права защищены</p>
     </footer>
+
+    <!-- Чат-виджет, который отображается на всех страницах (фиксированный в правом нижнем углу) -->
+    <div id="chat-widget" style="position: fixed; bottom: 20px; right: 20px;">
+        <button id="openChat" style="padding: 10px 15px; background-color: #007aff; color: white; border: none; border-radius: 50px; cursor: pointer;">Чат</button>
+    </div>
+
+    <!-- Модальное окно для чата -->
+    <div id="chatModal" style="display: none; position: fixed; bottom: 80px; right: 20px; width: 350px; max-width: 90%; background: #fff; border: 1px solid #ccc; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+        <div style="padding: 10px; border-bottom: 1px solid #ccc; background: #007aff; color: white;">
+            <span>Чат с экспертом</span>
+            <button id="closeChat" style="float: right; background: transparent; border: none; color: white; font-size: 16px; cursor: pointer;">&times;</button>
+        </div>
+        <div id="chatWindow" style="height: 300px; overflow-y: auto; padding: 10px;"></div>
+        <div style="padding: 10px; border-top: 1px solid #ccc;">
+            <input type="text" id="chatInput" placeholder="Напишите сообщение..." style="width: 80%; padding: 8px;">
+            <button id="sendChat" style="padding: 8px 12px; background: #007aff; color: white; border: none; border-radius: 4px; cursor: pointer;">Отправить</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5+5hb7W9i1l6q5lf5NTjAN5C0Fddgvo1wKJ68fX" crossorigin="anonymous" defer></script>
+
+    <!-- Скрипт для управления виджетом чата -->
+    <script>
+        document.getElementById('openChat').addEventListener('click', function() {
+            document.getElementById('chatModal').style.display = 'block';
+        });
+        document.getElementById('closeChat').addEventListener('click', function() {
+            document.getElementById('chatModal').style.display = 'none';
+        });
+
+        // Пример логики отправки сообщения через чат-виджет
+        document.getElementById('sendChat').addEventListener('click', async function() {
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+            if (!message) return;
+            const chatWindow = document.getElementById('chatWindow');
+            chatWindow.innerHTML += `<div><strong>Вы:</strong> ${message}</div>`;
+            chatInput.value = '';
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json; charset=utf-8" },
+                    body: JSON.stringify({ message: message })
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    chatWindow.innerHTML += `<div><strong>Эксперт:</strong> ${data.reply}</div>`;
+                } else {
+                    chatWindow.innerHTML += `<div style="color:red;"><strong>Ошибка сервера:</strong> Попробуйте позже.</div>`;
+                }
+            } catch (error) {
+                chatWindow.innerHTML += `<div style="color:red;"><strong>Ошибка сервера:</strong> ${error.message}</div>`;
+            }
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        });
+    </script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

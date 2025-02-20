@@ -1,36 +1,58 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Чат с экспертом по вейксерфингу</title>
-  <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <style>
-    #chatWindow {
-      height: 300px;
-      border: 1px solid #ccc;
-      padding: 10px;
-      overflow-y: scroll;
-      background-color: #f8f9fa;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Чат с экспертом по вейку</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-  <div class="container mt-4">
-    <h1>Чат с экспертом по вейксерфингу</h1>
+    <div class="container mt-4">
+        <!-- Кнопка для открытия/закрытия чата -->
+        <button id="chat-toggle-btn" class="btn btn-primary rounded-circle shadow-lg"
+            style="width: 60px; height: 60px; position: fixed; bottom: 20px; right: 20px;">
+            💬
+        </button>
 
-    <!-- Добавляем форму для CSRF -->
-    <form id="chatForm" method="POST">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> <!-- CSRF-токен -->
-      <div id="chatWindow"></div>
-      <div class="form-group mt-2">
-        <input type="text" id="user-input" placeholder="Напиши сообщение..." class="form-control">
-      </div>
-      <button id="sendBtn" class="btn btn-primary" type="button">Отправить</button>
-    </form>
-  </div>
+        <!-- Контейнер чата (изначально скрыт) -->
+        <div id="chat-container-fixed" style="display: none;">
+            <h4>Чат с экспертом по вейку</h4>
 
-  <!-- Подключаем внешний скрипт -->
-  <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+            <!-- Меню кнопок -->
+            <div id="menu-container" class="mb-3">
+                <button class="btn btn-outline-primary" onclick="showSchedule()">Расписание</button>
+                <button class="btn btn-outline-primary" onclick="showFAQ()">FAQ</button>
+                <button class="btn btn-outline-primary" onclick="updateClientData()">Изменить данные клиента</button>
+                <button class="btn btn-outline-success" onclick="bookTraining()">Записаться на тренировку</button>
+            </div>
+
+            <!-- Окно чата -->
+            <div id="chatWindow" class="chat-messages"></div>
+            
+            <!-- Форма чата -->
+            <form id="chatForm" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">  <!-- ✅ CSRF-токен -->
+                <input type="text" id="user-input" placeholder="Напишите сообщение..." class="form-control">
+                <button type="submit" class="btn btn-primary">Отправить</button>
+            </form>
+            
+
+            <!-- Загрузка файлов -->
+            <label for="file-upload" class="btn btn-outline-secondary mt-2">📎 Загрузить файл</label>
+            <input type="file" id="file-upload" style="display: none;" onchange="uploadMedia()">
+        </div>
+
+        <!-- Индикатор загрузки (скрыт по умолчанию) -->
+        <div id="file-upload-progress" style="display: none;">
+            <div class="bar"></div>
+        </div>
+    </div>
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <!-- Подключение JavaScript -->
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js" defer></script>
 </body>
 </html>

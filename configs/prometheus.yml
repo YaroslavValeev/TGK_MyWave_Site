@@ -1,0 +1,4 @@
+scrape_configs:
+  - job_name: 'my_wave_app'
+    static_configs:
+      - targets: ['localhost:5000']

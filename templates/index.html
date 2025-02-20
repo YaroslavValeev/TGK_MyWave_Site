@@ -1,172 +1,204 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyWave GPT Chat</title>
-    <meta name="description" content="MyWave GPT Chat - Чат с экспертом по вейксерфингу и вейкбордингу.">
-    <meta name="keywords" content="вейксерфинг, вейкбординг, GPT, чат, MyWave">
-    <style>
-        /* Стили остаются без изменений */
-        body { 
-            font-family: Arial, sans-serif; 
-            background: #f0f0f5; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            margin: 0; 
-        }
-        #chat-container { 
-            background: #fff; 
-            border-radius: 20px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
-            width: 400px; 
-            max-width: 90%; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-        }
-        #chat-box { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 10px; 
-            margin-bottom: 10px; 
-            max-height: 400px; 
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            background-color: #fafafa;
-        }
-        .message { 
-            margin: 8px 0; 
-            padding: 10px; 
-            border-radius: 12px; 
-            line-height: 1.4; 
-        }
-        .user { 
-            background-color: #d1eaff; 
-            align-self: flex-end; 
-            text-align: right;
-        }
-        .bot { 
-            background-color: #e9ffe9; 
-            align-self: flex-start; 
-        }
-        .loading { 
-            font-style: italic; 
-            color: gray; 
-        }
-        input[type="text"] { 
-            padding: 12px; 
-            border: 1px solid #ccc; 
-            border-radius: 12px; 
-            width: calc(100% - 24px); 
-            margin: 5px 0; 
-        }
-        button { 
-            background-color: #007aff; 
-            color: white; 
-            padding: 12px; 
-            border: none; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            transition: background 0.3s; 
-        }
-        button:hover { 
-            background-color: #005bb5; 
-        }
-        img {
-            max-width: 100%;
-            border-radius: 8px;
-            margin-top: 5px;
-        }
-        .custom-file-upload {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #007aff;
-            color: white;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: background 0.3s, transform 0.2s;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .custom-file-upload:hover {
-            background-color: #005bb5;
-            transform: scale(1.05);
-        }
-        .telegram-button {
-            display: inline-block;
-            background-color: #0088cc;
-            color: white;
-            padding: 12px 20px;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: bold;
-            transition: background 0.3s, transform 0.2s;
-            text-align: center;
-            margin-top: 10px;
-        }
-        .telegram-button:hover {
-            background-color: #006699;
-            transform: scale(1.05);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>MyWave Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSP для теста (в дальнейшем настройте его в HTTP-заголовках сервера) -->
+  <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval';
+      img-src 'self' data:;
+      connect-src 'self';
+  ">
+
+  <!-- Подключаем шрифт Pangolin через Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet">
+
+  <!-- Подключаем файл стилей -->
+  <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <div id="chat-container">
-        <h2>Чат с MyWave GPT</h2>
-        <div id="chat-box"></div>
-        <input type="text" id="user-input" placeholder="Напиши сообщение...">
-        <label for="file-input" class="custom-file-upload">📎 Загрузить изображение</label>
-        <input type="file" id="file-input" accept="image/*" style="display: none;">
-        <button onclick="sendMessage()">Отправить</button>
-        <a href="https://t.me/MyWave_Admin_bot" target="_blank" class="telegram-button">💬 Продолжить в Telegram</a>
+  <!-- Шапка сайта -->
+  <header class="site-header">
+    <div class="logo">
+      <h1>MyWave</h1>
     </div>
-    <script>
-        async function sendMessage() {
-            const userInput = document.getElementById("user-input").value.trim();
-            const fileInput = document.getElementById("file-input");
-            const chatBox = document.getElementById("chat-box");
-            if (!userInput && fileInput.files.length === 0) {
-                alert("Введите сообщение или загрузите файл.");
-                return;
-            }
-            if (userInput) {
-                chatBox.innerHTML += `<div class="message user">${userInput}</div>`;
-            }
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    chatBox.innerHTML += `<div class="message user"><img src="${e.target.result}" alt="Отправленное изображение"></div>`;
-                };
-                reader.readAsDataURL(file);
-            }
-            chatBox.scrollTop = chatBox.scrollHeight;
-            document.getElementById("user-input").value = "";
-            fileInput.value = "";
-            if (userInput) {
-                chatBox.innerHTML += `<div class="message bot loading">Печатает...</div>`;
-                try {
-                    const response = await fetch("/chat", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ message: userInput })
-                    });
-                    const data = await response.json();
-                    document.querySelector(".loading").remove();
-                    chatBox.innerHTML += `<div class="message bot">${data.reply}</div>`;
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                } catch (error) {
-                    console.error("Ошибка:", error);
-                    document.querySelector(".loading").remove();
-                    chatBox.innerHTML += `<div class="message bot">Ошибка сервера. Попробуйте позже.</div>`;
-                }
-            }
-        }
-    </script>
-    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+    <nav class="site-nav">
+      <ul>
+        <li><a href="#hero" class="nav-link">Главная</a></li>
+        <li><a href="#services" class="nav-link">Услуги</a></li>
+        <li><a href="#store" class="nav-link">Магазин</a></li>
+        <li><a href="#events" class="nav-link">Мероприятия</a></li>
+        <li><a href="#blog" class="nav-link">Блог</a></li>
+        <li><a href="#contacts" class="nav-link">Контакты</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Герой-блок -->
+  <section id="hero" class="hero-section">
+    <div class="hero-content">
+      <h2>Добро пожаловать на MyWave</h2>
+      <p>Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
+      <!-- Кнопка "Записаться" открывает процесс бронирования -->
+      <button id="hero-signup-btn" class="btn-primary">Записаться</button>
+    </div>
+  </section>
+
+  <!-- Блок преимуществ -->
+  <section class="features">
+    <h3>Почему мы?</h3>
+    <div class="feature-list">
+      <div class="feature-item">
+        <h4>Профессионализм</h4>
+        <p>Многолетний опыт (20+ лет) и высокая квалификация.</p>
+      </div>
+      <div class="feature-item">
+        <h4>Комфорт и безопасность</h4>
+        <p>Онлайн-запись, гибкий график занятий.</p>
+      </div>
+      <div class="feature-item">
+        <h4>Результат</h4>
+        <p>Индивидуальный подход к каждому ученику.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Услуги -->
+  <section id="services" class="services-section">
+    <h2>Услуги</h2>
+    <div class="services-list">
+      <div class="service-card">
+        <h4>Тренировка</h4>
+        <p>Описание услуги, длительность, особенности.</p>
+        <p>Цена: 3500 рублей</p>
+        <!-- Кнопка "Записаться" -->
+        <button class="btn-secondary btn-book">Записаться</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Онлайн-магазин -->
+  <section id="store" class="store-section">
+    <h2>Онлайн-магазин</h2>
+    <div class="store-list">
+      <div class="product-card">
+        <img src="/static/images/sample-product.jpg" alt="Товар" />
+        <h4>Название товара</h4>
+        <p>Описание и характеристики товара.</p>
+        <p>Цена: 1000 рублей</p>
+        <label for="delivery-address">Адрес доставки:</label>
+        <input type="text" id="delivery-address" name="delivery-address" placeholder="Введите адрес" autocomplete="on" />
+        <button class="btn-secondary">Купить</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Мероприятия -->
+  <section id="events" class="events-section">
+    <h2>Мероприятия</h2>
+    <div class="events-list">
+      <div class="event-card">
+        <h4>Название события</h4>
+        <p>Дата и место проведения.</p>
+        <a href="#" class="btn-link">Подробнее</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Блог -->
+  <section id="blog" class="blog-section">
+    <h2>Блог</h2>
+    <p>В разработке. Скоро здесь появятся новые статьи!</p>
+  </section>
+
+  <!-- Контакты -->
+  <section id="contacts" class="contacts-section">
+    <h2>Контакты</h2>
+    <form id="contact-form" class="contact" autocomplete="on">
+      <label for="username">Имя:</label>
+      <input type="text" id="username" name="username" required autocomplete="name" />
+      <label for="usercontact">Телефон или Telegram:</label>
+      <input type="text" id="usercontact" name="usercontact" required autocomplete="tel" />
+      <button type="submit" class="btn-primary">Отправить</button>
+    </form>
+  </section>
+
+  <!-- Чат -->
+  <section id="chat" class="chat-section">
+    <h2>Чат с MyWave</h2>
+    <div id="chatWindow" class="chat-window"></div>
+    <div class="chat-controls">
+      <input type="text" id="user-input" placeholder="Введите сообщение..." autocomplete="off" />
+      <button id="sendBtn" class="btn-primary">Отправить</button>
+    </div>
+    <!-- Прогресс-бар -->
+    <div id="file-upload-progress" class="progress">
+      <div class="bar"></div>
+    </div>
+    <!-- Поле выбора файла (скрывается через CSS) -->
+    <input type="file" id="file-upload" />
+    <!-- Кнопка загрузки файла -->
+    <button id="uploadFileBtn" class="btn-secondary">Загрузить файл</button>
+    <!-- Меню для дополнительных функций чата -->
+    <div id="menu-container" class="menu-container">
+      <button data-action="schedule" class="btn-secondary">Расписание</button>
+      <button data-action="faq" class="btn-secondary">FAQ</button>
+      <button data-action="training" class="btn-secondary">Тренировка</button>
+    </div>
+  </section>
+
+  <!-- Модальные окна для бронирования -->
+  <div id="modalCalendar" class="modal hidden">
+    <div class="modal-content">
+      <h3>Выберите дату</h3>
+      <input type="date" id="bookingDate">
+      <button id="confirmDateBtn" class="btn-primary">Далее</button>
+      <button id="cancelModal1" class="btn-link">Отмена</button>
+    </div>
+  </div>
+
+  <div id="modalSlots" class="modal hidden">
+    <div class="modal-content">
+      <h3>Выберите слот</h3>
+      <select id="slotSelect">
+        <option value="09:00">09:00 (Свободно)</option>
+        <option value="10:00">10:00 (Свободно)</option>
+        <option value="11:00">11:00 (Занято)</option>
+      </select>
+      <button id="confirmSlotBtn" class="btn-primary">Далее</button>
+      <button id="cancelModal2" class="btn-link">Отмена</button>
+    </div>
+  </div>
+
+  <div id="modalContact" class="modal hidden">
+    <div class="modal-content">
+      <h3>Контактные данные</h3>
+      <input type="text" id="bookingName" placeholder="Ваше имя" autocomplete="name">
+      <input type="text" id="bookingPhone" placeholder="Телефон или Telegram" autocomplete="tel">
+      <button id="confirmContactBtn" class="btn-primary">Далее</button>
+      <button id="cancelModal3" class="btn-link">Отмена</button>
+    </div>
+  </div>
+
+  <div id="modalConfirm" class="modal hidden">
+    <div class="modal-content">
+      <h3>Подтверждение записи</h3>
+      <p id="confirmDetails"></p>
+      <button id="finalConfirmBtn" class="btn-primary">Подтвердить</button>
+      <button id="cancelModal4" class="btn-link">Отмена</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>&copy; 2025 MyWave. Все права защищены.</p>
+  </footer>
+
+  <!-- Подключаем скрипт -->
+  <script src="/static/js/chat.js"></script>
 </body>
 </html>
