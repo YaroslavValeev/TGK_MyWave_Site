@@ -1,40 +1,41 @@
 import os
 import logging
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseUpload
-from google.oauth2 import service_account  # ✅ Верный импорт
-from oauth2client import service_account
 from google.oauth2.service_account import Credentials
 from flask import current_app
+from googleapiclient.http import MediaIoBaseUpload
 
 logger = logging.getLogger(__name__)
 
-def init_google_services(app):
+def init_google_services():
     try:
-        credentials_path = app.config.get("GOOGLE_CREDENTIALS_PATH")
+        # Проверяем, есть ли путь в конфигурации приложения
+        service_account_file = current_app.config.get("GOOGLE_SERVICE_ACCOUNT_FILE")
 
-        if not credentials_path or not os.path.exists(credentials_path):
-            raise FileNotFoundError(f"Файл учетных данных не найден: {credentials_path}")
+        if not service_account_file or not os.path.exists(service_account_file):
+            raise FileNotFoundError(f"Файл сервисного аккаунта не найден: {service_account_file}")
 
         # Загружаем учетные данные
         creds = Credentials.from_service_account_file(
-            credentials_path,
+            service_account_file,
             scopes=[
                 "https://www.googleapis.com/auth/drive.file",
-                "https://www.googleapis.com/auth/spreadsheets"
+                "https://www.googleapis.com/auth/spreadsheets",
+                "https://www.googleapis.com/auth/calendar"
             ]
         )
 
-        # Инициализируем API Google Drive и Google Sheets
+        # Инициализация сервисов Google API
         drive_service = build("drive", "v3", credentials=creds)
         sheet_service = build("sheets", "v4", credentials=creds)
+        calendar_service = build("calendar", "v3", credentials=creds)
 
-        logger.info("Google API успешно инициализирован")
-        return drive_service, sheet_service
+        logger.info("✅ Google API успешно инициализирован!")
+        return drive_service, sheet_service, calendar_service
 
     except Exception as e:
-        logger.critical(f"Ошибка инициализации сервисов Google: {e}")
-        return None, None
+        logger.critical(f"❌ Ошибка инициализации сервисов Google: {str(e)}")
+        return None, None, None
     
 def append_to_sheet(sheet_service, spreadsheet_id, range_name, values):
     try:
