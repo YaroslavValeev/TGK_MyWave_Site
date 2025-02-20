@@ -2,12 +2,13 @@ import os
 import logging
 from flask import Flask, render_template, request, jsonify, current_app
 from flask_login import LoginManager
+from flask_sqlalchemy.extension import SQLAlchemy
 from flask_talisman import Talisman
 from flask_wtf.csrf import CSRFProtect
 from flask_admin import Admin
 from prometheus_flask_exporter import PrometheusMetrics
 from flask_socketio import SocketIO
-from config import Config
+from config import Config, DevelopmentConfig
 
 # Локальные импорты
 from app.database import db
@@ -24,8 +25,10 @@ app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 csrf = CSRFProtect(app)
 app.config.from_object(Config)
+app.config.from_object(DevelopmentConfig)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+db = SQLAlchemy(app)
 
 app.config.from_mapping(
     SECRET_KEY=os.getenv("SECRET_KEY", "dev"),
@@ -94,6 +97,16 @@ app.register_blueprint(files_bp)
 app.register_blueprint(calendar_bp)
 app.register_blueprint(book_bp)
 
+with app.app_context():
+    drive_service, sheet_service, calendar_service = init_google_services()
+    if not drive_service:
+        app.logger.critical("🚨 Google Drive API не инициализирован!")
+    if not sheet_service:
+        app.logger.critical("🚨 Google Sheets API не инициализирован!")
+    if not calendar_service:
+        app.logger.critical("🚨 Google Calendar API не инициализирован!")
+
+
 # Отключаем CSRF для blueprint календаря
 csrf.exempt(calendar_bp)
 
@@ -137,3 +150,4 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
     socketio.run(app, debug=True)
+    app.run(debug=True)
