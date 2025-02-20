@@ -1,175 +1,266 @@
-/* Общие стили */
-body {
-  font-family: Arial, sans-serif;
+/* Используем шрифт Pangolin (подключается через Google Fonts) */
+html, body {
   margin: 0;
   padding: 0;
-  background-color: #f5f5f5;
-  color: #333;
+  font-family: "Pangolin", sans-serif;
+  background: #f0f0f0;
 }
 
 /* Шапка */
-header {
-  background-color: #444;
-  color: white;
-  padding: 15px 20px;
+.site-header {
+  background-color: #333;
+  color: #fff;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  padding: 1em;
 }
-
-.logo h1 {
-  font-family: 'Choklodaster', sans-serif;
+.site-header .logo h1 {
+  margin: 0;
+  font-size: 1.8em;
+  color: #00bcd4;
+}
+.site-nav ul {
+  list-style: none;
+  display: flex;
+  margin-left: auto;
+  gap: 1em;
+  padding: 0;
+}
+.site-nav a {
+  text-decoration: none;
+  color: #fff;
+  font-weight: bold;
+}
+.site-nav a:hover {
   color: #00bcd4;
 }
 
-nav ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  gap: 15px;
-}
-
-nav ul li {
-  display: inline;
-}
-
-nav ul li a {
-  color: white;
-  text-decoration: none;
-  font-size: 16px;
-}
-
-nav ul li a:hover {
-  text-decoration: underline;
-}
-
-/* Главная секция */
-.hero {
+/* Герой-блок */
+.hero-section {
   text-align: center;
   padding: 50px 20px;
   background: linear-gradient(to right, #00bcd4, #0097a7);
   color: white;
 }
-
-.hero h2 {
+.hero-section .hero-content h2 {
+  margin: 0.5em 0;
   font-size: 36px;
 }
-
-.hero p {
+.hero-section .hero-content p {
   font-size: 18px;
+  margin-bottom: 1em;
 }
-
-.hero .btn {
-  background-color: white;
-  color: #00bcd4;
-  padding: 10px 20px;
-  text-decoration: none;
+.hero-section .btn-primary {
+  background-color: transparent;
+  border: 2px solid #00bcd4;
+  color: #333;
   font-size: 18px;
   border-radius: 5px;
+  padding: 10px 20px;
+  transition: all 0.3s ease;
+}
+.hero-section .btn-primary:hover {
+  background-color: #00bcd4;
+  color: #fff;
 }
 
-.hero .btn:hover {
-  background-color: #e0f7fa;
-}
-
-/* Секция преимуществ */
-.advantages {
+/* Блок преимуществ */
+.features {
   padding: 40px 20px;
   text-align: center;
 }
-
-.advantages h2 {
+.features h3 {
   font-size: 28px;
 }
-
-.advantages ul {
-  list-style: none;
-  padding: 0;
+.feature-list {
+  display: flex;
+  justify-content: center;
+  gap: 2em;
+  flex-wrap: wrap;
+  margin-top: 1em;
+}
+.feature-item {
+  background: #fff;
+  padding: 1em;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: 250px;
 }
 
-.advantages ul li {
-  font-size: 18px;
-  margin: 10px 0;
+/* Общие секции */
+.services-section, .store-section, .events-section, .blog-section, .contacts-section, .chat-section {
+  background: #fff;
+  margin: 1em auto;
+  padding: 1em;
+  max-width: 1200px;
+  border-radius: 4px;
 }
 
-/* Карточки услуг */
-.services, .events, .shop, .blog, .about {
-  padding: 40px 20px;
-  text-align: center;
+/* Карточки */
+.service-card,
+.product-card,
+.event-card {
+  background: #fafafa;
+  margin: 1em 0;
+  padding: 1em;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
-
-.service-card, .event-card, .post {
-  background: white;
-  padding: 20px;
-  margin: 20px auto;
-  width: 80%;
-  max-width: 400px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
 .price {
   font-size: 20px;
   color: #00bcd4;
   font-weight: bold;
 }
 
-.btn {
-  display: inline-block;
-  background: #00bcd4;
-  color: white;
-  padding: 10px 15px;
+/* Кнопки (минималистичные) */
+.btn-primary,
+.btn-secondary,
+.btn-link {
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  padding: 0.75em 1.5em;
+  margin: 0.5em;
+  font-size: 1em;
+  transition: all 0.3s ease;
   text-decoration: none;
-  border-radius: 5px;
-  margin-top: 10px;
+}
+.btn-primary {
+  background-color: transparent;
+  border: 2px solid #00bcd4;
+  color: #333;
+}
+.btn-primary:hover {
+  background-color: #00bcd4;
+  color: #fff;
+}
+.btn-secondary {
+  background-color: transparent;
+  border: 2px solid #00bcd4;
+  color: #333;
+}
+.btn-secondary:hover {
+  background-color: #00bcd4;
+  color: #fff;
+}
+.btn-link {
+  background: none;
+  color: #333;
+  text-decoration: underline;
 }
 
-.btn:hover {
-  background: #0097a7;
-}
-
-/* Форма */
-.contact form {
+/* Контактная форма */
+.contact {
   width: 80%;
   max-width: 500px;
   margin: auto;
-  background: white;
+  background: #fff;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
-
-.contact form label {
+.contact label {
   display: block;
   margin: 10px 0 5px;
 }
-
-.contact form input, .contact form textarea {
+.contact input,
+.contact textarea {
   width: 100%;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-
-.contact form button {
+.contact button {
   width: 100%;
   background: #00bcd4;
-  color: white;
+  color: #fff;
   padding: 10px;
   border: none;
   border-radius: 5px;
   margin-top: 10px;
   cursor: pointer;
+  transition: all 0.3s ease;
+}
+.contact button:hover {
+  background: #007c91;
 }
 
-.contact form button:hover {
-  background: #0097a7;
+/* Чат */
+.chat-window {
+  background: #f9f9f9;
+  height: 200px;
+  overflow-y: auto;
+  margin-bottom: 1em;
+  padding: 0.5em;
+  border: 1px solid #ccc;
+}
+.message {
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 12px;
+  line-height: 1.4;
+}
+.user {
+  background-color: #d1eaff;
+  text-align: right;
+}
+.bot {
+  background-color: #e9ffe9;
+}
+
+/* Прогресс-бар */
+.progress {
+  width: 100%;
+  background-color: #eee;
+  height: 10px;
+  border-radius: 4px;
+  margin: 0.5em 0;
+  overflow: hidden;
+}
+.progress .bar {
+  width: 0%;
+  height: 100%;
+  background-color: #B0C4DE;
+  transition: width 0.3s ease-in-out;
+}
+
+/* Скрываем input для файла */
+#file-upload {
+  display: none;
 }
 
 /* Подвал */
-footer {
+.site-footer {
+  background: #333;
+  color: #fff;
   text-align: center;
-  padding: 20px;
-  background: #444;
-  color: white;
+  padding: 1em;
+}
+
+/* Меню-контейнер в чате */
+.menu-container {
+  margin-top: 1em;
+}
+
+/* Модальные окна */
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.modal.hidden {
+  display: none;
+}
+.modal-content {
+  background: #fff;
+  padding: 2em;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }

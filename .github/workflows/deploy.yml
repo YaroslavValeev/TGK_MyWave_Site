@@ -3,7 +3,7 @@ name: Deploy to Timeweb.cloud
 on:
   push:
     branches:
-      - main  # или master, в зависимости от используемой основной ветки
+      - main  # Основная ветка для деплоя
 
 jobs:
   deploy:
@@ -23,17 +23,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Tests
-        run: |
-          echo "Running tests..."
-          pytest  # Запуск тестов, если тесты написаны
-
       - name: Deploy to Timeweb.cloud
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_USER: ${{ secrets.REMOTE_USER }}
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-          REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
+          SSH_PRIVATE_KEY: ~/.ssh/id_rsa
+          REMOTE_USER: root
+          SSH_KEY_PATH: ~/.ssh/id_rsa
+          REMOTE_HOST: mywavetreaning.ru
+          REMOTE_PATH: "C:\\home\\root\\mywave"
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa

@@ -1,0 +1,746 @@
+2025-02-14 14:14:53,238 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-14 14:14:53,240 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-14 14:14:53,243 - werkzeug - INFO -  * Restarting with stat
+2025-02-14 14:14:55,454 - werkzeug - WARNING -  * Debugger is active!
+2025-02-14 14:14:55,461 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-14 14:15:12,979 - root - INFO - Request: GET /
+2025-02-14 14:15:12,999 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 14:15:12] "GET / HTTP/1.1" 200 -
+2025-02-14 14:15:13,245 - root - INFO - Request: GET /static/js/chat.js
+2025-02-14 14:15:13,429 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 14:15:13] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-14 14:15:13,503 - root - INFO - Request: GET /favicon.ico
+2025-02-14 14:15:13,505 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 14:15:13] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-14 14:46:09,715 - werkzeug - INFO -  * Detected change in 'c:\\Users\\Lenovo\\Desktop\\Site_MyWave\\main.py', reloading
+2025-02-14 14:46:10,293 - werkzeug - INFO -  * Restarting with stat
+2025-02-14 14:46:13,144 - werkzeug - WARNING -  * Debugger is active!
+2025-02-14 14:46:13,150 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-14 14:56:09,435 - root - INFO - Request: GET /
+2025-02-14 14:56:09,452 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 14:56:09] "GET / HTTP/1.1" 200 -
+2025-02-14 14:56:09,552 - root - INFO - Request: GET /static/js/chat.js
+2025-02-14 14:56:10,026 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 14:56:10] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-14 14:56:32,970 - root - INFO - Request: GET /
+2025-02-14 14:56:32,977 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 14:56:32] "GET / HTTP/1.1" 200 -
+2025-02-14 14:56:33,068 - root - INFO - Request: GET /static/js/chat.js
+2025-02-14 14:56:33,070 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 14:56:33] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-14 14:56:33,196 - root - INFO - Request: GET /favicon.ico
+2025-02-14 14:56:33,198 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 14:56:33] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-14 14:56:36,353 - root - INFO - Request: GET /
+2025-02-14 14:56:36,360 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 14:56:36] "GET / HTTP/1.1" 200 -
+2025-02-14 14:56:36,447 - root - INFO - Request: GET /static/js/chat.js
+2025-02-14 14:56:36,468 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 14:56:36] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-14 15:01:01,734 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-14 15:01:01,735 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-14 15:01:01,744 - werkzeug - INFO -  * Restarting with stat
+2025-02-14 15:01:04,355 - werkzeug - WARNING -  * Debugger is active!
+2025-02-14 15:01:04,362 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-14 15:01:11,890 - root - INFO - Request: GET /
+2025-02-14 15:01:11,901 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 15:01:11] "GET / HTTP/1.1" 200 -
+2025-02-14 15:01:11,988 - root - INFO - Request: GET /static/js/chat.js
+2025-02-14 15:01:12,190 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 15:01:12] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-14 15:04:45,629 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-14 15:04:45,630 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-14 15:04:45,632 - werkzeug - INFO -  * Restarting with stat
+2025-02-14 15:04:47,723 - werkzeug - WARNING -  * Debugger is active!
+2025-02-14 15:04:47,732 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-14 15:04:56,477 - root - INFO - Request: GET /
+2025-02-14 15:04:56,557 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 15:04:56] "GET / HTTP/1.1" 200 -
+2025-02-14 15:04:56,644 - root - INFO - Request: GET /static/js/chat.js
+2025-02-14 15:04:56,908 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 15:04:56] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-14 15:19:21,113 - root - INFO - Request: GET /
+2025-02-14 15:19:21,124 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 15:19:21] "GET / HTTP/1.1" 200 -
+2025-02-14 15:19:21,198 - root - INFO - Request: GET /static/js/chat.js
+2025-02-14 15:19:21,295 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 15:19:21] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-14 15:19:21,405 - root - INFO - Request: GET /favicon.ico
+2025-02-14 15:19:21,413 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 15:19:21] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-14 16:00:37,197 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\main.py', reloading
+2025-02-14 16:00:38,426 - werkzeug - INFO -  * Restarting with stat
+2025-02-14 16:00:41,484 - werkzeug - WARNING -  * Debugger is active!
+2025-02-14 16:00:41,494 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-14 16:02:34,754 - root - INFO - Request: GET /
+2025-02-14 16:02:34,764 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 16:02:34] "GET / HTTP/1.1" 200 -
+2025-02-14 16:02:34,876 - root - INFO - Request: GET /static/js/chat.js
+2025-02-14 16:02:35,267 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 16:02:35] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-14 16:02:35,362 - root - INFO - Request: GET /favicon.ico
+2025-02-14 16:02:35,370 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 16:02:35] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-14 16:06:11,439 - root - INFO - Request: GET /
+2025-02-14 16:06:11,440 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 16:06:11] "GET / HTTP/1.1" 200 -
+2025-02-14 16:06:11,603 - root - INFO - Request: GET /static/js/chat.js
+2025-02-14 16:06:11,606 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 16:06:11] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-14 16:46:44,110 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\main.py', reloading
+2025-02-14 16:46:44,701 - werkzeug - INFO -  * Restarting with stat
+2025-02-14 16:46:47,325 - werkzeug - WARNING -  * Debugger is active!
+2025-02-14 16:46:47,333 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-14 16:46:59,336 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-14 16:46:59,338 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-14 16:46:59,340 - werkzeug - INFO -  * Restarting with stat
+2025-02-14 16:47:01,850 - werkzeug - WARNING -  * Debugger is active!
+2025-02-14 16:47:01,857 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-14 16:47:30,610 - root - INFO - Request: GET /
+2025-02-14 16:47:30,640 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 16:47:30] "GET / HTTP/1.1" 200 -
+2025-02-14 16:47:30,727 - root - INFO - Request: GET /static/js/chat.js
+2025-02-14 16:47:30,977 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 16:47:30] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-14 16:57:20,356 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-14 16:57:20,366 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 16:57:20] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2025-02-14 16:59:27,315 - root - INFO - Request: POST /upload
+2025-02-14 16:59:27,317 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 16:59:27] "[33mPOST /upload HTTP/1.1[0m" 404 -
+2025-02-14 17:00:36,530 - root - INFO - Request: POST /update_client
+2025-02-14 17:00:36,531 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 17:00:36] "[33mPOST /update_client HTTP/1.1[0m" 404 -
+2025-02-14 17:11:40,608 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\main.py', reloading
+2025-02-14 17:11:41,339 - werkzeug - INFO -  * Restarting with stat
+2025-02-14 17:11:44,008 - werkzeug - WARNING -  * Debugger is active!
+2025-02-14 17:11:44,018 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-14 17:12:31,838 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-14 17:12:31,840 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 17:12:31] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2025-02-14 17:14:57,760 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\app\\database\\create_db.py', reloading
+2025-02-14 17:14:58,054 - werkzeug - INFO -  * Restarting with stat
+2025-02-14 17:15:01,766 - werkzeug - WARNING -  * Debugger is active!
+2025-02-14 17:15:01,779 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-14 17:21:40,516 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\main.py', reloading
+2025-02-14 17:21:40,929 - werkzeug - INFO -  * Restarting with stat
+2025-02-14 17:21:43,762 - werkzeug - WARNING -  * Debugger is active!
+2025-02-14 17:21:43,773 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-14 17:22:27,302 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-14 17:22:27,305 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 17:22:27] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2025-02-14 17:22:45,121 - root - INFO - Request: GET /
+2025-02-14 17:22:45,137 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 17:22:45] "GET / HTTP/1.1" 200 -
+2025-02-14 17:22:45,266 - root - INFO - Request: GET /static/js/chat.js
+2025-02-14 17:22:45,454 - werkzeug - INFO - 127.0.0.1 - - [14/Feb/2025 17:22:45] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-15 21:14:46,268 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-15 21:14:46,268 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-15 21:14:46,269 - werkzeug - INFO -  * Restarting with stat
+2025-02-15 21:14:48,323 - werkzeug - WARNING -  * Debugger is active!
+2025-02-15 21:14:48,340 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-15 21:17:01,847 - root - INFO - Request: GET /
+2025-02-15 21:17:01,865 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:17:01] "GET / HTTP/1.1" 200 -
+2025-02-15 21:17:02,032 - root - INFO - Request: GET /static/js/chat.js
+2025-02-15 21:17:02,242 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:17:02] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-15 21:17:02,354 - root - INFO - Request: GET /favicon.ico
+2025-02-15 21:17:02,357 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:17:02] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-15 21:17:14,006 - root - INFO - Request: GET /
+2025-02-15 21:17:14,009 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:17:14] "GET / HTTP/1.1" 200 -
+2025-02-15 21:17:14,086 - root - INFO - Request: GET /static/js/chat.js
+2025-02-15 21:17:14,093 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:17:14] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-15 21:18:00,655 - root - INFO - Request: GET /
+2025-02-15 21:18:00,658 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:18:00] "GET / HTTP/1.1" 200 -
+2025-02-15 21:18:00,729 - root - INFO - Request: GET /static/js/chat.js
+2025-02-15 21:18:00,737 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:18:00] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-15 21:25:44,750 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-15 21:25:44,752 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-15 21:25:44,752 - werkzeug - INFO -  * Restarting with stat
+2025-02-15 21:25:46,518 - werkzeug - WARNING -  * Debugger is active!
+2025-02-15 21:25:46,530 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-15 21:25:57,892 - root - INFO - Request: GET /
+2025-02-15 21:25:57,903 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:25:57] "GET / HTTP/1.1" 200 -
+2025-02-15 21:25:57,969 - root - INFO - Request: GET /static/js/chat.js
+2025-02-15 21:25:58,254 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:25:58] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-15 21:37:20,202 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\main.py', reloading
+2025-02-15 21:37:20,617 - werkzeug - INFO -  * Restarting with stat
+2025-02-15 21:37:23,268 - werkzeug - WARNING -  * Debugger is active!
+2025-02-15 21:37:23,275 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-15 21:37:24,830 - root - INFO - Request: GET /
+2025-02-15 21:37:24,845 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:37:24] "GET / HTTP/1.1" 200 -
+2025-02-15 21:37:24,892 - root - INFO - Request: GET /static/js/chat.js
+2025-02-15 21:37:25,039 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:37:25] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-15 21:55:57,524 - root - INFO - Request: GET /
+2025-02-15 21:55:57,535 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:55:57] "GET / HTTP/1.1" 200 -
+2025-02-15 21:55:57,586 - root - INFO - Request: GET /static/js/chat.js
+2025-02-15 21:55:57,661 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:55:57] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-15 21:55:57,737 - root - INFO - Request: GET /favicon.ico
+2025-02-15 21:55:57,739 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:55:57] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-15 21:56:01,532 - root - INFO - Request: GET /
+2025-02-15 21:56:01,535 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:56:01] "GET / HTTP/1.1" 200 -
+2025-02-15 21:56:01,580 - root - INFO - Request: GET /static/js/chat.js
+2025-02-15 21:56:01,586 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:56:01] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-15 21:59:14,441 - root - INFO - Request: GET /
+2025-02-15 21:59:14,443 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:59:14] "GET / HTTP/1.1" 200 -
+2025-02-15 21:59:14,509 - root - INFO - Request: GET /static/js/chat.js
+2025-02-15 21:59:14,513 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 21:59:14] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-15 22:18:07,576 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-15 22:18:07,577 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-15 22:18:07,577 - werkzeug - INFO -  * Restarting with stat
+2025-02-15 22:18:09,404 - werkzeug - WARNING -  * Debugger is active!
+2025-02-15 22:18:09,417 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-15 22:18:19,966 - root - INFO - Request: GET /
+2025-02-15 22:18:20,113 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 22:18:20] "GET / HTTP/1.1" 200 -
+2025-02-15 22:18:20,175 - root - INFO - Request: GET /static/css/styles.css
+2025-02-15 22:18:20,177 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-15 22:18:20,180 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 22:18:20] "[33mGET /static/css/styles.css HTTP/1.1[0m" 404 -
+2025-02-15 22:18:20,181 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 22:18:20] "[33mGET /static/images/sample-product.jpg HTTP/1.1[0m" 404 -
+2025-02-15 22:18:20,183 - root - INFO - Request: GET /static/js/chat.js
+2025-02-15 22:18:20,402 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 22:18:20] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-15 22:18:20,483 - root - INFO - Request: GET /favicon.ico
+2025-02-15 22:18:20,484 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 22:18:20] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-15 22:59:33,716 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-15 22:59:33,717 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-15 22:59:33,717 - werkzeug - INFO -  * Restarting with stat
+2025-02-15 22:59:35,792 - werkzeug - WARNING -  * Debugger is active!
+2025-02-15 22:59:35,798 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-15 22:59:39,040 - root - INFO - Request: GET /
+2025-02-15 22:59:39,086 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 22:59:39] "GET / HTTP/1.1" 200 -
+2025-02-15 22:59:39,156 - root - INFO - Request: GET /static/css/style.css
+2025-02-15 22:59:39,242 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-15 22:59:39,245 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 22:59:39] "[33mGET /static/images/sample-product.jpg HTTP/1.1[0m" 404 -
+2025-02-15 22:59:39,246 - root - INFO - Request: GET /static/js/chat.js
+2025-02-15 22:59:39,382 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 22:59:39] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-02-15 22:59:39,494 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 22:59:39] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-15 22:59:42,177 - root - INFO - Request: GET /
+2025-02-15 22:59:42,179 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 22:59:42] "GET / HTTP/1.1" 200 -
+2025-02-15 22:59:42,249 - root - INFO - Request: GET /static/css/style.css
+2025-02-15 22:59:42,254 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 22:59:42] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-02-15 22:59:42,277 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-15 22:59:42,289 - root - INFO - Request: GET /static/js/chat.js
+2025-02-15 22:59:42,291 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 22:59:42] "[33mGET /static/images/sample-product.jpg HTTP/1.1[0m" 404 -
+2025-02-15 22:59:42,294 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 22:59:42] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-15 22:59:42,411 - root - INFO - Request: GET /favicon.ico
+2025-02-15 22:59:42,418 - werkzeug - INFO - 127.0.0.1 - - [15/Feb/2025 22:59:42] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-15 23:27:10,092 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-15 23:27:10,098 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-15 23:27:10,099 - werkzeug - INFO -  * Restarting with stat
+2025-02-15 23:27:11,999 - werkzeug - WARNING -  * Debugger is active!
+2025-02-15 23:27:12,018 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-16 10:05:11,092 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\main.py', reloading
+2025-02-16 10:05:11,424 - werkzeug - INFO -  * Restarting with stat
+2025-02-16 10:05:14,552 - werkzeug - WARNING -  * Debugger is active!
+2025-02-16 10:05:14,564 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-16 10:05:17,840 - root - INFO - Request: GET /
+2025-02-16 10:05:17,854 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 10:05:17] "GET / HTTP/1.1" 200 -
+2025-02-16 10:05:17,939 - root - INFO - Request: GET /static/css/style.css
+2025-02-16 10:05:17,943 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-16 10:05:17,949 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 10:05:17] "[33mGET /static/images/sample-product.jpg HTTP/1.1[0m" 404 -
+2025-02-16 10:05:17,951 - root - INFO - Request: GET /static/js/chat.js
+2025-02-16 10:05:18,167 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 10:05:18] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-16 10:05:18,207 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 10:05:18] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-16 14:29:04,345 - root - INFO - Request: GET /
+2025-02-16 14:29:04,400 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 14:29:04] "GET / HTTP/1.1" 200 -
+2025-02-16 14:29:04,467 - root - INFO - Request: GET /static/css/styles.css
+2025-02-16 14:29:04,472 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 14:29:04] "[33mGET /static/css/styles.css HTTP/1.1[0m" 404 -
+2025-02-16 14:29:04,500 - root - INFO - Request: GET /static/css/style.css
+2025-02-16 14:29:04,545 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 14:29:04] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-02-16 14:29:04,603 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-16 14:29:04,608 - root - INFO - Request: GET /static/js/chat.js
+2025-02-16 14:29:04,611 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 14:29:04] "[33mGET /static/images/sample-product.jpg HTTP/1.1[0m" 404 -
+2025-02-16 14:29:04,621 - root - INFO - Request: GET /static/fonts/Chalkduster/Chalkduster.woff2
+2025-02-16 14:29:04,626 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 14:29:04] "[33mGET /static/fonts/Chalkduster/Chalkduster.woff2 HTTP/1.1[0m" 404 -
+2025-02-16 14:29:04,630 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 14:29:04] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-16 14:29:04,688 - root - INFO - Request: GET /static/fonts/Chalkduster/Chalkduster.woff
+2025-02-16 14:29:04,691 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 14:29:04] "[33mGET /static/fonts/Chalkduster/Chalkduster.woff HTTP/1.1[0m" 404 -
+2025-02-16 14:30:10,482 - root - INFO - Request: GET /
+2025-02-16 14:30:10,489 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 14:30:10] "GET / HTTP/1.1" 200 -
+2025-02-16 14:30:10,560 - root - INFO - Request: GET /static/css/styles.css
+2025-02-16 14:30:10,563 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 14:30:10] "[33mGET /static/css/styles.css HTTP/1.1[0m" 404 -
+2025-02-16 14:30:10,587 - root - INFO - Request: GET /static/css/style.css
+2025-02-16 14:30:10,603 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 14:30:10] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-16 14:30:10,750 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-16 14:30:10,758 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 14:30:10] "[33mGET /static/images/sample-product.jpg HTTP/1.1[0m" 404 -
+2025-02-16 14:30:10,782 - root - INFO - Request: GET /static/js/chat.js
+2025-02-16 14:30:10,801 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 14:30:10] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-16 14:30:10,833 - root - INFO - Request: GET /static/fonts/Chalkduster/Chalkduster.woff2
+2025-02-16 14:30:10,835 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 14:30:10] "[33mGET /static/fonts/Chalkduster/Chalkduster.woff2 HTTP/1.1[0m" 404 -
+2025-02-16 14:30:10,937 - root - INFO - Request: GET /static/fonts/Chalkduster/Chalkduster.woff
+2025-02-16 14:30:10,942 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 14:30:10] "[33mGET /static/fonts/Chalkduster/Chalkduster.woff HTTP/1.1[0m" 404 -
+2025-02-16 23:08:38,329 - root - INFO - Request: GET /favicon.ico
+2025-02-16 23:08:38,340 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:08:38] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-16 23:26:47,796 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-16 23:26:47,797 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-16 23:26:47,798 - werkzeug - INFO -  * Restarting with stat
+2025-02-16 23:26:49,613 - werkzeug - WARNING -  * Debugger is active!
+2025-02-16 23:26:49,626 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-16 23:27:20,367 - root - INFO - Request: GET /
+2025-02-16 23:27:20,381 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:27:20] "GET / HTTP/1.1" 200 -
+2025-02-16 23:27:20,450 - root - INFO - Request: GET /static/css/style.css
+2025-02-16 23:27:20,501 - root - INFO - Request: GET /static/js/chat.js
+2025-02-16 23:27:20,544 - root - INFO - Request: GET /static/css/styles.css
+2025-02-16 23:27:20,560 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:27:20] "[33mGET /static/css/styles.css HTTP/1.1[0m" 404 -
+2025-02-16 23:27:20,700 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:27:20] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-16 23:27:20,781 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-16 23:27:20,783 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:27:20] "[33mGET /static/images/sample-product.jpg HTTP/1.1[0m" 404 -
+2025-02-16 23:27:20,783 - root - INFO - Request: GET /static/fonts/Chalkduster/Chalkduster.woff2
+2025-02-16 23:27:20,791 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:27:20] "[33mGET /static/fonts/Chalkduster/Chalkduster.woff2 HTTP/1.1[0m" 404 -
+2025-02-16 23:27:20,824 - root - INFO - Request: GET /static/fonts/Chalkduster/Chalkduster.woff
+2025-02-16 23:27:20,828 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:27:20] "[33mGET /static/fonts/Chalkduster/Chalkduster.woff HTTP/1.1[0m" 404 -
+2025-02-16 23:27:20,897 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:27:20] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-16 23:27:45,205 - root - INFO - Request: GET /
+2025-02-16 23:27:45,206 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:27:45] "GET / HTTP/1.1" 200 -
+2025-02-16 23:27:45,278 - root - INFO - Request: GET /static/css/style.css
+2025-02-16 23:27:45,282 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:27:45] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-16 23:27:45,300 - root - INFO - Request: GET /static/css/styles.css
+2025-02-16 23:27:45,304 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:27:45] "[33mGET /static/css/styles.css HTTP/1.1[0m" 404 -
+2025-02-16 23:27:45,314 - root - INFO - Request: GET /static/js/chat.js
+2025-02-16 23:27:45,317 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:27:45] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-16 23:27:45,373 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-16 23:27:45,377 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:27:45] "[33mGET /static/images/sample-product.jpg HTTP/1.1[0m" 404 -
+2025-02-16 23:27:45,391 - root - INFO - Request: GET /static/fonts/Chalkduster/Chalkduster.woff2
+2025-02-16 23:27:45,393 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:27:45] "[33mGET /static/fonts/Chalkduster/Chalkduster.woff2 HTTP/1.1[0m" 404 -
+2025-02-16 23:27:45,423 - root - INFO - Request: GET /static/fonts/Chalkduster/Chalkduster.woff
+2025-02-16 23:27:45,424 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:27:45] "[33mGET /static/fonts/Chalkduster/Chalkduster.woff HTTP/1.1[0m" 404 -
+2025-02-16 23:33:19,685 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-16 23:33:19,696 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:33:19] "[33mGET /static/images/sample-product.jpg HTTP/1.1[0m" 404 -
+2025-02-16 23:53:32,934 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-16 23:53:32,935 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-16 23:53:32,935 - werkzeug - INFO -  * Restarting with stat
+2025-02-16 23:53:34,666 - werkzeug - WARNING -  * Debugger is active!
+2025-02-16 23:53:34,680 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-16 23:53:43,161 - root - INFO - Request: GET /
+2025-02-16 23:53:43,180 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:53:43] "GET / HTTP/1.1" 200 -
+2025-02-16 23:53:43,263 - root - INFO - Request: GET /static/css/style.css
+2025-02-16 23:53:43,286 - root - INFO - Request: GET /static/css/styles.css
+2025-02-16 23:53:43,289 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:53:43] "[33mGET /static/css/styles.css HTTP/1.1[0m" 404 -
+2025-02-16 23:53:43,401 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:53:43] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-16 23:53:43,424 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-16 23:53:43,431 - root - INFO - Request: GET /static/js/chat.js
+2025-02-16 23:53:43,445 - root - INFO - Request: GET /static/fonts/Chalkduster/Chalkduster.woff2
+2025-02-16 23:53:43,450 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:53:43] "[33mGET /static/images/sample-product.jpg HTTP/1.1[0m" 404 -
+2025-02-16 23:53:43,451 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:53:43] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-16 23:53:43,451 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:53:43] "[33mGET /static/fonts/Chalkduster/Chalkduster.woff2 HTTP/1.1[0m" 404 -
+2025-02-16 23:53:43,514 - root - INFO - Request: GET /static/fonts/Chalkduster/Chalkduster.woff
+2025-02-16 23:53:43,527 - werkzeug - INFO - 127.0.0.1 - - [16/Feb/2025 23:53:43] "[33mGET /static/fonts/Chalkduster/Chalkduster.woff HTTP/1.1[0m" 404 -
+2025-02-17 00:19:27,374 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-17 00:19:27,375 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-17 00:19:27,375 - werkzeug - INFO -  * Restarting with stat
+2025-02-17 00:19:29,148 - werkzeug - WARNING -  * Debugger is active!
+2025-02-17 00:19:29,161 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-17 00:19:37,922 - root - INFO - Request: GET /
+2025-02-17 00:19:37,934 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 00:19:37] "GET / HTTP/1.1" 200 -
+2025-02-17 00:19:38,049 - root - INFO - Request: GET /static/css/style.css
+2025-02-17 00:19:38,130 - root - INFO - Request: GET /static/js/chat.js
+2025-02-17 00:19:38,152 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-17 00:19:38,157 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 00:19:38] "[33mGET /static/images/sample-product.jpg HTTP/1.1[0m" 404 -
+2025-02-17 00:19:38,267 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 00:19:38] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-02-17 00:19:38,317 - root - INFO - Request: GET /static/fonts/Chalkduster/Chalkduster.woff2
+2025-02-17 00:19:38,319 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 00:19:38] "[33mGET /static/fonts/Chalkduster/Chalkduster.woff2 HTTP/1.1[0m" 404 -
+2025-02-17 00:19:38,334 - root - INFO - Request: GET /static/fonts/Chalkduster/Chalkduster.woff
+2025-02-17 00:19:38,335 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 00:19:38] "[33mGET /static/fonts/Chalkduster/Chalkduster.woff HTTP/1.1[0m" 404 -
+2025-02-17 00:19:38,351 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 00:19:38] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-17 00:20:46,094 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-17 00:20:46,095 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 00:20:46] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2025-02-17 00:21:04,457 - root - INFO - Request: GET /
+2025-02-17 00:21:04,460 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 00:21:04] "GET / HTTP/1.1" 200 -
+2025-02-17 00:21:04,529 - root - INFO - Request: GET /static/css/style.css
+2025-02-17 00:21:04,534 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 00:21:04] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-17 00:21:04,544 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-17 00:21:04,570 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 00:21:04] "[33mGET /static/images/sample-product.jpg HTTP/1.1[0m" 404 -
+2025-02-17 00:21:04,588 - root - INFO - Request: GET /static/js/chat.js
+2025-02-17 00:21:04,598 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 00:21:04] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-17 00:21:04,670 - root - INFO - Request: GET /static/fonts/Chalkduster/Chalkduster.woff2
+2025-02-17 00:21:04,699 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 00:21:04] "[33mGET /static/fonts/Chalkduster/Chalkduster.woff2 HTTP/1.1[0m" 404 -
+2025-02-17 00:21:04,832 - root - INFO - Request: GET /static/fonts/Chalkduster/Chalkduster.woff
+2025-02-17 00:21:04,860 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 00:21:04] "[33mGET /static/fonts/Chalkduster/Chalkduster.woff HTTP/1.1[0m" 404 -
+2025-02-17 00:21:11,818 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-17 00:21:11,820 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 00:21:11] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2025-02-17 00:33:45,766 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-17 00:33:45,767 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-17 00:33:45,768 - werkzeug - INFO -  * Restarting with stat
+2025-02-17 00:33:47,551 - werkzeug - WARNING -  * Debugger is active!
+2025-02-17 00:33:47,557 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-17 11:56:45,929 - root - INFO - Request: GET /
+2025-02-17 11:56:45,991 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 11:56:45] "GET / HTTP/1.1" 200 -
+2025-02-17 11:56:46,078 - root - INFO - Request: GET /static/css/style.css
+2025-02-17 11:56:46,090 - root - INFO - Request: GET /static/js/chat.js
+2025-02-17 11:56:46,139 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-17 11:56:46,161 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 11:56:46] "[33mGET /static/images/sample-product.jpg HTTP/1.1[0m" 404 -
+2025-02-17 11:56:46,369 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 11:56:46] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-02-17 11:56:46,414 - root - INFO - Request: GET /static/fonts/Chokladustefr.woff2
+2025-02-17 11:56:46,416 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 11:56:46] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-17 11:56:46,418 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 11:56:46] "[33mGET /static/fonts/Chokladustefr.woff2 HTTP/1.1[0m" 404 -
+2025-02-17 11:56:46,490 - root - INFO - Request: GET /static/fonts/Chokladustefr.woff
+2025-02-17 11:56:46,494 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 11:56:46] "[33mGET /static/fonts/Chokladustefr.woff HTTP/1.1[0m" 404 -
+2025-02-17 11:56:57,335 - root - INFO - Request: GET /
+2025-02-17 11:56:57,337 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 11:56:57] "GET / HTTP/1.1" 200 -
+2025-02-17 11:56:57,419 - root - INFO - Request: GET /static/css/style.css
+2025-02-17 11:56:57,422 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 11:56:57] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-17 11:56:57,433 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-17 11:56:57,435 - root - INFO - Request: GET /static/js/chat.js
+2025-02-17 11:56:57,456 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 11:56:57] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-17 11:56:57,457 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 11:56:57] "[33mGET /static/images/sample-product.jpg HTTP/1.1[0m" 404 -
+2025-02-17 11:56:57,507 - root - INFO - Request: GET /static/fonts/Chokladustefr.woff2
+2025-02-17 11:56:57,537 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 11:56:57] "[33mGET /static/fonts/Chokladustefr.woff2 HTTP/1.1[0m" 404 -
+2025-02-17 11:56:57,569 - root - INFO - Request: GET /static/fonts/Chokladustefr.woff
+2025-02-17 11:56:57,572 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 11:56:57] "[33mGET /static/fonts/Chokladustefr.woff HTTP/1.1[0m" 404 -
+2025-02-17 11:57:22,182 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-17 11:57:22,183 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 11:57:22] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2025-02-17 22:24:27,079 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-17 22:24:27,080 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-17 22:24:27,081 - werkzeug - INFO -  * Restarting with stat
+2025-02-17 22:24:28,819 - werkzeug - WARNING -  * Debugger is active!
+2025-02-17 22:24:28,834 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-17 22:24:48,266 - root - INFO - Request: GET /
+2025-02-17 22:24:48,274 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 22:24:48] "GET / HTTP/1.1" 200 -
+2025-02-17 22:24:48,377 - root - INFO - Request: GET /static/css/style.css
+2025-02-17 22:24:48,381 - root - INFO - Request: GET /static/js/chat.js
+2025-02-17 22:24:48,385 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-17 22:24:48,401 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 22:24:48] "[33mGET /static/images/sample-product.jpg HTTP/1.1[0m" 404 -
+2025-02-17 22:24:48,556 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 22:24:48] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-02-17 22:24:48,591 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 22:24:48] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-17 22:24:56,744 - root - INFO - Request: GET /
+2025-02-17 22:24:56,747 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 22:24:56] "GET / HTTP/1.1" 200 -
+2025-02-17 22:24:56,813 - root - INFO - Request: GET /static/css/style.css
+2025-02-17 22:24:56,816 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 22:24:56] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-17 22:24:56,847 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-17 22:24:56,850 - root - INFO - Request: GET /static/js/chat.js
+2025-02-17 22:24:56,860 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 22:24:56] "[33mGET /static/images/sample-product.jpg HTTP/1.1[0m" 404 -
+2025-02-17 22:24:56,864 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 22:24:56] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-17 22:25:08,912 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-17 22:25:08,914 - werkzeug - INFO - 127.0.0.1 - - [17/Feb/2025 22:25:08] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2025-02-18 14:50:24,101 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-18 14:50:24,103 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-18 14:50:24,104 - werkzeug - INFO -  * Restarting with stat
+2025-02-18 14:50:26,845 - werkzeug - WARNING -  * Debugger is active!
+2025-02-18 14:50:26,861 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-18 14:50:45,949 - root - INFO - Request: GET /
+2025-02-18 14:50:46,082 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 14:50:46] "GET / HTTP/1.1" 200 -
+2025-02-18 14:50:46,172 - root - INFO - Request: GET /static/css/style.css
+2025-02-18 14:50:46,182 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-18 14:50:46,186 - root - INFO - Request: GET /static/js/chat.js
+2025-02-18 14:50:46,471 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 14:50:46] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-18 14:50:46,499 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 14:50:46] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-18 14:50:46,499 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 14:50:46] "GET /static/images/sample-product.jpg HTTP/1.1" 200 -
+2025-02-18 14:51:30,331 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-18 14:51:30,338 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 14:51:30] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2025-02-18 15:37:57,025 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\app\\routes\\chat.py', reloading
+2025-02-18 15:37:57,611 - werkzeug - INFO -  * Restarting with stat
+2025-02-18 21:09:30,743 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-18 21:09:30,744 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-18 21:09:30,744 - werkzeug - INFO -  * Restarting with stat
+2025-02-18 21:09:32,458 - werkzeug - WARNING -  * Debugger is active!
+2025-02-18 21:09:32,483 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-18 21:09:49,298 - root - INFO - Request: GET /
+2025-02-18 21:09:49,366 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:09:49] "GET / HTTP/1.1" 200 -
+2025-02-18 21:09:49,449 - root - INFO - Request: GET /static/css/style.css
+2025-02-18 21:09:49,456 - root - INFO - Request: GET /static/js/chat.js
+2025-02-18 21:09:49,458 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-18 21:09:49,699 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:09:49] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-18 21:09:49,742 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:09:49] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-18 21:09:49,750 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:09:49] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-02-18 21:25:53,806 - root - INFO - Request: GET /
+2025-02-18 21:25:53,830 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:25:53] "GET / HTTP/1.1" 200 -
+2025-02-18 21:26:29,735 - root - INFO - Request: GET /
+2025-02-18 21:26:29,767 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:26:29] "GET / HTTP/1.1" 200 -
+2025-02-18 21:26:29,810 - root - INFO - Request: GET /static/css/style.css
+2025-02-18 21:26:29,812 - root - INFO - Request: GET /static/js/chat.js
+2025-02-18 21:26:29,816 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-18 21:26:29,816 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:26:29] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-18 21:26:29,818 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:26:29] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-18 21:26:29,820 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:26:29] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-02-18 21:31:48,710 - root - INFO - Request: GET /
+2025-02-18 21:31:48,760 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:31:48] "GET / HTTP/1.1" 200 -
+2025-02-18 21:31:48,807 - root - INFO - Request: GET /static/css/style.css
+2025-02-18 21:31:48,811 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:31:48] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-18 21:31:48,823 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-18 21:31:48,826 - root - INFO - Request: GET /static/js/chat.js
+2025-02-18 21:31:48,827 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:31:48] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-02-18 21:31:48,829 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:31:48] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-18 21:32:01,189 - root - INFO - Request: GET /
+2025-02-18 21:32:01,192 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:32:01] "GET / HTTP/1.1" 200 -
+2025-02-18 21:32:01,251 - root - INFO - Request: GET /static/css/style.css
+2025-02-18 21:32:01,254 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:32:01] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-18 21:32:01,264 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-18 21:32:01,266 - root - INFO - Request: GET /static/js/chat.js
+2025-02-18 21:32:01,271 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:32:01] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-02-18 21:32:01,273 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 21:32:01] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-18 22:24:48,480 - root - INFO - Request: GET /
+2025-02-18 22:24:48,640 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:24:48] "GET / HTTP/1.1" 200 -
+2025-02-18 22:24:48,697 - root - INFO - Request: GET /static/css/style.css
+2025-02-18 22:24:48,702 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-18 22:24:48,706 - root - INFO - Request: GET /static/js/chat.js
+2025-02-18 22:24:48,708 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:24:48] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-02-18 22:24:48,719 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:24:48] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-02-18 22:24:48,807 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:24:48] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-18 22:26:05,349 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-18 22:26:05,351 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:26:05] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2025-02-18 22:28:37,409 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-18 22:28:37,410 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-18 22:28:37,410 - werkzeug - INFO -  * Restarting with stat
+2025-02-18 22:28:39,145 - werkzeug - WARNING -  * Debugger is active!
+2025-02-18 22:28:39,151 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-18 22:28:48,970 - root - INFO - Request: GET /
+2025-02-18 22:28:48,979 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:28:48] "GET / HTTP/1.1" 200 -
+2025-02-18 22:28:49,034 - root - INFO - Request: GET /static/css/style.css
+2025-02-18 22:28:49,037 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-18 22:28:49,049 - root - INFO - Request: GET /static/js/chat.js
+2025-02-18 22:28:49,229 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:28:49] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-02-18 22:28:49,235 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:28:49] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-18 22:28:49,241 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:28:49] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-18 22:28:59,095 - root - INFO - Request: GET /
+2025-02-18 22:28:59,096 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:28:59] "GET / HTTP/1.1" 200 -
+2025-02-18 22:28:59,171 - root - INFO - Request: GET /static/css/style.css
+2025-02-18 22:28:59,173 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-18 22:28:59,174 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:28:59] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-18 22:28:59,175 - root - INFO - Request: GET /static/js/chat.js
+2025-02-18 22:28:59,177 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:28:59] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-02-18 22:28:59,178 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:28:59] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-18 22:29:56,905 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-18 22:29:56,907 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:29:56] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2025-02-18 22:32:21,941 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-18 22:32:21,942 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-18 22:32:21,943 - werkzeug - INFO -  * Restarting with stat
+2025-02-18 22:32:23,669 - werkzeug - WARNING -  * Debugger is active!
+2025-02-18 22:32:23,674 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-18 22:32:39,987 - root - INFO - Request: GET /
+2025-02-18 22:32:40,048 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:32:40] "GET / HTTP/1.1" 200 -
+2025-02-18 22:32:40,066 - root - INFO - Request: GET /static/css/style.css
+2025-02-18 22:32:40,068 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-18 22:32:40,071 - root - INFO - Request: GET /static/js/chat.js
+2025-02-18 22:32:40,247 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:32:40] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-02-18 22:32:40,250 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:32:40] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-02-18 22:32:40,263 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:32:40] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-18 22:34:22,521 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-18 22:34:22,523 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 22:34:22] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2025-02-18 22:43:29,603 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\app\\routes\\chat.py', reloading
+2025-02-18 22:43:29,820 - werkzeug - INFO -  * Restarting with stat
+2025-02-18 22:43:31,667 - werkzeug - WARNING -  * Debugger is active!
+2025-02-18 22:43:31,672 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-18 23:01:43,389 - root - INFO - Request: GET /static/css/style.css
+2025-02-18 23:01:43,501 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 23:01:43] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-18 23:06:53,291 - root - INFO - Request: GET /chat
+2025-02-18 23:06:53,292 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 23:06:53] "[31m[1mGET /chat HTTP/1.1[0m" 405 -
+2025-02-18 23:07:20,231 - root - INFO - Request: GET /chat
+2025-02-18 23:07:20,232 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 23:07:20] "[31m[1mGET /chat HTTP/1.1[0m" 405 -
+2025-02-18 23:10:05,543 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-18 23:10:05,546 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 23:10:05] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2025-02-18 23:29:13,433 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\main.py', reloading
+2025-02-18 23:29:13,955 - werkzeug - INFO -  * Restarting with stat
+2025-02-18 23:29:16,129 - werkzeug - WARNING -  * Debugger is active!
+2025-02-18 23:29:16,135 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-18 23:30:56,997 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-18 23:30:56,999 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 23:30:56] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2025-02-18 23:58:01,688 - flask_wtf.csrf - INFO - The CSRF session token is missing.
+2025-02-18 23:58:01,689 - werkzeug - INFO - 127.0.0.1 - - [18/Feb/2025 23:58:01] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2025-02-19 00:24:57,211 - root - INFO - Request: GET /
+2025-02-19 00:24:57,286 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:24:57] "GET / HTTP/1.1" 200 -
+2025-02-19 00:24:57,343 - root - INFO - Request: GET /static/css/style.css
+2025-02-19 00:24:57,344 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-19 00:24:57,349 - root - INFO - Request: GET /static/js/chat.js
+2025-02-19 00:24:57,522 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:24:57] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-02-19 00:24:57,534 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:24:57] "GET /static/images/sample-product.jpg HTTP/1.1" 200 -
+2025-02-19 00:24:57,566 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:24:57] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-19 00:24:57,640 - root - INFO - Request: GET /favicon.ico
+2025-02-19 00:24:57,645 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:24:57] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-19 00:27:13,082 - root - INFO - Request: GET /static/css/style.css
+2025-02-19 00:27:13,086 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:27:13] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-19 00:35:26,168 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-19 00:35:26,168 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-19 00:35:26,169 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 00:35:28,029 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 00:35:28,045 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 00:35:31,893 - root - INFO - Request: GET /
+2025-02-19 00:35:31,904 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:35:31] "GET / HTTP/1.1" 200 -
+2025-02-19 00:35:31,965 - root - INFO - Request: GET /static/css/style.css
+2025-02-19 00:35:31,986 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-19 00:35:31,987 - root - INFO - Request: GET /static/js/chat.js
+2025-02-19 00:35:32,193 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:35:32] "GET /static/images/sample-product.jpg HTTP/1.1" 200 -
+2025-02-19 00:35:32,210 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:35:32] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-02-19 00:35:32,215 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:35:32] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-19 00:35:32,377 - root - INFO - Request: GET /favicon.ico
+2025-02-19 00:35:32,384 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:35:32] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-19 00:35:45,323 - root - INFO - Request: GET /static/css/style.css
+2025-02-19 00:35:45,326 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:35:45] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-19 00:46:03,505 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\main.py', reloading
+2025-02-19 00:46:03,800 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 00:46:05,943 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 00:46:05,949 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 00:46:20,799 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-19 00:46:20,800 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-19 00:46:20,801 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 00:46:22,474 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 00:46:22,479 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 00:46:29,765 - root - INFO - Request: GET /
+2025-02-19 00:46:29,851 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:46:29] "GET / HTTP/1.1" 200 -
+2025-02-19 00:46:29,918 - root - INFO - Request: GET /static/css/style.css
+2025-02-19 00:46:29,941 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-19 00:46:29,947 - root - INFO - Request: GET /static/js/chat.js
+2025-02-19 00:46:30,192 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:46:30] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-02-19 00:46:30,205 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:46:30] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-02-19 00:46:30,251 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:46:30] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-19 00:47:47,625 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-19 00:47:47,628 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:47:47] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2025-02-19 00:49:28,464 - root - INFO - Request: GET /static/css/style.css
+2025-02-19 00:49:28,469 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 00:49:28] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-19 00:58:11,450 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\app\\routes\\calendar.py', reloading
+2025-02-19 00:58:11,731 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 00:58:14,655 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 00:58:14,664 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 01:00:03,526 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\app\\__init__.py', reloading
+2025-02-19 01:00:03,769 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 13:20:43,464 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-19 13:20:43,466 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-19 13:20:43,467 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 13:20:45,876 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 13:20:45,892 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 13:22:21,279 - root - INFO - Request: GET /
+2025-02-19 13:22:21,293 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 13:22:21] "GET / HTTP/1.1" 200 -
+2025-02-19 13:22:21,430 - root - INFO - Request: GET /static/css/style.css
+2025-02-19 13:22:21,529 - root - INFO - Request: GET /static/js/chat.js
+2025-02-19 13:22:21,544 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-19 13:22:21,686 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 13:22:21] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-02-19 13:22:21,751 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 13:22:21] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-19 13:22:21,782 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 13:22:21] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-02-19 13:22:51,332 - root - INFO - Request: POST /book
+2025-02-19 13:22:51,333 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 13:22:51] "[33mPOST /book HTTP/1.1[0m" 404 -
+2025-02-19 13:24:33,615 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-19 13:24:33,616 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 13:24:33] "[31m[1mPOST /chat HTTP/1.1[0m" 400 -
+2025-02-19 13:27:27,833 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\app\\__init__.py', reloading
+2025-02-19 13:27:28,315 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 13:27:30,614 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 13:27:30,622 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 13:43:02,969 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\app\\routes\\chat.py', reloading
+2025-02-19 13:43:03,486 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 13:43:06,064 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 13:43:06,071 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 13:43:27,896 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\app\\routes\\calendar.py', reloading
+2025-02-19 13:43:28,299 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 13:43:30,682 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 13:43:30,687 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 13:46:33,678 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\config.py', reloading
+2025-02-19 13:46:34,226 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 13:46:36,605 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 13:46:36,610 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 13:47:08,432 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-19 13:47:08,432 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-19 13:47:08,433 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 13:47:10,827 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 13:47:10,837 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 13:47:47,970 - root - INFO - Request: GET /
+2025-02-19 13:47:47,979 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 13:47:47] "GET / HTTP/1.1" 200 -
+2025-02-19 13:47:48,065 - root - INFO - Request: GET /static/css/style.css
+2025-02-19 13:47:48,068 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-19 13:47:48,081 - root - INFO - Request: GET /static/js/chat.js
+2025-02-19 13:47:48,308 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 13:47:48] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-02-19 13:47:48,311 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 13:47:48] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-19 13:47:48,457 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 13:47:48] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-19 13:47:50,240 - root - INFO - Request: GET /
+2025-02-19 13:47:50,243 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 13:47:50] "GET / HTTP/1.1" 200 -
+2025-02-19 13:47:50,304 - root - INFO - Request: GET /static/css/style.css
+2025-02-19 13:47:50,307 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 13:47:50] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-02-19 13:47:50,336 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-19 13:47:50,343 - root - INFO - Request: GET /static/js/chat.js
+2025-02-19 13:47:50,343 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 13:47:50] "GET /static/images/sample-product.jpg HTTP/1.1" 200 -
+2025-02-19 13:47:50,351 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 13:47:50] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-19 13:47:50,489 - root - INFO - Request: GET /favicon.ico
+2025-02-19 13:47:50,491 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 13:47:50] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-19 13:48:05,418 - root - INFO - Request: POST /book
+2025-02-19 13:48:05,419 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 13:48:05] "[33mPOST /book HTTP/1.1[0m" 404 -
+2025-02-19 14:23:57,726 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-19 14:23:57,730 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-19 14:23:57,730 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 14:23:59,813 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 14:23:59,835 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 14:24:20,207 - root - INFO - Request: POST /book
+2025-02-19 14:24:20,209 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 14:24:20] "[33mPOST /book HTTP/1.1[0m" 404 -
+2025-02-19 14:44:39,527 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\app\\routes\\calendar.py', reloading
+2025-02-19 14:44:39,829 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 15:08:42,664 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-19 15:08:42,665 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-19 15:08:42,665 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 15:08:44,744 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 15:08:44,760 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 15:08:47,380 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-19 15:08:47,382 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 15:08:47] "[31m[1mPOST /book HTTP/1.1[0m" 400 -
+2025-02-19 15:09:05,026 - root - INFO - Request: GET /
+2025-02-19 15:09:05,041 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 15:09:05] "GET / HTTP/1.1" 200 -
+2025-02-19 15:09:05,106 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-19 15:09:05,108 - root - INFO - Request: GET /static/css/style.css
+2025-02-19 15:09:05,128 - root - INFO - Request: GET /static/js/chat.js
+2025-02-19 15:09:05,390 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 15:09:05] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-19 15:09:05,447 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 15:09:05] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-19 15:09:05,449 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 15:09:05] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-02-19 15:09:05,761 - root - INFO - Request: GET /
+2025-02-19 15:09:05,773 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 15:09:05] "GET / HTTP/1.1" 200 -
+2025-02-19 15:09:05,883 - root - INFO - Request: GET /static/css/style.css
+2025-02-19 15:09:05,885 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 15:09:05] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-19 15:09:05,961 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-19 15:09:06,033 - root - INFO - Request: GET /static/js/chat.js
+2025-02-19 15:09:06,035 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 15:09:06] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-02-19 15:09:06,089 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 15:09:06] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-02-19 15:10:51,080 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-19 15:10:51,082 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 15:10:51] "[31m[1mPOST /book HTTP/1.1[0m" 400 -
+2025-02-19 17:38:52,311 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\app\\__init__.py', reloading
+2025-02-19 17:38:53,050 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 17:38:55,446 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 17:38:55,452 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 17:39:11,149 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\app\\routes\\calendar.py', reloading
+2025-02-19 17:39:11,397 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 17:39:13,768 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 17:39:13,775 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 17:39:27,282 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\main.py', reloading
+2025-02-19 17:39:27,539 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 17:39:29,699 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 17:39:29,706 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 17:41:35,676 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-19 17:41:35,678 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-19 17:41:35,679 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 17:41:37,469 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 17:41:37,475 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 17:41:45,944 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-19 17:41:45,945 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 17:41:45] "[31m[1mPOST /book HTTP/1.1[0m" 400 -
+2025-02-19 17:48:14,955 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\app\\__init__.py', reloading
+2025-02-19 17:48:15,240 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 17:48:17,063 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 17:48:17,069 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 17:49:44,874 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\app\\routes\\calendar.py', reloading
+2025-02-19 17:49:45,119 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 17:49:47,143 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 17:49:47,151 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 17:50:00,906 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\main.py', reloading
+2025-02-19 17:50:01,123 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 17:50:03,230 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 17:50:03,235 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-19 17:50:31,713 - flask_wtf.csrf - INFO - The CSRF token is missing.
+2025-02-19 17:50:31,736 - werkzeug - INFO - 127.0.0.1 - - [19/Feb/2025 17:50:31] "[31m[1mPOST /book HTTP/1.1[0m" 400 -
+2025-02-19 23:59:46,503 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\config.py', reloading
+2025-02-19 23:59:46,782 - werkzeug - INFO -  * Restarting with stat
+2025-02-19 23:59:50,489 - werkzeug - WARNING -  * Debugger is active!
+2025-02-19 23:59:50,495 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-20 00:10:58,930 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\app\\routes\\book.py', reloading
+2025-02-20 00:10:59,305 - werkzeug - INFO -  * Restarting with stat
+2025-02-20 00:11:02,057 - werkzeug - WARNING -  * Debugger is active!
+2025-02-20 00:11:02,066 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-20 00:11:22,406 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-20 00:11:22,407 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-20 00:11:22,408 - werkzeug - INFO -  * Restarting with stat
+2025-02-20 00:11:24,920 - werkzeug - WARNING -  * Debugger is active!
+2025-02-20 00:11:24,928 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-20 00:49:00,636 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\main.py', reloading
+2025-02-20 00:49:01,013 - werkzeug - INFO -  * Restarting with stat
+2025-02-20 00:49:04,330 - werkzeug - WARNING -  * Debugger is active!
+2025-02-20 00:49:04,337 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-20 01:07:48,967 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-20 01:07:48,968 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-02-20 01:07:48,968 - werkzeug - INFO -  * Restarting with stat
+2025-02-20 01:07:50,777 - werkzeug - WARNING -  * Debugger is active!
+2025-02-20 01:07:50,790 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-02-20 01:08:53,420 - root - INFO - Request: GET /
+2025-02-20 01:08:53,471 - werkzeug - INFO - 127.0.0.1 - - [20/Feb/2025 01:08:53] "GET / HTTP/1.1" 200 -
+2025-02-20 01:08:53,625 - root - INFO - Request: GET /static/css/style.css
+2025-02-20 01:08:53,627 - root - INFO - Request: GET /static/js/chat.js
+2025-02-20 01:08:53,631 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-02-20 01:08:53,909 - werkzeug - INFO - 127.0.0.1 - - [20/Feb/2025 01:08:53] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-02-20 01:08:53,935 - werkzeug - INFO - 127.0.0.1 - - [20/Feb/2025 01:08:53] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-02-20 01:08:53,944 - werkzeug - INFO - 127.0.0.1 - - [20/Feb/2025 01:08:53] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-02-20 01:09:14,562 - root - INFO - Request: POST /book
+2025-02-20 01:09:18,086 - werkzeug - INFO - 127.0.0.1 - - [20/Feb/2025 01:09:18] "POST /book HTTP/1.1" 200 -

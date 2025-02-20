@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import sqlite3
 import os
 
@@ -22,7 +21,7 @@ conn.commit()
 conn.close()
 
 print("Данные успешно загружены в базу знаний.")
-=======
+
 import sqlite3
 import os
 
@@ -46,4 +45,3 @@ conn.commit()
 conn.close()
 
 print("Данные успешно загружены в базу знаний.")
->>>>>>> 1a630d3 (Добавлен код сайта)
