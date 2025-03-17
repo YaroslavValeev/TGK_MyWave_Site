@@ -7,10 +7,11 @@ from googleapiclient.http import MediaIoBaseUpload
 
 logger = logging.getLogger(__name__)
 
-def init_google_services():
+def init_google_services(service_account_file=None):
     try:
-        # Проверяем, есть ли путь в конфигурации приложения
-        service_account_file = current_app.config.get("GOOGLE_SERVICE_ACCOUNT_FILE")
+        # Проверяем, передан ли путь через аргумент, иначе берём из Flask-конфигурации
+        if not service_account_file:
+            service_account_file = current_app.config.get("GOOGLE_SERVICE_ACCOUNT_FILE")
 
         if not service_account_file or not os.path.exists(service_account_file):
             raise FileNotFoundError(f"Файл сервисного аккаунта не найден: {service_account_file}")
