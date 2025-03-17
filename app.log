@@ -744,3 +744,79 @@
 2025-02-20 01:08:53,944 - werkzeug - INFO - 127.0.0.1 - - [20/Feb/2025 01:08:53] "GET /static/js/chat.js HTTP/1.1" 200 -
 2025-02-20 01:09:14,562 - root - INFO - Request: POST /book
 2025-02-20 01:09:18,086 - werkzeug - INFO - 127.0.0.1 - - [20/Feb/2025 01:09:18] "POST /book HTTP/1.1" 200 -
+2025-03-12 11:48:17,399 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-12 11:48:17,400 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-12 11:48:17,489 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-12 11:48:17,490 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-12 11:48:17,490 - werkzeug - INFO -  * Restarting with stat
+2025-03-12 11:48:19,261 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-12 11:48:19,262 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-12 11:48:19,284 - werkzeug - WARNING -  * Debugger is active!
+2025-03-12 11:48:19,297 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-03-12 11:49:11,313 - root - INFO - Request: GET /
+2025-03-12 11:49:11,327 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 11:49:11] "GET / HTTP/1.1" 200 -
+2025-03-12 11:49:11,408 - root - INFO - Request: GET /static/css/style.css
+2025-03-12 11:49:11,414 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-03-12 11:49:11,456 - root - INFO - Request: GET /static/js/chat.js
+2025-03-12 11:49:11,646 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 11:49:11] "GET /static/images/sample-product.jpg HTTP/1.1" 200 -
+2025-03-12 11:49:11,667 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 11:49:11] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-03-12 11:49:11,683 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 11:49:11] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-03-12 11:49:11,804 - root - INFO - Request: GET /favicon.ico
+2025-03-12 11:49:11,805 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 11:49:11] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-03-12 11:50:01,253 - root - INFO - Request: POST /chat
+2025-03-12 11:50:09,237 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 11:50:09] "POST /chat HTTP/1.1" 200 -
+2025-03-12 11:50:56,434 - root - INFO - Request: POST /book
+2025-03-12 11:51:02,859 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 11:51:02] "POST /book HTTP/1.1" 200 -
+2025-03-12 12:04:51,384 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\app\\routes\\calendar.py', reloading
+2025-03-12 12:04:51,614 - werkzeug - INFO -  * Restarting with stat
+2025-03-12 12:04:54,024 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-12 12:04:54,027 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-12 12:04:54,048 - werkzeug - WARNING -  * Debugger is active!
+2025-03-12 12:04:54,053 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-03-12 12:05:08,219 - werkzeug - WARNING -  * Debugger is active!
+2025-03-12 12:05:08,220 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-03-12 12:05:08,467 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-12 12:05:08,467 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-12 12:05:08,468 - werkzeug - INFO -  * Restarting with stat
+2025-03-12 12:05:10,441 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-12 12:05:10,442 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-12 12:05:10,464 - werkzeug - WARNING -  * Debugger is active!
+2025-03-12 12:05:10,469 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-03-12 12:06:11,152 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-12 12:06:11,152 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-12 12:06:11,187 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-12 12:06:11,187 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-12 12:06:11,188 - werkzeug - INFO -  * Restarting with stat
+2025-03-12 12:06:12,941 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-12 12:06:12,942 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-12 12:06:12,962 - werkzeug - WARNING -  * Debugger is active!
+2025-03-12 12:06:12,967 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-03-12 12:53:40,869 - root - INFO - Request: GET /
+2025-03-12 12:53:40,913 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 12:53:40] "GET / HTTP/1.1" 200 -
+2025-03-12 12:53:40,945 - root - INFO - Request: GET /static/css/style.css
+2025-03-12 12:53:40,947 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-03-12 12:53:40,961 - root - INFO - Request: GET /static/js/chat.js
+2025-03-12 12:53:41,152 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 12:53:41] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-12 12:53:41,173 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 12:53:41] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-03-12 12:53:41,207 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 12:53:41] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-03-12 15:18:18,237 - root - INFO - Request: GET /available_slots
+2025-03-12 15:18:18,252 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 15:18:18] "[33mGET /available_slots HTTP/1.1[0m" 404 -
+2025-03-12 15:31:46,335 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Lenovo\\Desktop\\Site_MyWave\\app\\routes\\calendar.py', reloading
+2025-03-12 15:31:47,042 - werkzeug - INFO -  * Restarting with stat
+2025-03-12 15:31:50,335 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-12 15:31:50,336 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-12 15:31:50,383 - werkzeug - WARNING -  * Debugger is active!
+2025-03-12 15:31:50,390 - werkzeug - INFO -  * Debugger PIN: 143-751-704
+2025-03-12 15:32:03,248 - root - INFO - Request: GET /available_slots
+2025-03-12 15:32:11,217 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 15:32:11] "GET /available_slots HTTP/1.1" 200 -
+2025-03-12 15:32:25,182 - root - INFO - Request: GET /
+2025-03-12 15:32:25,194 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 15:32:25] "GET / HTTP/1.1" 200 -
+2025-03-12 15:32:25,248 - root - INFO - Request: GET /static/css/style.css
+2025-03-12 15:32:25,252 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-03-12 15:32:25,254 - root - INFO - Request: GET /static/js/chat.js
+2025-03-12 15:32:25,486 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 15:32:25] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-12 15:32:25,496 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 15:32:25] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-03-12 15:32:25,498 - werkzeug - INFO - 127.0.0.1 - - [12/Mar/2025 15:32:25] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
