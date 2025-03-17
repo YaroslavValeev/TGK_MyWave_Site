@@ -744,3 +744,96 @@
 2025-02-20 01:08:53,944 - werkzeug - INFO - 127.0.0.1 - - [20/Feb/2025 01:08:53] "GET /static/js/chat.js HTTP/1.1" 200 -
 2025-02-20 01:09:14,562 - root - INFO - Request: POST /book
 2025-02-20 01:09:18,086 - werkzeug - INFO - 127.0.0.1 - - [20/Feb/2025 01:09:18] "POST /book HTTP/1.1" 200 -
+2025-03-17 13:34:10,885 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 13:34:10,889 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 13:34:10,895 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 13:34:10,898 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 13:45:07,955 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 13:45:07,957 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 13:45:07,960 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 13:45:07,961 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 13:45:07,964 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 13:45:07,964 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 13:45:07,965 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 13:45:07,965 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("user")
+2025-03-17 13:45:07,965 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 13:45:07,966 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 13:45:07,966 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 13:45:07,966 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("analytics")
+2025-03-17 13:45:07,966 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 13:45:07,967 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE user (
+	id INTEGER NOT NULL, 
+	username VARCHAR(50) NOT NULL, 
+	password_hash VARCHAR(128) NOT NULL, 
+	is_admin BOOLEAN, 
+	PRIMARY KEY (id), 
+	UNIQUE (username)
+)
+
+
+2025-03-17 13:45:07,968 - sqlalchemy.engine.Engine - INFO - [no key 0.00031s] ()
+2025-03-17 13:45:07,972 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE analytics (
+	id INTEGER NOT NULL, 
+	metric VARCHAR(50) NOT NULL, 
+	value INTEGER NOT NULL, 
+	PRIMARY KEY (id)
+)
+
+
+2025-03-17 13:45:07,972 - sqlalchemy.engine.Engine - INFO - [no key 0.00019s] ()
+2025-03-17 13:45:07,977 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 13:45:07,991 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-17 13:45:07,991 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-17 13:45:07,991 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 13:45:09,334 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 13:45:09,342 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 13:45:09,347 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 13:45:09,349 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 13:45:09,352 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 13:45:09,353 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 13:45:09,353 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 13:45:09,354 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 13:45:09,358 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 13:45:09,359 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 13:45:09,369 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 13:45:09,406 - werkzeug - INFO -  * Debugger PIN: 143-701-413
+2025-03-17 13:45:38,019 - root - INFO - Request: GET /
+2025-03-17 13:45:38,025 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 13:45:38] "GET / HTTP/1.1" 200 -
+2025-03-17 13:45:38,691 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-03-17 13:45:38,713 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 13:45:38] "GET /static/images/sample-product.jpg HTTP/1.1" 200 -
+2025-03-17 13:45:38,715 - root - INFO - Request: GET /static/css/style.css
+2025-03-17 13:45:38,717 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 13:45:38] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-03-17 13:45:38,748 - root - INFO - Request: GET /static/js/chat.js
+2025-03-17 13:45:38,749 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 13:45:38] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-03-17 13:45:39,777 - root - INFO - Request: GET /favicon.ico
+2025-03-17 13:45:39,778 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 13:45:39] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-03-17 13:46:38,628 - root - INFO - Request: POST /chat
+2025-03-17 13:46:38,629 - app.services.openai - ERROR - OpenAI error: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-03-17 13:46:38,629 - main - ERROR - Chat error: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-03-17 13:46:38,630 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 13:46:38] "[35m[1mPOST /chat HTTP/1.1[0m" 500 -
+2025-03-17 13:48:12,499 - root - INFO - Request: GET /static/css/style.css
+2025-03-17 13:48:12,501 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 13:48:12] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-17 13:48:28,476 - root - INFO - Request: POST /book
+2025-03-17 13:48:28,520 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 13:48:29,529 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 13:48:29] "POST /book HTTP/1.1" 200 -

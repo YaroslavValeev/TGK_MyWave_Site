@@ -28,7 +28,6 @@ app.config.from_object(Config)
 app.config.from_object(DevelopmentConfig)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-db = SQLAlchemy(app)
 
 app.config.from_mapping(
     SECRET_KEY=os.getenv("SECRET_KEY", "dev"),
@@ -44,14 +43,10 @@ app.config.from_mapping(
 if not os.path.exists(app.config["GOOGLE_SERVICE_ACCOUNT_FILE"]):
     raise FileNotFoundError(f"Файл Google Credentials не найден: {app.config['GOOGLE_SERVICE_ACCOUNT_FILE']}")
 
-# Инициализация Google сервисов (передаём путь к файлу учетных данных)
-google_services = init_google_services(app.config["GOOGLE_SERVICE_ACCOUNT_FILE"])
-app.drive_service = google_services[0]
-app.sheet_service = google_services[1]
-
+# Регистрируем SQLAlchemy на приложении
 db.init_app(app)
+
 Talisman(app, force_https=True)
-CSRFProtect(app)
 metrics = PrometheusMetrics(app)
 admin = Admin(app, name='MyWave Admin', template_mode='bootstrap3')
 
@@ -63,14 +58,6 @@ csp = {
     'img-src': ["'self'", "data:", "https://yastatic.net", "https://fonts.gstatic.com"]
 }
 Talisman(app, content_security_policy=csp)
-
-try:
-    drive_service, sheet_service = init_google_services(app.config["GOOGLE_SERVICE_ACCOUNT_FILE"])
-    app.drive_service = drive_service
-    app.sheet_service = sheet_service
-except Exception as e:
-    logging.critical(f"Google API недоступен: {str(e)}")
-    exit(1)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -98,14 +85,14 @@ app.register_blueprint(calendar_bp)
 app.register_blueprint(book_bp)
 
 with app.app_context():
-    drive_service, sheet_service, calendar_service = init_google_services()
-    if not drive_service:
-        app.logger.critical("🚨 Google Drive API не инициализирован!")
-    if not sheet_service:
-        app.logger.critical("🚨 Google Sheets API не инициализирован!")
-    if not calendar_service:
-        app.logger.critical("🚨 Google Calendar API не инициализирован!")
-
+    try:
+        drive_service, sheet_service, calendar_service = init_google_services()
+        app.drive_service = drive_service
+        app.sheet_service = sheet_service
+        app.calendar_service = calendar_service
+    except Exception as e:
+        app.logger.critical(f"Google API недоступен: {str(e)}")
+        exit(1)
 
 # Отключаем CSRF для blueprint календаря
 csrf.exempt(calendar_bp)
@@ -150,4 +137,3 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
     socketio.run(app, debug=True)
-    app.run(debug=True)
