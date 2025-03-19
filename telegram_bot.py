@@ -19,8 +19,8 @@ def handle_message(update, context):
 
 def get_gpt_response(user_message):
     """Получаем ответ от GPT (можно подключить ваш сервер для этого)"""
-    response = openai.ChatCompletion.create(
-        model="gpt-4",  # Можно использовать вашу модель
+    response = openai.chat.completions.create(  # изменено с ChatCompletion.create на chat.completions.create
+        model="gpt-4",
         messages=[{"role": "system", "content": "Ты эксперт по вейксерфингу."},
                   {"role": "user", "content": user_message}]
     )

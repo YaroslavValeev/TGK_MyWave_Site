@@ -1,5 +1,6 @@
 import os
 import logging
+import warnings
 from flask import Flask, render_template, request, jsonify, current_app, send_from_directory
 from flask_login import LoginManager
 from flask_sqlalchemy.extension import SQLAlchemy
@@ -15,11 +16,10 @@ from app.database import db
 from app.routes.auth import bp as auth_bp
 from app.routes.chat import bp as chat_bp
 from app.routes.files import bp as files_bp
-from app.routes.calendar import calendar_bp
+from app.routes.calendar_routes import calendar_bp
 from app.services.google import init_google_services
-from app.utils import notify_admin
+from app.utils import notify_admin, process_chat_message  # Import the missing function
 from app.database.models import User, Analytics
-from app.routes.book import bp as book_bp
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -43,6 +43,9 @@ app.config.from_mapping(
 if not os.path.exists(app.config["GOOGLE_SERVICE_ACCOUNT_FILE"]):
     raise FileNotFoundError(f"Файл Google Credentials не найден: {app.config['GOOGLE_SERVICE_ACCOUNT_FILE']}")
 
+# Отключаем предупреждение о file_cache
+warnings.filterwarnings('ignore', message='file_cache is only supported with oauth2client<4.0.0')
+
 # Регистрация SQLAlchemy на приложении
 db.init_app(app)
 
@@ -50,7 +53,7 @@ db.init_app(app)
 # Инициализируем Talisman с обновленной настройкой Content Security Policy (CSP)
 csp = {
     'default-src': ["'self'"],
-    'style-src': ["'self'", "https://fonts.googleapis.com"],
+    'style-src': ["'self'", "https://fonts.googleapis.com", "'unsafe-inline'"],
     'font-src': ["'self'", "https://fonts.gstatic.com"],
     'script-src': ["'self'", "'unsafe-inline'", "https://code.jquery.com"]
 }
@@ -81,8 +84,7 @@ def handle_message(data):
 app.register_blueprint(auth_bp)
 app.register_blueprint(chat_bp)
 app.register_blueprint(files_bp)
-app.register_blueprint(calendar_bp)
-app.register_blueprint(book_bp)
+app.register_blueprint(calendar_bp, url_prefix="/calendar")  # убедитесь, что этот префикс указан
 
 with app.app_context():
     try:
@@ -111,15 +113,18 @@ def index():
 
 @app.route('/chat', methods=['POST'])
 def chat_handler():
-    data = request.get_json()
-    if not data or "message" not in data:
-        return jsonify({"error": "Сообщение обязательно"}), 400
     try:
-        reply = f"Вы сказали: {data['message']}"
-        return jsonify({"reply": reply})
+        data = request.get_json()
+        if not data or "message" not in data:
+            return jsonify({"error": "Сообщение обязательно"}), 400
+
+        message = data.get("message", "")
+        # Убедитесь, что функция process_chat_message определена и корректно работает
+        response = process_chat_message(message)  # Ensure this function is defined or imported
+        return jsonify({"reply": response})
     except Exception as e:
-        logging.error(f"Chat error: {str(e)}")
-        return jsonify({"error": "Ошибка сервера"}), 500
+        logging.exception("Ошибка при обработке запроса /chat")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/upload', methods=['POST'])
 def upload():
@@ -137,7 +142,37 @@ def upload():
 def favicon():
     return send_from_directory("static/images", "favicon.ico", mimetype="image/vnd.microsoft.icon")
 
-if __name__ == "__main__":
+@app.errorhandler(404)
+def not_found(e):
+    logging.error(f"Ошибка 404. Запрошенный URL: {request.path}")  # Добавлен лог ошибки
+    return jsonify({"error": "Resource not found"}), 404
+
+@app.errorhandler(405)
+def method_not_allowed(e):
+    logging.error(f"Ошибка 405. Запрошенный URL: {request.path}")  # Добавлен лог ошибки
+    return jsonify({"error": "Method not allowed"}), 405
+
+# Ensure tables are created
+def init_db():
     with app.app_context():
-        db.create_all()
-    socketio.run(app, debug=True)
+        try:
+            # Create all tables
+            db.create_all()
+            logging.info("✅ Database tables created successfully")
+        except Exception as e:
+            logging.error(f"❌ Error creating database tables: {e}")
+            raise
+
+# Initialize before running
+if __name__ == "__main__":
+    init_db()
+    # Use production server if not in debug
+    if app.debug:
+        socketio.run(app, debug=True)
+    else:
+        # Production configuration
+        socketio.run(app, 
+                    host="0.0.0.0", 
+                    port=5000,
+                    debug=False,
+                    use_reloader=False)

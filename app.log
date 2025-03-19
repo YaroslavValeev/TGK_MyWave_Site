@@ -879,3 +879,827 @@ A detailed migration guide is available here: https://github.com/openai/openai-p
 2025-03-17 14:11:35,673 - sqlalchemy.engine.Engine - INFO - COMMIT
 2025-03-17 14:11:35,678 - werkzeug - WARNING -  * Debugger is active!
 2025-03-17 14:11:35,679 - werkzeug - INFO -  * Debugger PIN: 143-701-413
+2025-03-17 14:18:01,987 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/websocket_handler.py', reloading
+2025-03-17 14:18:02,179 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 14:18:04,492 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:18:04,503 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:18:04,508 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:18:04,510 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 14:18:04,517 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 14:18:04,518 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 14:18:04,518 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:18:04,521 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 14:18:04,521 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:18:04,522 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 14:18:04,541 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 14:18:04,544 - werkzeug - INFO -  * Debugger PIN: 143-701-413
+2025-03-17 14:19:23,064 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/main.py', reloading
+2025-03-17 14:19:23,264 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 14:19:24,624 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:19:24,627 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:19:24,631 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:19:24,632 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 14:19:24,636 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 14:19:24,636 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 14:19:24,636 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:19:24,637 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 14:19:24,637 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:19:24,638 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 14:19:24,645 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 14:19:24,646 - werkzeug - INFO -  * Debugger PIN: 143-701-413
+2025-03-17 14:19:30,023 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/main.py', reloading
+2025-03-17 14:19:30,197 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 14:19:31,350 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:19:31,352 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:19:31,354 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:19:31,355 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 14:19:31,358 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 14:19:31,358 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 14:19:31,358 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:19:31,359 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 14:19:31,359 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:19:31,359 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 14:19:31,365 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 14:19:31,365 - werkzeug - INFO -  * Debugger PIN: 143-701-413
+2025-03-17 14:20:47,802 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/main.py', reloading
+2025-03-17 14:20:48,060 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 14:20:49,359 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:20:49,361 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:20:49,363 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:20:49,365 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 14:20:49,367 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 14:20:49,367 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 14:20:49,368 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:20:49,368 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 14:20:49,368 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:20:49,369 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 14:20:49,375 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 14:20:49,375 - werkzeug - INFO -  * Debugger PIN: 143-701-413
+2025-03-17 14:24:11,749 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/main.py', reloading
+2025-03-17 14:24:12,003 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 14:24:13,250 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:24:13,252 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:24:13,255 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:24:13,256 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 14:24:13,258 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 14:24:13,258 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 14:24:13,258 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:24:13,259 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 14:24:13,259 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:24:13,260 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 14:24:13,267 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 14:24:13,268 - werkzeug - INFO -  * Debugger PIN: 143-701-413
+2025-03-17 14:24:27,125 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:24:27,127 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:24:27,129 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:24:27,130 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 14:24:27,133 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 14:24:27,133 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 14:24:27,133 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:24:27,134 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 14:24:27,134 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:24:27,134 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 14:24:27,142 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-17 14:24:27,142 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-17 14:24:27,142 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 14:24:28,385 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:24:28,387 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:24:28,389 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:24:28,391 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 14:24:28,393 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 14:24:28,393 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 14:24:28,393 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:24:28,394 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 14:24:28,394 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:24:28,394 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 14:24:28,400 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 14:24:28,400 - werkzeug - INFO -  * Debugger PIN: 143-701-413
+2025-03-17 14:24:37,831 - root - INFO - Request: GET /
+2025-03-17 14:24:37,836 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 14:24:37] "GET / HTTP/1.1" 200 -
+2025-03-17 14:24:38,321 - root - INFO - Request: GET /static/css/style.css
+2025-03-17 14:24:38,323 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 14:24:38] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-03-17 14:24:38,377 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-03-17 14:24:38,379 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 14:24:38] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-03-17 14:24:38,384 - root - INFO - Request: GET /static/js/chat.js
+2025-03-17 14:24:38,385 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 14:24:38] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-03-17 21:01:47,217 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:01:47,223 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:01:47,232 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:01:47,235 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 21:01:47,239 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 21:01:47,239 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 21:01:47,240 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 21:01:47,240 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 21:01:47,240 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 21:01:47,241 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 21:01:47,254 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-17 21:01:47,254 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-17 21:01:47,254 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 21:01:48,484 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:01:48,486 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:01:48,488 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:01:48,489 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 21:01:48,491 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 21:01:48,492 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 21:01:48,492 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 21:01:48,493 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 21:01:48,493 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 21:01:48,494 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 21:01:48,500 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 21:01:48,510 - werkzeug - INFO -  * Debugger PIN: 120-062-435
+2025-03-17 21:01:52,653 - root - INFO - Request: GET /
+2025-03-17 21:01:52,666 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 21:01:52] "GET / HTTP/1.1" 200 -
+2025-03-17 21:01:52,954 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-03-17 21:01:52,975 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 21:01:52] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-03-17 21:01:53,173 - root - INFO - Request: GET /static/css/style.css
+2025-03-17 21:01:53,185 - root - INFO - Request: GET /static/js/chat.js
+2025-03-17 21:01:53,186 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 21:01:53] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-03-17 21:01:53,187 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 21:01:53] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-03-17 21:01:53,927 - root - INFO - Request: GET /favicon.ico
+2025-03-17 21:01:53,929 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 21:01:53] "GET /favicon.ico HTTP/1.1" 200 -
+2025-03-17 21:01:56,602 - root - INFO - Request: GET /static/css/style.css
+2025-03-17 21:01:56,603 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 21:01:56] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-17 21:03:58,488 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/app/services/openai.py', reloading
+2025-03-17 21:03:58,641 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 21:03:59,959 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:03:59,962 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:03:59,964 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:03:59,965 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 21:03:59,967 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 21:03:59,968 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 21:03:59,968 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 21:03:59,968 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 21:03:59,968 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 21:03:59,969 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 21:03:59,974 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 21:03:59,975 - werkzeug - INFO -  * Debugger PIN: 120-062-435
+2025-03-17 21:10:49,156 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/main.py', reloading
+2025-03-17 21:10:49,372 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 21:10:50,647 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:10:50,649 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:10:50,651 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:10:50,653 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 21:10:50,655 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 21:10:50,655 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 21:10:50,655 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 21:10:50,656 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 21:10:50,656 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 21:10:50,657 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 21:10:50,663 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 21:10:50,663 - werkzeug - INFO -  * Debugger PIN: 120-062-435
+2025-03-17 21:10:51,510 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/main.py', reloading
+2025-03-17 21:10:51,694 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 21:10:52,933 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:10:52,936 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:10:52,940 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:10:52,942 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 21:10:52,945 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 21:10:52,945 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 21:10:52,945 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 21:10:52,946 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 21:10:52,947 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 21:10:52,948 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 21:10:52,956 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 21:10:52,956 - werkzeug - INFO -  * Debugger PIN: 120-062-435
+2025-03-17 21:13:54,145 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/app.py', reloading
+2025-03-17 21:13:54,316 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 21:13:55,519 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:13:55,521 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:13:55,524 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:13:55,525 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 21:13:55,527 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 21:13:55,528 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 21:13:55,528 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 21:13:55,529 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 21:13:55,529 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 21:13:55,529 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 21:13:55,535 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 21:13:55,536 - werkzeug - INFO -  * Debugger PIN: 120-062-435
+2025-03-17 21:29:19,322 - root - INFO - Request: GET /
+2025-03-17 21:29:19,326 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 21:29:19] "GET / HTTP/1.1" 200 -
+2025-03-17 21:29:19,903 - root - INFO - Request: GET /static/js/chat.js
+2025-03-17 21:29:19,906 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 21:29:19] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-03-17 21:29:19,917 - root - INFO - Request: GET /static/css/style.css
+2025-03-17 21:29:19,917 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 21:29:19] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-17 21:29:19,959 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-03-17 21:29:19,960 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 21:29:19] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-03-17 21:29:20,412 - root - INFO - Request: GET /favicon.ico
+2025-03-17 21:29:20,413 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 21:29:20] "[36mGET /favicon.ico HTTP/1.1[0m" 304 -
+2025-03-17 21:41:46,168 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/app/routes/calendar_routes.py', reloading
+2025-03-17 21:41:46,323 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 21:41:47,506 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:41:47,508 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:41:47,511 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 21:41:47,512 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 21:41:47,514 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 21:41:47,514 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 21:41:47,514 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 21:41:47,515 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 21:41:47,515 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 21:41:47,516 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 21:41:47,522 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 21:41:47,522 - werkzeug - INFO -  * Debugger PIN: 120-062-435
+2025-03-17 21:45:56,062 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/app/routes/calendar_routes.py', reloading
+2025-03-17 21:45:56,229 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 22:05:45,770 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 22:05:45,772 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 22:05:45,775 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 22:05:45,776 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 22:05:45,778 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 22:05:45,779 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 22:05:45,779 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 22:05:45,779 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 22:05:45,780 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 22:05:45,780 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 22:05:45,788 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-17 22:05:45,788 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-17 22:05:45,788 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 22:05:46,963 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 22:05:46,965 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 22:05:46,968 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 22:05:46,969 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 22:05:46,972 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 22:05:46,972 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 22:05:46,972 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 22:05:46,973 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 22:05:46,973 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 22:05:46,973 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 22:05:46,979 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 22:05:46,980 - werkzeug - INFO -  * Debugger PIN: 120-062-435
+2025-03-17 22:05:51,328 - root - INFO - Request: GET /
+2025-03-17 22:05:51,331 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:05:51] "GET / HTTP/1.1" 200 -
+2025-03-17 22:05:51,859 - root - INFO - Request: GET /static/js/chat.js
+2025-03-17 22:05:51,861 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:05:51] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-03-17 22:05:51,878 - root - INFO - Request: GET /static/css/style.css
+2025-03-17 22:05:51,879 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:05:51] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-17 22:05:51,924 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-03-17 22:05:51,925 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:05:51] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-03-17 22:05:52,344 - root - INFO - Request: GET /favicon.ico
+2025-03-17 22:05:52,345 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:05:52] "[36mGET /favicon.ico HTTP/1.1[0m" 304 -
+2025-03-17 22:05:57,243 - root - INFO - Request: GET /static/css/style.css
+2025-03-17 22:05:57,244 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:05:57] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-17 22:06:52,091 - root - INFO - Request: POST /chat
+2025-03-17 22:06:52,093 - app.services.openai - ERROR - OpenAI error: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2025-03-17 22:06:52,093 - main - ERROR - Chat error: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+2025-03-17 22:06:52,094 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:06:52] "[35m[1mPOST /chat HTTP/1.1[0m" 500 -
+2025-03-17 22:10:36,052 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/telegram_bot.py', reloading
+2025-03-17 22:10:36,223 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 22:10:37,490 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 22:10:37,492 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 22:10:37,494 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 22:10:37,495 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 22:10:37,497 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 22:10:37,498 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 22:10:37,498 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 22:10:37,498 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 22:10:37,499 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 22:10:37,499 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 22:10:37,504 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 22:10:37,505 - werkzeug - INFO -  * Debugger PIN: 120-062-435
+2025-03-17 22:15:22,294 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/telegram_bot.py', reloading
+2025-03-17 22:15:22,472 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 22:15:24,422 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 22:15:24,424 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 22:15:24,426 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 22:15:24,427 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 22:15:24,429 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 22:15:24,430 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 22:15:24,430 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 22:15:24,431 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 22:15:24,431 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 22:15:24,431 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 22:15:24,437 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 22:15:24,438 - werkzeug - INFO -  * Debugger PIN: 120-062-435
+2025-03-17 22:15:30,559 - root - INFO - Request: GET /
+2025-03-17 22:15:30,562 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:15:30] "GET / HTTP/1.1" 200 -
+2025-03-17 22:15:31,382 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-03-17 22:15:31,388 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:15:31] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-03-17 22:15:31,398 - root - INFO - Request: GET /static/js/chat.js
+2025-03-17 22:15:31,399 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:15:31] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-03-17 22:15:31,411 - root - INFO - Request: GET /static/css/style.css
+2025-03-17 22:15:31,412 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:15:31] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-17 22:15:31,938 - root - INFO - Request: GET /favicon.ico
+2025-03-17 22:15:31,939 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:15:31] "[36mGET /favicon.ico HTTP/1.1[0m" 304 -
+2025-03-17 22:17:13,076 - root - INFO - Request: GET /
+2025-03-17 22:17:13,077 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:17:13] "GET / HTTP/1.1" 200 -
+2025-03-17 22:17:13,483 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-03-17 22:17:13,484 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:17:13] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-03-17 22:17:13,678 - root - INFO - Request: GET /static/js/chat.js
+2025-03-17 22:17:13,679 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:17:13] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-03-17 22:17:13,752 - root - INFO - Request: GET /static/css/style.css
+2025-03-17 22:17:13,753 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:17:13] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-17 22:17:14,318 - root - INFO - Request: GET /favicon.ico
+2025-03-17 22:17:14,319 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 22:17:14] "[36mGET /favicon.ico HTTP/1.1[0m" 304 -
+2025-03-18 06:29:10,409 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:29:10,418 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:29:10,424 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:29:10,428 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 06:29:10,431 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 06:29:10,431 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 06:29:10,431 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 06:29:10,432 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 06:29:10,432 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 06:29:10,433 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 06:29:10,449 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-18 06:29:10,449 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-18 06:29:10,450 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 06:29:11,915 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:29:11,918 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:29:11,922 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:29:11,923 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 06:29:11,926 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 06:29:11,927 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 06:29:11,927 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 06:29:11,927 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 06:29:11,928 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 06:29:11,928 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 06:29:11,944 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 06:29:11,959 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 06:29:31,014 - root - INFO - Request: GET /
+2025-03-18 06:29:31,019 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 06:29:31] "GET / HTTP/1.1" 200 -
+2025-03-18 06:29:31,608 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-03-18 06:29:31,652 - root - INFO - Request: GET /static/css/style.css
+2025-03-18 06:29:31,714 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 06:29:31] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-03-18 06:29:31,716 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 06:29:31] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-18 06:29:31,735 - root - INFO - Request: GET /static/js/chat.js
+2025-03-18 06:29:31,737 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 06:29:31] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-03-18 06:29:32,287 - root - INFO - Request: GET /favicon.ico
+2025-03-18 06:29:32,288 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 06:29:32] "[36mGET /favicon.ico HTTP/1.1[0m" 304 -
+2025-03-18 06:29:35,841 - root - INFO - Request: GET /static/css/style.css
+2025-03-18 06:29:35,841 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 06:29:35] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-18 06:32:45,202 - root - INFO - Request: POST /book
+2025-03-18 06:32:45,206 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 06:32:45] "POST /book HTTP/1.1" 200 -
+2025-03-18 06:34:53,353 - root - INFO - Request: POST /chat
+2025-03-18 06:34:55,475 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-18 06:34:55,479 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 06:34:55] "POST /chat HTTP/1.1" 200 -
+2025-03-18 06:35:29,539 - root - INFO - Request: POST /chat
+2025-03-18 06:36:01,327 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-18 06:36:01,333 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 06:36:01] "POST /chat HTTP/1.1" 200 -
+2025-03-18 06:38:14,655 - root - INFO - Request: POST /chat
+2025-03-18 06:38:40,590 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-18 06:38:40,610 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 06:38:40] "POST /chat HTTP/1.1" 200 -
+2025-03-18 06:48:43,723 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/app/routes/calendar_routes.py', reloading
+2025-03-18 06:48:43,935 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 06:48:45,199 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:48:45,201 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:48:45,203 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:48:45,204 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 06:48:45,207 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 06:48:45,207 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 06:48:45,207 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 06:48:45,208 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 06:48:45,208 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 06:48:45,208 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 06:48:45,218 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 06:48:45,219 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 06:48:46,190 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/app/routes/calendar_routes.py', reloading
+2025-03-18 06:48:46,368 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 06:48:47,542 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:48:47,545 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:48:47,547 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:48:47,548 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 06:48:47,550 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 06:48:47,551 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 06:48:47,551 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 06:48:47,551 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 06:48:47,552 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 06:48:47,552 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 06:48:47,561 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 06:48:47,562 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 06:52:50,501 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:52:50,505 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:52:50,509 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:52:50,510 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 06:52:50,512 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 06:52:50,513 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 06:52:50,513 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 06:52:50,513 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 06:52:50,514 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 06:52:50,514 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 06:52:50,524 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-18 06:52:50,524 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-18 06:52:50,524 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 06:52:51,643 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:52:51,645 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:52:51,647 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 06:52:51,648 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 06:52:51,650 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 06:52:51,651 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 06:52:51,651 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 06:52:51,651 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 06:52:51,652 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 06:52:51,652 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 06:52:51,661 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 06:52:51,662 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 06:52:58,340 - root - INFO - Request: GET /
+2025-03-18 06:52:58,345 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 06:52:58] "GET / HTTP/1.1" 200 -
+2025-03-18 06:52:58,973 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-03-18 06:52:58,976 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 06:52:58] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-03-18 06:52:59,007 - root - INFO - Request: GET /static/css/style.css
+2025-03-18 06:52:59,008 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 06:52:59] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-18 06:52:59,030 - root - INFO - Request: GET /static/js/chat.js
+2025-03-18 06:52:59,031 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 06:52:59] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-03-18 06:53:03,415 - root - INFO - Request: GET /static/css/style.css
+2025-03-18 06:53:03,416 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 06:53:03] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-18 07:06:00,927 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/scripts/gpt_integration.py', reloading
+2025-03-18 07:06:01,166 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 07:06:02,560 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:06:02,563 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:06:02,565 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:06:02,566 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 07:06:02,569 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 07:06:02,569 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 07:06:02,569 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:06:02,570 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 07:06:02,570 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:06:02,570 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 07:06:02,580 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 07:06:02,581 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 07:07:35,678 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/scripts/gpt_integration.py', reloading
+2025-03-18 07:07:35,912 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 07:07:37,257 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:07:37,260 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:07:37,266 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:07:37,267 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 07:07:37,271 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 07:07:37,271 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 07:07:37,271 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:07:37,272 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 07:07:37,273 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:07:37,273 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 07:07:37,288 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 07:07:37,289 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 07:14:49,346 - root - INFO - Request: POST /chat
+2025-03-18 07:15:12,969 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-18 07:15:12,975 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 07:15:12] "POST /chat HTTP/1.1" 200 -
+2025-03-18 07:15:58,342 - root - INFO - Request: POST /chat
+2025-03-18 07:16:22,890 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-18 07:16:22,900 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 07:16:22] "POST /chat HTTP/1.1" 200 -
+2025-03-18 07:19:20,720 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/scripts/gpt_integration.py', reloading
+2025-03-18 07:19:20,954 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 07:19:22,441 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:19:22,443 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:19:22,445 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:19:22,446 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 07:19:22,449 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 07:19:22,449 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 07:19:22,450 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:19:22,450 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 07:19:22,450 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:19:22,451 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 07:19:22,460 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 07:19:22,461 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 07:20:16,329 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/scripts/gpt_integration.py', reloading
+2025-03-18 07:20:16,570 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 07:20:18,136 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:20:18,138 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:20:18,140 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:20:18,142 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 07:20:18,144 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 07:20:18,144 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 07:20:18,144 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:20:18,145 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 07:20:18,145 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:20:18,146 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 07:20:18,155 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 07:20:18,155 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 07:31:30,225 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/scripts/gpt_integration.py', reloading
+2025-03-18 07:31:30,364 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 07:31:31,736 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:31:31,738 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:31:31,741 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:31:31,742 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 07:31:31,744 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 07:31:31,744 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 07:31:31,745 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:31:31,745 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 07:31:31,745 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:31:31,746 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 07:31:31,755 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 07:31:31,756 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 07:34:35,615 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/scripts/gpt_integration.py', reloading
+2025-03-18 07:34:35,783 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 07:34:36,994 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:34:36,996 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:34:36,999 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:34:37,000 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 07:34:37,003 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 07:34:37,003 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 07:34:37,003 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:34:37,004 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 07:34:37,004 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:34:37,005 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 07:34:37,013 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 07:34:37,014 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 07:34:52,515 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/scripts/gpt_integration.py', reloading
+2025-03-18 07:34:52,700 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 07:34:54,259 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:34:54,262 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:34:54,265 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:34:54,267 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 07:34:54,269 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 07:34:54,270 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 07:34:54,270 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:34:54,271 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 07:34:54,271 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:34:54,271 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 07:34:54,289 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 07:34:54,289 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 07:36:00,842 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/scripts/gpt_integration.py', reloading
+2025-03-18 07:36:01,120 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 07:36:02,369 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:36:02,371 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:36:02,373 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:36:02,374 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 07:36:02,377 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 07:36:02,377 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 07:36:02,377 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:36:02,378 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 07:36:02,378 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:36:02,379 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 07:36:02,388 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 07:36:02,389 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 07:36:07,837 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/scripts/gpt_integration.py', reloading
+2025-03-18 07:36:08,162 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 07:36:09,720 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:36:09,723 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:36:09,725 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:36:09,726 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 07:36:09,729 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 07:36:09,729 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 07:36:09,729 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:36:09,730 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 07:36:09,730 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:36:09,730 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 07:36:09,740 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 07:36:09,740 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 07:36:12,228 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/scripts/gpt_integration.py', reloading
+2025-03-18 07:36:12,497 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 07:36:13,739 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:36:13,742 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:36:13,746 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:36:13,748 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 07:36:13,751 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 07:36:13,751 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 07:36:13,752 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:36:13,752 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 07:36:13,753 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:36:13,753 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 07:36:13,767 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 07:36:13,768 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 07:36:16,369 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/scripts/gpt_integration.py', reloading
+2025-03-18 07:36:16,569 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 07:36:17,760 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:36:17,762 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:36:17,764 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:36:17,765 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 07:36:17,768 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 07:36:17,768 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 07:36:17,768 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:36:17,769 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 07:36:17,769 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:36:17,770 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 07:36:17,779 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 07:36:17,779 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 07:36:21,614 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/scripts/gpt_integration.py', reloading
+2025-03-18 07:36:21,791 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 07:36:23,042 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:36:23,046 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:36:23,050 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 07:36:23,052 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 07:36:23,054 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 07:36:23,055 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 07:36:23,055 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:36:23,056 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 07:36:23,056 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 07:36:23,057 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 07:36:23,069 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 07:36:23,070 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 07:37:56,668 - root - INFO - Request: POST /chat
+2025-03-18 07:38:17,764 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-18 07:38:17,779 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 07:38:17] "POST /chat HTTP/1.1" 200 -
+2025-03-18 07:38:47,479 - root - INFO - Request: POST /chat
+2025-03-18 07:39:03,754 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-18 07:39:03,764 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 07:39:03] "POST /chat HTTP/1.1" 200 -
+2025-03-18 08:19:22,923 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/app/routes/calendar_routes.py', reloading
+2025-03-18 08:19:23,095 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 08:19:24,263 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:19:24,265 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:19:24,267 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:19:24,268 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 08:19:24,271 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 08:19:24,271 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 08:19:24,271 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:19:24,272 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 08:19:24,272 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:19:24,272 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 08:19:24,281 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 08:19:24,282 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 08:19:25,242 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/app/routes/calendar_routes.py', reloading
+2025-03-18 08:19:25,396 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 08:19:26,872 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:19:26,874 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:19:26,877 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:19:26,878 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 08:19:26,880 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 08:19:26,881 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 08:19:26,881 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:19:26,881 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 08:19:26,882 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:19:26,882 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 08:19:26,891 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 08:19:26,891 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 08:20:10,898 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/app/routes/book.py', reloading
+2025-03-18 08:20:11,057 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 08:20:12,348 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:20:12,350 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:20:12,352 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:20:12,353 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 08:20:12,356 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 08:20:12,356 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 08:20:12,356 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:20:12,357 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 08:20:12,357 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:20:12,357 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 08:20:12,366 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 08:20:12,367 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 08:22:00,263 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/main.py', reloading
+2025-03-18 08:22:00,433 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 08:22:01,615 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:22:01,617 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:22:01,619 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:22:01,621 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 08:22:01,623 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 08:22:01,623 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 08:22:01,623 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:22:01,624 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 08:22:01,624 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:22:01,625 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 08:22:01,634 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 08:22:01,634 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 08:22:08,351 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/main.py', reloading
+2025-03-18 08:22:08,521 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 08:22:09,704 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:22:09,706 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:22:09,708 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:22:09,709 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 08:22:09,711 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 08:22:09,712 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 08:22:09,712 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:22:09,712 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 08:22:09,713 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:22:09,713 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 08:22:09,722 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 08:22:09,722 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 08:22:34,080 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:22:34,082 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:22:34,084 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:22:34,085 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 08:22:34,087 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 08:22:34,088 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 08:22:34,088 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:22:34,089 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 08:22:34,089 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:22:34,089 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 08:22:34,099 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-18 08:22:34,099 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-18 08:22:34,099 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 08:22:35,325 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:22:35,328 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:22:35,332 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:22:35,334 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 08:22:35,337 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 08:22:35,337 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 08:22:35,337 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:22:35,338 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 08:22:35,339 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:22:35,339 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 08:22:35,355 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 08:22:35,355 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 08:22:39,926 - root - INFO - Request: GET /
+2025-03-18 08:22:39,932 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 08:22:39] "GET / HTTP/1.1" 200 -
+2025-03-18 08:22:40,862 - root - INFO - Request: GET /static/css/style.css
+2025-03-18 08:22:40,866 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 08:22:40] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-18 08:22:40,878 - root - INFO - Request: GET /static/js/chat.js
+2025-03-18 08:22:40,880 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 08:22:40] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-03-18 08:22:40,921 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-03-18 08:22:40,923 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 08:22:40] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-03-18 08:22:59,981 - root - INFO - Request: GET /static/css/style.css
+2025-03-18 08:22:59,982 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 08:22:59] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-18 08:45:38,082 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/app/routes/calendar_routes.py', reloading
+2025-03-18 08:45:38,223 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 08:45:39,430 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:45:39,432 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:45:39,434 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:45:39,435 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 08:45:39,438 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 08:45:39,438 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 08:45:39,438 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:45:39,439 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 08:45:39,439 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:45:39,439 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 08:45:39,448 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 08:45:39,448 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 08:48:02,807 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/app/routes/calendar_routes.py', reloading
+2025-03-18 08:48:02,967 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 08:48:04,445 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:48:04,447 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:48:04,449 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:48:04,450 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 08:48:04,453 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 08:48:04,453 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 08:48:04,453 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:48:04,454 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 08:48:04,454 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:48:04,454 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 08:48:04,463 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 08:48:04,464 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 08:57:55,503 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:57:55,505 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:57:55,507 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:57:55,508 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 08:57:55,510 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 08:57:55,511 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 08:57:55,511 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:57:55,511 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 08:57:55,511 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:57:55,512 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 08:57:55,521 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-18 08:57:55,522 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-18 08:57:55,522 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 08:57:56,678 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:57:56,680 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:57:56,682 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 08:57:56,683 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 08:57:56,686 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 08:57:56,686 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 08:57:56,686 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:57:56,687 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 08:57:56,687 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 08:57:56,687 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 08:57:56,700 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 08:57:56,701 - werkzeug - INFO -  * Debugger PIN: 348-711-376
+2025-03-18 08:58:03,371 - root - INFO - Request: GET /
+2025-03-18 08:58:03,377 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 08:58:03] "GET / HTTP/1.1" 200 -
+2025-03-18 08:58:03,856 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-03-18 08:58:03,859 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 08:58:03] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-03-18 08:58:03,879 - root - INFO - Request: GET /static/css/style.css
+2025-03-18 08:58:03,880 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 08:58:03] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-18 08:58:03,908 - root - INFO - Request: GET /static/js/chat.js
+2025-03-18 08:58:03,909 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 08:58:03] "GET /static/js/chat.js HTTP/1.1" 200 -
+2025-03-18 08:58:16,792 - root - INFO - Request: GET /calendar/available_slots/2025-03-22
+2025-03-18 08:58:16,793 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 08:58:16] "[33mGET /calendar/available_slots/2025-03-22 HTTP/1.1[0m" 404 -
+2025-03-18 08:58:21,377 - root - INFO - Request: GET /calendar/available_slots/2025-03-22
+2025-03-18 08:58:21,377 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 08:58:21] "[33mGET /calendar/available_slots/2025-03-22 HTTP/1.1[0m" 404 -
+2025-03-18 08:58:26,675 - root - INFO - Request: GET /calendar/available_slots/2025-03-22
+2025-03-18 08:58:26,676 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 08:58:26] "[33mGET /calendar/available_slots/2025-03-22 HTTP/1.1[0m" 404 -
+2025-03-18 08:58:31,474 - root - INFO - Request: GET /static/css/style.css
+2025-03-18 08:58:31,475 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 08:58:31] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-18 10:40:38,283 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 10:40:38,310 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 10:40:38,314 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 10:40:38,318 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 10:40:38,321 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 10:40:38,321 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 10:40:38,321 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 10:40:38,322 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 10:40:38,322 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 10:40:38,322 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 10:40:38,349 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-18 10:40:38,349 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-18 10:40:38,349 - werkzeug - INFO -  * Restarting with stat
+2025-03-18 10:40:39,475 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 10:40:39,477 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 10:40:39,479 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-18 10:40:39,480 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-18 10:40:39,482 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-18 10:40:39,483 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-18 10:40:39,483 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 10:40:39,483 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-18 10:40:39,484 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-18 10:40:39,484 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-18 10:40:39,493 - werkzeug - WARNING -  * Debugger is active!
+2025-03-18 10:40:39,505 - werkzeug - INFO -  * Debugger PIN: 507-240-486
+2025-03-18 10:40:54,208 - root - INFO - Request: GET /
+2025-03-18 10:40:54,214 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 10:40:54] "GET / HTTP/1.1" 200 -
+2025-03-18 10:40:54,833 - root - INFO - Request: GET /static/js/chat.js
+2025-03-18 10:40:54,884 - root - INFO - Request: GET /static/images/sample-product.jpg
+2025-03-18 10:40:54,910 - root - INFO - Request: GET /static/css/style.css
+2025-03-18 10:40:54,918 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 10:40:54] "[36mGET /static/js/chat.js HTTP/1.1[0m" 304 -
+2025-03-18 10:40:54,921 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 10:40:54] "[36mGET /static/images/sample-product.jpg HTTP/1.1[0m" 304 -
+2025-03-18 10:40:54,921 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 10:40:54] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-03-18 10:40:55,649 - root - INFO - Request: GET /favicon.ico
+2025-03-18 10:40:55,650 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 10:40:55] "[36mGET /favicon.ico HTTP/1.1[0m" 304 -
+2025-03-18 10:41:01,354 - root - INFO - Request: GET /calendar/available_slots/2025-03-22
+2025-03-18 10:41:01,354 - root - ERROR - Ошибка 404. Запрошенный URL: /calendar/available_slots/2025-03-22
+2025-03-18 10:41:01,355 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 10:41:01] "[33mGET /calendar/available_slots/2025-03-22 HTTP/1.1[0m" 404 -
+2025-03-18 10:44:42,372 - root - INFO - Request: GET /static/css/style.css
+2025-03-18 10:44:42,373 - werkzeug - INFO - 127.0.0.1 - - [18/Mar/2025 10:44:42] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
