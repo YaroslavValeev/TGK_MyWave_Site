@@ -189,69 +189,98 @@ def book():
         time = data['time']
         name = data['name']
         phone = data['phone']
+        source = "web"   # для бронирования через сайт
 
-        # Add timestamp
         created_at = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         _, sheets_service = get_google_services()
         spreadsheet_id = current_app.config["SPREADSHEET_ID"]
         
-        # Update Client_Workouts with correct column order
-        client_workout_values = [[
-            created_at,      # Column A: created_at
-            date,           # Column B: date
-            time,           # Column C: time
-            name,           # Column D: name
-            phone,          # Column E: phone (separate column)
-        ]]
-        
-        append_result = append_to_sheet(
-            sheets_service, 
-            spreadsheet_id, 
-            "Client_Workouts!A2:E", 
-            client_workout_values
-        )
-        
-        if not append_result:
-            logging.error("❌ Error writing to Client_Workouts")
-            return jsonify({"success": False, "error": "Error saving data"}), 500
+        # Проверяем существование клиента по имени или телефону
+        clients_result = sheets_service.spreadsheets().values().get(
+            spreadsheetId=spreadsheet_id,
+            range="Clients!B2:G"  # Столбцы: client_id, name, phone, source, created_at, last_active
+        ).execute()
+        client_id = ""
+        if "values" in clients_result:
+            for row in clients_result["values"]:
+                # row[1] - name, row[2] - phone
+                if len(row) >= 3 and (row[1] == name or row[2] == phone):
+                    client_id = row[0]
+                    break
 
-        # Update Workouts sheet
+        if not client_id:
+            client_id = "unknown_client"
+            new_client = [[client_id, name, phone, source, created_at, created_at]]
+            append_to_sheet(sheets_service, spreadsheet_id, "Clients!B2:G", new_client)
+        
+        # Генерируем workout_id в формате workout_YYYY-MM-DD_HHMM
+        workout_id = f"workout_{date}_{time.replace(':', '')}"
+
+        # Формируем корректный порядок данных для Client_Workouts:
+        # Столбцы: [A:auto, B: client_id, C: workout_id, D: date, E: time, F: performance,
+        #           G: feedback, H: payment_type, I: status, J: created_at, K: client_rating]
+        client_workout_values = [[
+            "",            # auto
+            client_id,
+            workout_id,
+            date,
+            time,
+            "",            # performance
+            "",            # feedback
+            "single",      
+            "подтверждено",
+            created_at,
+            ""             # client_rating
+        ]]
+        append_to_sheet(sheets_service, spreadsheet_id, "Client_Workouts!A2:K", client_workout_values)
+
+        # Обновляем или создаём запись в Workouts
         try:
-            # Get current workout data
-            workouts_range = "Workouts!A2:E"
+            workouts_range = "Workouts!A2:J"
             workouts_result = sheets_service.spreadsheets().values().get(
                 spreadsheetId=spreadsheet_id,
                 range=workouts_range
             ).execute()
-            
             workout_values = workouts_result.get('values', [])
-            target_date = datetime.datetime.strptime(date, "%Y-%m-%d")
-            day_of_week = target_date.strftime("%A").lower()
-            
-            # Find matching workout and update capacity
+            workout_found = False
+
             for idx, row in enumerate(workout_values):
-                if (row[0].lower() == day_of_week and 
-                    row[1] == time):
-                    current_capacity = int(row[2])
-                    new_values = [[current_capacity + 1]]
+                if len(row) >= 3 and row[1] == date and row[2] == time:
+                    workout_id = row[0]
+                    current_capacity = int(row[9]) if len(row) > 9 and row[9].isdigit() else 0
+                    new_capacity = [[str(current_capacity + 1)]]
                     
-                    # Update capacity in Workouts sheet
-                    update_range = f"Workouts!C{idx + 2}"  # +2 because idx starts at 0 and we skip header
+                    update_range = f"Workouts!J{idx + 2}"
                     sheets_service.spreadsheets().values().update(
                         spreadsheetId=spreadsheet_id,
                         range=update_range,
                         valueInputOption="RAW",
-                        body={"values": new_values}
+                        body={"values": new_capacity}
                     ).execute()
+                    workout_found = True
                     break
 
+            if not workout_found:
+                new_workout = [[
+                    workout_id,
+                    date,
+                    time,
+                    "60",         # duration
+                    "зал",       # location
+                    "групповая",  # workout_type
+                    "Тренер",
+                    "активно",
+                    "1",          # current_capacity
+                    created_at    # можно добавить как отметку создания
+                ]]
+                append_to_sheet(sheets_service, spreadsheet_id, "Workouts!A2:J", new_workout)
+
         except Exception as e:
-            logging.error(f"❌ Error updating Workouts sheet: {str(e)}")
-            # Continue execution as this is not critical
+            logging.error(f"❌ Ошибка обновления Workouts: {str(e)}")
+            # Продолжаем, так как ошибка не критична
 
         success, result = add_booking_to_calendar(date, time, name, phone)
-        
         if success:
             return jsonify({
                 "success": True,

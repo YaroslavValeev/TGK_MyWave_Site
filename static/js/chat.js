@@ -198,15 +198,15 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("📤 День недели:", new Date(bookingData.date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase());
         console.log("📤 Время:", bookingData.slot);
         console.log("📤 Отправляем данные:", bookingData);
-        console.log("📤 Отправка запроса на бронирование слота:", bookingData.slot);
         fetch("/calendar/book", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 date: bookingData.date,
-                time: bookingData.slot, // заменено: "slot" теперь передаётся как "time"
+                time: bookingData.slot,  // передаём время
                 name: bookingData.name,
-                phone: bookingData.phone
+                phone: bookingData.phone,
+                source: "web"          // добавлено поле source
             })
         })
         .then(response => response.json())
