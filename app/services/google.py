@@ -8,45 +8,74 @@ from googleapiclient.http import MediaIoBaseUpload
 logger = logging.getLogger(__name__)
 
 def init_google_services():
-    try:
-        # Проверяем, есть ли путь в конфигурации приложения
-        service_account_file = current_app.config.get("GOOGLE_SERVICE_ACCOUNT_FILE")
+    # Проверяем, есть ли путь в конфигурации приложения
+    service_account_file = current_app.config.get("GOOGLE_SERVICE_ACCOUNT_FILE")
+    if not service_account_file or not os.path.exists(service_account_file):
+        raise FileNotFoundError(f"Файл сервисного аккаунта не найден: {service_account_file}")
 
-        if not service_account_file or not os.path.exists(service_account_file):
-            raise FileNotFoundError(f"Файл сервисного аккаунта не найден: {service_account_file}")
+    # Загружаем учетные данные
+    creds = Credentials.from_service_account_file(
+        service_account_file,
+        scopes=[
+            "https://www.googleapis.com/auth/drive.file",
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/calendar"
+        ]
+    )
 
-        # Загружаем учетные данные
-        creds = Credentials.from_service_account_file(
-            service_account_file,
-            scopes=[
-                "https://www.googleapis.com/auth/drive.file",
-                "https://www.googleapis.com/auth/spreadsheets",
-                "https://www.googleapis.com/auth/calendar"
-            ]
-        )
+    # Инициализация сервисов Google API
+    drive_service = build("drive", "v3", credentials=creds)
+    sheet_service = build("sheets", "v4", credentials=creds)
+    calendar_service = build("calendar", "v3", credentials=creds)
 
-        # Инициализация сервисов Google API
-        drive_service = build("drive", "v3", credentials=creds)
-        sheet_service = build("sheets", "v4", credentials=creds)
-        calendar_service = build("calendar", "v3", credentials=creds)
+    logger.info("✅ Google API успешно инициализирован!")
+    return drive_service, sheet_service, calendar_service
 
-        logger.info("✅ Google API успешно инициализирован!")
-        return drive_service, sheet_service, calendar_service
-
-    except Exception as e:
-        logger.critical(f"❌ Ошибка инициализации сервисов Google: {str(e)}")
-        return None, None, None
-    
 def append_to_sheet(sheet_service, spreadsheet_id, range_name, values):
     try:
-        sheet_service.spreadsheets().values().append(
+        # Validate data before appending
+        if not values or not values[0]:
+            raise ValueError("No values provided for append operation")
+
+        # Если это Client_Workouts, проверяем наличие клиента
+        if range_name.startswith("Client_Workouts"):
+            client_name = values[0][0]  # Первое значение в массиве - имя клиента
+            
+            # Проверяем существование клиента
+            client_result = sheet_service.spreadsheets().values().get(
+                spreadsheetId=spreadsheet_id,
+                range="Clients!A2:B"
+            ).execute()
+            
+            client_exists = False
+            if "values" in client_result:
+                for row in client_result["values"]:
+                    if row[0] == client_name:
+                        client_exists = True
+                        break
+            
+            # Если клиент не существует, добавляем его
+            if not client_exists:
+                logger.info(f"Adding new client: {client_name}")
+                sheet_service.spreadsheets().values().append(
+                    spreadsheetId=spreadsheet_id,
+                    range="Clients!A2:B",
+                    valueInputOption="RAW",
+                    body={"values": [[client_name, values[0][4]]]}  # Имя и телефон
+                ).execute()
+
+        # Добавляем данные в целевую таблицу
+        result = sheet_service.spreadsheets().values().append(
             spreadsheetId=spreadsheet_id,
             range=range_name,
             valueInputOption="RAW",
             body={"values": values}
         ).execute()
+        
+        logger.info(f"Sheet update result: {result}")
+        return result
     except Exception as e:
-        logger.error("Ошибка добавления данных в таблицу: %s", str(e))
+        logger.error("Error appending to sheet: %s", str(e))
         raise
 
 def upload_to_drive(drive_service, file_obj, user_id, folder_id):

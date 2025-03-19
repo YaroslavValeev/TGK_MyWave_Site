@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // Remove daysTranslation references since we're using English format
+
     // Собираем UI-элементы
     const UI = {
         sendButton: document.getElementById("sendBtn"),
@@ -145,7 +147,24 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         bookingData.date = dateVal;
         Utils.hideModal(UI.modalCalendar);
-        Utils.showModal(UI.modalSlots);
+        
+        const dayOfWeek = new Date(bookingData.date)
+            .toLocaleDateString('en-US', { weekday: 'long' })
+            .toLowerCase();
+
+        console.log(`📅 Запрашиваем слоты на ${bookingData.date} (${dayOfWeek})`);
+        
+        fetch(`/calendar/available_slots/${bookingData.date}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data[dayOfWeek] && Array.isArray(data[dayOfWeek]) && data[dayOfWeek].length > 0) {
+                    updateSlotOptions(data[dayOfWeek]);
+                    Utils.showModal(UI.modalSlots);
+                } else {
+                    alert("На выбранную дату нет слотов.");
+                }
+            })
+            .catch(err => console.error(err));
     }
     function confirmSlot() {
         const slotVal = UI.slotSelect.value;
@@ -175,11 +194,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     function finalConfirm() {
         Utils.hideModal(UI.modalConfirm);
-        // Интеграция с Google Calendar API через маршрут /book
-        fetch("/book", {
+        console.log("📤 Дата бронирования:", bookingData.date);
+        console.log("📤 День недели:", new Date(bookingData.date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase());
+        console.log("📤 Время:", bookingData.slot);
+        console.log("📤 Отправляем данные:", bookingData);
+        console.log("📤 Отправка запроса на бронирование слота:", bookingData.slot);
+        fetch("/calendar/book", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(bookingData)
+            body: JSON.stringify({
+                date: bookingData.date,
+                time: bookingData.slot, // заменено: "slot" теперь передаётся как "time"
+                name: bookingData.name,
+                phone: bookingData.phone
+            })
         })
         .then(response => response.json())
         .then(data => {
@@ -194,7 +222,6 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error(err);
             alert("Ошибка при бронировании.");
         });
-        // Очистка данных бронирования
         UI.bookingDateInput.value = "";
         UI.bookingName.value = "";
         UI.bookingPhone.value = "";
@@ -204,6 +231,18 @@ document.addEventListener("DOMContentLoaded", () => {
         Utils.hideModal(UI.modalSlots);
         Utils.hideModal(UI.modalContact);
         Utils.hideModal(UI.modalConfirm);
+    }
+
+    function updateSlotOptions(slots) {
+        console.log("🎯 Слоты, добавляемые в select:", slots); // Проверяем, какие данные обрабатываются
+        let select = document.getElementById("slotSelect");
+        select.innerHTML = "";  // Очищаем список
+        slots.forEach(slot => {
+            let option = document.createElement("option");
+            option.value = slot.time;
+            option.textContent = `${slot.time} (${slot.available > 0 ? "Свободно" : "Занято"})`;
+            select.appendChild(option);
+        });
     }
 
     // Назначение событий
@@ -249,11 +288,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Socket.io (пример)
     if (socket) {
+        socket.on('connect_error', (error) => {
+            console.error("Ошибка подключения WebSocket:", error);
+        });
         socket.on('message', (data) => {
             if (data && data.reply) {
                 UI.chatWindow.appendChild(Utils.createMessage(data.reply, "bot"));
                 Utils.scrollChat();
             }
+        });
+        socket.on("update_slots", (data) => {
+            console.log("📊 Данные от сервера (слоты):", data);  // Проверяем, что пришло
         });
     }
 

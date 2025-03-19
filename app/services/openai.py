@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 def get_chat_response(message, client_id=None, source="web"):
     try:
-        response = openai.ChatCompletion.create(
+        response = openai.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "Ты эксперт по вейксерфингу."},

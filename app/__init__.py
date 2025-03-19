@@ -1,5 +1,5 @@
 from flask import Flask
-from app.routes.calendar import calendar_bp
+from app.routes.calendar_routes import calendar_bp
 
 app = Flask(__name__)
 app.register_blueprint(calendar_bp)

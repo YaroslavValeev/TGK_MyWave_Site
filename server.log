@@ -1,0 +1,121 @@
+INFO:googleapiclient.discovery_cache:file_cache is only supported with oauth2client<4.0.0
+INFO:googleapiclient.discovery_cache:file_cache is only supported with oauth2client<4.0.0
+INFO:googleapiclient.discovery_cache:file_cache is only supported with oauth2client<4.0.0
+INFO:app.services.google:✅ Google API успешно инициализирован!
+2025-03-18 12:23:32,998 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2025-03-18 12:23:32,999 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("user")
+INFO:sqlalchemy.engine.Engine:PRAGMA main.table_info("user")
+2025-03-18 12:23:32,999 INFO sqlalchemy.engine.Engine [raw sql] ()
+INFO:sqlalchemy.engine.Engine:[raw sql] ()
+2025-03-18 12:23:32,999 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("analytics")
+INFO:sqlalchemy.engine.Engine:PRAGMA main.table_info("analytics")
+2025-03-18 12:23:32,999 INFO sqlalchemy.engine.Engine [raw sql] ()
+INFO:sqlalchemy.engine.Engine:[raw sql] ()
+2025-03-18 12:23:33,000 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+ * Serving Flask app 'main'
+ * Debug mode: on
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug: * Restarting with stat
+DEBUG:main:Metrics are disabled when run in the Flask development server with reload enabled. Set the environment variable DEBUG_METRICS=1 to enable them anyway.
+INFO:googleapiclient.discovery_cache:file_cache is only supported with oauth2client<4.0.0
+INFO:googleapiclient.discovery_cache:file_cache is only supported with oauth2client<4.0.0
+INFO:googleapiclient.discovery_cache:file_cache is only supported with oauth2client<4.0.0
+INFO:app.services.google:✅ Google API успешно инициализирован!
+2025-03-18 12:23:34,186 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2025-03-18 12:23:34,186 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("user")
+INFO:sqlalchemy.engine.Engine:PRAGMA main.table_info("user")
+2025-03-18 12:23:34,186 INFO sqlalchemy.engine.Engine [raw sql] ()
+INFO:sqlalchemy.engine.Engine:[raw sql] ()
+2025-03-18 12:23:34,187 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("analytics")
+INFO:sqlalchemy.engine.Engine:PRAGMA main.table_info("analytics")
+2025-03-18 12:23:34,188 INFO sqlalchemy.engine.Engine [raw sql] ()
+INFO:sqlalchemy.engine.Engine:[raw sql] ()
+2025-03-18 12:23:34,188 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 507-240-486
+INFO:root:Request: GET /
+INFO:werkzeug:127.0.0.1 - - [18/Mar/2025 12:25:04] "GET / HTTP/1.1" 200 -
+INFO:root:Request: GET /static/css/style.css
+INFO:werkzeug:127.0.0.1 - - [18/Mar/2025 12:25:04] "GET /static/css/style.css HTTP/1.1" 200 -
+INFO:root:Request: GET /static/js/chat.js
+INFO:werkzeug:127.0.0.1 - - [18/Mar/2025 12:25:04] "GET /static/js/chat.js HTTP/1.1" 200 -
+INFO:root:Request: GET /static/images/sample-product.jpg
+INFO:werkzeug:127.0.0.1 - - [18/Mar/2025 12:25:04] "GET /static/images/sample-product.jpg HTTP/1.1" 200 -
+INFO:root:Request: GET /favicon.ico
+INFO:werkzeug:127.0.0.1 - - [18/Mar/2025 12:25:08] "GET /favicon.ico HTTP/1.1" 200 -
+INFO:root:Request: GET /calendar/available_slots/2025-03-22
+INFO:root:📅 Получен запрос слотов на дату: 2025-03-22
+INFO:googleapiclient.discovery_cache:file_cache is only supported with oauth2client<4.0.0
+INFO:googleapiclient.discovery_cache:file_cache is only supported with oauth2client<4.0.0
+INFO:root:📅 Запрос слотов на дату: 2025-03-22
+INFO:root:📊 Получено расписание из Schedule: 25 записей
+INFO:root:📊 Получено бронирований: 23 записей
+INFO:root:📅 Обработка слотов для даты: 2025-03-22
+INFO:root:📊 Добавлен слот: понедельник 12:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: понедельник 13:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: понедельник 15:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: вторник 12:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: вторник 13:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: вторник 15:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: вторник 19:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: среда 12:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: среда 13:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: среда 15:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: четверг 12:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: четверг 13:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: четверг 15:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: четверг 20:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: пятница 12:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: пятница 13:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: пятница 15:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: суббота 10:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: суббота 12:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: суббота 13:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: суббота 15:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: воскресенье 10:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: воскресенье 12:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: воскресенье 13:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: воскресенье 15:00 (доступно: 4/4)
+INFO:root:📊 Найдено слотов: 7
+📅 Отправляем на клиент слоты: {'понедельник': [{'time': '12:00', 'available': 4, 'max_capacity': 4}, {'time': '13:30', 'available': 4, 'max_capacity': 4}, {'time': '15:00', 'available': 4, 'max_capacity': 4}], 'вторник': [{'time': '12:00', 'available': 4, 'max_capacity': 4}, {'time': '13:30', 'available': 4, 'max_capacity': 4}, {'time': '15:00', 'available': 4, 'max_capacity': 4}, {'time': '19:00', 'available': 4, 'max_capacity': 4}], 'среда': [{'time': '12:00', 'available': 4, 'max_capacity': 4}, {'time': '13:30', 'available': 4, 'max_capacity': 4}, {'time': '15:00', 'available': 4, 'max_capacity': 4}], 'четверг': [{'time': '12:00', 'available': 4, 'max_capacity': 4}, {'time': '13:30', 'available': 4, 'max_capacity': 4}, {'time': '15:00', 'available': 4, 'max_capacity': 4}, {'time': '20:00', 'available': 4, 'max_capacity': 4}], 'пятница': [{'time': '12:00', 'available': 4, 'max_capacity': 4}, {'time': '13:30', 'available': 4, 'max_capacity': 4}, {'time': '15:00', 'available': 4, 'max_capacity': 4}], 'суббота': [{'time': '10:30', 'available': 4, 'max_capacity': 4}, {'time': '12:00', 'available': 4, 'max_capacity': 4}, {'time': '13:30', 'available': 4, 'max_capacity': 4}, {'time': '15:00', 'available': 4, 'max_capacity': 4}], 'воскресенье': [{'time': '10:30', 'available': 4, 'max_capacity': 4}, {'time': '12:00', 'available': 4, 'max_capacity': 4}, {'time': '13:30', 'available': 4, 'max_capacity': 4}, {'time': '15:00', 'available': 4, 'max_capacity': 4}]}
+INFO:werkzeug:127.0.0.1 - - [18/Mar/2025 12:25:29] "GET /calendar/available_slots/2025-03-22 HTTP/1.1" 200 -
+INFO:root:Request: POST /calendar/book
+📥 Получен запрос на бронирование: {'date': '2025-03-22', 'time': '12:00', 'name': 'Валеева Елена Викторовна', 'phone': '+79858409944'}
+INFO:googleapiclient.discovery_cache:file_cache is only supported with oauth2client<4.0.0
+INFO:googleapiclient.discovery_cache:file_cache is only supported with oauth2client<4.0.0
+INFO:root:📅 Запрос слотов на дату: 2025-03-22
+INFO:root:📊 Получено расписание из Schedule: 25 записей
+INFO:root:📊 Получено бронирований: 23 записей
+INFO:root:📅 Обработка слотов для даты: 2025-03-22
+INFO:root:📊 Добавлен слот: понедельник 12:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: понедельник 13:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: понедельник 15:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: вторник 12:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: вторник 13:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: вторник 15:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: вторник 19:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: среда 12:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: среда 13:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: среда 15:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: четверг 12:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: четверг 13:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: четверг 15:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: четверг 20:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: пятница 12:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: пятница 13:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: пятница 15:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: суббота 10:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: суббота 12:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: суббота 13:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: суббота 15:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: воскресенье 10:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: воскресенье 12:00 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: воскресенье 13:30 (доступно: 4/4)
+INFO:root:📊 Добавлен слот: воскресенье 15:00 (доступно: 4/4)
+INFO:werkzeug:127.0.0.1 - - [18/Mar/2025 12:25:44] "[31m[1mPOST /calendar/book HTTP/1.1[0m" 400 -

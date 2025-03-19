@@ -26,3 +26,15 @@ def notify_admin(error_message):
         )
     except Exception as e:
         logger.error(f"Admin notification failed: {str(e)}")
+
+def process_chat_message(message):
+    """
+    Обрабатывает входящее сообщение чата и возвращает ответ.
+    """
+    try:
+        # Простая заглушка для демонстрации
+        response = f"Получено сообщение: {message}"
+        return response
+    except Exception as e:
+        logger.error(f"Error processing chat message: {str(e)}")
+        return "Извините, произошла ошибка при обработке сообщения."
