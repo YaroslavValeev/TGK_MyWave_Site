@@ -837,3 +837,45 @@ A detailed migration guide is available here: https://github.com/openai/openai-p
 2025-03-17 13:48:28,476 - root - INFO - Request: POST /book
 2025-03-17 13:48:28,520 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
 2025-03-17 13:48:29,529 - werkzeug - INFO - 127.0.0.1 - - [17/Mar/2025 13:48:29] "POST /book HTTP/1.1" 200 -
+2025-03-17 14:09:00,361 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/main.py', reloading
+2025-03-17 14:09:00,576 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 14:09:01,907 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:09:01,909 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:09:01,912 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:09:01,913 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 14:09:01,915 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 14:09:01,915 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 14:09:01,916 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:09:01,916 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 14:09:01,916 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:09:01,917 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 14:09:01,923 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 14:09:01,924 - werkzeug - INFO -  * Debugger PIN: 143-701-413
+2025-03-17 14:09:02,786 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/main.py', reloading
+2025-03-17 14:09:02,997 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 14:09:04,307 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:09:04,311 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:09:04,317 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:09:04,319 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 14:09:04,324 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 14:09:04,325 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 14:09:04,326 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:09:04,327 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 14:09:04,328 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:09:04,329 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 14:09:04,339 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 14:09:04,339 - werkzeug - INFO -  * Debugger PIN: 143-701-413
+2025-03-17 14:11:34,028 - werkzeug - INFO -  * Detected change in '/workspaces/TGK_MyWave_Site/main.py', reloading
+2025-03-17 14:11:34,278 - werkzeug - INFO -  * Restarting with stat
+2025-03-17 14:11:35,663 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:11:35,665 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:11:35,667 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-17 14:11:35,669 - app.services.google - INFO - ✅ Google API успешно инициализирован!
+2025-03-17 14:11:35,671 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-03-17 14:11:35,671 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user")
+2025-03-17 14:11:35,671 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:11:35,672 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("analytics")
+2025-03-17 14:11:35,672 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-03-17 14:11:35,673 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-03-17 14:11:35,678 - werkzeug - WARNING -  * Debugger is active!
+2025-03-17 14:11:35,679 - werkzeug - INFO -  * Debugger PIN: 143-701-413

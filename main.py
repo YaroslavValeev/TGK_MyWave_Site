@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask, render_template, request, jsonify, current_app
+from flask import Flask, render_template, request, jsonify, current_app, send_from_directory
 from flask_login import LoginManager
 from flask_sqlalchemy.extension import SQLAlchemy
 from flask_talisman import Talisman
@@ -43,21 +43,21 @@ app.config.from_mapping(
 if not os.path.exists(app.config["GOOGLE_SERVICE_ACCOUNT_FILE"]):
     raise FileNotFoundError(f"Файл Google Credentials не найден: {app.config['GOOGLE_SERVICE_ACCOUNT_FILE']}")
 
-# Регистрируем SQLAlchemy на приложении
+# Регистрация SQLAlchemy на приложении
 db.init_app(app)
 
-Talisman(app, force_https=True)
+# Если ранее вы инициализировали Talisman с force_https, лучше удалить дублирование.
+# Инициализируем Talisman с обновленной настройкой Content Security Policy (CSP)
+csp = {
+    'default-src': ["'self'"],
+    'style-src': ["'self'", "https://fonts.googleapis.com"],
+    'font-src': ["'self'", "https://fonts.gstatic.com"],
+    'script-src': ["'self'", "'unsafe-inline'", "https://code.jquery.com"]
+}
+Talisman(app, content_security_policy=csp, force_https=True)
+
 metrics = PrometheusMetrics(app)
 admin = Admin(app, name='MyWave Admin', template_mode='bootstrap3')
-
-csp = {
-    'default-src': ["'self'", "https://stackpath.bootstrapcdn.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com", "data:"],
-    'script-src': ["'self'", "https://code.jquery.com"],
-    'style-src': ["'self'", "'unsafe-inline'", "https://stackpath.bootstrapcdn.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
-    'font-src': ["'self'", "https://fonts.gstatic.com"],
-    'img-src': ["'self'", "data:", "https://yastatic.net", "https://fonts.gstatic.com"]
-}
-Talisman(app, content_security_policy=csp)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -132,6 +132,10 @@ def upload():
     except Exception as e:
         logging.error(f"Upload error: {str(e)}")
         return jsonify({"error": "Ошибка загрузки файла"}), 500
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory("static/images", "favicon.ico", mimetype="image/vnd.microsoft.icon")
 
 if __name__ == "__main__":
     with app.app_context():
