@@ -33,38 +33,9 @@ def init_google_services():
 
 def append_to_sheet(sheet_service, spreadsheet_id, range_name, values):
     try:
-        # Validate data before appending
         if not values or not values[0]:
             raise ValueError("No values provided for append operation")
-
-        # Если это Client_Workouts, проверяем наличие клиента
-        if range_name.startswith("Client_Workouts"):
-            client_name = values[0][0]  # Первое значение в массиве - имя клиента
-            
-            # Проверяем существование клиента
-            client_result = sheet_service.spreadsheets().values().get(
-                spreadsheetId=spreadsheet_id,
-                range="Clients!A2:B"
-            ).execute()
-            
-            client_exists = False
-            if "values" in client_result:
-                for row in client_result["values"]:
-                    if row[0] == client_name:
-                        client_exists = True
-                        break
-            
-            # Если клиент не существует, добавляем его
-            if not client_exists:
-                logger.info(f"Adding new client: {client_name}")
-                sheet_service.spreadsheets().values().append(
-                    spreadsheetId=spreadsheet_id,
-                    range="Clients!A2:B",
-                    valueInputOption="RAW",
-                    body={"values": [[client_name, values[0][4]]]}  # Имя и телефон
-                ).execute()
-
-        # Добавляем данные в целевую таблицу
+        
         result = sheet_service.spreadsheets().values().append(
             spreadsheetId=spreadsheet_id,
             range=range_name,
