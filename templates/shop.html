@@ -1,8 +1,38 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <section class="shop">
-        <h2>Магазин</h2>
-        <p>Раздел в разработке. Скоро здесь появятся товары!</p>
-    </section>
+<section class="shop">
+  <h2>Магазин</h2>
+  <div class="shop-controls">
+    <div class="filters">
+      <label for="category-filter">Категория:</label>
+      <select id="category-filter">
+        <option value="all">Все</option>
+        <option value="boards">Доски</option>
+        <option value="accessories">Аксессуары</option>
+      </select>
+      <label for="price-sort">Сортировка:</label>
+      <select id="price-sort">
+        <option value="asc">По возрастанию цены</option>
+        <option value="desc">По убыванию цены</option>
+      </select>
+    </div>
+  </div>
+  <div class="store-list">
+    <div class="product-card">
+      <img src="/static/images/wakesurf-board.webp" alt="Доска для вейксерфинга" width="300" height="200" loading="lazy">
+      <h4>Доска для вейксерфинга Pro</h4>
+      <p>Высококачественная доска для профессионалов.</p>
+      <p class="price">Цена: 15000 рублей</p>
+      <button class="btn-primary">Добавить в корзину</button>
+    </div>
+    <div class="product-card">
+      <img src="/static/images/wakesurf-vest.webp" alt="Спасательный жилет" width="300" height="200" loading="lazy">
+      <h4>Спасательный жилет</h4>
+      <p>Комфортный жилет для безопасности на воде.</p>
+      <p class="price">Цена: 5000 рублей</p>
+      <button class="btn-primary">Добавить в корзину</button>
+    </div>
+  </div>
+</section>
 {% endblock %}

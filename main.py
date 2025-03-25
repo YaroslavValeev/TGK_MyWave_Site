@@ -10,6 +10,7 @@ from flask_admin import Admin
 from prometheus_flask_exporter import PrometheusMetrics
 from flask_socketio import SocketIO
 from config import Config, DevelopmentConfig
+from googleapiclient.discovery import build
 
 # Локальные импорты
 from app.database import db
@@ -50,12 +51,14 @@ warnings.filterwarnings('ignore', message='file_cache is only supported with oau
 db.init_app(app)
 
 # Если ранее вы инициализировали Talisman с force_https, лучше удалить дублирование.
-# Инициализируем Talisman с обновленной настройкой Content Security Policy (CSP)
+# Обновление настройки Content Security Policy (CSP)
 csp = {
     'default-src': ["'self'"],
-    'style-src': ["'self'", "https://fonts.googleapis.com", "'unsafe-inline'"],
-    'font-src': ["'self'", "https://fonts.gstatic.com"],
-    'script-src': ["'self'", "'unsafe-inline'", "https://code.jquery.com"]
+    'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.googletagmanager.com"],
+    'frame-src': ["https://calendar.google.com"],
+    'img-src': ["'self'", "data:"],
+    'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+    'font-src': ["https://fonts.gstatic.com"]
 }
 Talisman(app, content_security_policy=csp, force_https=True)
 
@@ -151,6 +154,34 @@ def not_found(e):
 def method_not_allowed(e):
     logging.error(f"Ошибка 405. Запрошенный URL: {request.path}")  # Добавлен лог ошибки
     return jsonify({"error": "Method not allowed"}), 405
+
+def get_available_slots_from_google(date):
+    time_min = f"{date}T00:00:00Z"
+    time_max = f"{date}T23:59:59Z"
+    events_result = current_app.calendar_service.events().list(
+        calendarId='primary',
+        timeMin=time_min,
+        timeMax=time_max,
+        singleEvents=True,
+        orderBy='startTime'
+    ).execute()
+    events = events_result.get('items', [])
+    slots = [{"time": event.get("start", {}).get("dateTime", "")[11:16], "available": 1} 
+             for event in events if event.get("start", {}).get("dateTime")]
+    return slots
+
+@app.route('/calendar/available_slots/<date>', methods=['GET'])
+def available_slots(date):
+    try:
+        slots = get_available_slots_from_google(date)
+        return jsonify({'slots': slots})
+    except Exception as e:
+        app.logger.error(f"Ошибка получения слотов: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/static/css/<path:filename>')
+def static_css(filename):
+    return send_from_directory('static/css', filename, mimetype='text/css')
 
 # Ensure tables are created
 def init_db():

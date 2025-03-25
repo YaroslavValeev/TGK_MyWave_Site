@@ -34,5 +34,17 @@ def book():
     # Простейшая имитация бронирования
     return jsonify(success=True)
 
+# Добавляем заголовок Content Security Policy
+@app.after_request
+def add_csp_headers(response):
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' https://www.googletagmanager.com 'unsafe-inline'; "
+        "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "frame-src 'self' https://calendar.google.com;"
+    )
+    return response
+
 if __name__ == "__main__":
     app.run(debug=True)

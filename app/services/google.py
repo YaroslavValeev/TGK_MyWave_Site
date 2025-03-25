@@ -1,5 +1,6 @@
 import os
 import logging
+import datetime
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 from flask import current_app
@@ -31,22 +32,40 @@ def init_google_services():
     logger.info("✅ Google API успешно инициализирован!")
     return drive_service, sheet_service, calendar_service
 
+def get_google_services():
+    return init_google_services()
+
 def append_to_sheet(sheet_service, spreadsheet_id, range_name, values):
     try:
         if not values or not values[0]:
             raise ValueError("No values provided for append operation")
-        
+
+        if range_name.startswith("Clients"):
+            # Добавленная проверка неизвестного клиента
+            if values[0][0] == "unknown_client":
+                logging.warning(f"❗ Неизвестный клиент {values[0][2]}, но есть телефон {values[0][3]}")
+                values[0][0] = f"client_{values[0][3]}"
+                
+            clients_result = sheet_service.spreadsheets().values().get(
+                spreadsheetId=spreadsheet_id,
+                range="Clients!A2:H"
+            ).execute()
+
+            for row in clients_result.get("values", []):
+                if len(row) >= 3 and (row[2] == values[0][2] or row[3] == values[0][3]):
+                    return  # Клиент уже есть, не добавляем повторно
+
         result = sheet_service.spreadsheets().values().append(
             spreadsheetId=spreadsheet_id,
             range=range_name,
             valueInputOption="RAW",
             body={"values": values}
         ).execute()
-        
-        logger.info(f"Sheet update result: {result}")
+
+        logger.info(f"✅ Добавлено в {range_name}: {result}")
         return result
     except Exception as e:
-        logger.error("Error appending to sheet: %s", str(e))
+        logger.error(f"❌ Ошибка добавления в Google Sheets: {str(e)}")
         raise
 
 def upload_to_drive(drive_service, file_obj, user_id, folder_id):
