@@ -2,56 +2,50 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Чат с экспертом по вейку</title>
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="container mt-4">
-        <!-- Кнопка для открытия/закрытия чата -->
-        <button id="chat-toggle-btn" class="btn btn-primary rounded-circle shadow-lg"
-            style="width: 60px; height: 60px; position: fixed; bottom: 20px; right: 20px;">
-            💬
-        </button>
-
-        <!-- Контейнер чата (изначально скрыт) -->
-        <div id="chat-container-fixed" style="display: none;">
+    <div class="container">
+        <div id="chat-container">
             <h4>Чат с экспертом по вейку</h4>
-
-            <!-- Меню кнопок -->
-            <div id="menu-container" class="mb-3">
-                <button class="btn btn-outline-primary" onclick="showSchedule()">Расписание</button>
-                <button class="btn btn-outline-primary" onclick="showFAQ()">FAQ</button>
-                <button class="btn btn-outline-primary" onclick="updateClientData()">Изменить данные клиента</button>
-                <button class="btn btn-outline-success" onclick="bookTraining()">Записаться на тренировку</button>
+            <div id="menu-container" class="menu-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                <button class="menu-btn" onclick="showSchedule()">Расписание</button>
+                <button class="menu-btn" onclick="showFAQ()">FAQ</button>
+                <button class="menu-btn" onclick="updateClientData()">Тренировка</button>
+                <button class="menu-btn menu-btn-primary" onclick="bookTraining()">Записаться</button>
             </div>
-
-            <!-- Окно чата -->
-            <div id="chatWindow" class="chat-messages"></div>
-            
-            <!-- Форма чата -->
+            <div id="chatWindow" class="chat-window"></div>
             <form id="chatForm" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">  <!-- ✅ CSRF-токен -->
-                <input type="text" id="user-input" placeholder="Напишите сообщение..." class="form-control">
-                <button type="submit" class="btn btn-primary">Отправить</button>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="input-group">
+                    <span class="input-icon">✉️</span>
+                    <input type="text" id="user-input" placeholder="Напишите сообщение..." class="chat-input" aria-label="Поле ввода сообщения">
+                </div>
+                <button type="submit" class="send-button" aria-label="Отправить сообщение">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 12L22 2L12 22L2 12Z" fill="white"/>
+                    </svg>
+                </button>
             </form>
-            
-
-            <!-- Загрузка файлов -->
-            <label for="file-upload" class="btn btn-outline-secondary mt-2">📎 Загрузить файл</label>
-            <input type="file" id="file-upload" style="display: none;" onchange="uploadMedia()">
-        </div>
-
-        <!-- Индикатор загрузки (скрыт по умолчанию) -->
-        <div id="file-upload-progress" style="display: none;">
-            <div class="bar"></div>
+            <div class="file-upload">
+                <label for="file-upload" class="file-upload-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM18 20H6V4H13V9H18V20ZM12 12V16M10 14H14" stroke="#00BCD4" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Загрузить файл
+                </label>
+                <input type="file" id="file-upload" onchange="uploadMedia()">
+            </div>
+            <div id="file-upload-progress" class="progress">
+                <div class="bar"></div>
+            </div>
         </div>
     </div>
-
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <!-- Подключение JavaScript -->
     <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js" defer></script>
 </body>

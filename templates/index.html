@@ -14,22 +14,32 @@
       img-src 'self' data:;
       connect-src 'self';
   ">
+  <meta name="description" content="MyWave Chat - Добро пожаловать на главную страницу. Запишитесь на тренировки, узнайте о мероприятиях и новостях.">
+  <meta name="keywords" content="MyWave, тренировки, вейксерфинг, мероприятия, блог">
+  <meta property="og:title" content="MyWave - Водный спорт и тренировки">
+  <meta property="og:description" content="Запишитесь на занятия и откройте для себя мир водного спорта с MyWave!">
+  <meta property="og:image" content="/static/images/hero-wakesurf.jpg">
+  <meta name="twitter:card" content="summary_large_image">
 
   <!-- Подключаем шрифт Pangolin через Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet">
 
   <!-- Подключаем файл стилей -->
   <link rel="stylesheet" href="/static/css/style.css">
+
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" as="style">
+  <link rel="preload" href="/static/images/hero-wakesurf.webp" as="image">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
   <!-- Шапка сайта -->
   <header class="site-header">
     <div class="logo">
-      <h1>MyWave</h1>
+      <span>MyWave</span>
     </div>
     <nav class="site-nav">
       <ul>
-        <li><a href="#hero" class="nav-link">Главная</a></li>
+        <li><a href="#hero" class="nav-link active">Главная</a></li>
         <li><a href="#services" class="nav-link">Услуги</a></li>
         <li><a href="#store" class="nav-link">Магазин</a></li>
         <li><a href="#events" class="nav-link">Мероприятия</a></li>
@@ -42,7 +52,7 @@
   <!-- Герой-блок -->
   <section id="hero" class="hero-section">
     <div class="hero-content">
-      <h2>Добро пожаловать на MyWave</h2>
+      <h1>Добро пожаловать в MyWave</h1>
       <p>Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
       <!-- Кнопка "Записаться" открывает процесс бронирования -->
       <button id="hero-signup-btn" class="btn-primary">Записаться</button>
@@ -76,6 +86,7 @@
         <h4>Тренировка</h4>
         <p>Описание услуги, длительность, особенности.</p>
         <p>Цена: 3500 рублей</p>
+        <p id="slot-info">Доступно мест: <span id="available-slots"></span></p>
         <!-- Кнопка "Записаться" -->
         <button class="btn-secondary btn-book">Записаться</button>
       </div>
@@ -87,7 +98,7 @@
     <h2>Онлайн-магазин</h2>
     <div class="store-list">
       <div class="product-card">
-        <img src="/static/images/sample-product.jpg" alt="Товар" />
+        <img src="/static/images/sample-product.webp" alt="Товар" width="300" height="200" loading="lazy" />
         <h4>Название товара</h4>
         <p>Описание и характеристики товара.</p>
         <p>Цена: 1000 рублей</p>
@@ -114,6 +125,60 @@
   <section id="blog" class="blog-section">
     <h2>Блог</h2>
     <p>В разработке. Скоро здесь появятся новые статьи!</p>
+    <p><a href="/workspaces/TGK_MyWave_Site/templates/about.html">Познакомьтесь с Ярославом</a></p>
+  </section>
+
+  <!-- Календарь тренировок -->
+  <section id="calendar" class="calendar-section">
+    <h2>Расписание тренировок</h2>
+    <div class="schedule-grid">
+      <div class="day-column">
+        <h3>Понедельник</h3>
+        <div class="slot" data-time="12:00">12:00</div>
+        <div class="slot" data-time="13:30">13:30</div>
+        <div class="slot" data-time="15:00">15:00</div>
+      </div>
+      <div class="day-column">
+        <h3>Вторник</h3>
+        <div class="slot" data-time="12:00">12:00</div>
+        <div class="slot" data-time="13:30">13:30</div>
+        <div class="slot" data-time="15:00">15:00</div>
+        <div class="slot" data-time="19:00">19:00</div>
+      </div>
+      <div class="day-column">
+        <h3>Среда</h3>
+        <div class="slot" data-time="12:00">12:00</div>
+        <div class="slot" data-time="13:30">13:30</div>
+        <div class="slot" data-time="15:00">15:00</div>
+      </div>
+      <div class="day-column">
+        <h3>Четверг</h3>
+        <div class="slot" data-time="12:00">12:00</div>
+        <div class="slot" data-time="13:30">13:30</div>
+        <div class="slot" data-time="15:00">15:00</div>
+        <div class="slot" data-time="20:00">20:00</div>
+      </div>
+      <div class="day-column">
+        <h3>Пятница</h3>
+        <div class="slot" data-time="12:00">12:00</div>
+        <div class="slot" data-time="13:30">13:30</div>
+        <div class="slot" data-time="15:00">15:00</div>
+      </div>
+      <div class="day-column">
+        <h3>Суббота</h3>
+        <div class="slot" data-time="10:30">10:30</div>
+        <div class="slot" data-time="12:00">12:00</div>
+        <div class="slot" data-time="13:30">13:30</div>
+        <div class="slot" data-time="15:00">15:00</div>
+      </div>
+      <div class="day-column">
+        <h3>Воскресенье</h3>
+        <div class="slot" data-time="10:30">10:30</div>
+        <div class="slot" data-time="12:00">12:00</div>
+        <div class="slot" data-time="13:30">13:30</div>
+        <div class="slot" data-time="15:00">15:00</div>
+      </div>
+    </div>
   </section>
 
   <!-- Контакты -->
@@ -153,12 +218,25 @@
   </section>
 
   <!-- Модальные окна для бронирования -->
+  <!-- Модальное окно для выбора даты (Шаг 1) -->
   <div id="modalCalendar" class="modal hidden">
     <div class="modal-content">
+      <div class="progress-bar">
+        <div class="progress-step active" data-step="1"></div>
+        <div class="progress-step" data-step="2"></div>
+        <div class="progress-step" data-step="3"></div>
+        <div class="progress-step" data-step="4"></div>
+      </div>
       <h3>Выберите дату</h3>
-      <input type="date" id="bookingDate">
-      <button id="confirmDateBtn" class="btn-primary">Далее</button>
-      <button id="cancelModal1" class="btn-link">Отмена</button>
+      <!-- Заменён блок ввода даты -->
+      <div class="date-picker-wrapper">
+        <input type="date" id="dateInput" name="booking-date" placeholder="ДД.ММ.ГГГГ">
+        <span class="calendar-icon" onclick="document.getElementById('dateInput').showPicker()">📅</span>
+      </div>
+      <div class="modal-actions">
+        <button id="confirmDateBtn" class="btn-primary">Далее</button>
+        <button id="cancelModal1" class="btn-secondary">Отмена</button>
+      </div>
     </div>
   </div>
 
@@ -167,11 +245,11 @@
       <h3>Выберите слот</h3>
       <select id="slotSelect">
         <option value="10:30">10:30 (Свободно)</option>
-<option value="12:00">12:00 (Свободно)</option>
-<option value="13:30">13:30 (Свободно)</option>
-<option value="15:00">15:00 (Свободно)</option>
-<option value="19:00">19:00 (Свободно)</option>
-<option value="20:00">20:00 (Свободно)</option>
+        <option value="12:00">12:00 (Свободно)</option>
+        <option value="13:30">13:30 (Свободно)</option>
+        <option value="15:00">15:00 (Свободно)</option>
+        <option value="19:00">19:00 (Свободно)</option>
+        <option value="20:00">20:00 (Свободно)</option>
       </select>
       <button id="confirmSlotBtn" class="btn-primary">Далее</button>
       <button id="cancelModal2" class="btn-link">Отмена</button>
@@ -199,9 +277,31 @@
 
   <footer class="site-footer">
     <p>&copy; 2025 MyWave. Все права защищены.</p>
+    <nav class="footer-nav">
+      <ul>
+        <li><a href="/workspaces/TGK_MyWave_Site/templates/privacy.html">Политика конфиденциальности</a></li>
+        <li><a href="/workspaces/TGK_MyWave_Site/templates/faq.html">FAQ</a></li>
+      </ul>
+    </nav>
   </footer>
 
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=343773438"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '343773438');
+  </script>
   <!-- Подключаем скрипт -->
-  <script src="/static/js/chat.js"></script>
+  <script src="/static/js/chat.js" defer></script>
+  <!-- Подключение Flatpickr перед закрытием body -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+    flatpickr("#dateInput", {
+      dateFormat: "d.m.Y",
+      minDate: "today"
+    });
+  </script>
 </body>
 </html>

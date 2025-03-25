@@ -23,3 +23,15 @@ def add_security_headers(response):
         "img-src 'self' data:;"
     )
     return response
+
+@app.after_request
+def set_csp(response):
+    csp_policy = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://code.jquery.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "img-src 'self' data: https://www.googletagmanager.com; "
+        "font-src 'self' https://fonts.gstatic.com;"
+    )
+    response.headers['Content-Security-Policy'] = csp_policy
+    return response

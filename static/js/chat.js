@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
         confirmSlotBtn: document.getElementById("confirmSlotBtn"),
         confirmContactBtn: document.getElementById("confirmContactBtn"),
         finalConfirmBtn: document.getElementById("finalConfirmBtn"),
-        bookingDateInput: document.getElementById("bookingDate"),
+        bookingDateInput: document.getElementById("dateInput"),
         slotSelect: document.getElementById("slotSelect"),
         bookingName: document.getElementById("bookingName"),
         bookingPhone: document.getElementById("bookingPhone"),
@@ -54,6 +54,29 @@ document.addEventListener("DOMContentLoaded", () => {
         hideModal: (elem) => { elem.classList.add("hidden"); }
     };
 
+    // Добавляем корректные отступы для поля даты и контактных данных
+    if (UI.bookingDateInput) {
+        UI.bookingDateInput.style.padding = "8px";
+        UI.bookingDateInput.style.margin = "4px 0";
+    }
+    if (UI.bookingName) {
+        UI.bookingName.style.padding = "8px";
+        UI.bookingName.style.margin = "4px 0";
+    }
+    if (UI.bookingPhone) {
+        UI.bookingPhone.style.padding = "8px";
+        UI.bookingPhone.style.margin = "4px 0";
+    }
+    if (UI.slotSelect) {
+        UI.slotSelect.style.padding = "10px 14px";
+        UI.slotSelect.style.marginBottom = "12px";
+        UI.slotSelect.style.borderRadius = "8px";
+        UI.slotSelect.style.border = "1px solid #ccc";
+        UI.slotSelect.style.fontFamily = "Inter, sans-serif";
+        UI.slotSelect.style.fontSize = "16px";
+        UI.slotSelect.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.05)";
+    }
+
     // Функция отправки сообщения в чате
     async function sendMessage() {
         if (!UI.userInput || !UI.chatWindow) return;
@@ -79,7 +102,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!response.ok || data.error) {
                 throw new Error(data.error || `Ошибка сервера: ${response.status}`);
             }
-            UI.chatWindow.appendChild(Utils.createMessage(data.reply, "bot"));
+            // Добавляем персонализацию и рекомендации
+            let replyText = data.reply;
+            if (bookingData.name) {
+                replyText = `Здравствуйте, ${bookingData.name}! ` + replyText;
+            }
+            if (message.toLowerCase().includes("тренировк")) {
+                replyText += " Рекомендую тренировку по вейксерфингу — хотите записаться?";
+            }
+            UI.chatWindow.appendChild(Utils.createMessage(replyText, "bot"));
         } catch (error) {
             const errorElem = Utils.createMessage(error.message, "error");
             errorElem.style.color = "red";
@@ -140,32 +171,34 @@ document.addEventListener("DOMContentLoaded", () => {
         Utils.showModal(UI.modalCalendar);
     }
     function confirmDate() {
-        const dateVal = UI.bookingDateInput.value;
-        if (!dateVal) {
-            alert("Выберите дату!");
+        const dateInput = document.getElementById("dateInput");
+        const selectedDate = dateInput.value;
+        const selectedTime = localStorage.getItem('selectedSlotTime'); // Берём время из localStorage
+
+        if (!selectedDate) {
+            alert('Выберите дату!');
             return;
         }
-        bookingData.date = dateVal;
-        Utils.hideModal(UI.modalCalendar);
-        
-        const dayOfWeek = new Date(bookingData.date)
-            .toLocaleDateString('en-US', { weekday: 'long' })
-            .toLowerCase();
 
-        console.log(`📅 Запрашиваем слоты на ${bookingData.date} (${dayOfWeek})`);
-        
-        fetch(`/calendar/available_slots/${bookingData.date}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data[dayOfWeek] && Array.isArray(data[dayOfWeek]) && data[dayOfWeek].length > 0) {
-                    updateSlotOptions(data[dayOfWeek]);
-                    Utils.showModal(UI.modalSlots);
-                } else {
-                    alert("На выбранную дату нет слотов.");
-                }
-            })
-            .catch(err => console.error(err));
-    }
+        bookingData.date = selectedDate;
+        bookingData.slot = selectedTime;  // сразу сохраняем выбранное время
+
+        fetch(`/calendar/available_slots/${selectedDate}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.slots && data.slots.length > 0) {
+                updateSlotOptions(data.slots);  // Заполняем select
+                Utils.hideModal(UI.modalCalendar);
+                Utils.showModal(UI.modalSlots);
+            } else {
+                alert("На эту дату нет свободных слотов.");
+            }
+        })
+        .catch(err => {
+            console.error("Ошибка загрузки слотов:", err);
+            alert("Не удалось загрузить доступные слоты.");
+        });
+}
     function confirmSlot() {
         const slotVal = UI.slotSelect.value;
         if (!slotVal) {
@@ -194,38 +227,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     function finalConfirm() {
         Utils.hideModal(UI.modalConfirm);
-        console.log("📤 Дата бронирования:", bookingData.date);
-        console.log("📤 День недели:", new Date(bookingData.date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase());
-        console.log("📤 Время:", bookingData.slot);
-        console.log("📤 Отправляем данные:", bookingData);
         fetch("/calendar/book", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
                 date: bookingData.date,
-                time: bookingData.slot,  // передаём время
+                time: bookingData.slot,
                 name: bookingData.name,
-                phone: bookingData.phone,
-                source: "web"          // добавлено поле source
+                phone: bookingData.phone
             })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert("Запись подтверждена!");
-                window.open("https://calendar.google.com/calendar/embed?src=9e6scivqg42qmur04tbnbinm3o%40group.calendar.google.com&ctz=Europe%2FMoscow", "_blank");
+                alert("Спасибо! Ваша запись подтверждена. До встречи на тренировке! 🏄‍♂️");
+                window.open(data.calendarLink, "_blank");
             } else {
                 alert("Ошибка бронирования: " + data.error);
             }
         })
         .catch(err => {
-            console.error(err);
-            alert("Ошибка при бронировании.");
+            alert("Произошла ошибка, попробуйте снова.");
         });
         UI.bookingDateInput.value = "";
         UI.bookingName.value = "";
         UI.bookingPhone.value = "";
     }
+
     function cancelBooking() {
         Utils.hideModal(UI.modalCalendar);
         Utils.hideModal(UI.modalSlots);
@@ -243,6 +271,10 @@ document.addEventListener("DOMContentLoaded", () => {
             option.textContent = `${slot.time} (${slot.available > 0 ? "Свободно" : "Занято"})`;
             select.appendChild(option);
         });
+    }
+
+    function updateSlotInfo(time, available) {
+        document.getElementById('available-slots').textContent = available;
     }
 
     // Назначение событий
@@ -274,7 +306,14 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.addEventListener("click", openBookingFlow);
     });
     if (UI.heroSignupBtn) {
-        UI.heroSignupBtn.addEventListener("click", openBookingFlow);
+        // Изменён обработчик для отправки события gtag
+        UI.heroSignupBtn.addEventListener("click", () => {
+            gtag('event', 'click_signup', {
+                'event_category': 'Button',
+                'event_label': 'Hero Signup'
+            });
+            openBookingFlow();
+        });
     }
     // Обработчики модальных окон
     if (UI.confirmDateBtn) UI.confirmDateBtn.addEventListener("click", confirmDate);
@@ -293,6 +332,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         socket.on('message', (data) => {
             if (data && data.reply) {
+                const audio = new Audio('/static/sounds/notification.mp3');
+                audio.play();
                 UI.chatWindow.appendChild(Utils.createMessage(data.reply, "bot"));
                 Utils.scrollChat();
             }
@@ -307,4 +348,105 @@ document.addEventListener("DOMContentLoaded", () => {
     if (barElem) {
         barElem.style.width = "50%";
     }
+
+    // Добавляем функционал бургер-меню
+    const burgerMenu = document.querySelector('.burger-menu');
+    const navMenu = document.querySelector('.site-nav ul');
+    if (burgerMenu && navMenu) {
+        burgerMenu.addEventListener('click', () => {
+            burgerMenu.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+    }
+
+    // Новый функционал: фильтрация и сортировка товаров
+    const categoryFilter = document.getElementById('category-filter');
+    const priceSort = document.getElementById('price-sort');
+    const productCards = document.querySelectorAll('.product-card');
+
+    if (categoryFilter && priceSort && productCards.length) {
+        categoryFilter.addEventListener('change', filterProducts);
+        priceSort.addEventListener('change', sortProducts);
+    }
+
+    function filterProducts() {
+        const category = categoryFilter.value;
+        productCards.forEach(card => {
+            const productCategory = card.dataset.category || 'all';
+            card.style.display = (category === 'all' || category === productCategory) ? 'block' : 'none';
+        });
+    }
+
+    function sortProducts() {
+        const sortOrder = priceSort.value;
+        const sortedCards = Array.from(productCards).sort((a, b) => {
+            const priceA = parseInt(a.querySelector('.price').textContent.replace(/[^0-9]/g, ''));
+            const priceB = parseInt(b.querySelector('.price').textContent.replace(/[^0-9]/g, ''));
+            return sortOrder === 'asc' ? priceA - priceB : priceB - priceA;
+        });
+        const storeList = document.querySelector('.store-list');
+        if (storeList) {
+            storeList.innerHTML = '';
+            sortedCards.forEach(card => storeList.appendChild(card));
+        }
+    }
+
+    // Замена жесткого обращения к chat-box с проверкой элемента
+    const chatBox = document.getElementById("chat-box");
+    if (chatBox) {
+        chatBox.style.height = "300px";
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const element = document.getElementById('some_id');
+        if (element) {
+            element.style.display = 'none';
+        }
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const dateIcon = document.getElementById("dateIcon");
+    const datePicker = document.getElementById("datePicker");
+
+    if (dateIcon && datePicker) {
+        dateIcon.addEventListener("click", function () {
+            datePicker.showPicker(); // Для современных браузеров
+            datePicker.focus();      // Для поддержки старых браузеров
+        });
+    }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const slots = document.querySelectorAll(".time-slot");
+    const datePickerModal = document.getElementById("modalCalendar");
+    const bookingDateInput = document.getElementById("bookingDate");
+
+    slots.forEach(slot => {
+        slot.addEventListener("click", () => {
+            const selectedTime = slot.textContent;
+            console.log("Выбрано время:", selectedTime);
+            
+            // Открываем модальное окно выбора даты
+            if (datePickerModal) {
+                datePickerModal.classList.remove("hidden");
+                bookingDateInput.focus();
+                // Сохраняем выбранное время в localStorage
+                localStorage.setItem('selectedSlotTime', selectedTime);
+            } else {
+                alert("Окно выбора даты недоступно.");
+            }
+        });
+    });
+
+    document.querySelectorAll(".slot").forEach(slot => {
+        slot.addEventListener("click", () => {
+            const time = slot.dataset.time;
+            console.log("⏱ Выбран слот:", time);
+            if (document.getElementById("modalCalendar")) {
+                bookingData.slot = time;
+                Utils.showModal(document.getElementById("modalCalendar"));
+            }
+        });
+    });
 });
