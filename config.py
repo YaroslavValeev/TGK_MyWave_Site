@@ -12,6 +12,7 @@ class Config:
     GPTS_MODEL = os.getenv("GPTS_MODEL", "gpt-4")
     FINE_TUNED_MODEL = os.getenv("FINE_TUNED_MODEL", "ft:gpt-4o-mini-2024-07-18:mywave:mywavesite:Axgy7lSh")
     FALLBACK_MODEL = os.getenv("FALLBACK_MODEL", "gpt-4o")
+    ASSISTANT_ID = os.getenv("ASSISTANT_ID")
 
     # Настройки для Telegram
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -23,6 +24,7 @@ class Config:
     GOOGLE_CALENDAR_ID = os.getenv("GOOGLE_CALENDAR_ID")
     DRIVE_FOLDER_ID = os.getenv("DRIVE_FOLDER_ID")
     GOOGLE_SERVICE_ACCOUNT_FILE = "configs/service_account.json"
+    GOOGLE_WORKSHEET_NAME="Dialog_History"
 
     # Настройки уведомлений
     NOTIFICATION_BOT_TOKEN = os.getenv("NOTIFICATION_BOT_TOKEN")

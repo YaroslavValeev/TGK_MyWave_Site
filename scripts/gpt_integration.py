@@ -1,4 +1,4 @@
-import openai
+from openai import OpenAI
 import os
 from dotenv import load_dotenv
 
@@ -14,7 +14,8 @@ if not OPENAI_API_KEY:
 if not ASSISTANT_ID:
     raise ValueError("ASSISTANT_ID не найден в переменных окружения.")
 
-openai.api_key = OPENAI_API_KEY
+# Создание клиента OpenAI
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 def ask_gpt(prompt, chat_history=None):
     """
@@ -46,7 +47,7 @@ def ask_gpt(prompt, chat_history=None):
             "temperature": 0.7
         })
         # Отправляем запрос в модель
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=GPT_ID,
             messages=messages,
             max_tokens=1000,
@@ -54,11 +55,7 @@ def ask_gpt(prompt, chat_history=None):
         )
         print("Ответ от OpenAI получен:", response)
         # Возвращаем ответ
-        return response.choices[0].message["content"]
-    
-    except openai.error.OpenAIError as e:
-        # Если произошла ошибка с OpenAI API
-        return f"Ошибка GPT: {e.user_message or str(e)}"
+        return response.choices[0].message.content
     
     except Exception as e:
         # Для всех остальных ошибок

@@ -2,20 +2,47 @@ import requests
 import logging
 from datetime import datetime
 from flask import current_app
+from app.services.google_sheets_service import append_to_sheet
 
 logger = logging.getLogger(__name__)
 
 def log_dialog(client_id, source, message, reply):
+    """
+    Логирует диалог в Google Sheets.
+    
+    Args:
+        client_id (str): Идентификатор клиента
+        source (str): Источник сообщения
+        message (str): Сообщение пользователя
+        reply (str): Ответ системы
+        
+    Raises:
+        ValueError: Если не все параметры предоставлены
+        Exception: При ошибках записи в таблицу
+    """
     try:
+        if not all([client_id, source, message, reply]):
+            raise ValueError("Не все необходимые параметры предоставлены")
+            
         values = [[client_id, source, message, reply, datetime.now().isoformat()]]
-        current_app.sheet_service.spreadsheets().values().append(
-            spreadsheetId=current_app.config["SPREADSHEET_ID"],
-            range="Dialog_History!A:E",
-            valueInputOption="RAW",
-            body={"values": values}
-        ).execute()
+        
+        # Проверяем наличие необходимых конфигураций
+        if not current_app.config.get("SPREADSHEET_ID"):
+            raise ValueError("SPREADSHEET_ID не настроен")
+            
+        # Записываем данные в таблицу
+        append_to_sheet(
+            current_app.config["GOOGLE_SERVICE_ACCOUNT_FILE"],
+            current_app.config["SPREADSHEET_ID"],
+            current_app.config["GOOGLE_WORKSHEET_NAME"],
+            values[0]
+        )
+        
+        logger.info(f"Диалог успешно записан для клиента {client_id}")
+        
     except Exception as e:
-        logger.error(f"Dialog logging failed: {str(e)}")
+        logger.error(f"Ошибка записи диалога: {str(e)}")
+        # Не пробрасываем ошибку дальше, чтобы не прерывать основной поток
 
 def notify_admin(error_message):
     try:
