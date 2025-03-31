@@ -8,9 +8,9 @@
   <!-- CSP для теста (в дальнейшем настройте его в HTTP-заголовках сервера) -->
   <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net;
       font-src 'self' https://fonts.gstatic.com;
-      script-src 'self' 'unsafe-inline' 'unsafe-eval';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://www.googletagmanager.com https://cdn.socket.io;
       img-src 'self' data:;
       connect-src 'self';
   ">
@@ -30,6 +30,59 @@
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" as="style">
   <link rel="preload" href="/static/images/hero-wakesurf.webp" as="image">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+  <!-- Подключение Swiper.js -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+
+  <!-- Стили -->
+  <style>
+    .card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        padding: 15px;
+        text-align: center;
+    }
+
+    .client-photo {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        margin-bottom: 10px;
+    }
+
+    .swiper-container {
+        width: 100%;
+        padding: 20px;
+    }
+
+    .swiper-button-prev, .swiper-button-next {
+        color: #35C0CD;
+    }
+
+    .swiper-pagination-bullet-active {
+        background-color: #35C0CD;
+    }
+
+    .feedback-title {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .contacts-section {
+        padding: 20px;
+        background-color: #f7f7f7;
+        margin-top: 40px;
+    }
+
+    .about-section {
+        padding: 20px; /* Отступы вокруг блока */
+        background-color: #f9f9f9; /* Цвет фона для выделения */
+        border-radius: 8px; /* Скругление углов */
+        margin: 20px 0; /* Отступы сверху и снизу */
+    }
+  </style>
 </head>
 <body>
   <!-- Шапка сайта -->
@@ -55,7 +108,16 @@
       <h1>Добро пожаловать в MyWave</h1>
       <p>Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
       <!-- Кнопка "Записаться" открывает процесс бронирования -->
-      <button id="hero-signup-btn" class="btn-primary">Записаться</button>
+      <button id="hero-signup-btn" class="btn-primary-lg">Записаться</button>
+    </div>
+  </section>
+
+  <!-- О проекте (добавляем новый блок) -->
+  <section id="about" class="about-section">
+    <div class="container">
+      <h2>О проекте</h2>
+      <p>Мы обучаем вейксерфингу с подходом, основанным на многолетнем опыте, уникальных методиках и индивидуальной работе с каждым учеником.</p>
+      <video src="/static/videos/about.mp4" controls style="width:100%; max-width:700px; border-radius:12px;"></video>
     </div>
   </section>
 
@@ -65,7 +127,7 @@
     <div class="feature-list">
       <div class="feature-item">
         <h4>Профессионализм</h4>
-        <p>Многолетний опыт (20+ лет) и высокая квалификация.</p>
+        <p>Многолетний опыт (25+ лет) и высокая квалификация.</p>
       </div>
       <div class="feature-item">
         <h4>Комфорт и безопасность</h4>
@@ -78,17 +140,58 @@
     </div>
   </section>
 
+  <!-- Чат -->
+  <section id="chat" class="chat-section">
+    <h2>Чат с MyWave</h2>
+    <div id="chatWindow" class="chat-window"></div>
+    <div class="chat-controls">
+      <input type="text" id="user-input" placeholder="Введите сообщение..." autocomplete="off" />
+      <button id="sendBtn" class="btn-primary-lg">Отправить</button>
+    </div>
+    <!-- Прогресс-бар -->
+    <div id="file-upload-progress" class="progress">
+      <div class="bar"></div>
+    </div>
+    <!-- Поле выбора файла (скрывается через CSS) -->
+    <input type="file" id="file-upload" title="Выберите файл для загрузки" aria-label="Загрузка файла" />
+    <!-- Кнопка загрузки файла -->
+    <button id="uploadFileBtn" class="btn-secondary-sm">Загрузить файл</button>
+    <!-- Меню для дополнительных функций чата -->
+    <div id="menu-container" class="menu-container">
+      <button data-action="schedule" class="btn-secondary-sm">Расписание</button>
+      <button data-action="faq" class="btn-secondary-sm">FAQ</button>
+      <button data-action="training" class="btn-secondary-sm">Тренировка</button>
+    </div>
+  </section>
+
+  <!-- Секция Отзывы -->
+  <section id="testimonials" class="testimonials-section">
+    <h2 style="text-align:center;">Отзывы наших учеников</h2>
+    <div class="testimonials-container">
+      <div class="testimonial-card">
+        <h3>Эля Веснина</h3>
+        <p>«Отличный подход к тренировкам и крутая атмосфера!»</p>
+      </div>
+      <div class="testimonial-card">
+        <h3>Юлия Елупова</h3>
+        <p>«Каждая тренировка заряжает на новые победы!»</p>
+      </div>
+      <div class="testimonial-card">
+        <h3>Алина Лапина</h3>
+        <p>«Прогресс виден уже после первых занятий, всем рекомендую!»</p>
+      </div>
+    </div>
+  </section>
+
   <!-- Услуги -->
   <section id="services" class="services-section">
     <h2>Услуги</h2>
     <div class="services-list">
-      <div class="service-card">
-        <h4>Тренировка</h4>
-        <p>Описание услуги, длительность, особенности.</p>
-        <p>Цена: 3500 рублей</p>
-        <p id="slot-info">Доступно мест: <span id="available-slots"></span></p>
-        <!-- Кнопка "Записаться" -->
-        <button class="btn-secondary btn-book">Записаться</button>
+      <div class="service-card" style="width:400px; height:200px;">
+        <h4>Тренировка по вейксерфингу</h4>
+        <p>Длительность: 1.5 часа. Эффективное обучение с личным подходом. Безопасность и прогресс гарантированы.</p>
+        <p><strong>Цена:</strong> 3500 рублей</p>
+        <button class="btn-secondary-sm btn-book">Записаться</button>
       </div>
     </div>
   </section>
@@ -104,7 +207,7 @@
         <p>Цена: 1000 рублей</p>
         <label for="delivery-address">Адрес доставки:</label>
         <input type="text" id="delivery-address" name="delivery-address" placeholder="Введите адрес" autocomplete="on" />
-        <button class="btn-secondary">Купить</button>
+        <button class="btn-secondary-sm">Купить</button>
       </div>
     </div>
   </section>
@@ -181,42 +284,6 @@
     </div>
   </section>
 
-  <!-- Контакты -->
-  <section id="contacts" class="contacts-section">
-    <h2>Контакты</h2>
-    <form id="contact-form" class="contact" autocomplete="on">
-      <label for="username">Имя:</label>
-      <input type="text" id="username" name="username" required autocomplete="name" />
-      <label for="usercontact">Телефон или Telegram:</label>
-      <input type="text" id="usercontact" name="usercontact" required autocomplete="tel" />
-      <button type="submit" class="btn-primary">Отправить</button>
-    </form>
-  </section>
-
-  <!-- Чат -->
-  <section id="chat" class="chat-section">
-    <h2>Чат с MyWave</h2>
-    <div id="chatWindow" class="chat-window"></div>
-    <div class="chat-controls">
-      <input type="text" id="user-input" placeholder="Введите сообщение..." autocomplete="off" />
-      <button id="sendBtn" class="btn-primary">Отправить</button>
-    </div>
-    <!-- Прогресс-бар -->
-    <div id="file-upload-progress" class="progress">
-      <div class="bar"></div>
-    </div>
-    <!-- Поле выбора файла (скрывается через CSS) -->
-    <input type="file" id="file-upload" />
-    <!-- Кнопка загрузки файла -->
-    <button id="uploadFileBtn" class="btn-secondary">Загрузить файл</button>
-    <!-- Меню для дополнительных функций чата -->
-    <div id="menu-container" class="menu-container">
-      <button data-action="schedule" class="btn-secondary">Расписание</button>
-      <button data-action="faq" class="btn-secondary">FAQ</button>
-      <button data-action="training" class="btn-secondary">Тренировка</button>
-    </div>
-  </section>
-
   <!-- Модальные окна для бронирования -->
   <!-- Модальное окно для выбора даты (Шаг 1) -->
   <div id="modalCalendar" class="modal hidden">
@@ -228,14 +295,13 @@
         <div class="progress-step" data-step="4"></div>
       </div>
       <h3>Выберите дату</h3>
-      <!-- Заменён блок ввода даты -->
       <div class="date-picker-wrapper">
-        <input type="date" id="dateInput" name="booking-date" placeholder="ДД.ММ.ГГГГ">
+        <input type="date" id="dateInput" name="booking-date" class="form-control form-date-picker" placeholder="ДД.ММ.ГГГГ">
         <span class="calendar-icon" onclick="document.getElementById('dateInput').showPicker()">📅</span>
       </div>
       <div class="modal-actions">
-        <button id="confirmDateBtn" class="btn-primary">Далее</button>
-        <button id="cancelModal1" class="btn-secondary">Отмена</button>
+        <button id="confirmDateBtn" class="btn-primary-lg">Далее</button>
+        <button id="cancelModal1" class="btn-secondary-sm">Отмена</button>
       </div>
     </div>
   </div>
@@ -243,7 +309,7 @@
   <div id="modalSlots" class="modal hidden">
     <div class="modal-content">
       <h3>Выберите слот</h3>
-      <select id="slotSelect">
+      <select id="slotSelect" class="form-select-enhanced" title="Выберите время тренировки" aria-label="Выбор времени">
         <option value="10:30">10:30 (Свободно)</option>
         <option value="12:00">12:00 (Свободно)</option>
         <option value="13:30">13:30 (Свободно)</option>
@@ -251,18 +317,18 @@
         <option value="19:00">19:00 (Свободно)</option>
         <option value="20:00">20:00 (Свободно)</option>
       </select>
-      <button id="confirmSlotBtn" class="btn-primary">Далее</button>
-      <button id="cancelModal2" class="btn-link">Отмена</button>
+      <button id="confirmSlotBtn" class="btn-primary-lg">Далее</button>
+      <button id="cancelModal2" class="btn-link-sm">Отмена</button>
     </div>
   </div>
 
   <div id="modalContact" class="modal hidden">
     <div class="modal-content">
       <h3>Контактные данные</h3>
-      <input type="text" id="bookingName" placeholder="Ваше имя" autocomplete="name">
-      <input type="text" id="bookingPhone" placeholder="Телефон или Telegram" autocomplete="tel">
-      <button id="confirmContactBtn" class="btn-primary">Далее</button>
-      <button id="cancelModal3" class="btn-link">Отмена</button>
+      <input type="text" id="bookingName" placeholder="Ваше имя" class="form-control" autocomplete="name">
+      <input type="text" id="bookingPhone" placeholder="Телефон или Telegram" class="form-control" autocomplete="tel">
+      <button id="confirmContactBtn" class="btn-primary-lg">Далее</button>
+      <button id="cancelModal3" class="btn-link-sm">Отмена</button>
     </div>
   </div>
 
@@ -270,10 +336,17 @@
     <div class="modal-content">
       <h3>Подтверждение записи</h3>
       <p id="confirmDetails"></p>
-      <button id="finalConfirmBtn" class="btn-primary">Подтвердить</button>
-      <button id="cancelModal4" class="btn-link">Отмена</button>
+      <button id="finalConfirmBtn" class="btn-primary-lg">Подтвердить</button>
+      <button id="cancelModal4" class="btn-link-sm">Отмена</button>
     </div>
   </div>
+
+  <!-- Контакты -->
+  <section id="contacts" class="contacts-section">
+    <h2>Контакты</h2>
+    <p>Телефон: +79160117179<br>Email: MyWaveProject@yandex.ru<br>Telegram: @MyWaveAdmin</p>
+    <!-- Карта и соц.сети опционально -->
+  </section>
 
   <footer class="site-footer">
     <p>&copy; 2025 MyWave. Все права защищены.</p>
@@ -298,9 +371,38 @@
   <!-- Подключение Flatpickr перед закрытием body -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script>
-    flatpickr("#dateInput", {
-      dateFormat: "d.m.Y",
-      minDate: "today"
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        if (typeof flatpickr === 'undefined') {
+          console.error('Flatpickr не загружен');
+          return;
+        }
+        
+        flatpickr("#dateInput", {
+          dateFormat: "d.m.Y",
+          minDate: "today",
+          locale: "ru",
+          placeholder: "Выберите дату",
+          disableMobile: "true"
+        });
+      } catch (error) {
+        console.error('Ошибка инициализации Flatpickr:', error);
+      }
+    });
+  </script>
+  <script>
+    var swiper = new Swiper('.swiper-container', {
+      slidesPerView: 1,
+      spaceBetween: 20,
+      loop: true,
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+      },
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
     });
   </script>
 </body>

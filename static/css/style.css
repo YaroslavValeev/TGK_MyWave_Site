@@ -1,3 +1,86 @@
+/* Глобальные классы для форм */
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  box-sizing: border-box;
+  margin: 8px 0;
+}
+
+.form-control:invalid {
+  border-color: #EF5350;
+}
+
+.form-control:valid {
+  border-color: #00BCD4;
+}
+
+.form-select-enhanced {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 12px;
+}
+
+/* Глобальные классы для кнопок */
+.btn-primary-lg {
+  background-color: #00BCD4;
+  color: white;
+  font-size: 18px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 188, 212, 0.2);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-primary-lg:hover {
+  background-color: #009db4;
+  transform: scale(1.05);
+}
+
+.btn-secondary-sm {
+  background-color: transparent;
+  border: 2px solid #ccc;
+  color: #666;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-secondary-sm:hover {
+  background-color: #eee;
+}
+
+.btn-link-sm {
+  background: none;
+  color: #00BCD4;
+  font-size: 14px;
+  border: none;
+  padding: 6px 12px;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-link-sm:hover {
+  color: #009db4;
+}
+
 /* Используем шрифт Pangolin (подключается через Google Fonts) */
 html, body {
   margin: 0;
@@ -112,7 +195,7 @@ h1, h2, h3, h4, p {
 .hero-section .btn-primary {
   font-family: 'Inter', sans-serif;
   font-weight: 500;
-  background-color: #007AFF;
+  background-color: #35C0CD;
   color: #FFFFFF;
   border: none;
   padding: 12px 24px;
@@ -121,7 +204,7 @@ h1, h2, h3, h4, p {
   transition: background-color 0.3s ease;
 }
 .hero-section .btn-primary:hover {
-  background-color: #005BB5;
+  background-color: #35C0CD;
 }
 
 /* Блок преимуществ */
@@ -252,6 +335,7 @@ h1, h2, h3, h4, p {
   margin-bottom: 1em;
 }
 
+/* Удаляем дублирующиеся стили */
 .input-group {
   position: relative;
   margin-bottom: 1.5em;
@@ -265,39 +349,44 @@ h1, h2, h3, h4, p {
   font-size: 18px;
 }
 
-input[type="text"] {
-  width: 100%;
-  padding: 10px 10px 10px 40px;
-  border: 1px solid #E0E0E0;
-  border-radius: 12px;
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
+/* Удаляем следующие стили, так как они теперь определены в .form-control */
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+textarea {
+    max-width: 450px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+input[type="date"],
+input[type="text"],
+select {
+    width: 100%;
+    padding: 10px 10px 10px 40px;
+    border: 1px solid #E0E0E0;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
 }
 
 input:invalid {
-  border-color: #EF5350;
+    border-color: #EF5350;
 }
 
-input:valid {
-  border-color: #00BCD4;
+#bookingDate {
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #E0E0E0;
 }
 
-.btn-primary {
-  background-color: #00BCD4;
-  color: #FFFFFF;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-family: 'Inter', sans-serif;
-  font-weight: 450;
-  font-size: 16px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: transform 0.2s ease, background-color 0.3s ease;
-}
-
-.btn-primary:hover {
-  background-color: #0097A7;
-  transform: scale(1.05);
+#bookingName,
+#bookingPhone {
+    padding: 10px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
 }
 
 /* Чат */
@@ -316,14 +405,16 @@ input:valid {
   line-height: 1.4;
   opacity: 0;
   animation: fadeIn 0.3s ease forwards;
+  color: #333; /* Добавляем графитовый цвет текста по умолчанию */
 }
 .user {
   background-color: #d1eaff;
   text-align: right;
+  color: #333; /* Явно указываем цвет текста для сообщений пользователя */
 }
 .bot {
   background-color: #F5F5F5;
-  color: #666666; /* Было #1A1A1A */
+  color: #333; /* Явно указываем цвет текста для сообщений бота */
 }
 
 /* Прогресс-бар */
@@ -362,84 +453,200 @@ input:valid {
 
 /* Модальные окна - обновленные стили */
 .modal {
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.6); /* обновлённое затемнение */
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0; /* новая анимация появления */
-  transition: opacity 0.3s ease; /* плавный переход для появления/скрытия */
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
 }
+
 .modal.hidden {
   display: none;
 }
-.modal:not(.hidden) {
-  opacity: 1;
-}
+
 .modal-content {
-  max-width: 400px;
-  width: 90%;
-  padding: 24px;
-  border-radius: 16px;
+  position: relative;
   background-color: #fff;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  text-align: center;
+  margin: 15% auto;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-
-/* Прогресс-бар для модальных окон */
+/* Прогресс-бар */
 .progress-bar {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 1.5em;
-}
-.progress-step {
-  width: 25%;
-  height: 4px;
-  background: #E0E0E0;
-  border-radius: 2px;
-}
-.progress-step.active {
-  background: #00BCD4;
+  margin-bottom: 20px;
+  position: relative;
 }
 
-/* Группа ввода с иконкой */
-.input-group {
-  position: relative;
-  margin: 1em 0;
-}
-.input-icon {
+.progress-bar::before {
+  content: '';
   position: absolute;
-  left: 10px;
   top: 50%;
-  transform: translateY(-50%);
-  font-size: 18px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #e0e0e0;
+  z-index: 1;
 }
-input[type="date"],
-input[type="text"],
-select {
+
+.progress-step {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #fff;
+  border: 2px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+}
+
+.progress-step.active {
+  background-color: #35C0CD;
+  border-color: #55dbf3;
+  color: #fff;
+}
+
+/* Формы */
+.form-control {
   width: 100%;
-  padding: 10px 10px 10px 40px;
-  border: 1px solid #E0E0E0;
-  border-radius: 8px;
-  font-family: 'Inter', sans-serif;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 15px;
   font-size: 16px;
 }
-input:invalid {
-  border-color: #EF5350;
+
+.form-control:focus {
+  outline: none;
+  border-color: #35C0CD;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
-/* Действия модальных окон */
+.form-date-picker {
+  position: relative;
+  padding-right: 40px;
+}
+
+.date-picker-wrapper {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.calendar-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.form-select-enhanced {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.form-select-enhanced:focus {
+  outline: none;
+  border-color: #35C0CD;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* Кнопки */
 .modal-actions {
   display: flex;
-  gap: 1em;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-primary-lg {
+  padding: 12px 24px;
+  background-color: #35C0CD;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary-lg:hover {
+  background-color: #61B4CF;
+}
+
+.btn-secondary-sm {
+  padding: 8px 16px;
+  background-color: #6c757d;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-secondary-sm:hover {
+  background-color: #61B4CF;
+}
+
+.btn-link-sm {
+  padding: 8px 16px;
+  background: none;
+  color: #35C0CD;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.btn-link-sm:hover {
+  color: #61B4CF;
+  text-decoration: underline;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal:not(.hidden) {
+  display: flex;
+  align-items: center;
   justify-content: center;
-  margin-top: 1.5em;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Добавлены стили для контроля магазина и карточек продуктов */
@@ -689,13 +896,11 @@ input:invalid {
 }
 .message.user {
   background-color: #00BCD4;
-  color: #FFFFFF;
-  margin-left: auto;
+  color: #FFFFFF; /* Белый текст для сообщений пользователя на синем фоне */
 }
 .message.bot {
   background-color: #F5F5F5;
-  color: #666666; /* Было #1A1A1A */
-  margin-right: auto;
+  color: #333; /* Графитовый текст для сообщений бота на светлом фоне */
 }
 .message small {
   display: block;
@@ -932,9 +1137,9 @@ button.chat-send {
     cursor: pointer;
     font-size: 20px;
     z-index: 10;
+    -webkit-user-select: none;
     user-select: none;
 }
-
 /* Новые стили для оптимизации чата */
 .chat-window {
     max-height: 400px;
@@ -1250,4 +1455,61 @@ form#contact-form button:hover {
   cursor: pointer;
   font-size: 18px;
   color: #888;
+}
+
+/* Обновляем стили для сообщений в чат-виджете */
+.message.user {
+    background-color: #00BCD4;
+    color: #FFFFFF; /* Белый текст для сообщений пользователя на синем фоне */
+}
+
+.message.bot {
+    background-color: #F5F5F5;
+    color: #333; /* Графитовый текст для сообщений бота на светлом фоне */
+}
+
+/* Обновляем стили для сообщений в основном чате */
+#chatWindow .message {
+    color: #333; /* Графитовый цвет текста по умолчанию */
+}
+
+#chatWindow .message.user {
+    background-color: #00BCD4;
+    color: #FFFFFF; /* Белый текст для сообщений пользователя */
+}
+
+#chatWindow .message.bot {
+    background-color: #F5F5F5;
+    color: #333; /* Графитовый текст для сообщений бота */
+}
+
+.testimonials-container {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 30px 20px;
+    justify-content: center;
+}
+
+.testimonial-card {
+    flex: 0 0 auto;
+    width: 300px;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 20px;
+    text-align: center;
+    font-size: 16px;
+    transition: transform 0.3s ease;
+}
+
+.testimonial-card:hover {
+    transform: translateY(-5px);
+}
+
+.container {
+    max-width: 1200px; /* Максимальная ширина контейнера */
+    margin: 0 auto; /* Центрирование контейнера */
+    padding: 0 15px; /* Горизонтальные отступы */
 }

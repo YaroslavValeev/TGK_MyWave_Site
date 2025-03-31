@@ -15,11 +15,10 @@ from googleapiclient.discovery import build
 # Локальные импорты
 from app.database import db
 from app.routes.auth import bp as auth_bp
-from app.routes.chat import bp as chat_bp
+from app.routes.chat import chat_bp
 from app.routes.files import bp as files_bp
 from app.routes.calendar_routes import calendar_bp
 from app.services.google import init_google_services
-from app.utils import notify_admin, process_chat_message  # Import the missing function
 from app.database.models import User, Analytics
 
 app = Flask(__name__)
@@ -39,6 +38,8 @@ app.config.from_mapping(
     SPREADSHEET_ID=os.getenv("SPREADSHEET_ID"),
     TELEGRAM_BOT_TOKEN=os.getenv("TELEGRAM_BOT_TOKEN"),
     ADMIN_CHAT_ID=os.getenv("ADMIN_CHAT_ID"),
+    GOOGLE_WORKSHEET_NAME=os.getenv("GOOGLE_WORKSHEET_NAME", "Dialog_History"),
+    ASSISTANT_ID=os.getenv("ASSISTANT_ID")
 )
 
 if not os.path.exists(app.config["GOOGLE_SERVICE_ACCOUNT_FILE"]):
@@ -50,13 +51,12 @@ warnings.filterwarnings('ignore', message='file_cache is only supported with oau
 # Регистрация SQLAlchemy на приложении
 db.init_app(app)
 
-# Если ранее вы инициализировали Talisman с force_https, лучше удалить дублирование.
 # Обновление настройки Content Security Policy (CSP)
 csp = {
     'default-src': ["'self'"],
-    'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.googletagmanager.com"],
+    'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.googletagmanager.com", "https://cdn.socket.io"],
     'frame-src': ["https://calendar.google.com"],
-    'img-src': ["'self'", "data:"],
+    'img-src': ["'self'", "data:", "https://www.googletagmanager.com"],
     'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
     'font-src': ["https://fonts.gstatic.com"]
 }
@@ -87,7 +87,7 @@ def handle_message(data):
 app.register_blueprint(auth_bp)
 app.register_blueprint(chat_bp)
 app.register_blueprint(files_bp)
-app.register_blueprint(calendar_bp, url_prefix="/calendar")  # убедитесь, что этот префикс указан
+app.register_blueprint(calendar_bp, url_prefix="/calendar")
 
 with app.app_context():
     try:
@@ -114,21 +114,6 @@ def load_user(user_id):
 def index():
     return render_template("index.html")
 
-@app.route('/chat', methods=['POST'])
-def chat_handler():
-    try:
-        data = request.get_json()
-        if not data or "message" not in data:
-            return jsonify({"error": "Сообщение обязательно"}), 400
-
-        message = data.get("message", "")
-        # Убедитесь, что функция process_chat_message определена и корректно работает
-        response = process_chat_message(message)  # Ensure this function is defined or imported
-        return jsonify({"reply": response})
-    except Exception as e:
-        logging.exception("Ошибка при обработке запроса /chat")
-        return jsonify({"error": str(e)}), 500
-
 @app.route('/upload', methods=['POST'])
 def upload():
     if 'file' not in request.files:
@@ -147,12 +132,12 @@ def favicon():
 
 @app.errorhandler(404)
 def not_found(e):
-    logging.error(f"Ошибка 404. Запрошенный URL: {request.path}")  # Добавлен лог ошибки
+    logging.error(f"Ошибка 404. Запрошенный URL: {request.path}")
     return jsonify({"error": "Resource not found"}), 404
 
 @app.errorhandler(405)
 def method_not_allowed(e):
-    logging.error(f"Ошибка 405. Запрошенный URL: {request.path}")  # Добавлен лог ошибки
+    logging.error(f"Ошибка 405. Запрошенный URL: {request.path}")
     return jsonify({"error": "Method not allowed"}), 405
 
 def get_available_slots_from_google(date):

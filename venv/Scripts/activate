@@ -35,7 +35,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\Lenovo\Desktop\Site_MyWave\venv"
+VIRTUAL_ENV="C:\Users\Lenovo\Desktop\Site_MyWave\TGK_MyWave_Site\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

@@ -1,3 +1,44 @@
+// Глобальные переменные и утилиты
+let bookingData = { date: null, slot: null, name: "", phone: "" };
+
+const Utils = {
+    getTime: () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    scrollChat: () => {
+        const chatWindow = document.getElementById("chatWindow");
+        if (chatWindow) {
+            chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: "smooth" });
+        }
+    },
+    createMessage: (text, type = "bot") => {
+        const div = document.createElement("div");
+        div.className = `message ${type}`;
+        div.innerHTML = `<strong>${type === "user" ? "Вы" : "Эксперт"}:</strong> ${text} <small>${Utils.getTime()}</small>`;
+        return div;
+    },
+    showModal: (elem) => {
+        if (elem) {
+            elem.classList.remove("hidden");
+            document.body.style.overflow = "hidden";
+        }
+    },
+    hideModal: (elem) => {
+        if (elem) {
+            elem.classList.add("hidden");
+            document.body.style.overflow = "";
+        }
+    },
+    updateProgressBar: (step) => {
+        const steps = document.querySelectorAll(".progress-step");
+        steps.forEach((s, index) => {
+            if (index + 1 <= step) {
+                s.classList.add("active");
+            } else {
+                s.classList.remove("active");
+            }
+        });
+    }
+};
+
 document.addEventListener("DOMContentLoaded", () => {
     // Remove daysTranslation references since we're using English format
 
@@ -37,45 +78,11 @@ document.addEventListener("DOMContentLoaded", () => {
         socket = io();
     }
 
-    const Utils = {
-        getTime: () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        scrollChat: () => {
-            if (UI.chatWindow) {
-                UI.chatWindow.scrollTo({ top: UI.chatWindow.scrollHeight, behavior: "smooth" });
-            }
-        },
-        createMessage: (text, type = "bot") => {
-            const div = document.createElement("div");
-            div.className = `message ${type}`;
-            div.innerHTML = `<strong>${type === "user" ? "Вы" : "Эксперт"}:</strong> ${text} <small>${Utils.getTime()}</small>`;
-            return div;
-        },
-        showModal: (elem) => { elem.classList.remove("hidden"); },
-        hideModal: (elem) => { elem.classList.add("hidden"); }
-    };
-
-    // Добавляем корректные отступы для поля даты и контактных данных
-    if (UI.bookingDateInput) {
-        UI.bookingDateInput.style.padding = "8px";
-        UI.bookingDateInput.style.margin = "4px 0";
-    }
-    if (UI.bookingName) {
-        UI.bookingName.style.padding = "8px";
-        UI.bookingName.style.margin = "4px 0";
-    }
-    if (UI.bookingPhone) {
-        UI.bookingPhone.style.padding = "8px";
-        UI.bookingPhone.style.margin = "4px 0";
-    }
-    if (UI.slotSelect) {
-        UI.slotSelect.style.padding = "10px 14px";
-        UI.slotSelect.style.marginBottom = "12px";
-        UI.slotSelect.style.borderRadius = "8px";
-        UI.slotSelect.style.border = "1px solid #ccc";
-        UI.slotSelect.style.fontFamily = "Inter, sans-serif";
-        UI.slotSelect.style.fontSize = "16px";
-        UI.slotSelect.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.05)";
-    }
+    // Применяем глобальные классы к формам и select
+    if (UI.bookingDateInput) UI.bookingDateInput.classList.add("form-control");
+    if (UI.bookingName) UI.bookingName.classList.add("form-control");
+    if (UI.bookingPhone) UI.bookingPhone.classList.add("form-control");
+    if (UI.slotSelect) UI.slotSelect.classList.add("form-select-enhanced");
 
     // Функция отправки сообщения в чате
     async function sendMessage() {
@@ -165,7 +172,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Пошаговый процесс бронирования
-    let bookingData = { date: null, slot: null, name: "", phone: "" };
     function openBookingFlow() {
         bookingData = { date: null, slot: null, name: "", phone: "" };
         Utils.showModal(UI.modalCalendar);
@@ -173,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function confirmDate() {
         const dateInput = document.getElementById("dateInput");
         const selectedDate = dateInput.value;
-        const selectedTime = localStorage.getItem('selectedSlotTime'); // Берём время из localStorage
+        const selectedTime = localStorage.getItem('selectedSlotTime');
 
         if (!selectedDate) {
             alert('Выберите дату!');
@@ -181,15 +187,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         bookingData.date = selectedDate;
-        bookingData.slot = selectedTime;  // сразу сохраняем выбранное время
+        bookingData.slot = selectedTime;
 
         fetch(`/calendar/available_slots/${selectedDate}`)
         .then(response => response.json())
         .then(data => {
-            if (data.slots && data.slots.length > 0) {
-                updateSlotOptions(data.slots);  // Заполняем select
+            const dayOfWeek = new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+            const slots = data[dayOfWeek];
+
+            if (slots && slots.length > 0) {
+                updateSlotOptions(slots);
                 Utils.hideModal(UI.modalCalendar);
                 Utils.showModal(UI.modalSlots);
+                Utils.updateProgressBar(2);
             } else {
                 alert("На эту дату нет свободных слотов.");
             }
@@ -208,6 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
         bookingData.slot = slotVal;
         Utils.hideModal(UI.modalSlots);
         Utils.showModal(UI.modalContact);
+        Utils.updateProgressBar(3);
     }
     function confirmContact() {
         const nameVal = UI.bookingName.value.trim();
@@ -224,6 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `Имя: ${bookingData.name}, контакт: ${bookingData.phone}\n\n` +
             `Нажмите "Подтвердить", чтобы забронировать слот.`;
         Utils.showModal(UI.modalConfirm);
+        Utils.updateProgressBar(4);
     }
     function finalConfirm() {
         Utils.hideModal(UI.modalConfirm);
@@ -249,9 +261,11 @@ document.addEventListener("DOMContentLoaded", () => {
         .catch(err => {
             alert("Произошла ошибка, попробуйте снова.");
         });
+        // Очищаем форму
         UI.bookingDateInput.value = "";
         UI.bookingName.value = "";
         UI.bookingPhone.value = "";
+        Utils.updateProgressBar(1);
     }
 
     function cancelBooking() {
@@ -259,6 +273,11 @@ document.addEventListener("DOMContentLoaded", () => {
         Utils.hideModal(UI.modalSlots);
         Utils.hideModal(UI.modalContact);
         Utils.hideModal(UI.modalConfirm);
+        Utils.updateProgressBar(1);
+        // Очищаем форму
+        UI.bookingDateInput.value = "";
+        UI.bookingName.value = "";
+        UI.bookingPhone.value = "";
     }
 
     function updateSlotOptions(slots) {
@@ -315,15 +334,31 @@ document.addEventListener("DOMContentLoaded", () => {
             openBookingFlow();
         });
     }
-    // Обработчики модальных окон
-    if (UI.confirmDateBtn) UI.confirmDateBtn.addEventListener("click", confirmDate);
-    if (UI.confirmSlotBtn) UI.confirmSlotBtn.addEventListener("click", confirmSlot);
-    if (UI.confirmContactBtn) UI.confirmContactBtn.addEventListener("click", confirmContact);
-    if (UI.finalConfirmBtn) UI.finalConfirmBtn.addEventListener("click", finalConfirm);
-    if (UI.cancelModal1) UI.cancelModal1.addEventListener("click", cancelBooking);
-    if (UI.cancelModal2) UI.cancelModal2.addEventListener("click", cancelBooking);
-    if (UI.cancelModal3) UI.cancelModal3.addEventListener("click", cancelBooking);
-    if (UI.cancelModal4) UI.cancelModal4.addEventListener("click", cancelBooking);
+    // Назначение событий для модальных окон
+    if (UI.confirmDateBtn) {
+        UI.confirmDateBtn.addEventListener("click", confirmDate);
+    }
+    if (UI.confirmSlotBtn) {
+        UI.confirmSlotBtn.addEventListener("click", confirmSlot);
+    }
+    if (UI.confirmContactBtn) {
+        UI.confirmContactBtn.addEventListener("click", confirmContact);
+    }
+    if (UI.finalConfirmBtn) {
+        UI.finalConfirmBtn.addEventListener("click", finalConfirm);
+    }
+    if (UI.cancelModal1) {
+        UI.cancelModal1.addEventListener("click", cancelBooking);
+    }
+    if (UI.cancelModal2) {
+        UI.cancelModal2.addEventListener("click", cancelBooking);
+    }
+    if (UI.cancelModal3) {
+        UI.cancelModal3.addEventListener("click", cancelBooking);
+    }
+    if (UI.cancelModal4) {
+        UI.cancelModal4.addEventListener("click", cancelBooking);
+    }
 
     // Socket.io (пример)
     if (socket) {
@@ -403,6 +438,28 @@ document.addEventListener("DOMContentLoaded", () => {
             element.style.display = 'none';
         }
     });
+
+    // Добавленный код для обработки нажатий на кнопки меню
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('#menu-container button').forEach(button => {
+            button.addEventListener('click', function() {
+                const action = this.getAttribute('data-action');
+                switch(action) {
+                    case 'schedule':
+                        window.location.href = '#calendar';
+                        break;
+                    case 'faq':
+                        window.location.href = '/workspaces/TGK_MyWave_Site/templates/faq.html';
+                        break;
+                    case 'training':
+                        window.location.href = '#services';
+                        break;
+                    default:
+                        console.error('Неизвестное действие: ', action);
+                }
+            });
+        });
+    });
 });
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -443,10 +500,8 @@ document.addEventListener("DOMContentLoaded", () => {
         slot.addEventListener("click", () => {
             const time = slot.dataset.time;
             console.log("⏱ Выбран слот:", time);
-            if (document.getElementById("modalCalendar")) {
-                bookingData.slot = time;
-                Utils.showModal(document.getElementById("modalCalendar"));
-            }
+            localStorage.setItem("selectedSlotTime", time); // сохраняем выбранное время
+            Utils.showModal(UI.modalCalendar); // открываем календарь
         });
     });
 });
