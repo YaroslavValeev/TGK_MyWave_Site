@@ -1,21 +1,31 @@
 from app.services.openai import get_chat_response
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, jsonify, request, current_app, render_template
 from flask_wtf.csrf import CSRFProtect
+from app.models import ChatMessage
 
-bp = Blueprint('chat', __name__)
+bp = Blueprint('chat', __name__, template_folder='../templates')
 csrf = CSRFProtect()
-csrf.exempt(bp)  # Отключаем CSRF для этого blueprint для теста
+csrf.exempt(bp)  # Отключаем CSRF для этого blueprint
 
-@bp.route("/chat", methods=["POST"])
+@bp.route("/")
+def chat():
+    messages = ChatMessage.query.order_by(ChatMessage.created_at.asc()).all()
+    return render_template("chat.html", messages=messages)
+
+@bp.route("/api", methods=["POST"])
 def chat_handler():
     try:
-        data = request.get_json()
-        if not data:
-            return jsonify({"error": "Ошибка: нет данных"}), 400
-        if "message" not in data or not isinstance(data["message"], str):
-            return jsonify({"error": "Ошибка: поле 'message' обязательно"}), 400
-        reply = get_chat_response(data["message"])
-        return jsonify({"reply": reply})
+        message = request.json.get('message')
+        if not message:
+            return jsonify({'error': 'No message provided'}), 400
+
+        # 👤 Идентификатор пользователя для контекста чата
+        client_id = request.headers.get("X-User-Id") or request.remote_addr
+
+        response = get_chat_response(message, client_id=client_id)
+        return jsonify({'response': response})
     except Exception as e:
-        current_app.logger.error(f"Chat error: {str(e)}")
-        return jsonify({"error": f"Ошибка сервера: {str(e)}"}), 500
+        current_app.logger.error(f"OpenAI API error: {str(e)}")
+        return jsonify({
+            'response': 'Извините, произошла ошибка при обработке вашего сообщения.'
+        }), 500

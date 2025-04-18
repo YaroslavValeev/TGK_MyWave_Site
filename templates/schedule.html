@@ -2,65 +2,77 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Расписание тренировок</title>
-  <!-- Подключаем Bootstrap CSS (опционально) -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <!-- Подключаем FullCalendar CSS -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
-  <!-- Подключаем FullCalendar JS -->
+  <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
-  <!-- Подключаем Moment.js, если требуется (в последних версиях FullCalendar уже не нужен, но если требуется для форматирования дат, можно подключить) -->
 </head>
 <body>
   <div class="container mt-4">
     <h1>Расписание тренировок</h1>
-    <!-- Здесь будет отображаться календарь -->
     <div id="calendar"></div>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      var calendarEl = document.getElementById('calendar');
-      
-      // Инициализируем календарь
-      var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        headerToolbar: {
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay'
-        },
-        events: function(fetchInfo, successCallback, failureCallback) {
-          // Делаем запрос на endpoint /available_slots, который возвращает слоты в формате JSON
-          fetch('/available_slots')
-            .then(response => response.json())
-            .then(data => {
-              // Преобразуем полученные слоты в события для календаря
-              // Предположим, что data.available_slots – это массив объектов с полями "id" и "start"
-              let events = data.available_slots.map(slot => {
-                return {
-                  id: slot.id,
-                  title: "Доступно", // Можно добавить больше информации
-                  start: slot.start,
-                  // Добавим цвет для свободных слотов (например, зеленый)
-                  backgroundColor: "#28a745"
-                }
-              });
-              successCallback(events);
-            })
-            .catch(error => {
-              console.error('Ошибка загрузки слотов:', error);
-              failureCallback(error);
-            });
-        },
-        eventClick: function(info) {
-          // При клике на событие можно открыть модальное окно с информацией или перенаправить на страницу записи
-          alert("Вы выбрали слот: " + info.event.start.toLocaleString() + "\nНажмите 'OK' для записи.");
-          // Здесь можно перенаправить пользователя к логике записи, например:
-          window.location.href = "/enter_contact";
+    document.addEventListener('DOMContentLoaded', async function() {
+        console.log("🔄 Инициализация календаря...");
+        
+        var calendarEl = document.getElementById('calendar');
+        if (!calendarEl) {
+            console.error("❌ Элемент calendar не найден!");
+            return;
         }
-      });
-      calendar.render();
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'ru',
+            firstDay: 1,
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek'
+            },
+            events: async function(fetchInfo, successCallback, failureCallback) {
+                try {
+                    console.log("🔄 Загрузка слотов...");
+                    const response = await fetch('/available_slots');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    console.log("📅 Данные слотов:", data);
+
+                    let events = [];
+                    Object.entries(data).forEach(([day, slots]) => {
+                        console.log(`Обработка дня: ${day}`, slots);
+                        slots.forEach(slot => {
+                            let eventDate = new Date(fetchInfo.start);
+                            while (eventDate <= fetchInfo.end) {
+                                if (eventDate.toLocaleDateString("ru-RU", { weekday: "long" }) === day) {
+                                    events.push({
+                                        title: `Доступно: ${slot.available} мест (${slot.time})`,
+                                        start: `${eventDate.toISOString().split('T')[0]}T${slot.time}`,
+                                        backgroundColor: slot.available > 2 ? "#28a745" : "#ffc107"
+                                    });
+                                }
+                                eventDate.setDate(eventDate.getDate() + 1);
+                            }
+                        });
+                    });
+
+                    console.log("✅ События календаря:", events);
+                    successCallback(events);
+                } catch (error) {
+                    console.error("❌ Ошибка:", error);
+                    failureCallback(error);
+                }
+            }
+        });
+
+        calendar.render();
+        console.log("✅ Календарь инициализирован");
     });
   </script>
 </body>

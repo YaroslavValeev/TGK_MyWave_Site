@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
-bp = Blueprint('auth', __name__)  # ✅ Здесь создается Blueprint
+bp = Blueprint('auth', __name__)  # 🔐 Blueprint для авторизации
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -8,7 +8,7 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
 
-        # Простая логика проверки
+        # 🔒 Простая заглушка: можно заменить на проверку через БД или Google Sheets
         if username == "admin" and password == "password":
             flash("Вы успешно вошли!", "success")
             return redirect(url_for('index'))  # Перенаправление на главную страницу
@@ -16,4 +16,3 @@ def login():
             flash("Неверное имя пользователя или пароль", "danger")
 
     return render_template('auth/login.html')
-

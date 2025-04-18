@@ -1,4 +1,1 @@
-from .auth import bp as auth
-from .chat import bp as chat
-from .files import bp as files
-from .auth import bp as auth_bp
+# This file can be empty, it just needs to exist to make the directory a Python package

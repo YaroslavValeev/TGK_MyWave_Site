@@ -1,0 +1,135 @@
+diff --git a/templates/base.html b/templates/base.html
+index abcdef1..abcdef2 100644
+--- a/templates/base.html
++++ b/templates/base.html
+@@ -14,16 +14,6 @@
+   <script src="/static/js/chat.js"></script>
+   <script src="/static/js/booking.js"></script>
+ 
+-  <!-- Flatpickr -->
+-  <link rel="stylesheet" href="{{ url_for('static', filename='css/flatpickr.min.css') }}">
+-<script src="{{ url_for('static', filename='js/flatpickr.min.js') }}"></script>
+-<script src="{{ url_for('static', filename='js/flatpickr-ru.js') }}"></script>
+-
+-
+-<!-- Дубль ниже  -->
+-
+-
+-
+     <!-- SEO -->
+     <meta name="description" content="MyWave — профессиональные тренировки..." />
+     <meta name="keywords" content="вейксерфинг..." />
+diff --git a/app/routes/book.py b/app/routes/book.py
+index 1111111..2222222 100644
+--- a/app/routes/book.py
++++ b/app/routes/book.py
+@@ -66,12 +66,16 @@ def book_api():
+ 
+         is_ok, msg = is_slot_available(booking_date, booking_time)
+         if not is_ok:
+-            return jsonify({"success": False, "error": msg}), 400
++            return jsonify({"success": False, "error": msg}), 400  # здесь всё норм
+ 
+         success, result = book_slot(booking_date, booking_time, data["name"], data["phone"])
+         if not success:
+             return jsonify({"success": False, "error": result}), 500
+ 
+-        return jsonify({...}), 200
++        return jsonify({
++            "success": True,
++            "message": "Тренировка успешно забронирована!",
++            "calendarLink": result
++        }), 200
+ 
+-        # Устаревший код ниже
+-        workout_slots, headers = get_sheet_records(...)
+-        ...
+-        return jsonify({"success": True, "message": "Тренировка...", "calendarLink": ...}), 200
++        # УДАЛЯЕМ всё, что ниже возвращалось после успеха
++        # (workout_slots, headers, slot_found, max_capacity, trainer и пр.)
++        # Т.к. мы уже вернули JSON об успехе, этот код недостижим
+diff --git a/app/modules/booking_utils.py b/app/modules/booking_utils.py
+index 3333333..4444444 100644
+--- a/app/modules/booking_utils.py
++++ b/app/modules/booking_utils.py
+@@ -35,7 +35,29 @@ def get_slot_capacity(date_str, time_str):
+     # ...
+ 
+     return None  # stub
+ 
+-def book_slot(date_str, time_str, name, phone):
++def book_slot(date_str, time_str, name, phone):
++    """
++    Реальная запись (добавление в Sheets, Calendar и т. д.).
++    Возвращает (bool, error_msg или calendar_link).
++    """
+     try:
++        # 1) Проверить доступность
++        is_ok, msg = is_slot_available(date_str, time_str)
++        if not is_ok:
++            return False, msg
++
++        # 2) Пример логики: add_client_workout + add_booking_to_calendar
++        from app.modules.sheets import (
++            add_client_workout,
++            get_workout_by_datetime,
++            get_workout_participants
++        )
++        from app.routes.calendar_routes import add_booking_to_calendar
++
++        workout = get_workout_by_datetime(date_str, time_str)
++        if not workout:
++            return False, "Тренировка не найдена"
++        if get_workout_participants(workout["workout_id"]) >= workout["max_capacity"]:
++            return False, "Слот переполнен"
++        add_client_workout("site_user_id", workout["workout_id"])
++
++        success, link = add_booking_to_calendar(date_str, time_str, name, phone)
++        return True, link if success else ""
+     except Exception as e:
+         return (False, str(e))
+diff --git a/app/modules/sheets.py b/app/modules/sheets.py
+index 5555555..6666666 100644
+--- a/app/modules/sheets.py
++++ b/app/modules/sheets.py
+@@ -1,6 +1,7 @@
+ from googleapiclient.discovery import build
+ from google.oauth2.service_account import Credentials
+ from datetime import datetime
++from flask import current_app
+ import uuid
+ 
+ def parse_time(time_str):
+@@ -24,12 +25,27 @@ def append_row(sheet_name, values_list):
+     # 2) Append data
+     pass
+ 
++    # Пример:
++    # service = get_sheets_service()
++    # spreadsheet_id = current_app.config["SPREADSHEET_ID"]
++    # service.spreadsheets().values().append(
++    #    spreadsheetId=spreadsheet_id,
++    #    range=f"{sheet_name}!A1",
++    #    valueInputOption='RAW',
++    #    insertDataOption='INSERT_ROWS',
++    #    body={'values': [values_list]}
++    # ).execute()
++
+ def get_all_records(sheet_name):
+     """
+     Возвращает все записи листа в удобном виде (list of dict).
+     """
+     pass
+ 
++    # Пример:
++    # service = get_sheets_service()
++    # spreadsheet_id = current_app.config["SPREADSHEET_ID"]
++    # result = service.spreadsheets().values().get(
++    #     spreadsheetId=spreadsheet_id,
++    #     range=f"{sheet_name}!A1:Z1000"
++    # ).execute()
++    # ...
++
+ def get_sheets_service():
+     creds = Credentials.from_service_account_file('credentials.json')
+     return build('sheets', 'v4', credentials=creds)

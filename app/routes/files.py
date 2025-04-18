@@ -1,8 +1,10 @@
 from flask import Blueprint, request, jsonify, current_app
-from app.services.google import create_drive_link
+from app.services.google import GoogleService
 from googleapiclient.http import MediaFileUpload
 
 bp = Blueprint('files', __name__, url_prefix='/files')
+
+ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "pdf", "mp4", "mov", "xlsx", "zip"}
 
 def upload_to_drive_from_stream(file, folder_id):
     """Загружает файл на Google Drive."""
@@ -41,10 +43,18 @@ def upload_file():
     if not file or not user_id:
         return jsonify({"error": "Файл или ID пользователя не предоставлены"}), 400
 
+    # 🔒 Проверка допустимых расширений
+    if not file.filename.lower().endswith(tuple(ALLOWED_EXTENSIONS)):
+        return jsonify({"success": False, "error": "Недопустимый формат файла"}), 400
+
     try:
         folder_id = current_app.config.get("DRIVE_FOLDER_ID")
         drive_file_id = upload_to_drive_from_stream(file, folder_id)
-        download_link = create_drive_link(drive_file_id)
+
+        current_app.logger.info(f"✅ Файл {file.filename} загружен в Google Drive пользователем {user_id}")
+
+        google_service = GoogleService()
+        download_link = google_service.create_drive_link(drive_file_id)
         return jsonify({
             "status": "success",
             "file_id": drive_file_id,

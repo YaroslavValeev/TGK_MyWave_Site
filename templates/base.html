@@ -1,147 +1,134 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <!-- Обязательные метатеги -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- SEO метатеги -->
-    <meta name="description" content="MyWave — лидер в организации профессиональных тренировок по вейксерфингу и вейкбордингу. Запишитесь на занятия, получите консультации от экспертов, изучите спортивные методики и вдохновитесь лучшими тренировками в мире водного спорта.">
-    <meta name="keywords" content="вейксерфинг, вейкбординг, тренировки, водный спорт, профессиональные тренировки, фитнес, инструктор, спортивные методики, MyWave, занятия на воде">
-    <meta name="robots" content="index, follow">
-    
-    <!-- Заголовок страницы (будет переопределяться в дочерних шаблонах) -->
-    <title>{% block title %}MyWave{% endblock %}</title>
-    
-    <!-- Фавикон: убедитесь, что файл favicon.ico находится в static/images/ -->
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-    
-    <!-- Подключение шрифта Pangolin с Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="content-language" content="ru" />
+  <meta name="csrf-token" content="{{ csrf_token() }}" />
 
-    <!-- Google Analytics -->
-    <!-- Если у вас есть реальный ID, замените 475892491 на него или передавайте через контекст -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=475892491"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', '475892491');
-    </script>
+  <!-- SEO -->
+  <meta name="description" content="MyWave — профессиональные тренировки по вейксерфингу и вейкборду..." />
+  <meta name="keywords" content="вейксерфинг, вейкбординг, тренировки, MyWave" />
+  <meta name="robots" content="index, follow" />
+
+  <title>{% block title %}MyWave{% endblock %}</title>
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+
+  <!-- Flatpickr (если нужно оставить) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-343773438"></script>
+  <script nonce="{{ csp_nonce }}">
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-343773438');
+  </script>
+
+  <!-- Yandex.Metrika counter -->
+  <script nonce="{{ csp_nonce }}" type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){ (m[i].a=m[i].a||[]).push(arguments); };
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {
+            if (document.scripts[j].src === r) { return; }
+        }
+        k = e.createElement(t), a = e.getElementsByTagName(t)[0],
+        k.async = 1, k.src = r, a.parentNode.insertBefore(k,a)
+    })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
     
-    <!-- Yandex.Metrika -->
-    <script type="text/javascript">
-        (function(m,e,t,r,i,k,a){
-            m[i]=m[i]||function(){ (m[i].a=m[i].a||[]).push(arguments) };
-            m[i].l=1*new Date();
-            k=e.createElement(t), a=e.getElementsByTagName(t)[0],
-            k.async=1, k.src=r, a.parentNode.insertBefore(k,a)
-        })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-      
-        ym(99772473, "init", {
-             clickmap:true,
-             trackLinks:true,
-             accurateTrackBounce:true,
-             webvisor:true
-        });
-    </script>
-    <noscript>
-        <div>
-            <img src="https://mc.yandex.ru/watch/99772473" style="position:absolute; left:-9999px;" alt="Яндекс.Метрика" />
-        </div>
-    </noscript>
-    
-    <!-- Подключение CSS (файл style.css должен находиться в static/css/) -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    
-    {% block head %}{% endblock %}
+    ym(99772473, "init", {
+        clickmap:true,
+        trackLinks:true,
+        accurateTrackBounce:true,
+        webvisor:true
+    });
+  </script>
+  <noscript>
+    <div>
+      <img src="https://mc.yandex.ru/watch/99772473" style="position:absolute; left:-9999px;" alt="Счётчик Яндекс.Метрики" />
+    </div>
+  </noscript>
+  <!-- /Yandex.Metrika counter -->
+
+  {% block head %}{% endblock %}
 </head>
+
 <body>
-    <!-- Шапка сайта -->
-    <header>
-        <div class="logo">
-            <h1>MyWave</h1>
-        </div>
-        <nav>
-            <ul>
-                <li><a href="{{ url_for('home') }}">Главная</a></li>
-                <li><a href="{{ url_for('services') }}">Услуги</a></li>
-                <li><a href="{{ url_for('shop') }}">Магазин</a></li>
-                <li><a href="{{ url_for('events') }}">Мероприятия</a></li>
-                <li><a href="{{ url_for('blog') }}">Блог</a></li>
-                <li><a href="{{ url_for('about') }}">О тренере</a></li>
-                <li><a href="{{ url_for('contact') }}">Контакты</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <!-- Основной контент страницы -->
-    <main>
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- Подвал сайта -->
-    <footer>
-        <p>&copy; 2025 MyWave | Все права защищены</p>
-    </footer>
-
-    <!-- Чат-виджет, который отображается на всех страницах (фиксированный в правом нижнем углу) -->
-    <div id="chat-widget" style="position: fixed; bottom: 20px; right: 20px;">
-        <button id="openChat" style="padding: 10px 15px; background-color: #007aff; color: white; border: none; border-radius: 50px; cursor: pointer;">Чат</button>
+  <!-- Шапка -->
+  <header class="site-header">
+    <div class="container header-flex">
+      <div class="logo">
+        <a href="{{ url_for('index') }}"><h1>MyWave</h1></a>
+      </div>
+      <nav class="site-nav">
+        <ul id="nav-menu">
+          <li><a href="{{ url_for('index') }}#hero" id="nav-home-link">Главная</a></li>
+          <li><a href="{{ url_for('index') }}#services">Услуги</a></li>
+          <li><a href="{{ url_for('index') }}#store">Магазин</a></li>
+          <li><a href="{{ url_for('index') }}#events">Мероприятия</a></li>
+          <li><a href="{{ url_for('blog.blog') }}">Блог</a></li>
+          <li><a href="{{ url_for('index') }}#contacts">Контакты</a></li>
+        </ul>
+      </nav>
+      <button class="burger-menu" id="burger-menu" aria-label="Открыть меню">
+        <span></span><span></span><span></span>
+      </button>
     </div>
+  </header>
 
-    <!-- Модальное окно для чата -->
-    <div id="chatModal" style="display: none; position: fixed; bottom: 80px; right: 20px; width: 350px; max-width: 90%; background: #fff; border: 1px solid #ccc; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-        <div style="padding: 10px; border-bottom: 1px solid #ccc; background: #007aff; color: white;">
-            <span>Чат с экспертом</span>
-            <button id="closeChat" style="float: right; background: transparent; border: none; color: white; font-size: 16px; cursor: pointer;">&times;</button>
-        </div>
-        <div id="chatWindow" style="height: 300px; overflow-y: auto; padding: 10px;"></div>
-        <div style="padding: 10px; border-top: 1px solid #ccc;">
-            <input type="text" id="chatInput" placeholder="Напишите сообщение..." style="width: 80%; padding: 8px;">
-            <button id="sendChat" style="padding: 8px 12px; background: #007aff; color: white; border: none; border-radius: 4px; cursor: pointer;">Отправить</button>
-        </div>
+  <div id="header-pull-tab" aria-label="Показать меню">
+    ⬇
+  </div>
+
+  <div id="progress-bar" class="progress-bar">
+    <div id="progress-fill"></div>
+  </div>
+
+  <!-- Контент -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Кнопка открытия чата -->
+  <button id="open-chat-btn" class="chat-toggle" aria-label="Открыть чат">💬</button>
+
+  <!-- Блок чата -->
+  <div id="chat-container" class="chat-section hidden" aria-hidden="true">
+    <h2>Чат с MyWave</h2>
+    <div id="messages" class="chat-messages"></div>
+    <div class="chat-input-area">
+      <input type="text" id="chat-input" placeholder="Введите сообщение..." autocomplete="off" />
+      <button id="send-btn" class="send-button">Отправить</button>
     </div>
+  </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5+5hb7W9i1l6q5lf5NTjAN5C0Fddgvo1wKJ68fX" crossorigin="anonymous" defer></script>
+  <!-- Индикатор загрузки -->
+  <div id="loading-indicator" class="loading-indicator hidden" aria-hidden="true">
+    <div class="spinner"></div>
+  </div>
 
-    <!-- Скрипт для управления виджетом чата -->
-    <script>
-        document.getElementById('openChat').addEventListener('click', function() {
-            document.getElementById('chatModal').style.display = 'block';
-        });
-        document.getElementById('closeChat').addEventListener('click', function() {
-            document.getElementById('chatModal').style.display = 'none';
-        });
+  <!-- Совместимый Socket.IO v3.1.3 -->
+  <script src="https://cdn.socket.io/3.1.3/socket.io.min.js"
+          integrity="sha384-qb+Zp1LP0wFv2OxUqHyRx2uYdi0Zg9gU0ZoFtK7MHQQfNsQU+Hfq3yKBYUDp9Etu"
+          crossorigin="anonymous"></script>
+  <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/storeFilter.js') }}"></script>
+  {% block scripts %}{% endblock %}
+  <script src="{{ url_for('static', filename='js/inline.js') }}"></script>
 
-        // Пример логики отправки сообщения через чат-виджет
-        document.getElementById('sendChat').addEventListener('click', async function() {
-            const chatInput = document.getElementById('chatInput');
-            const message = chatInput.value.trim();
-            if (!message) return;
-            const chatWindow = document.getElementById('chatWindow');
-            chatWindow.innerHTML += `<div><strong>Вы:</strong> ${message}</div>`;
-            chatInput.value = '';
-            try {
-                const response = await fetch("/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json; charset=utf-8" },
-                    body: JSON.stringify({ message: message })
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    chatWindow.innerHTML += `<div><strong>Эксперт:</strong> ${data.reply}</div>`;
-                } else {
-                    chatWindow.innerHTML += `<div style="color:red;"><strong>Ошибка сервера:</strong> Попробуйте позже.</div>`;
-                }
-            } catch (error) {
-                chatWindow.innerHTML += `<div style="color:red;"><strong>Ошибка сервера:</strong> ${error.message}</div>`;
-            }
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        });
-    </script>
-    {% block scripts %}{% endblock %}
+  <div id="toast" class="toast hidden" aria-live="polite" aria-label="Уведомление"></div>
 </body>
 </html>

@@ -1,7 +1,9 @@
 <h2>Редактирование расписания</h2>
 <form method="POST">
-    Событие: <input type="text" name="event"><br>
-    Дата: <input type="text" name="date"><br>
+    <label for="event">Событие:</label>
+    <input type="text" id="event" name="event" placeholder="Введите событие"><br>
+    <label for="date">Дата:</label>
+    <input type="text" id="date" name="date" placeholder="Введите дату"><br>
     <button type="submit">Добавить</button>
 </form>
 {% for item in schedules %}
