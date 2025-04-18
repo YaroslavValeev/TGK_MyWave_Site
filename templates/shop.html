@@ -1,8 +1,29 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <section class="shop">
-        <h2>Магазин</h2>
-        <p>Раздел в разработке. Скоро здесь появятся товары!</p>
-    </section>
+<section id="shop" class="store-section">
+  <h2>Он‑лайн‑магазин</h2>
+
+  <!-- фильтры -->
+  <div class="store-filters">
+    <button class="filter-btn active" data-category="all">Все</button>
+    <button class="filter-btn" data-category="balance-board">Баланс‑борды</button>
+    <button class="filter-btn" data-category="poncho">Пончо</button>
+    <button class="filter-btn" data-category="boardgame">Настольные&nbsp;игры</button>
+    <button class="filter-btn" data-category="wakesurfpolia">WakeSurfPolia</button>
+  </div>
+
+  <!-- карточки -->
+  <div id="store-products" class="store-list">
+    <div class="product-card" data-category="balance-board">
+      <img src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="Баланс-борд">
+      <h4>Баланс-борд</h4>
+      <p>Тренировочный баланс-борд для трюков и фитнеса.</p>
+      <p class="price">7 500&nbsp;₽</p>
+      <button class="btn-secondary">Купить</button>
+    </div>
+
+    <!-- добавьте сюда остальные товары, каждому укажите data‑category -->
+  </div>
+</section>
 {% endblock %}

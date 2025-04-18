@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="blog">
+    <h2>{{ post.title }}</h2>
+    <p><em>{{ post.created_at.strftime('%d.%m.%Y') }}</em></p>
+    <div>
+        {{ post.content | safe }}
+    </div>
+    <a href="{{ url_for('blog.blog') }}" class="btn">← К списку статей</a>
+</section>
+{% endblock %}

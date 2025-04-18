@@ -10,7 +10,7 @@ app.use(express.static(path.join(__dirname)));
 
 // Используем переменные окружения для ключей (ключ из .env)
 const apiKey = process.env.OPENAI_API_KEY; // Убедитесь, что ключ задан в переменной окружения
-const gptId = "gpt-4"; // Если модель `g-QRvCoJeXk` не существует, используйте другую модель, например, `gpt-4`
+const assistantId = process.env.ASSISTANT_ID;
 
 // Обработчик POST запроса для чата
 app.post("/chat", async (req, res) => {
@@ -20,35 +20,78 @@ app.post("/chat", async (req, res) => {
         return res.status(400).json({ reply: "Сообщение не предоставлено" });
     }
 
+    if (!assistantId) {
+        console.error("❌ ASSISTANT_ID не настроен");
+        return res.status(500).json({ reply: "Ошибка конфигурации ассистента" });
+    }
+
     try {
-        // Отправка запроса в OpenAI
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        console.log("📤 Обработка сообщения:", userMessage);
+        // Создаем Thread
+        const threadResponse = await fetch("https://api.openai.com/v1/threads", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${apiKey}`
+            }
+        });
+        const thread = await threadResponse.json();
+
+        // Добавляем сообщение в Thread
+        await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: gptId,  // Используем модель, которая доступна
-                messages: [
-                    { role: "system", content: "Ты профессиональный инструктор по вейксерфингу." },
-                    { role: "user", content: userMessage }
-                ]
+                role: "user",
+                content: userMessage
             })
         });
 
-        const data = await response.json();
+        // Запускаем ассистента
+        const runResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                assistant_id: assistantId
+            })
+        });
+        const run = await runResponse.json();
 
-        if (data.error) {
-            console.error("Ошибка от OpenAI:", data.error);
-            return res.status(500).json({ reply: `Ошибка OpenAI: ${data.error.message}` });
-        }
+        // Ждем завершения выполнения
+        let runStatus;
+        do {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            const statusResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs/${run.id}`, {
+                headers: {
+                    "Authorization": `Bearer ${apiKey}`
+                }
+            });
+            runStatus = await statusResponse.json();
+        } while (runStatus.status === "queued" || runStatus.status === "in_progress");
 
-        // Отправляем ответ от OpenAI
-        res.json({ reply: data.choices[0].message.content });
+        // Получаем сообщения
+        const messagesResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
+            headers: {
+                "Authorization": `Bearer ${apiKey}`
+            }
+        });
+        const messages = await messagesResponse.json();
+
+        // Отправляем последнее сообщение ассистента
+        const assistantMessage = messages.data[0].content[0].text.value;
+        res.json({ reply: assistantMessage });
     } catch (error) {
-        console.error("Ошибка на сервере:", error);
-        res.status(500).json({ reply: "Ошибка сервера. Попробуйте позже." });
+        console.error("❌ Ошибка чата:", error);
+        res.status(500).json({ 
+            reply: "Ошибка обработки сообщения",
+            error: error.message 
+        });
     }
 });
 

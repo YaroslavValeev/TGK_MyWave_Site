@@ -1,204 +1,154 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <title>MyWave Chat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% extends "base.html" %}
+{% block title %}Главная - MyWave{% endblock %}
+{% block content %}
 
-  <!-- CSP для теста (в дальнейшем настройте его в HTTP-заголовках сервера) -->
-  <meta http-equiv="Content-Security-Policy" content="
-      default-src 'self';
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      font-src 'self' https://fonts.gstatic.com;
-      script-src 'self' 'unsafe-inline' 'unsafe-eval';
-      img-src 'self' data:;
-      connect-src 'self';
-  ">
-
-  <!-- Подключаем шрифт Pangolin через Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet">
-
-  <!-- Подключаем файл стилей -->
-  <link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body>
-  <!-- Шапка сайта -->
-  <header class="site-header">
-    <div class="logo">
-      <h1>MyWave</h1>
-    </div>
-    <nav class="site-nav">
-      <ul>
-        <li><a href="#hero" class="nav-link">Главная</a></li>
-        <li><a href="#services" class="nav-link">Услуги</a></li>
-        <li><a href="#store" class="nav-link">Магазин</a></li>
-        <li><a href="#events" class="nav-link">Мероприятия</a></li>
-        <li><a href="#blog" class="nav-link">Блог</a></li>
-        <li><a href="#contacts" class="nav-link">Контакты</a></li>
-      </ul>
-    </nav>
-  </header>
-
-  <!-- Герой-блок -->
-  <section id="hero" class="hero-section">
-    <div class="hero-content">
-      <h2>Добро пожаловать на MyWave</h2>
+<!-- Герой-секция -->
+<section id="hero" class="hero-container">
+  <img src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="Hero image" class="hero-bg">
+  <div class="hero-overlay no-background">
+    <div class="hero-text">
+      <h1>Добро пожаловать на MyWave</h1>
       <p>Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
-      <!-- Кнопка "Записаться" открывает процесс бронирования -->
-      <button id="hero-signup-btn" class="btn-primary">Записаться</button>
-    </div>
-  </section>
-
-  <!-- Блок преимуществ -->
-  <section class="features">
-    <h3>Почему мы?</h3>
-    <div class="feature-list">
-      <div class="feature-item">
-        <h4>Профессионализм</h4>
-        <p>Многолетний опыт (20+ лет) и высокая квалификация.</p>
-      </div>
-      <div class="feature-item">
-        <h4>Комфорт и безопасность</h4>
-        <p>Онлайн-запись, гибкий график занятий.</p>
-      </div>
-      <div class="feature-item">
-        <h4>Результат</h4>
-        <p>Индивидуальный подход к каждому ученику.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Услуги -->
-  <section id="services" class="services-section">
-    <h2>Услуги</h2>
-    <div class="services-list">
-      <div class="service-card">
-        <h4>Тренировка</h4>
-        <p>Описание услуги, длительность, особенности.</p>
-        <p>Цена: 3500 рублей</p>
-        <!-- Кнопка "Записаться" -->
-        <button class="btn-secondary btn-book">Записаться</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Онлайн-магазин -->
-  <section id="store" class="store-section">
-    <h2>Онлайн-магазин</h2>
-    <div class="store-list">
-      <div class="product-card">
-        <img src="/static/images/sample-product.jpg" alt="Товар" />
-        <h4>Название товара</h4>
-        <p>Описание и характеристики товара.</p>
-        <p>Цена: 1000 рублей</p>
-        <label for="delivery-address">Адрес доставки:</label>
-        <input type="text" id="delivery-address" name="delivery-address" placeholder="Введите адрес" autocomplete="on" />
-        <button class="btn-secondary">Купить</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Мероприятия -->
-  <section id="events" class="events-section">
-    <h2>Мероприятия</h2>
-    <div class="events-list">
-      <div class="event-card">
-        <h4>Название события</h4>
-        <p>Дата и место проведения.</p>
-        <a href="#" class="btn-link">Подробнее</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Блог -->
-  <section id="blog" class="blog-section">
-    <h2>Блог</h2>
-    <p>В разработке. Скоро здесь появятся новые статьи!</p>
-  </section>
-
-  <!-- Контакты -->
-  <section id="contacts" class="contacts-section">
-    <h2>Контакты</h2>
-    <form id="contact-form" class="contact" autocomplete="on">
-      <label for="username">Имя:</label>
-      <input type="text" id="username" name="username" required autocomplete="name" />
-      <label for="usercontact">Телефон или Telegram:</label>
-      <input type="text" id="usercontact" name="usercontact" required autocomplete="tel" />
-      <button type="submit" class="btn-primary">Отправить</button>
-    </form>
-  </section>
-
-  <!-- Чат -->
-  <section id="chat" class="chat-section">
-    <h2>Чат с MyWave</h2>
-    <div id="chatWindow" class="chat-window"></div>
-    <div class="chat-controls">
-      <input type="text" id="user-input" placeholder="Введите сообщение..." autocomplete="off" />
-      <button id="sendBtn" class="btn-primary">Отправить</button>
-    </div>
-    <!-- Прогресс-бар -->
-    <div id="file-upload-progress" class="progress">
-      <div class="bar"></div>
-    </div>
-    <!-- Поле выбора файла (скрывается через CSS) -->
-    <input type="file" id="file-upload" />
-    <!-- Кнопка загрузки файла -->
-    <button id="uploadFileBtn" class="btn-secondary">Загрузить файл</button>
-    <!-- Меню для дополнительных функций чата -->
-    <div id="menu-container" class="menu-container">
-      <button data-action="schedule" class="btn-secondary">Расписание</button>
-      <button data-action="faq" class="btn-secondary">FAQ</button>
-      <button data-action="training" class="btn-secondary">Тренировка</button>
-    </div>
-  </section>
-
-  <!-- Модальные окна для бронирования -->
-  <div id="modalCalendar" class="modal hidden">
-    <div class="modal-content">
-      <h3>Выберите дату</h3>
-      <input type="date" id="bookingDate">
-      <button id="confirmDateBtn" class="btn-primary">Далее</button>
-      <button id="cancelModal1" class="btn-link">Отмена</button>
+      <button class="btn-primary book-now">Записаться</button>
     </div>
   </div>
+</section>
 
-  <div id="modalSlots" class="modal hidden">
-    <div class="modal-content">
-      <h3>Выберите слот</h3>
-      <select id="slotSelect">
-        <option value="09:00">09:00 (Свободно)</option>
-        <option value="10:00">10:00 (Свободно)</option>
-        <option value="11:00">11:00 (Занято)</option>
-      </select>
-      <button id="confirmSlotBtn" class="btn-primary">Далее</button>
-      <button id="cancelModal2" class="btn-link">Отмена</button>
+<!-- Блок преимуществ -->
+<section class="features section">
+  <h3>Почему мы?</h3>
+  <div class="feature-list">
+    <div class="feature-item">
+      <h4>Профессионализм</h4>
+      <p>20+ лет опыта и высокая квалификация.</p>
+    </div>
+    <div class="feature-item">
+      <h4>Комфорт и безопасность</h4>
+      <p>Онлайн-запись и гибкий график занятий.</p>
+    </div>
+    <div class="feature-item">
+      <h4>Результат</h4>
+      <p>Индивидуальный подход к каждому.</p>
     </div>
   </div>
+</section>
 
-  <div id="modalContact" class="modal hidden">
-    <div class="modal-content">
-      <h3>Контактные данные</h3>
-      <input type="text" id="bookingName" placeholder="Ваше имя" autocomplete="name">
-      <input type="text" id="bookingPhone" placeholder="Телефон или Telegram" autocomplete="tel">
-      <button id="confirmContactBtn" class="btn-primary">Далее</button>
-      <button id="cancelModal3" class="btn-link">Отмена</button>
+<!-- Услуги -->
+<section id="services" class="services-section section">
+  <h2>Услуги</h2>
+  <div class="services-list">
+    <div class="service-card">
+      <h4>Тренировка</h4>
+      <p>1.5 часа: батут, баланс, техника. Новички и профи.</p>
+      <p>Цена: 3500 ₽</p>
+      <button class="btn-secondary book-now" aria-label="Записаться на тренировку">Записаться</button>
     </div>
   </div>
+</section>
 
-  <div id="modalConfirm" class="modal hidden">
-    <div class="modal-content">
-      <h3>Подтверждение записи</h3>
-      <p id="confirmDetails"></p>
-      <button id="finalConfirmBtn" class="btn-primary">Подтвердить</button>
-      <button id="cancelModal4" class="btn-link">Отмена</button>
+<!-- Магазин -->
+<section id="store" class="store-section section">
+  <h2>Онлайн-магазин</h2>
+  <div class="store-list">
+    <div class="product-card">
+      <img src="/static/images/sample-product.jpg" alt="Товар" />
+      <h4>Название товара</h4>
+      <p>Описание и характеристики.</p>
+      <p>Цена: 1000 ₽</p>
+      <input type="text" placeholder="Адрес доставки" />
+      <button class="btn-secondary">Купить</button>
     </div>
   </div>
+</section>
 
-  <footer class="site-footer">
-    <p>&copy; 2025 MyWave. Все права защищены.</p>
-  </footer>
+<!-- Мероприятия -->
+<section id="events" class="events-section section">
+  <h2>Мероприятия</h2>
+  <div class="events-list">
+    <div class="event-card">
+      <h4>Название события</h4>
+      <p>Дата и место проведения.</p>
+      <a href="#" class="btn-link">Подробнее</a>
+    </div>
+  </div>
+</section>
 
-  <!-- Подключаем скрипт -->
-  <script src="/static/js/chat.js"></script>
-</body>
-</html>
+<!-- Последняя новость -->
+<section class="latest-news section">
+  <h2>Последняя новость</h2>
+  <div id="latest-news"></div>
+  <a href="{{ url_for('blog.blog') }}">Читать все новости</a>
+</section>
+
+<!-- Контакты -->
+<section id="contacts" class="contacts-section section">
+  <h2>Контакты</h2>
+  <p>Давайте знакомиться:</p>
+  <ul>
+    <li>Телефон: +7 916 011-71-79</li>
+    <li>Instagram: y.valeev</li>
+    <li>Facebook: <a href="https://www.facebook.com/yaroslav.valeev" target="_blank" rel="noopener">yaroslav.valeev</a></li>
+    <li>VK: <a href="https://vk.com/y.valeev" target="_blank" rel="noopener">y.valeev</a></li>
+    <li>YouTube: @YaroslavValeev</li>
+    <li>Telegram: @MyW23</li>
+    <li>Telegram Admin: <a href="https://web.telegram.org/a/#7632502935" target="_blank" rel="noopener">MyWave Admin</a></li>
+  </ul>
+</section>
+
+<!-- Модальные окна -->
+<div id="modalCalendar" class="modal hidden">
+  <div class="modal-content">
+    <button class="close-modal" aria-label="Закрыть модалку">×</button>
+    <h3>Выберите дату</h3>
+    <label for="bookingDateInput">Дата</label>
+    <div class="date-picker-wrapper">
+      <input type="date" id="bookingDateInput" class="form-control" />
+      <span class="calendar-icon">📅</span>
+    </div>
+    <button id="confirmDateBtn" class="btn-primary-lg">Подтвердить дату</button>
+  </div>
+</div>
+
+<div id="modalSlots" class="modal hidden">
+  <div class="modal-content">
+    <button class="close-modal" aria-label="Закрыть модалку">×</button>
+    <h3>Выберите слот</h3>
+    <label for="slotSelect">Время тренировки</label>
+    <div id="slotButtonsContainer" class="slot-buttons"></div>
+    <input type="hidden" id="slotSelect" name="slot" />
+    <button id="confirmSlotBtn" class="btn-primary-lg" disabled>Выбрать слот</button>
+  </div>
+</div>
+
+<div id="modalContact" class="modal hidden">
+  <div class="modal-content">
+    <button class="close-modal" aria-label="Закрыть модалку">×</button>
+    <h3>Контактные данные</h3>
+    <label for="bookingName">Имя</label>
+    <input type="text" id="bookingName" placeholder="Имя" />
+    <label for="bookingPhone">Телефон</label>
+    <input type="text" id="bookingPhone" placeholder="Телефон" />
+    <button id="confirmContactBtn" class="btn-primary-lg">Продолжить</button>
+  </div>
+</div>
+
+<div id="modalConfirm" class="modal hidden">
+  <div class="modal-content">
+    <button class="close-modal" aria-label="Закрыть модалку">×</button>
+    <h3>Подтвердите запись</h3>
+    <div id="confirmDetails"></div>
+    <button id="finalConfirmBtn" class="btn-primary-lg">Записаться</button>
+  </div>
+</div>
+
+<!-- Уведомление -->
+<div id="toast" class="toast hidden"></div>
+
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/blogLatest.js') }}"></script>
+<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+{% endblock %}

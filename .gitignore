@@ -1,23 +1,20 @@
-<<<<<<< HEAD
-.env
+# Python
 __pycache__/
-instance/
 *.pyc
 *.pyo
 *.pyd
-.env.*
-.DS_Store
-.vscode/
-.idea/
-=======
+*.sqlite3
+*.db
+
+# Environment
 .env
-__pycache__/
-instance/
-*.pyc
-*.pyo
-*.pyd
-.env.*
-.DS_Store
+credentials.json
+
+# IDE
 .vscode/
 .idea/
->>>>>>> 1a630d3 (Добавлен код сайта)
+
+# OS
+.DS_Store
+Thumbs.db
+node_modules

@@ -1,10 +1,21 @@
 from googleapiclient.http import MediaFileUpload
 from googleapiclient.errors import HttpError
-from app.services.google import drive_service  # drive_service должен быть настроен заранее
+from app.services.google import drive_service
+from datetime import datetime
 
 def upload_to_drive_from_path(file_path, folder_id=None):
     """
     Загружает файл на Google Диск по указанному локальному пути.
+    
+    Аргументы:
+        file_path (str): Путь к файлу на локальном диске
+        folder_id (str, optional): ID папки на Google Drive, куда загружать файл
+    
+    Возвращает:
+        str: ID загруженного файла на Google Drive
+    
+    Исключения:
+        HttpError: При ошибке загрузки файла
     """
     try:
         file_metadata = {"name": file_path.split("/")[-1]}
@@ -23,7 +34,17 @@ def upload_to_drive_from_path(file_path, folder_id=None):
 def upload_to_drive_from_stream(file, folder_id=None):
     """
     Загружает файл, полученный через форму, на Google Диск.
-    Требует, чтобы MIME-тип файла начинался с "image/".
+    
+    Аргументы:
+        file (FileStorage): Объект файла из Flask-формы
+        folder_id (str, optional): ID папки на Google Drive, куда загружать файл
+    
+    Возвращает:
+        str: ID загруженного файла на Google Drive
+    
+    Исключения:
+        ValueError: Если файл не является изображением
+        HttpError: При ошибке загрузки файла
     """
     if not file.content_type.startswith('image/'):
         raise ValueError("Только изображения разрешены")
@@ -40,17 +61,44 @@ def upload_to_drive_from_stream(file, folder_id=None):
 
 def list_user_files(user_id):
     """
-    Примерная функция для получения списка файлов пользователя.
-    Реализуйте логику поиска файлов по user_id (например, фильтрация по имени файла).
-    Возвращает список файлов.
+    Получает список файлов из подтвержденных записей в таблице Client_Workouts.
+    
+    Аргументы:
+        user_id (str): ID пользователя, для которого ищутся файлы
+    
+    Возвращает:
+        list: Список словарей с информацией о файлах (id и name)
+    
+    Исключения:
+        HttpError: При ошибке получения данных из таблицы
     """
     try:
-        # Здесь необходимо реализовать поиск файлов, например, с использованием запроса к Google Drive API
-        # Данный пример возвращает статичные данные
-        files = [
-            {"id": "1", "name": f"{user_id}_example1.jpg"},
-            {"id": "2", "name": f"{user_id}_example2.png"}
-        ]
+        # Query Client_Workouts table for confirmed bookings
+        sheets_service = get_google_services()[1]
+        spreadsheet_id = current_app.config["SPREADSHEET_ID"]
+        range_name = "Client_Workouts!A2:E"
+        
+        result = sheets_service.spreadsheets().values().get(
+            spreadsheetId=spreadsheet_id,
+            range=range_name
+        ).execute()
+        
+        files = []
+        for row in result.get('values', []):
+            if len(row) >= 5 and row[2] == user_id:  # Check user_id in Client_Workouts
+                # Предполагаем, что в row[1] хранится дата и время в формате "YYYY-MM-DD HH:MM"
+                try:
+                    dt = datetime.strptime(row[1], "%Y-%m-%d %H:%M")
+                    date_str = dt.strftime("%Y-%m-%d")
+                    time_str = dt.strftime("%H:%M")
+                    formatted_datetime = f"{date_str} {time_str}"
+                except ValueError:
+                    formatted_datetime = row[1]  # Оставляем как есть, если формат неверный
+                
+                files.append({
+                    "id": row[0],
+                    "name": f"{user_id}_{formatted_datetime}"
+                })
         return files
     except HttpError as error:
         print(f"Произошла ошибка: {error}")
