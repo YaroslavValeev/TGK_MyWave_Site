@@ -1,0 +1,16 @@
+{
+  "servers": {
+    "mywave": {
+      "command": "python",
+      "args": ["mcp_mywave.py"],
+      "env": {
+        "GOOGLE_SHEETS_CREDENTIALS": "instance/service_account.json",
+        "SPREADSHEET_ID": "${SPREADSHEET_ID}",
+        "GOOGLE_CALENDAR_ID": "${GOOGLE_CALENDAR_ID}",
+        "MYWAVE_TZ": "Europe/Moscow"
+      }
+    }
+  }
+}
+
+

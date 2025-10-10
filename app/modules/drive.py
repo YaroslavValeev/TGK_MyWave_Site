@@ -1,7 +1,12 @@
 from googleapiclient.http import MediaFileUpload
 from googleapiclient.errors import HttpError
-from app.services.google import drive_service
+from app.services.google import get_google_services
 from datetime import datetime
+import mimetypes
+from app.modules.logger import get_logger
+from flask import current_app
+
+logger = get_logger(__name__)
 
 def upload_to_drive_from_path(file_path, folder_id=None):
     """
@@ -18,18 +23,21 @@ def upload_to_drive_from_path(file_path, folder_id=None):
         HttpError: При ошибке загрузки файла
     """
     try:
+        drive_service = get_google_services()[0]  # Получаем только drive сервис
+        mime = mimetypes.guess_type(file_path)[0] or ''
+        if not mime.startswith(('image/', 'video/', 'application/pdf')):
+            raise ValueError(f"Неподдерживаемый тип файла: {mime}")
         file_metadata = {"name": file_path.split("/")[-1]}
         if folder_id:
             file_metadata["parents"] = [folder_id]
-
-        media = MediaFileUpload(file_path, resumable=True)
+        media = MediaFileUpload(file_path, mimetype=mime, resumable=True)
         file = drive_service.files().create(
             body=file_metadata, media_body=media, fields="id"
         ).execute()
         return file.get("id")
     except HttpError as error:
-        print(f"Произошла ошибка: {error}")
-        raise
+        logger.error(f"Google Drive upload error (path): {error}", exc_info=True)
+        raise RuntimeError("Ошибка загрузки на Drive, проверьте квоту или сеть") from error
 
 def upload_to_drive_from_stream(file, folder_id=None):
     """
@@ -46,18 +54,21 @@ def upload_to_drive_from_stream(file, folder_id=None):
         ValueError: Если файл не является изображением
         HttpError: При ошибке загрузки файла
     """
-    if not file.content_type.startswith('image/'):
-        raise ValueError("Только изображения разрешены")
-
-    file_metadata = {"name": file.filename}
-    if folder_id:
-        file_metadata["parents"] = [folder_id]
-
-    media = MediaFileUpload(file.stream, mimetype=file.content_type)
-    file_response = drive_service.files().create(
-        body=file_metadata, media_body=media, fields="id"
-    ).execute()
-    return file_response.get("id")
+    try:
+        drive_service = get_google_services()[0]  # Получаем только drive сервис
+        if not file.content_type.startswith(('image/', 'video/', 'application/pdf')):
+            raise ValueError(f"Неподдерживаемый тип файла: {file.content_type}")
+        file_metadata = {"name": file.filename}
+        if folder_id:
+            file_metadata["parents"] = [folder_id]
+        media = MediaFileUpload(file.stream, mimetype=file.content_type)
+        file_response = drive_service.files().create(
+            body=file_metadata, media_body=media, fields="id"
+        ).execute()
+        return file_response.get("id")
+    except HttpError as error:
+        logger.error(f"Google Drive upload error (stream): {error}", exc_info=True)
+        raise RuntimeError("Ошибка загрузки на Drive, проверьте квоту или сеть") from error
 
 def list_user_files(user_id):
     """

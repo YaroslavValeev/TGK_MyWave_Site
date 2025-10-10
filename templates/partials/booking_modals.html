@@ -1,0 +1,48 @@
+<div id="modalCalendar" class="modal hidden">
+  <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Выберите дату</h2>
+      <p class="progress-info">Шаг 1 / 3</p>
+      <div class="date-input-container">
+          <input type="text" id="bookingDateInput" placeholder="Выберите дату" readonly>
+          <i id="dateIcon" class="fas fa-calendar-alt"></i>
+      </div>
+      <button id="confirmDateBtn" class="btn btn-primary">Далее</button>
+  </div>
+</div>
+<div id="modalSlots" class="modal hidden">
+  <div class="modal-content">
+    <h3>Выберите время</h3>
+    <p class="progress-info">Шаг 2 / 3</p>
+    <div id="slotButtonsContainer"></div>
+    <input type="hidden" id="selectedSlot" />
+    <button id="confirmSlotBtn">Далее</button>
+    <button class="close-modal">Назад</button>
+  </div>
+</div>
+<div id="modalContact" class="modal hidden">
+  <div class="modal-content">
+    <h3>Ваши данные</h3>
+    <p class="progress-info">Шаг 3 / 3</p>
+    <input type="text" id="bookingName" placeholder="Имя" />
+    <input type="text" id="bookingPhone" placeholder="Телефон" />
+    <button id="confirmContactBtn">Далее</button>
+    <button class="close-modal">Назад</button>
+  </div>
+</div>
+<div id="modalConfirm" class="modal hidden">
+  <div class="modal-content">
+    <button class="close-modal" onclick="hideAllModals()">&times;</button>
+    <h2>Подтверждение записи</h2>
+    <div id="confirmDetails"></div>
+    <p class="pay-hint">
+      💳 Оплата производится на месте после тренировки. 
+      Мы пока не принимаем онлайн-оплату.
+    </p>
+    <div class="modal-actions">
+      <button id="finalConfirmBtn" class="btn btn-primary-lg">Подтвердить запись</button>
+    </div>
+  </div>
+</div>
+<input type="hidden" id="bookingDate">
+<input type="hidden" id="bookingTime"> 

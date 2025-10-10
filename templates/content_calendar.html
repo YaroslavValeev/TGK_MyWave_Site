@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="text-center my-4">План публикаций</h2>
+
+{%- if events %}
+  <div id="calendar"></div>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const calEl = document.getElementById('calendar');
+    if (!calEl) return;
+    const cal = new FullCalendar.Calendar(calEl, {
+      initialView: 'dayGridMonth',
+      events: '/content/events',
+      editable: false,
+    });
+    cal.render();
+  });
+  </script>
+{%- else %}
+  <div class="no-events-message text-center my-4">План публикаций пока отсутствует.</div>
+{%- endif %}
+
+{% endblock %}

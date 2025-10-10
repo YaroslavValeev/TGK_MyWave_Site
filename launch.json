@@ -1,0 +1,35 @@
+{
+    "configurations": [
+      {
+        "type": "debugpy",
+        "request": "launch",
+        "name": "Launch Python Program",
+        "program": "${workspaceFolder}/${input:pythonProgram}"
+      },
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "Launch Node.js Program",
+        "program": "${workspaceFolder}/${input:nodeProgram}"
+      }
+    ],
+    "inputs": [
+      {
+        "type": "pickString",
+        "id": "pythonProgram",
+        "description": "Select the Python file to debug",
+        "options": [
+          "main.py",
+          "telegram_bot.py"
+        ]
+      },
+      {
+        "type": "pickString",
+        "id": "nodeProgram",
+        "description": "Select the Node.js file to debug",
+        "options": [
+          "server.js"
+        ]
+      }
+    ]
+  }

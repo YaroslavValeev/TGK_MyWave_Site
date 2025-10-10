@@ -1,10 +1,14 @@
 import datetime
-from app.modules.sheets_access import get_sheet_records, get_google_sheet
+import logging
+from app.modules.sheets_access import get_sheet_records, get_google_sheet, append_dict_to_sheet
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import os
 import json
 import uuid
+from googleapiclient.errors import HttpError
+from app.database.models import db, CalendarEvent
+from app.modules.sheets import append_row
 
 CALENDAR_ID = os.getenv("GOOGLE_CALENDAR_ID", "primary")
 
@@ -76,8 +80,25 @@ def create_workout_if_not_exists(date_str, time_str):
         "workout_status": "активно",
         "current_capacity": 0
     }
-
-    values = [new_row.get(header, "") for header in headers]
-    append_to_sheet = __import__('app.modules.sheets_access', fromlist=['append_to_sheet']).append_to_sheet
-    append_to_sheet('Workouts', values)
+    # Используем универсальную функцию для записи
+    append_dict_to_sheet('Workouts', new_row)
     return new_id
+
+# Новая функция с валидацией, логированием и синхронной записью
+
+def create_calendar_event(event_data):
+    if not event_data.get('start') or not event_data.get('summary'):
+        raise ValueError("Missing required calendar fields")
+    service = get_google_calendar_service()
+    try:
+        created = service.events().insert(calendarId=CALENDAR_ID, body=event_data).execute()
+    except HttpError as e:
+        logging.error(f"Calendar insert failed: {e}")
+        raise
+    # Сохраняем в БД
+    db_event = CalendarEvent.from_api(created)
+    db.session.add(db_event)
+    db.session.commit()
+    # Сохраняем в Google Sheets
+    append_row("CalendarEvents", [created['id'], event_data['start'], event_data['summary']])
+    return created

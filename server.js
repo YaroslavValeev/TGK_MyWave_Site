@@ -12,6 +12,15 @@ app.use(express.static(path.join(__dirname)));
 const apiKey = process.env.OPENAI_API_KEY; // Убедитесь, что ключ задан в переменной окружения
 const assistantId = process.env.ASSISTANT_ID;
 
+if (!apiKey) {
+    console.error("❌ OPENAI_API_KEY is not set. Set the environment variable and restart the proxy server.");
+    process.exit(1);
+}
+if (!assistantId) {
+    console.error("❌ ASSISTANT_ID is not set. Set the environment variable and restart the proxy server.");
+    process.exit(1);
+}
+
 // Обработчик POST запроса для чата
 app.post("/chat", async (req, res) => {
     const userMessage = req.body.message;

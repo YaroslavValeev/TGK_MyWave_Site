@@ -1,12 +1,19 @@
-from flask import Blueprint, jsonify, request, current_app, render_template
+from flask import Blueprint, jsonify, request, current_app, render_template, flash, redirect, url_for
 from app.extensions import csrf  
 from app.forms.booking_form import BookingForm
-from app.routes.calendar_routes import get_available_slots
-from app.modules.booking_utils import is_slot_available, book_slot
-import datetime
+from app.database.models import db, Booking
+from app.modules.sheets import append_row
+from app.modules.calendar_integration import create_calendar_event
+from app.modules.sheets import get_all_records
+from app.services.google import get_google_services
+from config import Config
+from datetime import datetime, timedelta
 import logging
+import re
+from app.services.sheets_writer import save_client_to_sheets
 
 booking_bp = Blueprint("booking", __name__, url_prefix="/booking")
+logger = logging.getLogger(__name__)
 
 
 # ------------------------------------------------------------
@@ -15,129 +22,99 @@ booking_bp = Blueprint("booking", __name__, url_prefix="/booking")
 @booking_bp.route("/book", methods=["GET", "POST"])
 def book():
     form = BookingForm()
-
-    if form.validate_on_submit():
-        date = form.date.data
-        time = form.time.data
-        name = form.name.data
-        phone = form.phone.data
-
-        ok, msg = is_slot_available(date, time)
-        if not ok:
-            return jsonify({"message": msg}), 400
-
-        success, calendar_link = book_slot(date, time, name, phone)
-        if success:
-            return jsonify(
-                {"message": "Запись успешно создана!", "calendarLink": calendar_link}
-            ), 200
-        return jsonify({"message": "Ошибка записи!"}), 500
-
+    if request.method == "POST":
+        if form.validate_on_submit():
+            date = form.date.data
+            time = form.time.data
+            name = form.name.data
+            phone = form.phone.data
+            # Валидация телефона
+            if not re.match(r'^\+7\d{10}$', phone):
+                flash("Неверный номер телефона. Введите в формате +7XXXXXXXXXX", "danger")
+                return render_template("book.html", form=form), 400
+            try:
+                # Проверка на занятость слота (можно вынести в отдельную функцию)
+                exists = Booking.query.filter_by(date=date, time=time, phone=phone).first()
+                if exists:
+                    flash("Вы уже записаны на это время", "warning")
+                    return render_template("book.html", form=form), 409
+                # --- Запись в БД ---
+                booking = Booking(name=name, phone=phone, date=date, time=time)
+                db.session.add(booking)
+                db.session.commit()
+                # --- Запись в Google Sheets ---
+                append_row("Client_Workouts", [date, time, name, phone])
+                # --- Создание события в календаре ---
+                event_data = {
+                    "summary": f"Тренировка: {name}",
+                    "description": f"Телефон: {phone}",
+                    "start": {"dateTime": f"{date}T{time}:00", "timeZone": "Europe/Moscow"},
+                    "end": {"dateTime": f"{date}T{time}:00", "timeZone": "Europe/Moscow"},
+                }
+                try:
+                    create_calendar_event(event_data)
+                except Exception as e:
+                    logger.error(f"Ошибка создания события в календаре: {e}")
+                flash("Запись успешно создана!", "success")
+                return redirect(url_for("booking.book"))
+            except Exception as e:
+                logger.error(f"Ошибка при бронировании: {e}")
+                flash("Ошибка при бронировании. Попробуйте позже.", "danger")
+                return render_template("book.html", form=form), 500
+        else:
+            flash("Проверьте правильность заполнения формы", "danger")
+            return render_template("book.html", form=form), 400
     return render_template("book.html", form=form)
 
 
 # ------------------------------------------------------------
 # 2. JSON‑API «/booking/book/api»  — используется booking.js
 # ------------------------------------------------------------
-@booking_bp.route("/book/api", methods=["POST"])
+@booking_bp.route("/api/book", methods=["POST"])
 @csrf.exempt
-def book_api():
-    """
-    Ожидает JSON:
-        {
-          "date":  "YYYY‑MM‑DD",
-          "time":  "HH:MM",
-          "name":  "Имя",
-          "phone": "+79991234567"
-        }
-    Возвращает всегда JSON, даже при ошибках.
-    """
+def api_book():
+    data = request.get_json()
+    name = data.get("name")
+    phone = data.get("phone")
+    date = data.get("date")
+    time = data.get("time")
+    if not all([name, phone, date, time]):
+        return jsonify({"success": False, "error": "Не хватает данных"}), 400
+    if not re.match(r'^\+7\d{10}$', phone):
+        return jsonify({"success": False, "error": "Неверный формат телефона"}), 400
     try:
-        # --------------- базовая валидация запроса ---------------
-        if not request.is_json:
-            return (
-                jsonify(
-                    {"success": False, "error": "Content‑Type must be application/json"}
-                ),
-                400,
-            )
-
-        data = request.get_json(silent=True) or {}
-        current_app.logger.info(f"📩 Получены данные бронирования: {data}")
-
-        required = {"date", "time", "name", "phone"}
-        if not required.issubset(data):
-            return (
-                jsonify({"success": False, "error": "Все поля обязательны"}),
-                400,
-            )
-
-        booking_date: str = data["date"]
-        booking_time: str = data["time"]
-
-        # --------------- проверка форматов даты/времени ---------------
+        exists = Booking.query.filter_by(date=date, time=time, phone=phone).first()
+        if exists:
+            return jsonify({"success": False, "error": "Вы уже записаны на это время"}), 409
+        booking = Booking(name=name, phone=phone, date=date, time=time)
+        db.session.add(booking)
+        db.session.commit()
+        append_row("Client_Workouts", [date, time, name, phone])
+        event_data = {
+            "summary": f"Тренировка: {name}",
+            "description": f"Телефон: {phone}",
+            "start": {"dateTime": f"{date}T{time}:00", "timeZone": "Europe/Moscow"},
+            "end": {"dateTime": f"{date}T{time}:00", "timeZone": "Europe/Moscow"},
+        }
         try:
-            datetime.datetime.strptime(booking_date, "%Y-%m-%d")
-            datetime.datetime.strptime(booking_time, "%H:%M")
-        except ValueError:
-            return (
-                jsonify({"success": False, "error": "Неверный формат даты или времени"}),
-                400,
-            )
-
-        # --------------- получаем список доступных слотов ---------------
-        slots_by_day = get_available_slots(booking_date)  # {'thursday': [ {...}, ... ]}
-        if not slots_by_day:
-            return (
-                jsonify({"success": False, "error": "В этот день нет тренировок"}),
-                400,
-            )
-
-        # get_available_slots всегда отдаёт dict, но запасёмся fallback‑ом
-        if isinstance(slots_by_day, dict):
-            slots_list = next(iter(slots_by_day.values()), [])
-        else:  # если функция когда‑то вернёт сразу list
-            slots_list = slots_by_day
-
-        if not any(slot.get("time") == booking_time for slot in slots_list):
-            return (
-                jsonify(
-                    {
-                        "success": False,
-                        "error": "Нет свободных мест на выбранное время",
-                    }
-                ),
-                400,
-            )
-
-        # --------------- финальная проверка / запись ---------------
-        ok, msg = is_slot_available(booking_date, booking_time)
-        if not ok:
-            return jsonify({"success": False, "error": msg}), 400
-
-        success, calendar_link = book_slot(
-            booking_date,
-            booking_time,
-            data["name"].strip(),
-            data["phone"].strip(),
-        )
-        if not success:
-            current_app.logger.error(f"❌ Ошибка бронирования: {calendar_link}")
-            return jsonify({"success": False, "error": calendar_link}), 500
-
-        current_app.logger.info("✅ Запись успешно создана и добавлена в календарь")
-        return (
-            jsonify(
-                {
-                    "success": True,
-                    "message": "Тренировка успешно забронирована!",
-                    "calendarLink": calendar_link,
-                }
-            ),
-            200,
-        )
-
-    # --------------- «catch‑all» — чтобы фронт всегда получал JSON ---------------
-    except Exception as e:  # pragma: no cover
-        logging.exception("❌ Нераспознанная ошибка в book_api")
+            create_calendar_event(event_data)
+        except Exception as e:
+            logger.error(f"Ошибка создания события в календаре: {e}")
+        return jsonify({"success": True, "message": "Запись успешно создана!"}), 200
+    except Exception as e:
+        logger.error(f"Ошибка API бронирования: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
+
+@booking_bp.route("/my-sessions")
+def my_sessions():
+    phone = request.args.get("phone")
+    if not phone:
+        return "Не указан телефон", 400
+    all_records = get_all_records("Client_Workouts")
+    workouts = [r for r in all_records if r.get("phone") == phone]
+    return render_template("client_dashboard.html", workouts=workouts)
+
+def slot_plus_1_hour(slot):
+    """Добавляет 1 час к времени слота"""
+    time = datetime.strptime(slot, "%H:%M")
+    return (time + timedelta(hours=1)).strftime("%H:%M")

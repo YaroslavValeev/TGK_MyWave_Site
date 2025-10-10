@@ -11,9 +11,17 @@ from app.modules.sheets import (
     get_workout_participants,
     add_client_workout,
     get_or_create_client_id,
-    SheetWrapper
+    # SheetWrapper,  # Уже закомментировано
+    increment_capacity,
+    # get_slot_capacity,  # Удалено
+    book_slot
 )
 from app.modules.calendar_integration import add_booking_to_calendar, create_workout_if_not_exists
+import os
+import requests
+from app.modules.logger import get_logger
+
+logger = get_logger(__name__)
 
 def get_workout_by_datetime(date_str: str, time_str: str):
     """
@@ -77,9 +85,10 @@ def is_slot_available(date_str, time_str):
         key = f"{date_str} {time_str}"
         current_bookings = booked.get(key, 0)
 
-        capacity = get_slot_capacity(date_str, time_str)
-        if capacity is None:
+        workout = get_workout_by_datetime(date_str, time_str)
+        if not workout:
             return False, "Тренировка не найдена на указанное время"
+        capacity = workout.get("max_capacity", 0)
 
         if current_bookings >= capacity:
             return False, "Нет свободных мест"
@@ -89,112 +98,20 @@ def is_slot_available(date_str, time_str):
         return False, f"Неверный формат даты/времени: {str(e)}"
 
 
-def get_slot_capacity(date_str, time_str):
-    """
-    Возвращает вместимость слота (int) или None, если слот не найден.
-    """
+def send_telegram_message(text):
+    token = os.getenv("NOTIFICATION_BOT_TOKEN")
+    chat_id = os.getenv("ADMIN_CHAT_ID")
+    if not token or not chat_id:
+        return
     try:
-        date_obj = datetime.datetime.strptime(date_str, "%Y-%m-%d")
-        day_of_week = date_obj.strftime("%A").strip().lower()
-
-        schedule = get_schedule_records()
-
-        for row in schedule:
-            row_day = str(row.get("day_of_week", "")).strip().lower()
-            row_time = str(row.get("time", "")).strip()
-
-            if row_day == day_of_week and row_time == time_str:
-                capacity_raw = str(row.get("max_capacity", "")).strip()
-                if capacity_raw.isdigit():
-                    return int(capacity_raw)
-                else:
-                    return None
-
-        return None
+        requests.post(
+            f"https://api.telegram.org/bot{token}/sendMessage",
+            data={"chat_id": chat_id, "text": text}
+        )
     except Exception as e:
-        print(f"❌ Ошибка получения capacity: {e}")
-        return None
+        print(f"Ошибка отправки Telegram: {e}")
 
 
-def increment_capacity(workout_id: str):
-    """
-    +1 к колонке current_capacity у указанной тренировки.
-    """
-    sheet = get_google_sheet("Workouts")
-    headers = sheet.values[0]
-    row_idx  = None
-    cap_col  = None
-
-    # находим строку и индекс колонки
-    for i, h in enumerate(headers):
-        if h.strip().lower() == "current_capacity":
-            cap_col = i
-            break
-
-    for r, row in enumerate(sheet.values[1:], start=2):   # A2…
-        if row and row[0] == workout_id:                   # A‑столбец — workout_id
-            row_idx = r
-            break
-
-    if row_idx and cap_col is not None:
-        current = int(sheet.values[row_idx-1][cap_col] or 0)
-        service = get_sheets_service()
-        spreadsheet_id = current_app.config["SPREADSHEET_ID"]
-        service.spreadsheets().values().update(
-            spreadsheetId=spreadsheet_id,
-            range=f"Workouts!{chr(65+cap_col)}{row_idx}",
-            valueInputOption="RAW",
-            body={"values": [[current + 1]]}
-        ).execute()
-
-
-def book_slot(date_str, time_str, name, phone):
-    logging.info(f"⚙️ Старт бронирования: {name} {phone} → {date_str} {time_str}")
-    """
-    Осуществляет запись:
-      1) Проверяет доступность слота
-      2) Создаёт тренировку в Workouts (если нет)
-      3) Добавляет клиента в Client_Workouts
-      4) Создаёт событие в Google Calendar
-    Возвращает (True, calendar_link) или (False, "Error text")
-    """
-    try:
-        # 1. Проверяем доступность слота
-        is_ok, msg = is_slot_available(date_str, time_str)
-        if not is_ok:
-            return (False, msg)
-
-        # 2. Получаем client_id
-        client_id = get_or_create_client_id(name, phone)
-
-        # 3. Пытаемся найти тренировку в Workouts
-        workout = get_workout_by_datetime(date_str, time_str)
-        if not workout:
-            workout_id = create_workout_if_not_exists(date_str, time_str)
-            if not workout_id:
-                return (False, "Не удалось создать тренировку")
-            workout = get_workout_by_datetime(date_str, time_str)
-        else:
-            workout_id = workout["workout_id"]
-
-        # 4. Проверяем количество участников
-        participants = get_workout_participants(workout_id)
-        if participants >= workout["max_capacity"]:
-            return (False, "Слот переполнен")
-
-        # 5. Добавляем клиента
-        add_client_workout(client_id, workout_id, date_str, time_str)
-
-        # 5‑bis. ⬆️ Инкрементируем current_capacity
-        increment_capacity(workout_id)
-
-        # 6. Создаём событие в календаре
-        success, link = add_booking_to_calendar(date_str, time_str, name, phone)
-        if success:
-            return (True, link)
-        else:
-            return (False, "Ошибка добавления в Google Calendar")
-
-    except Exception as e:
-        return (False, str(e))
+def handle_booking(data):
+    return book_slot(data["date"], data["time"], data["name"], data["phone"])
 

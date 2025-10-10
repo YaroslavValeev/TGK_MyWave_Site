@@ -5,24 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="content-language" content="ru" />
   <meta name="csrf-token" content="{{ csrf_token() }}" />
-
+  
   <!-- SEO -->
-  <meta name="description" content="MyWave — профессиональные тренировки по вейксерфингу и вейкборду..." />
-  <meta name="keywords" content="вейксерфинг, вейкбординг, тренировки, MyWave" />
-  <meta name="robots" content="index, follow" />
+  <meta name="description" content="{{ meta_description|default('MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.') }}">
+  <meta property="og:title" content="{{ title|default('MyWave') }}">
+  <meta property="og:description" content="{{ meta_description|default('MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.') }}">
+  <meta property="og:image" content="{{ og_image|default(url_for('static', filename='images/og-image.jpg')) }}">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ title|default('MyWave') }}">
+  <meta name="twitter:description" content="{{ meta_description|default('MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.') }}">
+  <meta name="twitter:image" content="{{ og_image|default(url_for('static', filename='images/og-image.jpg')) }}">
 
-  <title>{% block title %}MyWave{% endblock %}</title>
-  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+  <title>{% block title %}{{ title|default('MyWave') }}{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet" />
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
   <!-- Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
 
-  <!-- Flatpickr (если нужно оставить) -->
+  <!-- Flatpickr -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
@@ -60,36 +69,49 @@
       <img src="https://mc.yandex.ru/watch/99772473" style="position:absolute; left:-9999px;" alt="Счётчик Яндекс.Метрики" />
     </div>
   </noscript>
-  <!-- /Yandex.Metrika counter -->
+
+  <link rel="preload" href="/static/fonts/pangolin.woff2" as="font" type="font/woff2" crossorigin>
+  {% block critical_css %}
+  <style>
+      body { 
+        font-family: 'Pangolin', sans-serif; 
+        background: var(--color-bg); 
+        color: var(--color-text); 
+      }
+      .site-header { 
+        background: var(--color-header); 
+        color: var(--color-white); 
+      }
+  </style>
+  {% endblock %}
 
   {% block head %}{% endblock %}
 </head>
 
 <body>
   <!-- Шапка -->
-  <header class="site-header">
-    <div class="container header-flex">
+  <header class="site-header" id="site-header">
+    <div class="header-inner">
       <div class="logo">
-        <a href="{{ url_for('index') }}"><h1>MyWave</h1></a>
+        <a href="{{ url_for('index') }}">MyWave</a>
       </div>
-      <nav class="site-nav">
-        <ul id="nav-menu">
-          <li><a href="{{ url_for('index') }}#hero" id="nav-home-link">Главная</a></li>
-          <li><a href="{{ url_for('index') }}#services">Услуги</a></li>
-          <li><a href="{{ url_for('index') }}#store">Магазин</a></li>
-          <li><a href="{{ url_for('index') }}#events">Мероприятия</a></li>
-          <li><a href="{{ url_for('blog.blog') }}">Блог</a></li>
-          <li><a href="{{ url_for('index') }}#contacts">Контакты</a></li>
+      <nav class="site-nav" id="site-nav">
+        <ul>
+          <li><a href="#hero">Главная</a></li>
+          <li><a href="#services">Услуги</a></li>
+          <li><a href="#events">Мероприятия</a></li>
+          <li><a href="#blog">Блог</a></li>
+          <li><a href="#contacts">Контакты</a></li><li><a href="{{ url_for('content_calendar.calendar_page') }}">Контент-календарь</a></li>
         </ul>
       </nav>
+      <button id="dark-mode-toggle" class="theme-toggle" aria-label="Переключить тему">🌙</button>
       <button class="burger-menu" id="burger-menu" aria-label="Открыть меню">
         <span></span><span></span><span></span>
       </button>
     </div>
   </header>
-
-  <div id="header-pull-tab" aria-label="Показать меню">
-    ⬇
+  <div id="header-pull-tab" class="header-pull-tab" aria-label="Показать меню">
+    <i class="fas fa-chevron-down"></i>
   </div>
 
   <div id="progress-bar" class="progress-bar">
@@ -98,19 +120,40 @@
 
   <!-- Контент -->
   <main>
+    <div id="socket-status-indicator" class="socket-status-indicator">Оффлайн</div>
     {% block content %}{% endblock %}
   </main>
 
-  <!-- Кнопка открытия чата -->
-  <button id="open-chat-btn" class="chat-toggle" aria-label="Открыть чат">💬</button>
-
-  <!-- Блок чата -->
-  <div id="chat-container" class="chat-section hidden" aria-hidden="true">
-    <h2>Чат с MyWave</h2>
-    <div id="messages" class="chat-messages"></div>
-    <div class="chat-input-area">
-      <input type="text" id="chat-input" placeholder="Введите сообщение..." autocomplete="off" />
-      <button id="send-btn" class="send-button">Отправить</button>
+  <!-- Плавающий чат -->
+  <div class="floating-chat" id="floating-chat">
+    <button class="chat-toggle" id="chat-toggle" aria-label="Открыть чат">
+      <i class="fas fa-comments"></i>
+    </button>
+    
+    <div class="chat-widget hidden" id="chat-widget">
+      <div class="chat-header">
+        <h4>Чат с экспертом по вейку</h4>
+        <button class="close-chat" id="close-chat" aria-label="Закрыть чат">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-suggestions" id="chat-suggestions"></div>
+      
+      <form class="chat-form" id="chat-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="chat-input-wrapper">
+          <input type="text" 
+                 id="chat-input" 
+                 class="chat-input" 
+                 placeholder="Напишите сообщение..." 
+                 aria-label="Сообщение">
+          <button type="submit" class="send-button" aria-label="Отправить">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -119,16 +162,63 @@
     <div class="spinner"></div>
   </div>
 
-  <!-- Совместимый Socket.IO v3.1.3 -->
-  <script src="https://cdn.socket.io/3.1.3/socket.io.min.js"
-          integrity="sha384-qb+Zp1LP0wFv2OxUqHyRx2uYdi0Zg9gU0ZoFtK7MHQQfNsQU+Hfq3yKBYUDp9Etu"
-          crossorigin="anonymous"></script>
+  <!-- Подключение socket.io-client через CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
   <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/booking.js') }}"></script>
   <script src="{{ url_for('static', filename='js/storeFilter.js') }}"></script>
+  <script src="/static/js/socket.io.js"></script>
+  <script type="module">
+    import { SocketStatus } from '/static/js/socket-status.js';
+    const socket = io({
+      auth: {
+        csrf_token: document.querySelector('meta[name="csrf-token"]')?.content
+      }
+    });
+    new SocketStatus(socket);
+  </script>
   {% block scripts %}{% endblock %}
   <script src="{{ url_for('static', filename='js/inline.js') }}"></script>
 
+  <!-- booking.js должен быть после блока content и всех модалок -->
+  <script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+
   <div id="toast" class="toast hidden" aria-live="polite" aria-label="Уведомление"></div>
+
+  <footer class="site-footer">
+    <p>© 2025 MyWave. Все права защищены.</p>
+    <p>Разработка: MyWave Team</p>
+  </footer>
+
+  <script>
+    const themeBtn = document.getElementById('dark-mode-toggle');
+    const boatCard = document.getElementById('boat-card');
+
+    if (themeBtn) {
+      // Авто-применение при загрузке
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme','dark');
+        themeBtn.textContent = '☀️';
+      }
+
+      themeBtn.addEventListener('click', () => {
+        const isDark = document.documentElement.hasAttribute('data-theme');
+        if (isDark) {
+          document.documentElement.removeAttribute('data-theme');
+          localStorage.removeItem('theme');
+          themeBtn.textContent = '🌙';
+        } else {
+          document.documentElement.setAttribute('data-theme','dark');
+          localStorage.setItem('theme','dark');
+          themeBtn.textContent = '☀️';
+        }
+
+        // Подсветка карточки катера
+        if (boatCard) {
+          boatCard.classList.add('highlight-boat');
+          setTimeout(() => boatCard.classList.remove('highlight-boat'), 800);
+        }
+      });
+    }
+  </script>
 </body>
 </html>

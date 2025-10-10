@@ -12,16 +12,20 @@
 <body>
   <div class="container mt-4">
     <h1>Расписание тренировок</h1>
-    <div id="calendar"></div>
+        {%- if events %}
+        <div id="calendar"></div>
+        {%- else %}
+        <div class="no-events-message text-center my-4">События для отображения отсутствуют.</div>
+        {%- endif %}
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', async function() {
         console.log("🔄 Инициализация календаря...");
-        
+        // Только инициализируем календарь, если элемент существует (и тем самым если events передан)
         var calendarEl = document.getElementById('calendar');
         if (!calendarEl) {
-            console.error("❌ Элемент calendar не найден!");
+            console.info("Элемент #calendar не найден — пропускаем инициализацию (возможно нет events).");
             return;
         }
 

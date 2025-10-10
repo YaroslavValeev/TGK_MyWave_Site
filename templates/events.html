@@ -1,22 +1,107 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <section class="events">
-        <h2>Ближайшие мероприятия</h2>
+        <section class="events-section" id="events-section">
+                <h2>Ближайшие мероприятия</h2>
 
-        <div class="event-card">
+                <!-- Модалка "мероприятий пока нет" -->
+                <div id="no-events-modal" class="modal" style="display:none;">
+                    <div class="modal-content">
+                        <button class="close-modal" aria-label="Закрыть">&times;</button>
+                        <h2>Мероприятий пока нет</h2>
+                        <p>Мы готовим расписание. Подпишитесь на новости и загляните позже 👋</p>
+
+                        <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
+                            <a class="btn-primary" href="/blog">Перейти в блог</a>
+                            <a class="btn-secondary" href="/contacts">Связаться</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="event-card">
+            <img src="/static/images/wakesurf-safari.webp" alt="WakeSurf Safari 2025" width="300" height="200" loading="lazy">
             <h3>WakeSurf Safari 2025</h3>
             <p>Эксклюзивный тур по Волге с обучением.</p>
             <p>Дата: июль 2025</p>
-            <a href="#" class="btn">Подробнее</a>
+            <div class="event-actions">
+                <a href="#" class="btn-primary">Подробнее</a>
+                <button class="btn-secondary btn-book">Записаться</button>
+            </div>
         </div>
 
         <div class="event-card">
+            <img src="/static/images/sochi-camp.webp" alt="Тренировочный кемп в Сочи" width="300" height="200" loading="lazy">
             <h3>Тренировочный кемп в Сочи</h3>
             <p>Зимние тренировки в горном регионе.</p>
             <p>Дата: декабрь 2025</p>
-            <a href="#" class="btn">Записаться</a>
+            <div class="event-actions">
+                <a href="#" class="btn-primary">Подробнее</a>
+                <button class="btn-secondary btn-book">Записаться</button>
+            </div>
         </div>
     </section>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Универсальная проверка наличия событий: поддерживаем карточки и списки по месяцам/таблицы
+    const eventSelectors = '.event-card, .events-ul li, .events-table tbody tr, .event-item';
+    const hasEvents = document.querySelectorAll(eventSelectors).length > 0;
+
+    // Если есть месячная разметка (h3 + список/таблица), удалим пустые месяцы
+    const eventsSection = document.getElementById('events-section');
+    if (eventsSection) {
+        const monthHeadings = Array.from(eventsSection.querySelectorAll('h3'));
+        monthHeadings.forEach(h => {
+            // ищем следующий элемент-узел (пропуская текстовые узлы)
+            const el = h.nextElementSibling;
+            if (!el) return;
+
+            const containsNoEventsMsg = !!el.querySelector && !!el.querySelector('.no-events-message');
+            const isEmptyList = el.tagName === 'UL' && el.children.length === 0;
+            const isEmptyTable = el.tagName === 'TABLE' && (!el.querySelectorAll('tbody tr').length);
+            const textIndicatesEmpty = (el.textContent || '').trim().toLowerCase().includes('нет меропр');
+
+            if (containsNoEventsMsg || isEmptyList || isEmptyTable || textIndicatesEmpty) {
+                // Удаляем заголовок и блок-описание месяца
+                h.remove();
+                el.remove();
+            }
+        });
+    }
+
+    // Перепроверяем наличие событий после удаления пустых месяцев
+    const stillHasEvents = document.querySelectorAll(eventSelectors).length > 0;
+    if (!hasEvents && !stillHasEvents) {
+        // Скрываем пустой раздел целиком
+        const section = document.getElementById('events-section');
+        if (section) section.style.display = 'none';
+
+        // Показываем модалку
+        const modal = document.getElementById('no-events-modal');
+        if (modal) {
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+
+            // Закрытие по крестику
+            const closeBtn = modal.querySelector('.close-modal');
+            if (closeBtn) closeBtn.addEventListener('click', () => {
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+                if (section) section.style.display = '';
+            });
+
+            // Закрытие по клику на фон
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                    modal.style.display = 'none';
+                    if (section) section.style.display = '';
+                }
+            });
+        }
+    }
+});
+</script>
 {% endblock %}
 

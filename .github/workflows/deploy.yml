@@ -23,6 +23,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Build Docker image
+        run: docker build -t mywave:${{ github.sha }} .
+
       - name: Deploy to Timeweb.cloud
         env:
           SSH_PRIVATE_KEY: ~/.ssh/id_rsa

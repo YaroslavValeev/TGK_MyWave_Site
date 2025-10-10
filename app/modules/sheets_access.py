@@ -3,7 +3,8 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import logging
 from flask import current_app
-from app.services.google import SPREADSHEET_ID
+from app.modules.logger import logger
+from app.services.google_sheets_service import read_records, append_record, update_record
 
 def get_google_client():
     credentials_file = os.getenv("GOOGLE_SHEETS_CREDENTIALS")
@@ -43,41 +44,43 @@ def get_google_sheet(sheet_name):
         raise RuntimeError(f"Ошибка получения данных из листа {sheet_name}: {e}")
 
 
-
-def get_sheet_records(sheet_name):
+def get_sheet_records(sheet_name, range_):
     try:
-        service = get_sheets_service()
-        spreadsheet_id = current_app.config["SPREADSHEET_ID"]
-        result = service.spreadsheets().values().get(
-            spreadsheetId=spreadsheet_id,
-            range=f"{sheet_name}!A1:Z1000"
-        ).execute()
-        values = result.get("values", [])
-        if not values or len(values) < 2:
-            return []
-        headers = values[0]
-        records = [dict(zip(headers, row)) for row in values[1:]]
-        return records
+        return read_records(sheet_name, range_)
     except Exception as e:
-        logging.error(f"Ошибка получения данных из листа {sheet_name}: {e}")
+        logger.error(f"Ошибка при чтении из Google Sheets ({sheet_name}!{range_}): {e}", exc_info=True)
         return []
 
-def append_to_sheet(sheet_name, values):
-    """
-    Добавляет строку в указанный лист Google Sheets.
-    """
-    service = get_sheets_service()
-    spreadsheet_id = current_app.config["SPREADSHEET_ID"]
-    range_name = f"{sheet_name}!A1"
-    body = {"values": [values]}
+def append_to_sheet(sheet_name, row):
+    try:
+        append_record(sheet_name, row)
+    except Exception as e:
+        logger.error(f"Ошибка при добавлении строки в Google Sheets ({sheet_name}): {e}", exc_info=True)
+        raise
 
-    service.spreadsheets().values().append(
-        spreadsheetId=spreadsheet_id,
-        range=range_name,
-        valueInputOption="RAW",
-        insertDataOption="INSERT_ROWS",
-        body=body
-    ).execute()
+def update_sheet_row(sheet_name, row_id, row):
+    try:
+        update_record(sheet_name, row_id, row)
+    except Exception as e:
+        logger.error(f"Ошибка при обновлении строки в Google Sheets ({sheet_name}, row {row_id}): {e}", exc_info=True)
+        raise
+
+def append_dict_to_sheet(sheet_name, data_dict):
+    """
+    Универсальная функция для записи словаря в лист Google Sheets по актуальным заголовкам.
+    :param sheet_name: имя листа (например, 'Clients')
+    :param data_dict: словарь с данными для записи
+    """
+    try:
+        sheet = get_google_sheet(sheet_name)
+        headers = sheet.values[0]
+    except Exception as e:
+        logger.error(f"[ERROR] Не удалось получить заголовки {sheet_name}: {e}")
+        raise
+    row = [data_dict.get(header, "") for header in headers]
+    logger.error(f"[DEBUG] Заголовки {sheet_name}: {headers}")
+    logger.error(f"[DEBUG] Формируемые значения для записи: {row}")
+    append_record(current_app.config["SPREADSHEET_ID"], sheet_name, row)
 
 class SheetWrapper:
     """
