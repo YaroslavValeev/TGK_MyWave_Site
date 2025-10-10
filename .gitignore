@@ -8,6 +8,7 @@ __pycache__/
 
 # Environment
 .env
+*.env
 credentials.json
 
 # IDE
@@ -32,3 +33,5 @@ instance/service_account.json
 knowledge_base.db
 knowledge_base/
 instance/knowledge_base/
+*.p12
+*.pem
