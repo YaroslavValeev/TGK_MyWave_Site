@@ -4,7 +4,57 @@ from google.oauth2.service_account import Credentials
 from datetime import datetime
 import uuid
 from collections import defaultdict
-from app.modules.sheets_access import get_sheet_records, SheetWrapper, get_google_sheet, append_to_sheet, SheetWrapper
+import logging
+from app.modules.sheets_access import get_google_sheet
+from app.modules.logger import logger
+from app.services.sheets_writer import save_client_workout_to_sheets
+from app.database.models import db, Booking
+
+def get_sheets_service():
+    """
+    Инициализирует клиент Google Sheets, используя сервисный аккаунт.
+    Путь к credentials.json берётся из config.
+    """
+    creds_path = current_app.config.get("GOOGLE_SERVICE_ACCOUNT_FILE", "credentials.json")
+    creds = Credentials.from_service_account_file(creds_path)
+    return build('sheets', 'v4', credentials=creds)
+
+def get_sheet_records(service, spreadsheet_id, sheet_name):
+    """
+    Возвращает кортеж (records, headers):
+    - records: list[dict], где ключ — заголовок, значение — ячейка
+    - headers: list[str] — порядок колонок
+    """
+    result = service.spreadsheets().values().get(
+        spreadsheetId=spreadsheet_id,
+        range=f"{sheet_name}!A1:Z1000"
+    ).execute()
+    values = result.get("values", [])
+    if not values:
+        return [], []
+    headers = values[0]
+    records = [
+        { headers[i]: row[i] if i < len(headers) else "" for i in range(len(headers)) }
+        for row in values[1:]
+    ]
+    return records, headers
+
+def append_to_sheet(service, spreadsheet_id, sheet_name, values: list[list]):
+    """
+    Записывает строки в конец листа:
+    :param service: экземпляр sheets API
+    :param spreadsheet_id: ID Google-таблицы
+    :param sheet_name: имя листа (например, 'Clients')
+    :param values: двумерный список значений для записи
+    """
+    body = {'values': values}
+    return service.spreadsheets().values().append(
+        spreadsheetId=spreadsheet_id,
+        range=f"{sheet_name}!A1",
+        valueInputOption="RAW",
+        insertDataOption="INSERT_ROWS",
+        body=body
+    ).execute()
 
 def get_or_create_client_id(
         name: str,
@@ -45,15 +95,6 @@ def get_or_create_client_id(
         return new_id
     except Exception as e:
         raise RuntimeError(f"Ошибка получения client_id: {e}")
-
-def get_sheets_service():
-    """
-    Инициализируем клиент Google Sheets, используя сервисный аккаунт.
-    Путь к credentials.json берём либо из config, либо используем захардкоженный вариант.
-    """
-    creds_path = current_app.config.get("GOOGLE_SERVICE_ACCOUNT_FILE", "credentials.json")
-    creds = Credentials.from_service_account_file(creds_path)
-    return build('sheets', 'v4', credentials=creds)
 
 def parse_time(time_str):
     """Преобразует строку времени 'HH:MM:SS' -> 'HH:MM', если есть секунды, иначе оставляет как есть."""
@@ -133,16 +174,31 @@ def get_sheet_by_name(sheet_name):
     ).execute()
     return result.get('values', [])
 
+def normalize_time(time_str):
+    try:
+        return datetime.strptime(time_str.strip(), "%H:%M").strftime("%H:%M")
+    except Exception:
+        # попытка привести другой формат
+        parts = time_str.strip().split(":")
+        if len(parts) == 1:
+            return f"{parts[0]}:00"
+        elif len(parts) == 2:
+            return f"{parts[0]}:{parts[1].zfill(2)}"
+        return time_str
+
 def get_workout_by_datetime(date: str, time: str):
-    """
-    Ищем строку, где date == YYYY‑MM‑DD и time == HH:MM.
-    """
+    time = normalize_time(time)
+    found = None
     for row in get_sheet_records("Workouts"):
-        if row.get("date") == date and row.get("time") == time:
+        row_time = normalize_time(row.get("time", ""))
+        if row.get("date") == date and row_time == time:
             cap = int(row.get("max_capacity", 0) or 0)
-            return {"workout_id": row.get("workout_id") or row.get("id"),
-                    "max_capacity": cap}
-    return None
+            found = {"workout_id": row.get("workout_id") or row.get("id"), "max_capacity": cap}
+            break
+    if not found:
+        logging.warning(f"[⚠️] Тренировка {date} {time} не найдена в таблице Workouts")
+        return None
+    return found
 
 def get_workout_participants(workout_id):
     """
@@ -296,12 +352,24 @@ def get_booked_slots(date):
 def add_workout(date_str, time_str, capacity):
     """
     Добавляет строку в таблицу Workouts. Используется при создании новой тренировки.
-    Возвращает номер строки после добавления (может использоваться как workout_id).
+    Возвращает workout_id (строка).
     """
+    workout_id = f"workout_{int(datetime.now().timestamp())}"
+    new_row = [
+        workout_id,         # workout_id
+        date_str,           # date
+        time_str,           # time
+        "90",              # duration
+        "Зал",             # location
+        "групповая",       # workout_type
+        str(capacity),      # max_capacity
+        "Тренер",          # coach_name
+        "активно",         # workout_status
+        "0"                # current_capacity
+    ]
     sheet = get_google_sheet("Workouts")
-    new_row = [f"{date_str} {time_str}", 90, "MyWave", "индивидуальная", capacity, "Ярослав"]
     sheet.append_row(new_row)
-    return sheet.row_count
+    return workout_id
 
 
 def get_available_slots(check_date=None):
@@ -313,7 +381,6 @@ def get_available_slots(check_date=None):
     - Сравнивает со списком уже забронированных тренировок.
     - Фильтрует слоты, где свободных мест нет.
     """
-    import logging
     sheet = get_google_sheet("Schedule")
     current_date = check_date or datetime.now().strftime("%Y-%m-%d")
     booked_slots = get_booked_slots(current_date)
@@ -384,28 +451,26 @@ def add_workout_to_sheet(date, time, client_id):
         body=body
     ).execute()
 
-def book_slot(date_str, time_str, name, phone):
-    """
-    Осуществляет запись:
-      1) Проверяет доступность слота
-      2) Создаёт тренировку в Workouts (если нет)
-      3) Добавляет клиента в Client_Workouts
-      4) Создаёт событие в Google Calendar
-    Возвращает (True, calendar_link) или (False, "Error text")
-    """
+def is_valid_time_slot(time_str):
+    # Пример простой валидации: слот должен быть в формате HH:MM и кратен 30 минутам
     try:
-        # Получаем client_id
-        client_id = get_or_create_client_id(name, phone)
+        h, m = map(int, time_str.split(":"))
+        return 0 <= h < 24 and m in (0, 30)
+    except Exception:
+        return False
 
-        # 1. Проверяем доступность слота
+def book_slot(date_str, time_str, name, phone):
+    try:
+        # Валидация времени
+        if not is_valid_time_slot(time_str):
+            logger.warning(f"Недопустимый слот времени: {time_str}")
+            raise ValueError("Выбранное время недоступно для бронирования")
+
+        client_id = get_or_create_client_id(name, phone)
         is_ok, msg = is_slot_available(date_str, time_str)
         if not is_ok:
             return (False, msg)
-
-        # 2. Пытаемся найти тренировку в Workouts
         workout = get_workout_by_datetime(date_str, time_str)
-
-        # Если не нашли — создаём
         if not workout:
             workout_id = create_workout_if_not_exists(date_str, time_str)
             if not workout_id:
@@ -415,27 +480,34 @@ def book_slot(date_str, time_str, name, phone):
                 return (False, "Тренировка была создана, но не найдена при повторном поиске. Проверьте структуру данных.")
         else:
             workout_id = workout["workout_id"]
-
-        # 3. Проверяем количество участников
         participants = get_workout_participants(workout_id)
         if participants >= workout["max_capacity"]:
             return (False, "Слот переполнен")
-
-        # 4. Добавляем клиента
-        add_client_workout(client_id, workout_id, date_str, time_str)
-
-        # 4‑bis. ⬆️ Инкрементируем current_capacity
+        # --- Запись в БД ---
+        booking_record = Booking(name=name, phone=phone, date=date_str, time=time_str)
+        db.session.add(booking_record)
+        db.session.commit()
+        logger.info(f"Бронирование в БД для пользователя {name}: {date_str} {time_str}")
+        # --- Двойная запись в Google Sheets ---
+        try:
+            save_client_workout_to_sheets(
+                client_id=client_id,
+                workout_id=workout_id,
+                status="pending",
+                created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            )
+            logger.info(f"Синхронизация бронирования в Google Sheets для пользователя {name}")
+        except Exception as e:
+            logger.error(f"Ошибка при синхронизации с Google Sheets: {e}")
         increment_capacity(workout_id)
-
-        # 5. Создаём событие в календаре
         success, link = add_booking_to_calendar(date_str, time_str, name, phone)
         if success:
             return (True, link)
         else:
             return (False, "Ошибка добавления в Google Calendar")
-
     except Exception as e:
-        return (False, str(e))
+        logger.error(f"[❌] Ошибка бронирования: {str(e)}")
+        raise
 
 def increment_capacity(workout_id: str):
     """
@@ -446,18 +518,21 @@ def increment_capacity(workout_id: str):
     row_idx  = None
     cap_col  = None
 
-    # находим строку и индекс колонки
     for i, h in enumerate(headers):
         if h.strip().lower() == "current_capacity":
             cap_col = i
             break
 
-    for r, row in enumerate(sheet.values[1:], start=2):   # A2…
-        if row and row[0] == workout_id:                   # A‑столбец — workout_id
+    for r, row in enumerate(sheet.values[1:], start=2):
+        if row and row[0] == workout_id:
             row_idx = r
             break
 
-    if row_idx and cap_col is not None:
+    if cap_col is None:
+        logging.error(f"[❌] Колонка current_capacity не найдена в таблице Workouts")
+        raise ValueError("Колонка current_capacity отсутствует")
+
+    if row_idx:
         current = int(sheet.values[row_idx-1][cap_col] or 0)
         service = get_sheets_service()
         spreadsheet_id = current_app.config["SPREADSHEET_ID"]

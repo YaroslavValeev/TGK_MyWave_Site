@@ -2,3 +2,6 @@ scrape_configs:
   - job_name: 'my_wave_app'
     static_configs:
       - targets: ['localhost:5000']
+  - job_name: 'mywave'
+    static_configs:
+      - targets: ['web:8000']

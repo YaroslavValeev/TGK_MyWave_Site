@@ -1,208 +1,436 @@
-import datetime
-import sys
-import logging
-from flask import Blueprint, jsonify, request, current_app
-from flask_socketio import emit
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from app.modules.booking_utils import book_slot
-from app.services.google import append_to_sheet
-from app.modules.sheets import get_schedule_records, get_booked_slots, get_available_slots
+from marshmallow.exceptions import ValidationError
+from flask import Blueprint, request, jsonify, current_app, render_template
+from marshmallow import Schema, fields
+from datetime import datetime, timedelta
+from googleapiclient.errors import HttpError
+from app.services.google import get_google_services, add_event_to_calendar
+from app.services.google_sheets_service import append_record, read_records
+from app.schemas import BookingSchema
+from app.modules.calendar_integration import create_workout_if_not_exists
+from app.schemas import BookingSchema
+from app.services.google import get_google_services, add_event_to_calendar
+from app.services.google_sheets_service import append_record
+from flask import Blueprint, request, jsonify, current_app, redirect, render_template
+from marshmallow import Schema, fields
+from datetime import datetime, timedelta
+from googleapiclient.errors import HttpError
+from app.services.google_sheets_service import read_records
+from app.modules.calendar_integration import create_workout_if_not_exists
 
 calendar_bp = Blueprint('calendar', __name__)
-logging.basicConfig(stream=sys.stdout, level=logging.INFO, encoding="utf-8")
 
-SCOPES = [
-    'https://www.googleapis.com/auth/calendar',
-    'https://www.googleapis.com/auth/spreadsheets'
-]
-CALENDAR_ID = '9e6scivqg42qmur04tbnbinm3o@group.calendar.google.com'
+MAX_PER_SLOT = 2  # Максимальное количество записей на один слот
 
+def normalize_day_of_week(day):
+    """Нормализует название дня недели"""
+    # Словарь для маппинга русских названий на английские
+    ru_to_en = {
+        'понедельник': 'monday',
+        'вторник': 'tuesday',
+        'среда': 'wednesday',
+        'четверг': 'thursday',
+        'пятница': 'friday',
+        'суббота': 'saturday',
+        'воскресенье': 'sunday',
+        # Сокращения
+        'пн': 'monday',
+        'вт': 'tuesday',
+        'ср': 'wednesday',
+        'чт': 'thursday',
+        'пт': 'friday',
+        'сб': 'saturday',
+        'вс': 'sunday'
+    }
+    
+    day = str(day).strip().lower()
+    # Если день недели на русском, конвертируем в английский
+    return ru_to_en.get(day, day)
 
-def get_google_services():
-    credentials = service_account.Credentials.from_service_account_file(
-        current_app.config["GOOGLE_SERVICE_ACCOUNT_FILE"],
-        scopes=SCOPES
-    )
-    calendar_service = build('calendar', 'v3', credentials=credentials)
-    sheets_service = build('sheets', 'v4', credentials=credentials)
-    return calendar_service, sheets_service
+def validate_schedule_record(record, idx):
+    """Проверяет корректность записи расписания"""
+    required_fields = ['day_of_week', 'time', 'max_capacity']
+    
+    # Проверяем наличие обязательных полей
+    missing_fields = [field for field in required_fields if not record.get(field)]
+    if missing_fields:
+        current_app.logger.error(f"В записи {idx + 1} отсутствуют обязательные поля: {', '.join(missing_fields)}")
+        return False, None
 
-
-def get_google_sheet(sheet_name):
-    _, sheets_service = get_google_services()
-    spreadsheet_id = current_app.config["SPREADSHEET_ID"]
-    result = sheets_service.spreadsheets().values().get(
-        spreadsheetId=spreadsheet_id,
-        range=sheet_name
-    ).execute()
-    values = result.get("values", [])
-    if not values:
-        records = []
-    else:
-        headers = [h.strip().lower() for h in values[0]]
-        records = [dict(zip(headers, row)) for row in values[1:]]
-    class DummySheet:
-        def get_all_records(self):
-            return records
-    return DummySheet()
-
-def get_available_slots(check_date=None):
-    import logging
-    import datetime
-
-    sheet = get_google_sheet("Schedule")
-    current_date = check_date or datetime.datetime.now().strftime("%Y-%m-%d")
-    day_of_week = datetime.datetime.strptime(current_date, "%Y-%m-%d").strftime("%A").lower()
-    booked_slots = get_booked_slots(current_date)
-
-    slots = []
-
-    logging.info(f"📅 Проверяем слоты на дату: {current_date} ({day_of_week})")
-
-    for row in sheet.get_all_records():
-        row_day = row.get("day_of_week", "").strip().lower()
-        if row_day != day_of_week:
-            continue
-
-        time = str(row.get("time", "")).strip()
-        capacity_raw = str(row.get("max_capacity", "")).strip()  # ✅ используем max_capacity
-
-        if not time or not capacity_raw:
-            logging.warning(f"⚠️ Пустой слот или capacity в строке: {row}")
-            continue
-
-        try:
-            max_capacity = int(capacity_raw)
-        except ValueError:
-            logging.error(f"❌ Ошибка приведения capacity к int: {capacity_raw} в {row}")
-            continue
-
-        key = f"{current_date} {time}"
-        booked = booked_slots.get(key, 0)
-
-        if booked < max_capacity:
-            slots.append({
-                "time": time,
-                "available": max_capacity - booked,
-                "max_capacity": max_capacity,
-                "booked": booked
-            })
-            logging.info(f"✅ Добавлен слот: {key} ({booked}/{max_capacity})")
-        else:
-            logging.info(f"🚫 Пропуск — слот переполнен: {key} ({booked}/{max_capacity})")
-
-    logging.info(f"✅ Найдено {len(slots)} слотов на {day_of_week}")
-    return {day_of_week: slots}
-
-
-
-def add_booking_to_calendar(date, time, name, phone):
-    calendar_service, _ = get_google_services()
     try:
-        start_dt = datetime.datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
-        end_dt = start_dt + datetime.timedelta(hours=1)
-        start_time = start_dt.strftime("%Y-%m-%dT%H:%M:%S+03:00")
-        end_time = end_dt.strftime("%Y-%m-%dT%H:%M:%S+03:00")
-        event = {
-            'summary': f'Тренировка - {name}',
-            'description': f'Клиент: {name}\nТелефон: {phone}',
-            'start': {'dateTime': start_time, 'timeZone': 'Europe/Moscow'},
-            'end': {'dateTime': end_time, 'timeZone': 'Europe/Moscow'}
-        }
-        event_result = calendar_service.events().insert(
-            calendarId=CALENDAR_ID,
-            body=event,
-            sendNotifications=True
-        ).execute()
-        return True, event_result.get('htmlLink', '')
-    except Exception as e:
-        logging.error(f"❌ Ошибка добавления в календарь: {e}")
-        return False, str(e)
-
-
-@calendar_bp.route("/available_slots", methods=["GET"])
-def available_slots():
-    slots = get_available_slots()
-    return jsonify(slots)
-
-
-@calendar_bp.route("/available_slots/<date>", methods=["GET"])
-def available_slots_by_date(date):
-    try:
-        parsed_date = datetime.datetime.strptime(date, "%Y-%m-%d")
-        if parsed_date < datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0):
-            return jsonify([]), 200
-        slots = get_available_slots(date)
-        return jsonify(slots)
-    except Exception as e:
-        logging.error(f"❌ Ошибка получения слотов: {str(e)}")
-        return jsonify([]), 200
-
-
-@calendar_bp.route("/book", methods=["POST"])
-def book():
-    data = request.get_json()
-    required_fields = ['date', 'time', 'name', 'phone']
-    if not all(field in data for field in required_fields):
-        return jsonify({"success": False, "error": "Все поля обязательны"}), 400
-
-    success, result = book_slot(
-        data['date'], data['time'], data['name'], data['phone']
-    )
-
-    if success:
-        return jsonify({"success": True, "calendar_link": result})
-    else:
-        return jsonify({"success": False, "error": result}), 500
-
-def get_slots_for_date(date):
-    try:
-        date_obj = datetime.datetime.strptime(date, "%Y-%m-%d")
-        day_of_week = date_obj.strftime("%A").lower()
-
-        schedule = get_schedule_records(day_of_week)
-        booked = get_booked_slots(date)
-
-        slots = []
-        for entry in schedule:
-            time = entry.get("time", "")
-            # Безопасное получение capacity с проверкой
-            capacity_raw = entry.get("capacity", "")
-            # Альтернативный ключ max_capacity, если capacity не существует
-            if not capacity_raw:
-                capacity_raw = entry.get("max_capacity", "4")
+        # Проверка времени
+        if not isinstance(record['time'], str) or not record['time'].strip():
+            current_app.logger.warning(f"Некорректное время в записи {idx + 1}: {record['time']}")
+            return False, None
             
-            try:
-                capacity = int(capacity_raw)
-            except (ValueError, TypeError):
-                capacity = 4  # Значение по умолчанию
-                
-            booked_count = booked.get(time, 0)
-            available = max(0, capacity - booked_count)
+        # Проверка вместимости
+        max_cap = int(record.get('max_capacity', '0'))
+        if max_cap <= 0:
+            current_app.logger.warning(f"Некорректная вместимость в записи {idx + 1}: {max_cap}")
+            return False, None
+            
+        # Проверка и нормализация дня недели
+        day = normalize_day_of_week(record['day_of_week'])
+        if not day:
+            current_app.logger.warning(f"Некорректный день недели в записи {idx + 1}: {record['day_of_week']}")
+            return False, None
 
-            slots.append({
-                "time": time,
-                "available": available,
-                "max_capacity": capacity,
-                "booked": booked_count
-            })
+        # Возвращаем обновленную запись
+        record['day_of_week'] = day
+        record['max_capacity'] = max_cap
+        return True, record
+        
+    except (ValueError, TypeError) as e:
+        current_app.logger.error(f"Ошибка валидации записи {idx + 1}: {str(e)}")
+        return False, None
 
-        return {date: slots}
+def get_available_slots(date_str):
+    """
+    Возвращает список доступных слотов для указанной даты.
+    Фильтрует статическое расписание по дню недели и вычитает уже сделанные брони.
+    """
+    # 1) Проверяем наличие необходимых конфигураций
+    if not current_app.config.get('SPREADSHEET_ID'):
+        current_app.logger.error("SPREADSHEET_ID не настроен в конфигурации")
+        raise ValueError("Ошибка конфигурации: ID таблицы не настроен")
+
+    # 2) Преобразуем строку в дату и определяем день недели
+    try:
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+        day_of_week = date_obj.strftime('%A').lower()
+    except ValueError as e:
+        current_app.logger.error(f"Ошибка парсинга даты {date_str}: {str(e)}")
+        raise ValueError(f"Неверный формат даты: {date_str}")
+
+    current_app.logger.info(f"\n{'='*50}")
+    current_app.logger.info(f"ДИАГНОСТИКА СЛОТОВ")
+    current_app.logger.info(f"{'='*50}")
+    current_app.logger.info(f"Запрошенная дата: {date_str}")
+    current_app.logger.info(f"День недели (системный): {day_of_week}")
+
+    # 3) Считываем и валидируем записи из листа Schedule
+    try:
+        schedule = read_records(current_app.config['SPREADSHEET_ID'], 'Schedule')
+        if not schedule:
+            current_app.logger.warning("Таблица расписания пуста")
+            return []
+
+        # Валидируем каждую запись
+        validated_schedule = []
+        for idx, record in enumerate(schedule):
+            is_valid, validated_record = validate_schedule_record(record, idx)
+            if is_valid:
+                validated_schedule.append(validated_record)
+
+        if not validated_schedule:
+            current_app.logger.warning("После валидации не осталось корректных записей в расписании")
+            return []
+
+        schedule = validated_schedule
+        current_app.logger.info(f"Обработано {len(schedule)} записей расписания")
+
+    except HttpError as he:
+        current_app.logger.error(f"Ошибка API Google Sheets: {str(he)}")
+        raise he
     except Exception as e:
-        logging.error(f"❌ Ошибка получения слотов: {e}")
-        return {date: []}
+        current_app.logger.error(f"Ошибка чтения или валидации расписания: {str(e)}")
+        raise
 
+    # 4) Считываем брони
+    try:
+        bookings = read_records(current_app.config['SPREADSHEET_ID'], 'Client_Workouts')
+        current_app.logger.info(f"\nБРОНИРОВАНИЯ на {date_str}")
+        relevant_bookings = [b for b in bookings if b.get('date') == date_str]
+        current_app.logger.info(f"Найдено {len(relevant_bookings)} броней")
+    except Exception as e:
+        current_app.logger.error(f"Ошибка чтения броней: {str(e)}")
+        bookings = []
+        relevant_bookings = []
 
-@calendar_bp.route('/event', methods=['POST'])
-def handle_event():
-    data = request.get_json()
-    date = data.get('date')
+    # 5) Формируем слоты
+    slots = []
+    for rec in schedule:
+        # Проверяем совпадение дня недели
+        if normalize_day_of_week(rec['day_of_week']) != day_of_week:
+            continue
 
-    if not date:
-        return jsonify({'error': 'Дата не выбрана!'}), 400
+        time_str = rec['time']
+        capacity = int(rec['max_capacity'])
+        used = sum(1 for b in relevant_bookings if b.get('time') == time_str)
+        remaining = max(0, capacity - used)
 
-    logging.info(f"📅 Socket.IO: Получена дата от клиента: {date}")
-    slots = get_slots_for_date(date)
-    emit('slots_update', {'slots': slots}, broadcast=True)
-    return jsonify({"success": True})
+        slots.append({
+            'time': time_str,
+            'available': remaining > 0,
+            'remaining': remaining
+        })
+
+    # Сортируем слоты по времени и возвращаем
+    return sorted(slots, key=lambda x: x['time'])
+
+@calendar_bp.route('/schedule')
+def get_schedule():
+    """
+    Возвращает статическое расписание тренировок.
+    """
+    try:
+        # Проверяем конфигурацию
+        if not current_app.config.get('SPREADSHEET_ID'):
+            current_app.logger.error("SPREADSHEET_ID не настроен")
+            return jsonify({"error": "Ошибка конфигурации сервера"}), 500
+            
+        # Считываем расписание
+        schedule = read_records(current_app.config['SPREADSHEET_ID'], 'Schedule')
+        if not schedule:
+            current_app.logger.warning("Таблица расписания пуста")
+            return jsonify([]), 200
+            
+        # Валидируем каждую запись
+        validated_schedule = []
+        for idx, record in enumerate(schedule):
+            is_valid, validated_record = validate_schedule_record(record, idx)
+            if is_valid:
+                validated_schedule.append(validated_record)
+                
+        return jsonify(validated_schedule), 200
+        
+    except HttpError as he:
+        error_msg = str(he)
+        current_app.logger.error(f"Ошибка Google Sheets API: {error_msg}")
+        if "invalid_grant" in error_msg:
+            return jsonify({"error": "Ошибка авторизации сервера"}), 503
+        return jsonify({"error": "Ошибка внешнего API"}), 502
+        
+    except Exception as e:
+        current_app.logger.error(f"Непредвиденная ошибка: {str(e)}", exc_info=True)
+        return jsonify({"error": "Внутренняя ошибка сервера"}), 500
+
+@calendar_bp.route('/api/calendar/slots/<date_str>')
+def get_slots(date_str):
+    try:
+        # Проверяем формат даты
+        try:
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({"error": "Неверный формат даты. Используйте YYYY-MM-DD"}), 400
+
+        # Проверяем, что дата не в прошлом
+        if date_obj < datetime.now().date():
+            return jsonify({"error": "Нельзя выбрать дату в прошлом"}), 400
+
+        # Проверяем, что дата не слишком далеко в будущем (например, +3 месяца)
+        max_future_date = datetime.now().date() + timedelta(days=90)
+        if date_obj > max_future_date:
+            return jsonify({"error": "Дата слишком далеко в будущем. Максимум 3 месяца вперед"}), 400
+
+        current_app.logger.info(f"Запрос слотов на дату: {date_str}")
+        slots = get_available_slots(date_str)
+
+        if not slots:
+            current_app.logger.info(f"На дату {date_str} слоты не найдены")
+            return jsonify([]), 200
+
+        current_app.logger.info(f"Найдено {len(slots)} слотов на {date_str}")
+        return jsonify(slots), 200
+
+    except ValidationError as ve:
+        error_msg = str(ve)
+        current_app.logger.warning(f"Ошибка валидации: {error_msg}")
+        return jsonify({"error": "Ошибка валидации данных", "details": error_msg}), 400
+
+    except FileNotFoundError as fe:
+        error_msg = str(fe)
+        current_app.logger.critical(f"Ошибка конфигурации: {error_msg}")
+        return jsonify({"error": "Ошибка настройки сервера. Пожалуйста, обратитесь к администратору."}), 500
+
+    except HttpError as he:
+        error_msg = str(he)
+        current_app.logger.error(f"Ошибка Google API: {error_msg}")
+        if "invalid_grant" in error_msg:
+            return jsonify({"error": "Ошибка авторизации сервера. Пожалуйста, попробуйте позже."}), 503
+        return jsonify({"error": "Временная ошибка сервера. Пожалуйста, попробуйте позже."}), 502
+
+    except Exception as e:
+        current_app.logger.error(f"Непредвиденная ошибка: {str(e)}", exc_info=True)
+        return jsonify({"error": "Произошла ошибка при получении данных. Пожалуйста, попробуйте позже."}), 500
+
+@calendar_bp.route('/api/calendar/slots', methods=['GET'])
+def get_slots_range():
+    try:
+        start_date = request.args.get('start')
+        end_date   = request.args.get('end')
+        if not start_date or not end_date:
+            return jsonify({"error": "Не указаны даты"}), 400
+
+        start = datetime.strptime(start_date, '%Y-%m-%d')
+        end   = datetime.strptime(end_date,   '%Y-%m-%d')
+
+        records = read_records(current_app.config['SPREADSHEET_ID'], 'Schedule')
+        events  = []
+        for rec in records:
+            # Если в Schedule добавлены записи с полями date/time/status
+            if 'date' in rec and 'time' in rec:
+                event_dt = datetime.strptime(f"{rec['date']} {rec['time']}", '%Y-%m-%d %H:%M')
+                if start <= event_dt <= end:
+                    events.append({
+                        'title': 'Занято' if rec.get('status') == 'booked' else 'Свободно',
+                        'start': event_dt.isoformat(),
+                        'end':   (event_dt + timedelta(hours=1)).isoformat(),
+                        'color': '#ff0000' if rec.get('status') == 'booked' else '#00ff00'
+                    })
+
+        return jsonify(events)
+    except Exception as e:
+        current_app.logger.error(f"Error in get_slots_range: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+@calendar_bp.route('/api/book', methods=['POST'])
+def deprecated_redirect():
+    # Устаревший маршрут — перенаправляем на новый
+    return redirect("/api/calendar/book", code=307)
+
+@calendar_bp.route('/calendar')
+def calendar_page():
+    return render_template('calendar.html')
+
+def find_or_create_client(phone, name):
+    """Ищет клиента по телефону, если нет — добавляет и возвращает client_id"""
+    spreadsheet_id = current_app.config['SPREADSHEET_ID']
+    clients = read_records(spreadsheet_id, 'Clients')
+    for client in clients:
+        if client.get('phone') == phone:
+            return client.get('client_id')
+    # Если не найден — создаём
+    new_id = f"client_{int(datetime.utcnow().timestamp())}"
+    created_at = datetime.utcnow().isoformat()
+    client_data = {
+        "client_id": new_id,
+        "telegram_user_id": "",
+        "name": name,
+        "phone": phone,
+        "email": "",
+        "level": "beginner",
+        "created_at": created_at,
+        "source": "web",
+        "status": "new",
+        "ref_code": "",
+        "last_active": created_at
+    }
+    from app.modules.sheets_access import append_dict_to_sheet
+    append_dict_to_sheet('Clients', client_data)
+    return new_id
+
+def find_workout(date, time):
+    """Ищет тренировку по дате и времени, возвращает workout_id и текущий current_capacity"""
+    spreadsheet_id = current_app.config['SPREADSHEET_ID']
+    workouts = read_records(spreadsheet_id, 'Workouts')
+    for idx, workout in enumerate(workouts):
+        if workout.get('date') == date and workout.get('time') == time:
+            return workout.get('workout_id'), idx, int(workout.get('current_capacity', '0'))
+    return None, None, None
+
+def update_workout_capacity(row_idx, new_capacity):
+    """Обновляет current_capacity в листе Workouts по индексу строки (начиная с 0 после заголовка)"""
+    spreadsheet_id = current_app.config['SPREADSHEET_ID']
+    # current_capacity — это колонка J (10-я, индекс 9), но может быть сдвиг
+    # Найдём заголовки
+    workouts = read_records(spreadsheet_id, 'Workouts')
+    headers = list(workouts[0].keys()) if workouts else []
+    if 'current_capacity' in headers:
+        col_idx = headers.index('current_capacity')
+        col_letter = chr(ord('A') + col_idx)
+        cell = f"{col_letter}{row_idx+2}"  # +2: 1 — заголовок, 1 — индексация с 1
+        from app.services.google_sheets_service import update_record
+        update_record(spreadsheet_id, 'Workouts', cell, [str(new_capacity)])
+
+@calendar_bp.route('/api/calendar/book', methods=['POST'])
+def book_slot():
+    """
+    Бронирование слота тренировки.
+    """
+    # Проверяем формат входных данных
+    if not request.is_json:
+        return jsonify({'error': 'Ожидается JSON'}), 400
+
+    try:
+        # Валидация данных через схему
+        data = BookingSchema().load(request.get_json())
+        
+        # Проверяем доступность слота
+        slots = get_available_slots(data['date'])
+        available_slot = next((slot for slot in slots if slot['time'] == data['time'] and slot['available']), None)
+        
+        if not available_slot:
+            return jsonify({'error': 'Слот недоступен или уже занят'}), 400
+
+        # 1. Создание/поиск клиента
+        client_id = find_or_create_client(data['phone'], data['name'])
+        if not client_id:
+            return jsonify({'error': 'Не удалось создать профиль клиента'}), 500
+
+        # 2. Поиск/создание тренировки
+        workout_id, workout_row_idx, current_capacity = find_workout(data['date'], data['time'])
+        if not workout_id:
+            workout_id = create_workout_if_not_exists(data['date'], data['time'])
+            workout_id, workout_row_idx, current_capacity = find_workout(data['date'], data['time'])
+            if not workout_id:
+                return jsonify({'error': 'Не удалось создать тренировку'}), 500
+
+        # 3. Запись бронирования
+        created_at = datetime.utcnow().isoformat()
+        new_row = [
+            '',              # id (авто)
+            client_id,       # client_id
+            workout_id,      # workout_id
+            data['date'],    # date
+            data['time'],    # time
+            '',              # performance
+            '',              # feedback
+            'single',        # payment_type
+            'booked',       # status
+            created_at,      # created_at
+            ''              # client_rating
+        ]
+        
+        try:
+            append_record(current_app.config['SPREADSHEET_ID'], 'Client_Workouts', new_row)
+        except Exception as e:
+            current_app.logger.error(f"Ошибка записи бронирования: {str(e)}")
+            return jsonify({'error': 'Не удалось сохранить бронирование'}), 500
+
+        # 4. Обновление счетчика мест
+        try:
+            if workout_row_idx is not None:
+                update_workout_capacity(workout_row_idx, current_capacity + 1)
+        except Exception as e:
+            current_app.logger.error(f"Ошибка обновления счетчика мест: {str(e)}")
+            # Не прерываем процесс, так как бронь уже создана
+
+        # 5. Создание события в Google Calendar
+        try:
+            service = get_google_services()
+            add_event_to_calendar(
+                service,
+                data['date'],
+                data['time'],
+                data['name'],
+                data['phone']
+            )
+        except Exception as e:
+            current_app.logger.error(f"Ошибка создания события в календаре: {str(e)}")
+            # Не прерываем процесс, так как это некритичная ошибка
+
+        return jsonify({'message': 'Успешно забронировано'}), 201
+
+    except ValidationError as ve:
+        return jsonify({'error': 'Ошибка валидации данных', 'details': ve.messages}), 400
+        
+    except HttpError as he:
+        error_msg = str(he)
+        current_app.logger.error(f"Ошибка Google API: {error_msg}")
+        if "invalid_grant" in error_msg:
+            return jsonify({"error": "Ошибка авторизации сервера. Пожалуйста, попробуйте позже"}), 503
+        return jsonify({"error": "Временная ошибка сервера. Пожалуйста, попробуйте позже"}), 502
+        
+    except Exception as e:
+        current_app.logger.exception("Неожиданная ошибка при бронировании слота")
+        return jsonify({'error': 'Внутренняя ошибка сервера. Пожалуйста, попробуйте позже'}), 500

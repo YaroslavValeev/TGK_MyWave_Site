@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="text-center my-4">Календарь соревнований по вейксерфингу и вейкскиму — 2025</h2>
+
+{% for month, events in months.items() %}
+  <h3>{{ month }}</h3>
+  {% if events %}
+    <table class="table table-bordered table-sm" style="background:#fff;">
+      <thead>
+        <tr>
+          <th>Даты</th>
+          <th>Название</th>
+          <th>Уровень</th>
+          <th>Организатор</th>
+          <th>Место</th>
+          <th>Ссылка</th>
+          <th>Тип</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for event in events %}
+        <tr>
+          <td>{{ event['date_range'] }}</td>
+          <td>{{ event['name'] }}</td>
+          <td>{{ event['level'] }}</td>
+          <td>{{ event['organizer'] }}</td>
+          <td>{{ event['location'] }}</td>
+          <td>
+            {% if event['link'] and event['link'] != '-' %}
+              <a href="https://{{ event['link'] }}" target="_blank" rel="noopener">{{ event['link'] }}</a>
+            {% endif %}
+          </td>
+          <td>{{ event['type'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div style="color: #888; margin-bottom: 2em;">Нет мероприятий в этом месяце.</div>
+  {% endif %}
+{% endfor %}
+{% endblock %} 

@@ -1,0 +1,2 @@
+<h2>Ваши тренировки:</h2>
+<ul>{% for w in workouts %}<li>{{ w["date"] }} в {{ w["time"] }}</li>{% else %}<li>Нет записей</li>{% endfor %}</ul>

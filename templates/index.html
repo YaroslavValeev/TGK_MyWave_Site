@@ -1,154 +1,152 @@
 {% extends "base.html" %}
-{% block title %}Главная - MyWave{% endblock %}
+
+{% block title %}MyWave — Тренировки по вейксерфингу{% endblock %}
+
 {% block content %}
-
-<!-- Герой-секция -->
-<section id="hero" class="hero-container">
-  <img src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="Hero image" class="hero-bg">
-  <div class="hero-overlay no-background">
-    <div class="hero-text">
-      <h1>Добро пожаловать на MyWave</h1>
-      <p>Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
-      <button class="btn-primary book-now">Записаться</button>
+  <!-- Герой-блок -->
+  <section class="hero-section relative-section">
+    <img src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}" alt="Вейксерфинг на волне" class="hero-bg hero-bg-cover hero-bg-light" loading="lazy" />
+    <img src="{{ url_for('static', filename='images/hero-wakesurf-dark.webp') }}" alt="Вейксерфинг на волне (тёмная тема)" class="hero-bg hero-bg-cover hero-bg-dark" loading="lazy" />
+    <div class="hero-content center-padding hero-content-relative">
+      <h1 class="hero-title">MyWave</h1>
+      <p class="hero-subtitle">Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
+      <button class="btn-primary book-now" id="openBookingBtn">Записаться</button>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- Блок преимуществ -->
-<section class="features section">
-  <h3>Почему мы?</h3>
-  <div class="feature-list">
-    <div class="feature-item">
-      <h4>Профессионализм</h4>
-      <p>20+ лет опыта и высокая квалификация.</p>
+  <!-- Блок преимуществ -->
+  <section class="features">
+    <h3>Почему мы?</h3>
+    <div class="feature-list">
+      <div class="feature-item">
+        <h4>Профессионализм</h4>
+        <p>Многолетний опыт (23+ лет) и высокая квалификация.</p>
+      </div>
+      <div class="feature-item">
+        <h4>Комфорт и безопасность</h4>
+        <p>Онлайн-запись, гибкий график занятий.</p>
+      </div>
+      <div class="feature-item">
+        <h4>Результат</h4>
+        <p>Индивидуальный подход к каждому ученику.</p>
+      </div>
     </div>
-    <div class="feature-item">
-      <h4>Комфорт и безопасность</h4>
-      <p>Онлайн-запись и гибкий график занятий.</p>
+  </section>
+
+  <!-- Услуги -->
+  <section id="services" class="services-section">
+    <h2>Услуги</h2>
+    <div class="cards-grid">
+      <div class="service-card">
+        <h4>Тренировка</h4>
+        <p>Тренировка на авторских тренажёрах по уникальной методике вейксерфинга. Развиваем баланс, координацию, биомеханику и нейронные связи, чтобы вы уверенно и эффектно выполняли трюки.</p>
+        <p>Цена: 3500 рублей</p>
+        <button class="btn-secondary btn-book">Записаться</button>
+      </div>
+      <div class="service-card" id="boat-card">
+        <h4>Запись на катер</h4>
+        <p>Тренировка за катером с тренером (30 минут)</p>
+        <p>Цена: 10 000 рублей</p>
+        <button class="btn-secondary btn-book">Записаться</button>
+      </div>
     </div>
-    <div class="feature-item">
-      <h4>Результат</h4>
-      <p>Индивидуальный подход к каждому.</p>
+  </section>
+
+  <!-- Товары -->
+  <section id="store" class="store-section">
+    <h2>Товары</h2>
+    <div class="cards-grid">
+      <div class="product-card">
+        <img src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="Баланс-борд" loading="lazy" />
+        <h4>Баланс-борд</h4>
+        <p>Тренировочный баланс-борд для трюков и фитнеса. Улучшает координацию, подходит для всех уровней подготовки.</p>
+        <p>Цена: 7 500 ₽</p>
+        <button class="btn-secondary">Купить</button>
+      </div>
+      <div class="product-card">
+        <img src="{{ url_for('static', filename='images/balans_trick_trening.jpg') }}" alt="Баланс-борд Pro" loading="lazy" />
+        <h4>Баланс-борд Big</h4>
+        <p>Увеличенная модель для профессионалов.</p>
+        <p>Цена: 9 900 ₽</p>
+        <button class="btn-secondary">Купить</button>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- Услуги -->
-<section id="services" class="services-section section">
-  <h2>Услуги</h2>
-  <div class="services-list">
-    <div class="service-card">
-      <h4>Тренировка</h4>
-      <p>1.5 часа: батут, баланс, техника. Новички и профи.</p>
-      <p>Цена: 3500 ₽</p>
-      <button class="btn-secondary book-now" aria-label="Записаться на тренировку">Записаться</button>
+  <!-- Мероприятия -->
+  <section id="events" class="events-section section">
+    <h2>Мероприятия</h2>
+    {% for month, events in months.items() %}
+      <h3>{{ month }}</h3>
+      {% if events %}
+        <ul class="events-ul">{%- for event in events -%}<li>
+                <strong>{{ event['date_range'] }}:</strong>
+                {{ event['name'] }} ({{ event['level'] }}, {{ event['organizer'] }}, {{ event['location'] }}, {{ event['type'] }})
+                {%- if event['link'] and event['link'] != '-' -%} — <a href="https://{{ event['link'] }}" target="_blank" rel="noopener">{{ event['link'] }}</a>{%- endif -%}
+              </li>{%- endfor -%}</ul>
+      {% else %}
+        <div class="no-events-message">Нет мероприятий в этом месяце.</div>
+      {% endif %}
+    {% endfor %}
+  </section>
+
+  <!-- Блог -->
+  <section id="blog" class="blog-section">
+    <h2>Блог</h2>
+    <p>В разработке. Скоро здесь появятся новые статьи!</p>
+  </section>
+
+  <section class="reviews-section">
+    <h2>Отзывы учеников</h2>
+    <div class="reviews-slider">
+      <div class="review">
+        <p>"Очень понравились тренировки! Тренер — супер!"</p>
+        <strong>Эля Веснина</strong>
+      </div>
+      <div class="review">
+        <p>"Было весело и эффективно, всем советую!"</p>
+        <strong>Юля Елупова</strong>
+      </div>
+      <div class="review">
+        <p>"Прекрасный подход к детям и взрослым!"</p>
+        <strong>Алина Лапина</strong>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- Магазин -->
-<section id="store" class="store-section section">
-  <h2>Онлайн-магазин</h2>
-  <div class="store-list">
-    <div class="product-card">
-      <img src="/static/images/sample-product.jpg" alt="Товар" />
-      <h4>Название товара</h4>
-      <p>Описание и характеристики.</p>
-      <p>Цена: 1000 ₽</p>
-      <input type="text" placeholder="Адрес доставки" />
-      <button class="btn-secondary">Купить</button>
+  <!-- Контакты -->
+  <section id="contacts" class="contacts-section">
+    <h2>Давайте знакомиться</h2>
+    <div class="contact-info">
+      <div class="contact-details">
+        <p class="contact-phone">Телефон: <a href="tel:+79160117179">+7 (916) 011-71-79</a></p>
+        <p class="contact-social">
+          Telegram: <a href="https://t.me/MyW23" target="_blank" rel="noopener">@MyW23</a>
+        </p>
+        <div class="social-links">
+          <a href="https://wa.me/79160117179" class="social-link" target="_blank" rel="noopener" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+          <a href="https://www.facebook.com/yaroslav.valeev" class="social-link" target="_blank" rel="noopener" title="Facebook"><i class="fab fa-facebook"></i></a>
+          <a href="https://vk.com/y.valeev" class="social-link" target="_blank" rel="noopener" title="VK"><i class="fab fa-vk"></i></a>
+          <a href="https://www.instagram.com/y.valeev/" class="social-link" target="_blank" rel="noopener" title="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="https://dzen.ru/mywavewake" class="social-link" target="_blank" rel="noopener" title="Яндекс Дзен"><i class="fa fa-yandex"></i></a>
+        </div>
+      </div>
+      <form id="contact-form" class="contact" autocomplete="on">
+        <h3>Напишите мне</h3>
+        <div class="input-group">
+          <label for="username">Имя:</label>
+          <input type="text" id="username" name="username" required autocomplete="name" />
+        </div>
+        <div class="input-group">
+          <label for="usercontact">Телефон или Telegram:</label>
+          <input type="text" id="usercontact" name="usercontact" required autocomplete="tel" />
+        </div>
+        <button type="submit" class="btn-primary">Отправить</button>
+      </form>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- Мероприятия -->
-<section id="events" class="events-section section">
-  <h2>Мероприятия</h2>
-  <div class="events-list">
-    <div class="event-card">
-      <h4>Название события</h4>
-      <p>Дата и место проведения.</p>
-      <a href="#" class="btn-link">Подробнее</a>
-    </div>
-  </div>
-</section>
+  <a href="/chat" class="btn-secondary chat-margin">Чат с тренером</a>
 
-<!-- Последняя новость -->
-<section class="latest-news section">
-  <h2>Последняя новость</h2>
-  <div id="latest-news"></div>
-  <a href="{{ url_for('blog.blog') }}">Читать все новости</a>
-</section>
-
-<!-- Контакты -->
-<section id="contacts" class="contacts-section section">
-  <h2>Контакты</h2>
-  <p>Давайте знакомиться:</p>
-  <ul>
-    <li>Телефон: +7 916 011-71-79</li>
-    <li>Instagram: y.valeev</li>
-    <li>Facebook: <a href="https://www.facebook.com/yaroslav.valeev" target="_blank" rel="noopener">yaroslav.valeev</a></li>
-    <li>VK: <a href="https://vk.com/y.valeev" target="_blank" rel="noopener">y.valeev</a></li>
-    <li>YouTube: @YaroslavValeev</li>
-    <li>Telegram: @MyW23</li>
-    <li>Telegram Admin: <a href="https://web.telegram.org/a/#7632502935" target="_blank" rel="noopener">MyWave Admin</a></li>
-  </ul>
-</section>
-
-<!-- Модальные окна -->
-<div id="modalCalendar" class="modal hidden">
-  <div class="modal-content">
-    <button class="close-modal" aria-label="Закрыть модалку">×</button>
-    <h3>Выберите дату</h3>
-    <label for="bookingDateInput">Дата</label>
-    <div class="date-picker-wrapper">
-      <input type="date" id="bookingDateInput" class="form-control" />
-      <span class="calendar-icon">📅</span>
-    </div>
-    <button id="confirmDateBtn" class="btn-primary-lg">Подтвердить дату</button>
-  </div>
-</div>
-
-<div id="modalSlots" class="modal hidden">
-  <div class="modal-content">
-    <button class="close-modal" aria-label="Закрыть модалку">×</button>
-    <h3>Выберите слот</h3>
-    <label for="slotSelect">Время тренировки</label>
-    <div id="slotButtonsContainer" class="slot-buttons"></div>
-    <input type="hidden" id="slotSelect" name="slot" />
-    <button id="confirmSlotBtn" class="btn-primary-lg" disabled>Выбрать слот</button>
-  </div>
-</div>
-
-<div id="modalContact" class="modal hidden">
-  <div class="modal-content">
-    <button class="close-modal" aria-label="Закрыть модалку">×</button>
-    <h3>Контактные данные</h3>
-    <label for="bookingName">Имя</label>
-    <input type="text" id="bookingName" placeholder="Имя" />
-    <label for="bookingPhone">Телефон</label>
-    <input type="text" id="bookingPhone" placeholder="Телефон" />
-    <button id="confirmContactBtn" class="btn-primary-lg">Продолжить</button>
-  </div>
-</div>
-
-<div id="modalConfirm" class="modal hidden">
-  <div class="modal-content">
-    <button class="close-modal" aria-label="Закрыть модалку">×</button>
-    <h3>Подтвердите запись</h3>
-    <div id="confirmDetails"></div>
-    <button id="finalConfirmBtn" class="btn-primary-lg">Записаться</button>
-  </div>
-</div>
-
-<!-- Уведомление -->
-<div id="toast" class="toast hidden"></div>
-
-<meta name="csrf-token" content="{{ csrf_token() }}">
-
-{% endblock %}
-
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/blogLatest.js') }}"></script>
-<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+  {% include 'partials/booking_modals.html' %}
 {% endblock %}

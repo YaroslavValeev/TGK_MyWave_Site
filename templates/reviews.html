@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Отзывы учеников — MyWave{% endblock %}
+{% block content %}
+<h1 class="reviews-title">Отзывы наших учеников</h1>
+
+<!-- Форма для нового отзыва -->
+<div class="review-form-block">
+  <form method="post">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+      {{ form.name.label }}<br>
+      {{ form.name(class="form-control") }}
+    </div>
+    <div class="form-group">
+      {{ form.rating.label }}<br>
+      {{ form.rating(class="form-control", min=1, max=5) }}
+    </div>
+    <div class="form-group">
+      {{ form.text.label }}<br>
+      {{ form.text(class="form-control") }}
+    </div>
+    <div class="form-group">
+      {{ form.submit(class="btn btn-primary") }}
+    </div>
+  </form>
+</div>
+
+<!-- Динамический вывод отзывов -->
+<section class="reviews-slider">
+  {% for review in reviews|reverse %}
+    <div class="review">
+      <blockquote>{{ review.comment }}</blockquote>
+      <p><strong>{{ review.name or 'Аноним' }}</strong> — Оценка: {{ review.rating }}</p>
+      <p class="review-date">{{ review.created_at }}</p>
+    </div>
+  {% else %}
+    <p>Пока нет отзывов. Станьте первым!</p>
+  {% endfor %}
+</section>
+<p class="reviews-hint">Прокрутите отзывы вправо &rarr;</p>
+{% endblock %}
+  

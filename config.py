@@ -3,10 +3,9 @@ from datetime import timedelta
 
 class Config:
     """Основная конфигурация для приложения."""
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard-to-guess-string'
+    SECRET_KEY = os.getenv('SECRET_KEY') or 'hard-to-guess-string'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
-    ASSISTANT_ID = os.environ.get('ASSISTANT_ID')
     GOOGLE_CALENDAR_ID = os.environ.get('GOOGLE_CALENDAR_ID')
     SPREADSHEET_ID = os.environ.get('SPREADSHEET_ID')
     TIMEZONE = 'Europe/Moscow'
@@ -15,8 +14,9 @@ class Config:
 
     # Настройки для OpenAI и GPT
     GPTS_MODEL = os.getenv("GPTS_MODEL", "gpt-4")
-    FINE_TUNED_MODEL = os.getenv("FINE_TUNED_MODEL", "ft:gpt-4o-mini-2024-07-18:mywave:mywavesite:Axgy7lSh")
-    FALLBACK_MODEL = os.getenv("FALLBACK_MODEL", "gpt-4o")
+    FINE_TUNED_MODEL = os.getenv("FINE_TUNED_MODEL", "gpt-4")
+    FALLBACK_MODEL = os.getenv("FALLBACK_MODEL", "gpt-3.5-turbo")
+    ASSISTANT_ID = os.getenv("ASSISTANT_ID")
 
     # Настройки для Telegram
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -25,22 +25,133 @@ class Config:
     # Настройки для Google Sheets, Drive и Calendar
     GOOGLE_SHEETS_CREDENTIALS = os.getenv("GOOGLE_SHEETS_CREDENTIALS")
     DRIVE_FOLDER_ID = os.getenv("DRIVE_FOLDER_ID")
-    GOOGLE_SERVICE_ACCOUNT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "configs", "service_account.json"))
-
+    SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "1kyNQVjeLLe4Ra6oWuf84fHqSjUlWXI8MakVMOrCgic0")
+    
+    # Проверяем существование директории configs
+    CONFIG_DIR = os.path.join(os.path.dirname(__file__), "configs")
+    if not os.path.exists(CONFIG_DIR):
+        os.makedirs(CONFIG_DIR)
+    
+    GOOGLE_SERVICE_ACCOUNT_FILE = os.path.abspath(os.path.join(CONFIG_DIR, "service_account.json"))
+    GOOGLE_WORKSHEET_NAME = "Dialog_History"
 
     # Настройки уведомлений
     NOTIFICATION_BOT_TOKEN = os.getenv("NOTIFICATION_BOT_TOKEN")
     TRAINER_CHAT_ID = os.getenv("TRAINER_CHAT_ID")
 
+    CHAT_SYSTEM_PROMPT = "You are a helpful assistant."
+
+    VERSION = "1.0.0"
+
 class DevelopmentConfig(Config):
     """Конфигурация для разработки."""
-    DEBUG = True
+    DEBUG = os.getenv('FLASK_DEBUG', 'False') == 'True'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
         'sqlite:///dev-app.db'
     SQLALCHEMY_ECHO = True  # Печать SQL-запросов в консоль
+
+    # CSP для разработки
+    CSP_POLICY = {
+        'default-src': ["'self'"],
+        'script-src': [
+            "'self'",
+            "'unsafe-eval'",
+            "'unsafe-inline'",
+            "https://cdn.jsdelivr.net",
+            "https://cdnjs.cloudflare.com",
+            "https://www.googletagmanager.com",
+            "https://cdn.socket.io",
+            "https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js",
+            "https://mc.yandex.ru",
+            "https://mc.yandex.com",
+            "https://www.google-analytics.com"
+        ],
+        'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+        'style-src-elem': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+        'img-src': [
+            "'self'",
+            "https://cdn.jsdelivr.net",
+            "https://cdnjs.cloudflare.com",
+            "https://www.googletagmanager.com",
+            "data:",
+            "https://mc.yandex.ru",
+            "https://mc.yandex.com"
+        ],
+        'font-src': [
+            "'self'",
+            "https://cdn.jsdelivr.net",
+            "https://fonts.gstatic.com",
+            "https://cdnjs.cloudflare.com"
+        ],
+        'connect-src': [
+            "'self'",
+            "https://cdn.jsdelivr.net",
+            "https://cdnjs.cloudflare.com",
+            "https://cdn.socket.io",
+            "https://api.openai.com",
+            "https://mc.yandex.com",
+            "https://mc.yandex.ru",
+            "https://www.google-analytics.com"
+        ],
+        'frame-src': ["'self'", "https://cdn.jsdelivr.net", "https://calendar.google.com", "https://mc.yandex.com", "https://mc.yandex.ru"],
+        'object-src': ["'none'"],
+        'base-uri': ["'self'"],
+        'form-action': ["'self'"],
+        'frame-ancestors': ["'none'"],
+        'upgrade-insecure-requests': [],
+        'manifest-src': ["'self'"],
+        'media-src': ["'self'"],
+    }
 
 class ProductionConfig(Config):
     """Конфигурация для продакшн."""
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///app.db'
     SQLALCHEMY_ECHO = False  # Отключаем вывод SQL-запросов в продакшн
+
+    # CSP для продакшена (более строгий)
+    CSP_POLICY = {
+        'default-src': ["'self'"],
+        'script-src': [
+            "'self'",
+            "https://cdn.jsdelivr.net",
+            "https://www.googletagmanager.com",
+            "https://cdn.socket.io",
+            "https://mc.yandex.ru",
+            "https://mc.yandex.com",
+            "https://www.google-analytics.com"
+        ],
+        'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+        'style-src-elem': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+        'img-src': [
+            "'self'",
+            "https://cdn.jsdelivr.net",
+            "https://www.googletagmanager.com",
+            "data:",
+            "https://mc.yandex.ru",
+            "https://mc.yandex.com"
+        ],
+        'font-src': [
+            "'self'",
+            "https://cdn.jsdelivr.net",
+            "https://fonts.gstatic.com",
+            "https://cdnjs.cloudflare.com"
+        ],
+        'connect-src': [
+            "'self'",
+            "https://cdn.jsdelivr.net",
+            "https://cdn.socket.io",
+            "https://api.openai.com",
+            "https://mc.yandex.com",
+            "https://mc.yandex.ru",
+            "https://www.google-analytics.com"
+        ],
+        'frame-src': ["'self'", "https://calendar.google.com", "https://mc.yandex.com", "https://mc.yandex.ru"],
+        'object-src': ["'none'"],
+        'base-uri': ["'self'"],
+        'form-action': ["'self'"],
+        'frame-ancestors': ["'none'"],
+        'upgrade-insecure-requests': [],
+        'manifest-src': ["'self'"],
+        'media-src': ["'self'"],
+    }

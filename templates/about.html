@@ -1,10 +1,84 @@
 {% extends "base.html" %}
 
+{% block title %}О нас — MyWave{% endblock %}
+
+{% block meta %}
+  <meta name="description" content="MyWave — тренировки по вейксерфингу и вейкборду с опытным тренером. Индивидуальный подход, научная методика, реальные результаты!">
+  <meta name="keywords" content="вейкбординг, тренер, обучение, вейксерфинг, Ярослав, MyWave">
+{% endblock %}
+
 {% block content %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Ярослав",
+      "jobTitle": "Тренер по вейксерфингу",
+      "description": "Опытный тренер с более чем 20-летним стажем в вейксерфинге."
+    }
+    </script>
     <section class="about">
-        <h2>О тренере</h2>
+        <!-- Изменяем заголовок на H1 -->
+        <h1>О тренере</h1>
         <p>Меня зовут Ярослав, и я занимаюсь вейксерфингом более 20 лет.</p>
         <p>Моя методика построена на научном подходе, биомеханике и индивидуальном подходе к каждому ученику.</p>
         <p>Готов помочь вам выйти на новый уровень!</p>
     </section>
+
+    <section class="about-gallery">
+        <h2>Галерея</h2>
+        <div class="gallery-grid">
+            {% if images and images|length > 0 %}
+                {% for img in images %}
+                    <img src="{{ url_for('static', filename='images/about/' ~ img) }}" alt="Фото о нас" class="about-gallery-img" loading="lazy">
+                {% endfor %}
+            {% else %}
+                <p>Фото можно посмотреть <a href="https://drive.google.com/drive/u/0/folders/1abVWXulhCxR9pyklJzZiIgy3fcEFnn5W" target="_blank" rel="noopener">в Google Drive</a>.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="about-videos">
+        <h2>Видео</h2>
+        <div class="video-grid">
+            {% if videos and videos|length > 0 %}
+                {% for vid in videos %}
+                    <video controls class="about-video" preload="none">
+                        <source src="{{ url_for('static', filename='videos/about/' ~ vid) }}" type="video/mp4">
+                        Ваш браузер не поддерживает видео.
+                    </video>
+                {% endfor %}
+            {% else %}
+                <p>Видео можно посмотреть <a href="https://drive.google.com/drive/u/0/folders/1nmo2ggLDuEVOrbJVmYlZVwszaBj99-aE" target="_blank" rel="noopener">в Google Drive</a>.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <style>
+    .gallery-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        justify-content: flex-start;
+        margin-bottom: 32px;
+    }
+    .about-gallery-img {
+        max-width: 220px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        object-fit: cover;
+        height: 160px;
+    }
+    .video-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+    }
+    .about-video {
+        width: 320px;
+        max-width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    </style>
 {% endblock %}

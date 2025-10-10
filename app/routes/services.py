@@ -1,9 +1,8 @@
-# app/routes/services.py
-
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, jsonify, request, current_app, render_template
 from flask.templating import render_template
-from scripts.gpt_integration import ask_gpt
-from app.routes.calendar_routes import get_slots_for_date
+from app.services.openai_service import ask
+from app.services.google import get_google_services
+from app.modules.sheets import get_available_slots
 import datetime
 import logging
 import os
@@ -12,71 +11,102 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 import io
 from app.services.google import GoogleService
+from app.modules.logger import get_logger
 
-
-bp = Blueprint('services', __name__, url_prefix='/services')
-logger = logging.getLogger(__name__)
+services_bp = Blueprint('services', __name__, url_prefix='/services')
+logger = get_logger(__name__)
 
 # 🔧 Healthcheck
-@bp.route("/ping", methods=["GET"])
+@services_bp.route("/ping", methods=["GET"])
 def ping():
-    return jsonify({"status": "ok", "time": datetime.datetime.now().isoformat()})
+    try:
+        return jsonify({"status": "ok", "time": datetime.datetime.now().isoformat()})
+    except Exception as e:
+        logger.error(f"Ошибка в ping: {e}", exc_info=True)
+        return {"ok": False, "error": str(e)}, 500
 
 # 🧠 Вопрос к GPT (OpenAI Assistant API)
-@bp.route("/ask", methods=["POST"])
+@services_bp.route("/ask", methods=["POST"])
 def show_services():
-    data = request.get_json()
-    prompt = data.get("prompt", "")
-    if not prompt:
-        return jsonify({"error": "Prompt is required"}), 400
-    response = ask_gpt(prompt)
-    return jsonify({"response": response})
+    try:
+        data = request.get_json()
+        prompt = data.get("prompt", "")
+        if not prompt:
+            return jsonify({"error": "Prompt is required"}), 400
+        response = ask(prompt)
+        return jsonify({"response": response})
+    except Exception as e:
+        logger.error(f"Ошибка в show_services: {e}", exc_info=True)
+        return {"ok": False, "error": str(e)}, 500
 
 # 📅 Слоты расписания (Google Sheets + Calendar)
-@bp.route("/slots", methods=["GET"])
+@services_bp.route("/slots", methods=["GET"])
 def slots():
-    date = request.args.get("date")
-    if not date:
-        return jsonify({"error": "Date is required (YYYY-MM-DD)"}), 400
-    slots = get_slots_for_date(date)
-    return jsonify(slots)
+    try:
+        date = request.args.get("date")
+        if not date:
+            return jsonify({"error": "Date is required (YYYY-MM-DD)"}), 400
+        calendar_service, _ = get_google_services()
+        slots = get_available_slots(calendar_service, date)
+        return jsonify(slots)
+    except Exception as e:
+        logger.error(f"Ошибка в slots: {e}", exc_info=True)
+        return {"ok": False, "error": str(e)}, 500
 
 # 📩 Вебхук Telegram
-@bp.route("/telegram", methods=["POST"])
+@services_bp.route("/telegram", methods=["POST"])
 def telegram_webhook():
-    data = request.get_json()
-    logger.info(f"📩 Сообщение от Telegram: {data}")
-    # Здесь можно вставить вызов OpenAI и ответ пользователю
-    return jsonify({"status": "received"})
+    try:
+        data = request.get_json()
+        logger.info(f"📩 Сообщение от Telegram: {data}")
+        # Здесь можно вставить вызов OpenAI и ответ пользователю
+        return jsonify({"status": "received"})
+    except Exception as e:
+        logger.error(f"Ошибка в telegram_webhook: {e}", exc_info=True)
+        return {"ok": False, "error": str(e)}, 500
 
 # 📊 Статус ассистента и окружения
-@bp.route("/status", methods=["GET"])
+@services_bp.route("/status", methods=["GET"])
 def status():
-    return jsonify({
-        "assistant_id": current_app.config.get("ASSISTANT_ID"),
-        "openai_model": current_app.config.get("GPTS_MODEL"),
-        "calendar": current_app.config.get("GOOGLE_CALENDAR_ID"),
-        "spreadsheet": current_app.config.get("SPREADSHEET_ID"),
-        "debug": current_app.debug,
-    })
+    try:
+        return {"status": "ok", "time": datetime.datetime.utcnow().isoformat()}, 200
+    except Exception as e:
+        logger.error(f"Ошибка в status: {e}", exc_info=True)
+        return {"ok": False, "error": str(e)}, 500
 
 # 📤 Загрузка файла в Google Drive
-@bp.route("/upload", methods=["POST"])
+@services_bp.route("/upload", methods=["POST"])
 def upload():
-    if "file" not in request.files:
-        return jsonify({"error": "Файл не предоставлен"}), 400
-    file = request.files["file"]
-    filename = file.filename
-    content = file.read()
-
     try:
+        if "file" not in request.files:
+            return jsonify({"error": "Файл не предоставлен"}), 400
+        file = request.files["file"]
+        filename = file.filename
+        content = file.read()
         gs = GoogleService()
         result = gs.upload_file_to_drive(content, filename)
         return jsonify({"success": True, **result})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Ошибка в upload: {e}", exc_info=True)
+        return {"ok": False, "error": str(e)}, 500
 
-@bp.route("/services")
+@services_bp.route("/services")
 def ask():
-    return render_template("services.html")
+    try:
+        return render_template("services.html")
+    except Exception as e:
+        logger.error(f"Ошибка в ask: {e}", exc_info=True)
+        return {"ok": False, "error": str(e)}, 500
+
+# Новый Telegram webhook endpoint
+@services_bp.route('/api/telegram/webhook', methods=['POST'])
+def api_telegram_webhook():
+    try:
+        update = request.get_json()
+        # bot.process_new_updates([update])  # Здесь должен быть реальный вызов Telegram-бота
+        logger.info("Получен Telegram-Webhook: обновление обработано")
+        return '', 200
+    except Exception as e:
+        logger.error(f"Ошибка в api_telegram_webhook: {e}", exc_info=True)
+        return '', 500
 

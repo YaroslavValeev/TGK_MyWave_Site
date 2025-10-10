@@ -1,53 +1,45 @@
-import asyncio
-from flask import Flask, request, render_template
-from flask_socketio import SocketIO
-from websocket_handler import ws_handler
-from geventwebsocket.handler import WebSocketHandler
-from gevent.pywsgi import WSGIServer
+from flask import Blueprint, request, jsonify
+from websocket_handler import ws_handler, connected_clients
+import os
+import logging
+from app import create_app
 
-app = Flask(__name__)
-socketio = SocketIO(app)
+# Оставляем только логику API и необходимые импорты для Blueprint
 
-# Add global set for connected clients
-connected_clients = set()
+api_bp = Blueprint('api', __name__)
 
-@socketio.on('connect')
-def handle_connect():
-    global connected_clients
-    connected_clients.add(request.sid)
-    print(f"🔌 WebSocket client connected: {request.sid}")
+# API для чата
+@api_bp.route("/chat", methods=["POST"])
+def chat():
+    data = request.get_json()
+    message = data.get("message", "")
+    # Имитация ответа эксперта
+    return jsonify(reply=f"Вы сказали: {message}")
 
-@socketio.on('disconnect')
-def handle_disconnect(sid):
-    global connected_clients
-    connected_clients.discard(sid)
-    print(f'Client disconnected: {sid}')
-    try:
-        ws_handler.cleanup_user(sid)
-    except Exception as e:
-        print(f'Error during disconnect cleanup: {e}')
+# API для загрузки файлов
+@api_bp.route("/upload", methods=["POST"])
+def upload():
+    if 'file' not in request.files:
+        return jsonify(error="Нет файла в запросе"), 400
+    file = request.files["file"]
+    os.makedirs("uploads", exist_ok=True)
+    file_path = os.path.join("uploads", file.filename)
+    file.save(file_path)
+    return jsonify(file_id=file.filename)
 
-async def websocket_endpoint(websocket):
-    try:
-        await ws_handler.connect(websocket)
-        while True:
-            try:
-                data = await websocket.receive_text()
-                # Handle received data
-            except Exception as e:
-                await ws_handler.handle_error(websocket, e)
-                break
-    finally:
-        await ws_handler.disconnect(websocket)
+# API для бронирования
+@api_bp.route("/book", methods=["POST"])
+def book():
+    booking_data = request.get_json()
+    # Простейшая имитация бронирования
+    return jsonify(success=True)
 
-@app.route('/')
-def home():
-    return render_template('index.html')
-
-@app.errorhandler(404)
+@api_bp.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
 
+# Добавляем заголовок Content Security Policy
+
 if __name__ == '__main__':
-    http_server = WSGIServer(('', 5000), app, handler_class=WebSocketHandler)
-    http_server.serve_forever()
+    app = create_app()
+    app.run(host="0.0.0.0", port=5000, debug=True)
