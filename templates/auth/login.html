@@ -1,8 +1,10 @@
-<!doctype html>
-<html>
-  <head><meta charset="utf-8"><title>Login</title></head>
-  <body>
-    <h1>Login</h1>
+{% extends 'base.html' %}
+
+{% block title %}Вход — MyWave{% endblock %}
+
+{% block content %}
+  <section class="auth-section">
+    <h1>Вход</h1>
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <ul class="flashes">
@@ -12,10 +14,10 @@
         </ul>
       {% endif %}
     {% endwith %}
-    <form method="post">
-      <input name="email" placeholder="Email" />
-      <input name="password" placeholder="Password" />
-      <button type="submit">Login</button>
+    <form method="post" class="auth-form">
+      <div class="input-group"><label for="email">Email</label><input id="email" name="email" type="email" placeholder="Email" required/></div>
+      <div class="input-group"><label for="password">Пароль</label><input id="password" name="password" type="password" placeholder="Пароль" required/></div>
+      <button type="submit" class="btn-primary">Войти</button>
     </form>
-  </body>
-</html>
+  </section>
+{% endblock %}
