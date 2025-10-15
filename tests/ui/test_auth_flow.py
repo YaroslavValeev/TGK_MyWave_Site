@@ -1,4 +1,8 @@
 import pytest
+import pytest
+
+# Skip UI tests if Playwright isn't installed in the environment
+pytest.importorskip('playwright')
 from playwright.sync_api import sync_playwright
 
 @pytest.mark.ui

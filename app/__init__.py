@@ -35,6 +35,12 @@ def create_app(config_name="development"):
     template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates"))
     static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "static"))
     app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+    # If running in testing mode, set TESTING config and disable CSRF early
+    if config_name and str(config_name).lower() == 'testing':
+        app.config['TESTING'] = True
+        app.config['WTF_CSRF_ENABLED'] = False
+        # Make Google calls return mocks during tests
+        app.config['GOOGLE_MOCK'] = True
 
     @app.route('/api/csrf-token', methods=['GET'])
     def get_csrf_token():
@@ -43,6 +49,9 @@ def create_app(config_name="development"):
         return jsonify({'csrf_token': generate_csrf()})
     
     # Инициализация CSRF защиты
+    # Disable CSRF in testing mode to simplify tests that use the test client
+    if app.config.get('TESTING'):
+        app.config['WTF_CSRF_ENABLED'] = False
     csrf = CSRFProtect()
     csrf.init_app(app)
     
@@ -101,6 +110,12 @@ def create_app(config_name="development"):
         "production": "config.ProductionConfig"
     }.get(config_name.lower(), "config.DevelopmentConfig"))
 
+    # If running in testing mode, enforce test-friendly settings (after loading base config)
+    if config_name and str(config_name).lower() == 'testing':
+        app.config['TESTING'] = True
+        app.config['WTF_CSRF_ENABLED'] = False
+        app.config['GOOGLE_MOCK'] = True
+
     # Сначала инициализируем базу данных
     db.init_app(app)
     migrate.init_app(app, db)
@@ -152,6 +167,17 @@ def create_app(config_name="development"):
     app.register_blueprint(blog_bp)
     app.register_blueprint(about_bp)
     app.register_blueprint(contact_bp)
+    try:
+        from app.routes.admin_api import admin_api_bp
+        app.register_blueprint(admin_api_bp)
+    except Exception:
+        app.logger.exception('Could not register admin_api_bp')
+    # Tours blueprint (Wake Discovery)
+    try:
+        from app.routes.tours import tours_bp
+        app.register_blueprint(tours_bp)
+    except Exception:
+        app.logger.exception('Could not register tours_bp')
     app.register_blueprint(calendar_bp)
     app.register_blueprint(services_bp)
     app.register_blueprint(booking_bp)
@@ -159,9 +185,28 @@ def create_app(config_name="development"):
     app.register_blueprint(reviews_bp)
     app.register_blueprint(responses_bp)
     app.register_blueprint(telegram_bp)
+    # payments
+    try:
+        from app.routes.payments import payments_bp
+        app.register_blueprint(payments_bp)
+    except Exception:
+        app.logger.exception('Could not register payments_bp')
     app.register_blueprint(content_bp)
     app.register_blueprint(booking_api_bp)
     api.add_namespace(api_ns, path='/api')
+
+    # Initialize telegram handlers safely (lazy init inside module)
+    try:
+        from app.routes.telegram.routes import init_telegram
+        init_telegram()
+    except Exception:
+        app.logger.exception('Failed to initialize telegram handlers')
+    # Register pricing and booking endpoints
+    try:
+        from app.routes.pricing_booking import bp as pricing_bp
+        app.register_blueprint(pricing_bp)
+    except Exception:
+        app.logger.exception('Could not register pricing_booking blueprint')
 
     @app.after_request
     def add_security_headers(response):
@@ -179,6 +224,17 @@ def create_app(config_name="development"):
     # Initialize Google Services
     with app.app_context():
         try:
+            # Support setting GOOGLE_SERVICE_ACCOUNT_JSON env var (CI friendly):
+            # if present, write it to GOOGLE_SERVICE_ACCOUNT_FILE before google init
+            ga_json = os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')
+            if ga_json:
+                try:
+                    target = app.config.get('GOOGLE_SERVICE_ACCOUNT_FILE')
+                    with open(target, 'w', encoding='utf-8') as fh:
+                        fh.write(ga_json)
+                    app.logger.info('Wrote GOOGLE_SERVICE_ACCOUNT_JSON to %s', target)
+                except Exception:
+                    app.logger.exception('Failed to write GOOGLE_SERVICE_ACCOUNT_JSON to file')
             if not app.config.get('SPREADSHEET_ID'):
                 app.logger.warning("SPREADSHEET_ID не задан в конфигурации")
                 

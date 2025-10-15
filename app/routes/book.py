@@ -10,7 +10,9 @@ from config import Config
 from datetime import datetime, timedelta
 import logging
 import re
-from app.services.sheets_writer import save_client_to_sheets
+from app.services.sheets_writer import save_client_to_sheets, save_sales_deal_to_sheets
+from app.services import crm
+from app.services.booking_orchestrator import process_booking
 
 booking_bp = Blueprint("booking", __name__, url_prefix="/booking")
 logger = logging.getLogger(__name__)
@@ -33,30 +35,21 @@ def book():
                 flash("Неверный номер телефона. Введите в формате +7XXXXXXXXXX", "danger")
                 return render_template("book.html", form=form), 400
             try:
-                # Проверка на занятость слота (можно вынести в отдельную функцию)
+                # Проверка на занятость слота (локальная защита)
                 exists = Booking.query.filter_by(date=date, time=time, phone=phone).first()
                 if exists:
                     flash("Вы уже записаны на это время", "warning")
                     return render_template("book.html", form=form), 409
-                # --- Запись в БД ---
-                booking = Booking(name=name, phone=phone, date=date, time=time)
-                db.session.add(booking)
-                db.session.commit()
-                # --- Запись в Google Sheets ---
-                append_row("Client_Workouts", [date, time, name, phone])
-                # --- Создание события в календаре ---
-                event_data = {
-                    "summary": f"Тренировка: {name}",
-                    "description": f"Телефон: {phone}",
-                    "start": {"dateTime": f"{date}T{time}:00", "timeZone": "Europe/Moscow"},
-                    "end": {"dateTime": f"{date}T{time}:00", "timeZone": "Europe/Moscow"},
-                }
-                try:
-                    create_calendar_event(event_data)
-                except Exception as e:
-                    logger.error(f"Ошибка создания события в календаре: {e}")
-                flash("Запись успешно создана!", "success")
-                return redirect(url_for("booking.book"))
+
+                # Делегируем создание брони и побочных эффектов в orchestrator
+                success, message = process_booking({"name": name, "phone": phone, "date": date, "time": time})
+                if success:
+                    flash("Запись успешно создана!", "success")
+                    return redirect(url_for("booking.book"))
+                else:
+                    logger.error(f"Ошибка при бронировании: {message}")
+                    flash("Ошибка при бронировании. Попробуйте позже.", "danger")
+                    return render_template("book.html", form=form), 500
             except Exception as e:
                 logger.error(f"Ошибка при бронировании: {e}")
                 flash("Ошибка при бронировании. Попробуйте позже.", "danger")
@@ -83,24 +76,11 @@ def api_book():
     if not re.match(r'^\+7\d{10}$', phone):
         return jsonify({"success": False, "error": "Неверный формат телефона"}), 400
     try:
-        exists = Booking.query.filter_by(date=date, time=time, phone=phone).first()
-        if exists:
-            return jsonify({"success": False, "error": "Вы уже записаны на это время"}), 409
-        booking = Booking(name=name, phone=phone, date=date, time=time)
-        db.session.add(booking)
-        db.session.commit()
-        append_row("Client_Workouts", [date, time, name, phone])
-        event_data = {
-            "summary": f"Тренировка: {name}",
-            "description": f"Телефон: {phone}",
-            "start": {"dateTime": f"{date}T{time}:00", "timeZone": "Europe/Moscow"},
-            "end": {"dateTime": f"{date}T{time}:00", "timeZone": "Europe/Moscow"},
-        }
-        try:
-            create_calendar_event(event_data)
-        except Exception as e:
-            logger.error(f"Ошибка создания события в календаре: {e}")
-        return jsonify({"success": True, "message": "Запись успешно создана!"}), 200
+        success, message = process_booking({"name": name, "phone": phone, "date": date, "time": time})
+        if success:
+            return jsonify({"success": True, "message": message}), 200
+        else:
+            return jsonify({"success": False, "error": message}), 409 if 'Нет свободных мест' in message else 400
     except Exception as e:
         logger.error(f"Ошибка API бронирования: {e}")
         return jsonify({"success": False, "error": str(e)}), 500

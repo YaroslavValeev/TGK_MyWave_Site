@@ -23,6 +23,23 @@ class User(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    # Flask-Login compatibility
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_authenticated(self):
+        # A simple DB-backed user is considered authenticated when loaded
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return str(self.id)
 
 # --- Аналитика ---
 class Analytics(db.Model):
@@ -63,7 +80,8 @@ class Booking(db.Model):
     event_id = db.Column(db.Integer, db.ForeignKey('calendar_event.id'))
     status = db.Column(db.String(32), nullable=False, default='pending')
 
-Index('ix_booking_date', Booking.date)
+# Booking.date already declared with index=True — explicit Index creation
+# caused duplicate CREATE INDEX on sqlite in tests. Removed explicit Index.
 
 # --- Контактная форма ---
 class Contact(db.Model):
@@ -145,3 +163,45 @@ class Tag(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True, nullable=False)
+
+
+# --- Туры и пакеты для Wake Discovery ---
+class Tour(db.Model):
+    __tablename__ = 'tour'
+    id = db.Column(db.Integer, primary_key=True)
+    region = db.Column(db.String(40), nullable=False)
+    city = db.Column(db.String(80), nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=False)
+    level = db.Column(db.Enum('N', 'M', 'A', name='level'), nullable=False)
+    partner_club = db.Column(db.String(120))
+    capacity = db.Column(db.Integer, default=12)
+    description = db.Column(db.Text)
+    policy_weather = db.Column(db.Text)
+    policy_refund = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    packages = db.relationship('TourPackage', backref='tour', cascade='all, delete-orphan')
+
+
+class TourPackage(db.Model):
+    __tablename__ = 'tour_package'
+    id = db.Column(db.Integer, primary_key=True)
+    tour_id = db.Column(db.Integer, db.ForeignKey('tour.id', ondelete='CASCADE'), nullable=False)
+    name = db.Column(db.Enum('Base', 'Pro', 'Elite', name='pkg'), nullable=False)
+    price_rub = db.Column(db.Integer, nullable=False)
+    includes = db.Column(db.JSON)  # список включено/не включено
+    available = db.Column(db.Boolean, default=True)
+
+
+# --- Платежи ---
+class Payment(db.Model):
+    __tablename__ = 'payment'
+    id = db.Column(db.Integer, primary_key=True)
+    provider = db.Column(db.String(50), nullable=False)
+    provider_payment_id = db.Column(db.String(128), unique=True, nullable=True)
+    idempotency_key = db.Column(db.String(128), unique=True, nullable=True, index=True)
+    amount_rub = db.Column(db.Integer, nullable=False)
+    currency = db.Column(db.String(10), nullable=False, default='RUB')
+    status = db.Column(db.String(32), nullable=False, default='pending')
+    meta = db.Column(db.JSON)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

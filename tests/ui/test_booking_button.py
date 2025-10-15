@@ -1,4 +1,8 @@
 import pytest
+import pytest
+
+# Skip UI tests if Playwright isn't installed in the environment
+pytest.importorskip('playwright')
 from playwright.sync_api import Page, expect
 
 def test_booking_button_opens_modal(page: Page):

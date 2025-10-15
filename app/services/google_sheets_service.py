@@ -18,8 +18,20 @@ def get_sheets_service(credentials_file=None):
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive"
     ]
+    # Prefer central factory when no explicit credentials_file is passed.
+    if not credentials_file:
+        try:
+            # get_google_services already handles GOOGLE_MOCK/DEBUG and will return mock services when appropriate
+            return get_google_services()[1]
+        except Exception:
+            # Fall through to file-based creation below if central factory fails for any reason
+            credentials_file = GOOGLE_SERVICE_ACCOUNT_FILE
+
+    if not credentials_file:
+        raise ValueError("No credentials file provided for Google Sheets service")
+
     credentials = service_account.Credentials.from_service_account_file(
-        credentials_file or GOOGLE_SERVICE_ACCOUNT_FILE, 
+        credentials_file,
         scopes=scopes
     )
     service = build("sheets", "v4", credentials=credentials)
@@ -102,6 +114,10 @@ def save_message(credentials_file, sheet_id, worksheet_name, client_id, message)
 def read_records(spreadsheet_id=None, worksheet_name=None):
     """Читает записи из Google Sheets."""
     try:
+        # In testing/mock mode, avoid real Google API calls
+        from flask import current_app as _current_app
+        if getattr(_current_app, 'config', {}).get('GOOGLE_MOCK'):
+            return []
         sheets_service = get_google_services()[1]  # Получаем только sheets сервис
         result = sheets_service.spreadsheets().values().get(
             spreadsheetId=spreadsheet_id or SPREADSHEET_ID,
@@ -128,6 +144,10 @@ def append_record(spreadsheet_id=None, worksheet_name=None, values=None):
     if values is None:
         raise ValueError("Значения для записи не указаны")
     try:
+        from flask import current_app as _current_app
+        if getattr(_current_app, 'config', {}).get('GOOGLE_MOCK'):
+            # Testing mode: don't call external API
+            return {'mock': True}
         sheets_service = get_google_services()[1]
         body = {
             'values': [values] if not isinstance(values[0], list) else values

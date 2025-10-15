@@ -7,26 +7,42 @@ from app.modules.logger import logger
 from app.services.google_sheets_service import read_records, append_record, update_record
 
 def get_google_client():
-    credentials_file = os.getenv("GOOGLE_SHEETS_CREDENTIALS")
-    credentials = service_account.Credentials.from_service_account_file(credentials_file)
-    return build('sheets', 'v4', credentials=credentials)
+    # Prefer central factory when available
+    try:
+        from app.services.google import get_google_services
+        return get_google_services()[1]
+    except Exception:
+        credentials_file = os.getenv("GOOGLE_SHEETS_CREDENTIALS")
+        if not credentials_file:
+            raise ValueError("⚠️ Переменная среды GOOGLE_SHEETS_CREDENTIALS не задана.")
+        credentials = service_account.Credentials.from_service_account_file(credentials_file)
+        return build('sheets', 'v4', credentials=credentials)
 
 def get_sheets_service():
-    credentials_file = os.getenv("GOOGLE_SHEETS_CREDENTIALS")
-    
-    if not credentials_file:
-        raise ValueError("⚠️ Переменная среды GOOGLE_SHEETS_CREDENTIALS не задана.")
-    
-    credentials = service_account.Credentials.from_service_account_file(
-        credentials_file,
-        scopes=['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
-    )
-    
-    service = build('sheets', 'v4', credentials=credentials)
-    return service
+    # Prefer central factory; falls back to env var if necessary
+    try:
+        from app.services.google import get_google_services
+        return get_google_services()[1]
+    except Exception:
+        credentials_file = os.getenv("GOOGLE_SHEETS_CREDENTIALS")
+        if not credentials_file:
+            raise ValueError("⚠️ Переменная среды GOOGLE_SHEETS_CREDENTIALS не задана.")
+        credentials = service_account.Credentials.from_service_account_file(
+            credentials_file,
+            scopes=['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+        )
+        service = build('sheets', 'v4', credentials=credentials)
+        return service
 
 def get_google_sheet(sheet_name):
     try:
+        # In testing or mock mode we must not call real Google APIs — return a minimal SheetWrapper
+        from flask import current_app as _current_app
+        if getattr(_current_app, 'config', {}).get('TESTING') or getattr(_current_app, 'config', {}).get('GOOGLE_MOCK'):
+            # Provide minimal headers so append_dict_to_sheet and other callers can proceed without network
+            headers = ['client_id', 'telegram_user_id', 'name', 'phone', 'email', 'created_at']
+            return SheetWrapper([headers])
+
         service = get_sheets_service()
         spreadsheet_id = current_app.config["SPREADSHEET_ID"]
         sheet = service.spreadsheets().values().get(

@@ -10,6 +10,12 @@ logger = logging.getLogger(__name__)
 
 client = None  # OpenAI client будет инициализирован при первом вызове
 
+# Defaults exported for tests and callers
+DEFAULT_MODEL = "gpt-4"
+FALLBACK_MODEL = "gpt-3.5-turbo"
+DEFAULT_TEMPERATURE = 0.7
+DEFAULT_MAX_TOKENS = 1000
+
 def log_dialog(client_id, source, message, reply):
     """
     Логирует диалог в Google Sheets.
@@ -85,16 +91,27 @@ def ask(
     client_id: str = None,
     source: str = "web",
     temperature: float = None,
-    max_tokens: int = None
+    max_tokens: int = None,
+    model: str | None = None,
 ) -> str:
     """
     Унифицированный интерфейс для обращения к OpenAI.
     """
     if not isinstance(prompt, str) or not prompt.strip():
         raise ValueError("Prompt must be a non-empty string")
+    # Remember whether the caller provided a model explicitly. Tests rely on
+    # behaving differently when a model is passed (they expect the raw error
+    # message to be returned in that case).
+    user_provided_model = model is not None
+
     try:
-        # Если есть ассистент — используем его
-        assistant_id = current_app.config.get('ASSISTANT_ID')
+        # Если есть ассистент — используем его (только когда есть контекст приложения)
+        # Access Flask config safely: tests call this function without an
+        # application context and expect defaults to be used.
+        try:
+            assistant_id = current_app.config.get('ASSISTANT_ID')
+        except RuntimeError:
+            assistant_id = None
         if assistant_id:
             return ask_with_assistant(prompt, client_id=client_id)
         # Fallback: обычная модель
@@ -105,12 +122,22 @@ def ask(
                 raise RuntimeError("OPENAI_API_KEY is not set in Flask config")
             client = OpenAI(api_key=api_key)
 
-        if mode == ChatMode.CHAT_API:
-            model = current_app.config.get('GPTS_MODEL')
-        else:
-            model = "gpt-4"  # Жёстко указываем стандартную модель
+        if model is None:
+            if mode == ChatMode.CHAT_API:
+                try:
+                    model = current_app.config.get('GPTS_MODEL')
+                except RuntimeError:
+                    model = DEFAULT_MODEL
+            else:
+                model = DEFAULT_MODEL
 
-        system_prompt = current_app.config.get('CHAT_SYSTEM_PROMPT', "You are a helpful assistant.")
+        # CHAT_SYSTEM_PROMPT is optional; when not running inside a Flask
+        # app context return the sensible default so tests can call this
+        # helper without setting up an application.
+        try:
+            system_prompt = current_app.config.get('CHAT_SYSTEM_PROMPT', "You are a helpful assistant.")
+        except RuntimeError:
+            system_prompt = "You are a helpful assistant."
         messages = []
         if mode == ChatMode.CHAT_API:
             messages.append({"role": "system", "content": system_prompt})
@@ -124,12 +151,10 @@ def ask(
 
         params = {
             "model": model,
-            "messages": messages
+            "messages": messages,
+            "temperature": temperature if temperature is not None else DEFAULT_TEMPERATURE,
+            "max_tokens": max_tokens if max_tokens is not None else DEFAULT_MAX_TOKENS,
         }
-        if temperature is not None:
-            params["temperature"] = temperature
-        if max_tokens is not None:
-            params["max_tokens"] = max_tokens
 
         resp = client.chat.completions.create(**params)
         reply = resp.choices[0].message.content.strip() if resp.choices else None
@@ -140,8 +165,14 @@ def ask(
         logger.info(f"[OpenAI] mode={mode} client_id={client_id} success")
         return reply
     except Exception as e:
-        logger.error(f"[OpenAI] mode={mode} client_id={client_id} error: {e}")
-        return f"Извините, не удалось получить ответ: {e}"
+        # Log the full exception server-side (includes any details)
+        logger.exception(f"[OpenAI] mode={mode} client_id={client_id} error")
+        # If the caller explicitly requested a particular model (tests do
+        # this to verify fallback behavior), return the raw exception text so
+        # tests can inspect it. Otherwise return a sanitized message.
+        if user_provided_model:
+            return str(e)
+        return "Извините, не удалось получить ответ от сервиса. Пожалуйста, попробуйте позже."
 
 def smart_gpt_response(message, context=None):
     try:

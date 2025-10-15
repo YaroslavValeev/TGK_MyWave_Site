@@ -34,6 +34,11 @@ class Config:
     
     GOOGLE_SERVICE_ACCOUNT_FILE = os.path.abspath(os.path.join(CONFIG_DIR, "service_account.json"))
     GOOGLE_WORKSHEET_NAME = "Dialog_History"
+    # Allow explicit enabling of Google mock mode for local development
+    # Can be set to '1'/'true' in environment or boolean in config
+    GOOGLE_MOCK = os.environ.get('GOOGLE_MOCK', '0') in ('1', 'true', 'True')
+    # Force strict Google initialization (raise on missing/invalid creds)
+    GOOGLE_STRICT = os.environ.get('GOOGLE_STRICT', '0') in ('1', 'true', 'True')
 
     # Настройки уведомлений
     NOTIFICATION_BOT_TOKEN = os.getenv("NOTIFICATION_BOT_TOKEN")

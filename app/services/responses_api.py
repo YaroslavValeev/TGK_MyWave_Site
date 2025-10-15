@@ -1,6 +1,15 @@
 from flask import Blueprint, request, jsonify, current_app
 from app.services.openai_service import get_response, ChatMode
-# from app.services.ai_router import get_user_chat_history, save_chat_message  # Удалено из глобального импорта
+try:
+    from app.services.ai_router import get_user_chat_history, save_chat_message
+except Exception:
+    # During tests or when the module cannot be imported, provide no-op
+    # implementations so callers and tests can patch these names.
+    def get_user_chat_history(client_id):
+        return []
+
+    def save_chat_message(client_id, prompt, reply):
+        return None
 from app.routes.api import get_knowledge
 import json
 
@@ -8,7 +17,6 @@ responses_bp = Blueprint('responses_api', __name__, url_prefix='/api/assistant')
 
 @responses_bp.route('/', methods=['POST'])
 def assistant():
-    from app.services.ai_router import get_user_chat_history, save_chat_message
     data = request.get_json() or {}
     prompt       = data.get('prompt')
     client_id    = data.get('client_id', request.remote_addr)

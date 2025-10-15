@@ -47,6 +47,34 @@ def add_booking_to_calendar(date_str, time_str, name, phone):
         return False, str(e)
 
 def create_workout_if_not_exists(date_str, time_str):
+    # In testing/mock mode we don't use Google Sheets — emulate persistence in app config
+    try:
+        from flask import current_app as _current_app
+        if getattr(_current_app, 'config', {}).get('TESTING') or getattr(_current_app, 'config', {}).get('GOOGLE_MOCK'):
+            new_id = f"workout_{date_str}_{time_str.replace(':', '')}"
+            test_workouts = _current_app.config.setdefault('TEST_WORKOUTS', [])
+            # avoid duplicates
+            for w in test_workouts:
+                if w.get('date') == date_str and w.get('time') == time_str:
+                    return w.get('workout_id')
+            test_workouts.append({
+                'workout_id': new_id,
+                'date': date_str,
+                'time': time_str,
+                'duration': 90,
+                'location': 'зал',
+                'workout_type': 'групповая',
+                'max_capacity': 4,
+                'coach_name': 'Тренер',
+                'workout_status': 'активно',
+                'current_capacity': 0
+            })
+            return new_id
+
+    except Exception:
+        # If flask not available or something else goes wrong, fall back to Sheets flow
+        pass
+
     sheet = get_google_sheet("Workouts")
     if not sheet.values or len(sheet.values) == 0:
         # Если лист пустой, создаём заголовки и первую строку

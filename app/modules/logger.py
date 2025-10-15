@@ -7,21 +7,24 @@ def get_logger(name):
     logger.setLevel(logging.DEBUG)
 
     if not logger.handlers:
-        # Создаём директорию logs, если нет
-        if not os.path.exists('logs'):
-            os.makedirs('logs')
-
-        handler = TimedRotatingFileHandler(
-            filename='logs/app.log',
-            when='midnight',
-            interval=1,
-            backupCount=7,
-            encoding='utf-8'
-        )
+        # Общий форматтер всегда определён
         formatter = logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
-        handler.setFormatter(formatter)
-        handler.setLevel(logging.INFO)
-        logger.addHandler(handler)
+
+        # Создаём директорию logs и файл-роллинг если разрешено
+        if os.getenv('MYWAVE_DISABLE_FILE_LOG', '0') != '1':
+            if not os.path.exists('logs'):
+                os.makedirs('logs')
+
+            handler = TimedRotatingFileHandler(
+                filename='logs/app.log',
+                when='midnight',
+                interval=1,
+                backupCount=7,
+                encoding='utf-8'
+            )
+            handler.setFormatter(formatter)
+            handler.setLevel(logging.INFO)
+            logger.addHandler(handler)
 
         # Консольный логгер для разработки
         console = logging.StreamHandler()

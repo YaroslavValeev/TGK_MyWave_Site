@@ -95,15 +95,16 @@ def chat_handler():
         })
 
     except OpenAIError as e:
-        current_app.logger.error(f"OpenAI Error: {str(e)}")
+        # Log full details server-side but never return sensitive strings to the client
+        current_app.logger.exception("OpenAI Error while processing chat request")
         return jsonify({
-            'error': 'Ошибка при обработке запроса к AI',
-            'details': str(e)
+            'error': 'Ошибка при обработке запроса к AI'
         }), 502
 
     except Exception as e:
-        current_app.logger.error(f"Unexpected error in chat handler: {str(e)}")
+        # Unexpected errors should be logged in full for diagnostics, but the
+        # response to the user must be sanitized to avoid leaking secrets.
+        current_app.logger.exception("Unexpected error in chat handler")
         return jsonify({
-            'error': 'Внутренняя ошибка сервера',
-            'details': str(e)
+            'error': 'Внутренняя ошибка сервера'
         }), 500

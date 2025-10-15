@@ -77,16 +77,41 @@ def _check_required_envs() -> bool:
     return True
 
 
-# fail fast with helpful message rather than throwing an exception
+# If required envs are missing, behave gracefully in import-time (tests/imports):
+# - If running in a real tool runner (mcp present) we will still fail early at runtime.
+# - Otherwise, set up mock minimal services so tools can be imported and inspected.
 if not _check_required_envs():
-    # exit with code 1 to indicate the tool is not configured
-    raise SystemExit(1)
+    # If GOOGLE_MOCK or DEBUG is set, provide mock minimal services for imports
+    if os.getenv('GOOGLE_MOCK') or os.getenv('DEBUG'):
+        class _Mock:
+            def spreadsheets(self):
+                class S:
+                    def values(self):
+                        class V:
+                            def get(self, *a, **k):
+                                class R:
+                                    def execute(self):
+                                        return {"values": []}
+                                return R()
+                            def append(self, *a, **k):
+                                class R:
+                                    def execute(self):
+                                        return {"mock": True}
+                                return R()
+                        return V()
+                return S()
 
-
-# --- Google clients ---
-creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-sheets_service = build("sheets", "v4", credentials=creds, cache_discovery=False)
-calendar_service = build("calendar", "v3", credentials=creds, cache_discovery=False)
+        creds = None
+        sheets_service = _Mock()
+        calendar_service = _Mock()
+    else:
+        # In normal runs without mocks, we still fail fast to alert the operator
+        raise SystemExit(1)
+else:
+    # --- Google clients ---
+    creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    sheets_service = build("sheets", "v4", credentials=creds, cache_discovery=False)
+    calendar_service = build("calendar", "v3", credentials=creds, cache_discovery=False)
 
 
 # --- MCP server ---

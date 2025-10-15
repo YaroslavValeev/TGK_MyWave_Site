@@ -12,12 +12,17 @@ from app.database.models import db, Booking
 
 def get_sheets_service():
     """
-    Инициализирует клиент Google Sheets, используя сервисный аккаунт.
-    Путь к credentials.json берётся из config.
+    Prefer the central `get_google_services()` factory which already handles
+    GOOGLE_MOCK/DEBUG/GOOGLE_STRICT. Fall back to constructing a service
+    from the credentials file if needed.
     """
-    creds_path = current_app.config.get("GOOGLE_SERVICE_ACCOUNT_FILE", "credentials.json")
-    creds = Credentials.from_service_account_file(creds_path)
-    return build('sheets', 'v4', credentials=creds)
+    try:
+        from app.services.google import get_google_services
+        return get_google_services()[1]
+    except Exception:
+        creds_path = current_app.config.get("GOOGLE_SERVICE_ACCOUNT_FILE", "credentials.json")
+        creds = Credentials.from_service_account_file(creds_path)
+        return build('sheets', 'v4', credentials=creds)
 
 def get_sheet_records(service, spreadsheet_id, sheet_name):
     """

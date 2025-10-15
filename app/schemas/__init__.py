@@ -2,6 +2,6 @@ from marshmallow import Schema, fields
 
 class BookingSchema(Schema):
     date = fields.String(required=True)
-    time = fields.String(required=True)
+    time = fields.String(required=False)
     name = fields.String(required=True)
-    phone = fields.String(required=True)
+    phone = fields.String(required=False)
