@@ -1,38 +1,14 @@
 # Python
+.venv/
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-*.sqlite3
-*.db
-
-# Environment
+instance/*.db
+instance/service_account.json
 .env
-*.env
-credentials.json
-
-config/service_account.json
-# IDE
+.env.*
+# VSCode
 .vscode/
-.idea/
-
 # OS
 .DS_Store
 Thumbs.db
-node_modules
 
-# Sensitive files
-.env
-configs/service_account.json
-*.db
-uploads/
-
-# Service account
-configs/service_account.json
-instance/service_account.json
-
-knowledge_base.db
-knowledge_base/
-instance/knowledge_base/
-*.p12
-*.pem
