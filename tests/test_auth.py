@@ -26,22 +26,22 @@ def test_register_login_logout(client):
         'email': 'user@example.com',
         'password': 'Password1'
     }, follow_redirects=True)
-    assert b'Регистрация успешна' in rv.data
+    assert 'Регистрация успешна' in rv.get_data(as_text=True)
 
     # Логин с правильными данными
     rv = client.post('/login', data={
         'email': 'user@example.com',
         'password': 'Password1'
     }, follow_redirects=True)
-    assert b'Вы вошли в систему' in rv.data
+    assert 'Вы вошли в систему' in rv.get_data(as_text=True)
 
     # Выход
     rv = client.get('/logout', follow_redirects=True)
-    assert b'Вы вышли' in rv.data
+    assert 'Вы вышли' in rv.get_data(as_text=True)
 
     # Логин с некорректным паролем
     rv = client.post('/login', data={
         'email': 'user@example.com',
         'password': 'wrong'
     }, follow_redirects=True)
-    assert b'Неверные учетные данные' in rv.data 
+    assert 'Неверные учетные данные' in rv.get_data(as_text=True)

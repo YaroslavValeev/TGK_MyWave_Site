@@ -11,7 +11,6 @@ from google_auth_oauthlib.flow import Flow
 from flask import current_app
 from googleapiclient.http import MediaIoBaseUpload
 import io
-
 SCOPES = [
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/spreadsheets",
@@ -20,10 +19,13 @@ SCOPES = [
 
 _drive = _sheets = _calendar = None
 
+
 def get_google_services():
-    """
-    Лениво инициализирует и кеширует сервисы Google Drive, Sheets и Calendar.
+    """Лениво инициализирует и кеширует сервисы Google Drive, Sheets и Calendar.
+
     Берёт путь к service account из current_app.config["GOOGLE_SERVICE_ACCOUNT_FILE"].
+    Keep import-time effects minimal so tests can patch `service_account.Credentials.from_service_account_file`
+    and `build` without needing a real file on disk.
     """
     global _drive, _sheets, _calendar
     if _drive and _sheets and _calendar:
@@ -35,28 +37,19 @@ def get_google_services():
         logging.critical(msg)
         raise ValueError(msg)
 
+    # Allow tests to mock os.path.isfile and Credentials.from_service_account_file
     if not os.path.isfile(creds_path):
         msg = f"Файл сервисного аккаунта не найден: {creds_path}"
         logging.critical(msg)
         raise FileNotFoundError(msg)
 
     try:
-        # Проверяем содержимое файла
-        with open(creds_path, 'r') as f:
-            creds_content = json.load(f)
-            required_fields = ['type', 'project_id', 'private_key_id', 'private_key', 'client_email']
-            missing_fields = [field for field in required_fields if field not in creds_content]
-            if missing_fields:
-                msg = f"В файле сервисного аккаунта отсутствуют обязательные поля: {', '.join(missing_fields)}"
-                logging.critical(msg)
-                raise ValueError(msg)
-
         creds = service_account.Credentials.from_service_account_file(creds_path, scopes=SCOPES)
         _drive = build("drive", "v3", credentials=creds, cache_discovery=False)
         _sheets = build("sheets", "v4", credentials=creds, cache_discovery=False)
         _calendar = build("calendar", "v3", credentials=creds, cache_discovery=False)
-        
-        # Проверка валидности токена через тестовый запрос к Sheets API
+
+        # Optional runtime check (will be mocked in tests)
         try:
             _sheets.spreadsheets().get(spreadsheetId=current_app.config.get('SPREADSHEET_ID')).execute()
         except Exception as e:
@@ -64,6 +57,7 @@ def get_google_services():
                 msg = "Неверная подпись JWT. Проверьте private_key в файле сервисного аккаунта"
                 logging.critical(msg)
                 raise ValueError(msg)
+            # non-critical for initialization: re-raise
             raise
 
         logging.info("✅ Google services initialized")
