@@ -45,6 +45,12 @@ def create_app(config_name="development"):
     # Инициализация CSRF защиты
     csrf = CSRFProtect()
     csrf.init_app(app)
+    # Разрешаем API маршруты календаря обходить CSRF (AJAX запросы отправляют токен отдельно)
+    try:
+        csrf.exempt(calendar_bp)
+    except Exception:
+        # Не критично, если по каким-то причинам не получится — продолжим без падения
+        app.logger.debug('Could not exempt calendar_bp from CSRF')
     
     # Обработчик CSRF ошибок
     @app.errorhandler(400)
