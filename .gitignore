@@ -36,3 +36,4 @@ knowledge_base/
 instance/knowledge_base/
 *.p12
 *.pem
+.venv/
