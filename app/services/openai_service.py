@@ -63,9 +63,11 @@ def get_response(prompt: str, model: str | None = None, temperature: float = 0.7
                         return first.content
                     return str(first)
                 return str(resp)
-            except Exception:
-                return f"Извините, не удалось получить ответ: {e}"
-        return f"Извините, не удалось получить ответ: {e}"
+            except Exception as inner_e:
+                logger.exception("OpenAI fallback model request failed")
+                return "Извините, не удалось получить ответ от AI. Попробуйте позже."
+        logger.exception("OpenAI request failed")
+        return "Извините, не удалось получить ответ от AI. Попробуйте позже."
 
 def log_dialog(client_id, source, message, reply):
     """
@@ -198,7 +200,8 @@ def ask(
         return reply
     except Exception as e:
         logger.error(f"[OpenAI] mode={mode} client_id={client_id} error: {e}")
-        return f"Извините, не удалось получить ответ: {e}"
+        # Do not leak internal exception details (which may include API keys)
+        return "Извините, не удалось получить ответ от AI. Попробуйте позже."
 
 def smart_gpt_response(message, context=None):
     try:
