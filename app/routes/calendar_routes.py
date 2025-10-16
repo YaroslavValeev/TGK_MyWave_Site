@@ -436,6 +436,7 @@ def book_slot():
 
         return jsonify({'message': 'Успешно забронировано'}), 201
 
+
     except ValidationError as ve:
         return jsonify({'error': 'Ошибка валидации данных', 'details': ve.messages}), 400
         

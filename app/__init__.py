@@ -47,7 +47,9 @@ def create_app(config_name="development"):
     csrf.init_app(app)
     # Разрешаем API маршруты календаря обходить CSRF (AJAX запросы отправляют токен отдельно)
     try:
-        csrf.exempt(calendar_bp)
+        # Exempt only the booking view to allow AJAX POSTs from the client without CSRF cookie
+        from app.routes.calendar_routes import book_slot as _book_slot
+        csrf.exempt(_book_slot)
     except Exception:
         # Не критично, если по каким-то причинам не получится — продолжим без падения
         app.logger.debug('Could not exempt calendar_bp from CSRF')
