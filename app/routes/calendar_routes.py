@@ -347,13 +347,28 @@ def book_slot():
     """
     Бронирование слота тренировки.
     """
-    # Проверяем формат входных данных
-    if not request.is_json:
-        return jsonify({'error': 'Ожидается JSON'}), 400
+    # Поддерживаем как JSON, так и form-encoded POST от старых форм
+    raw_data = None
+    if request.is_json:
+        raw_data = request.get_json()
+    else:
+        # Попробуем взять данные из form (application/x-www-form-urlencoded или multipart)
+        if request.form:
+            raw_data = request.form.to_dict()
+        else:
+            # Попытка распарсить тело как JSON (на случай, если заголовки неверны)
+            try:
+                raw_text = request.get_data(as_text=True)
+                import json
+                raw_data = json.loads(raw_text) if raw_text else {}
+            except Exception:
+                raw_data = {}
+
+    current_app.logger.info(f"📥 Получен запрос на бронирование (raw): {raw_data}")
 
     try:
         # Валидация данных через схему
-        data = BookingSchema().load(request.get_json())
+        data = BookingSchema().load(raw_data)
         
         # Проверяем доступность слота
         slots = get_available_slots(data['date'])
