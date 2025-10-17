@@ -171,6 +171,18 @@ def create_app(config_name="development"):
     app.register_blueprint(booking_api_bp)
     api.add_namespace(api_ns, path='/api')
 
+    # Целенаправленно исключаем CSRF только для обработчика бронирования календаря
+    try:
+        # view function name в calendar_routes.py — 'book_slot'
+        view = app.view_functions.get('calendar.book_slot')
+        if view:
+            csrf.exempt(view)
+            app.logger.info('CSRF exempt applied to calendar.book_slot')
+        else:
+            app.logger.debug('calendar.book_slot view not found for CSRF exemption')
+    except Exception as e:
+        app.logger.debug(f'Error applying CSRF exemption for calendar.book_slot: {e}')
+
     @app.after_request
     def add_security_headers(response):
         csp = app.config.get('CSP_POLICY', {})
@@ -194,7 +206,8 @@ def create_app(config_name="development"):
             services = get_google_services()
             app.logger.info("Google services successfully initialized")
             
-            # Verify access to the spreadsheet
+            # Verify access to the spreadsheet (best-effort). In dev we prefer app to start
+            # even if Google Sheets is temporarily unavailable. Log the error and continue.
             if app.config.get('SPREADSHEET_ID'):
                 sheets_service = services[1]
                 try:
@@ -203,10 +216,10 @@ def create_app(config_name="development"):
                     ).execute()
                     app.logger.info("Successfully validated access to Google Sheets")
                 except Exception as e:
-                    app.logger.error(f"Error accessing Google Sheet: {e}")
+                    app.logger.error(f"Error accessing Google Sheet (continuing without fail): {e}")
                     if 'invalid_grant' in str(e):
                         app.logger.error("Invalid JWT Signature. Check your service_account.json file")
-                    raise
+                    # do not raise — continue running the app in degraded mode
                     
         except Exception as e:
             app.logger.error(f"Failed to initialize Google services: {e}")
