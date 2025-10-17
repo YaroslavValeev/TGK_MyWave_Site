@@ -37,3 +37,9 @@ instance/knowledge_base/
 *.p12
 *.pem
 .venv/
+
+# Runtime logs and temp files
+logs/
+*.log
+server_out.log
+server_err.log

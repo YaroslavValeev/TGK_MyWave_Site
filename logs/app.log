@@ -1,4 +1,0 @@
-[2025-10-17 17:36:22,411] ERROR in sheets_access: [DEBUG] Заголовки Clients: ['client_id', 'telegram_user_id', 'name', 'phone', 'email', 'level', 'created_at', 'source', 'status', 'ref_code', 'last_active']
-[2025-10-17 17:36:22,441] ERROR in sheets_access: [DEBUG] Формируемые значения для записи: ['client_1760700978', '', 'Test User 2', '+70000000001', '', 'beginner', '2025-10-17T14:36:18.908178', 'web', 'new', '', '2025-10-17T14:36:18.908178']
-[2025-10-17 17:36:31,870] ERROR in sheets_access: [DEBUG] Заголовки Workouts: ['workout_id', 'date', 'time', 'duration', 'location', 'workout_type', 'max_capacity', 'coach_name', 'workout_status', 'current_capacity']
-[2025-10-17 17:36:31,879] ERROR in sheets_access: [DEBUG] Формируемые значения для записи: ['workout_2025-10-19_1330', '2025-10-19', '13:30', 90, 'зал', 'групповая', 4, 'Тренер', 'активно', 0]
