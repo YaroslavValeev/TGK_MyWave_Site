@@ -9,6 +9,7 @@ from app.database.models import db
 from app.routes.calendar_routes import calendar_bp
 from app.routes.services import services_bp
 from app.routes.book import booking_bp
+from app.routes.price_calculator import calculator_bp
 from app.extensions import init_extensions, init_websocket, socketio, api
 from app.routes.api import api_ns
 
@@ -170,6 +171,8 @@ def create_app(config_name="development"):
     app.register_blueprint(about_bp)
     app.register_blueprint(contact_bp)
     app.register_blueprint(calendar_bp)
+    # Register price calculator blueprint
+    app.register_blueprint(calculator_bp)
     app.register_blueprint(services_bp)
     app.register_blueprint(booking_bp)
     app.register_blueprint(api_bp, url_prefix='/api')

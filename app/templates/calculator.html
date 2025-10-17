@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Калькулятор тура Wake Discovery</title>
+    <style>
+        body { font-family: sans-serif; margin: 0 auto; padding: 1rem; max-width: 800px; line-height: 1.5; }
+        h1 { font-size: 1.8rem; margin-bottom: 1rem; }
+        form { margin-bottom: 2rem; border: 1px solid #ddd; padding: 1rem; border-radius: 4px; background-color: #f9f9f9; }
+        label { display: block; margin-top: 0.75rem; }
+        input[type="number"], input[type="text"], select { width: 100%; padding: 0.5rem; margin-top: 0.25rem; box-sizing: border-box; }
+        .checkbox-group { display:flex; flex-wrap:wrap; gap:0.5rem; }
+        .checkbox-group label { display:flex; align-items:center; margin-top:0.5rem; }
+        .result { background-color:#eef8ee; border:1px solid #cde7cd; padding:1rem; border-radius:4px; }
+        table{ width:100%; border-collapse:collapse; margin-top:1rem }
+        th,td{ text-align:left; padding:0.5rem; border-bottom:1px solid #ddd }
+        th{ background-color:#f0f0f0 }
+    </style>
+</head>
+<body>
+<h1>Калькулятор тура Wake Discovery</h1>
+
+<form method="post">
+    <label for="zone">Регион:</label>
+    <select id="zone" name="zone" required>
+        <option value="Central">Центр</option>
+        <option value="Ural">Урал</option>
+        <option value="Siberia">Сибирь</option>
+        <option value="Far East">Дальний Восток</option>
+    </select>
+
+    <label for="package">Пакет:</label>
+    <select id="package" name="package" required>
+        <option value="Base">Base (новички)</option>
+        <option value="Pro" selected>Pro (базовый рекомендуемый)</option>
+        <option value="Elite">Elite (продвинутые)</option>
+    </select>
+
+    <label for="days">Дней:</label>
+    <select id="days" name="days" required>
+        <option value="2">2</option>
+        <option value="3">3</option>
+    </select>
+
+    <label for="participants">Количество участников:</label>
+    <input type="number" id="participants" name="participants" value="1" min="1" max="20" required>
+
+    <label for="extra_sets">Дополнительные сеты (25–30 мин, 11 000 ₽/сет на каждого):</label>
+    <input type="number" id="extra_sets" name="extra_sets" value="0" min="0" max="5">
+
+    <label for="pilot_hours">Часы обучения пилотированию (3 500 ₽/час, группой):</label>
+    <input type="number" step="0.5" id="pilot_hours" name="pilot_hours" value="0" min="0" max="10">
+
+    <label>
+        <input type="checkbox" name="personal_clip"> Персональный видеоклип (7 000 ₽ на участника)
+    </label>
+    <label>
+        <input type="checkbox" name="drone_session"> Съёмка дрона (5 000 ₽ за сессию)
+    </label>
+
+    <label>Мерч (цена указана за участника):</label>
+    <div class="checkbox-group">
+        <label><input type="checkbox" name="merch" value="tshirt"> Футболка (4 000 ₽)</label>
+        <label><input type="checkbox" name="merch" value="hoodie"> Худи (8 000 ₽)</label>
+        <label><input type="checkbox" name="merch" value="poncho"> Пончо (10 000 ₽)</label>
+        <label><input type="checkbox" name="merch" value="cap"> Кепка (3 000 ₽)</label>
+        <label><input type="checkbox" name="merch" value="balance_board"> Баланс борд (10 000 ₽)</label>
+        <label><input type="checkbox" name="merch" value="smooth_trainer"> Тренажёр «гладкий» (6 000 ₽)</label>
+    </div>
+
+    <button type="submit">Рассчитать стоимость</button>
+</form>
+
+{% if result %}
+    <div class="result">
+        <h2>Итого: {{ result }}</h2>
+        <table>
+            <thead><tr><th>Позиция</th><th>Сумма</th></tr></thead>
+            <tbody>
+                {% for key, value in breakdown.items() %}
+                    {% if value %}<tr><td>{{ key }}</td><td>{{ value }}</td></tr>{% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+</body>
+</html>
