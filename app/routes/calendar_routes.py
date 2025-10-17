@@ -11,6 +11,7 @@ from app.schemas import BookingSchema
 from app.services.google import get_google_services, add_event_to_calendar
 from app.services.google_sheets_service import append_record
 from flask import Blueprint, request, jsonify, current_app, redirect, render_template
+from flask_wtf import csrf
 from marshmallow import Schema, fields
 from datetime import datetime, timedelta
 from googleapiclient.errors import HttpError
@@ -343,6 +344,7 @@ def update_workout_capacity(row_idx, new_capacity):
         update_record(spreadsheet_id, 'Workouts', cell, [str(new_capacity)])
 
 @calendar_bp.route('/api/calendar/book', methods=['POST'])
+@csrf.exempt
 def book_slot():
     """
     Бронирование слота тренировки.
