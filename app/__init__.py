@@ -29,7 +29,8 @@ from app.routes.content_calendar import bp as content_bp, get_events_by_month
 # Создаем экземпляры расширений
 migrate = Migrate()
 
-from flask_wtf.csrf import CSRFProtect, generate_csrf
+from app.extensions import csrf
+from flask_wtf.csrf import generate_csrf
 
 def create_app(config_name="development"):
     template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates"))
@@ -39,11 +40,19 @@ def create_app(config_name="development"):
     @app.route('/api/csrf-token', methods=['GET'])
     def get_csrf_token():
         from flask_wtf.csrf import generate_csrf
-        print('CSRF endpoint registered')
-        return jsonify({'csrf_token': generate_csrf()})
+        # Return CSRF token in JSON and also set it as a non-HttpOnly cookie
+        # so frontend JS (XHR/fetch) can read it and send in the X-CSRFToken header.
+        # Cookie name 'XSRF-TOKEN' is commonly used by clients (axios, etc.).
+        token = generate_csrf()
+        resp = jsonify({'csrf_token': token})
+        # Set cookie attributes conservatively; respect production settings
+        secure = app.config.get('SESSION_COOKIE_SECURE', False)
+        samesite = app.config.get('SESSION_COOKIE_SAMESITE', 'Lax')
+        resp.set_cookie('XSRF-TOKEN', token, secure=secure, samesite=samesite, path='/')
+        app.logger.debug('CSRF endpoint registered and cookie set')
+        return resp
     
-    # Инициализация CSRF защиты
-    csrf = CSRFProtect()
+    # Инициализация CSRF защиты (используем общий экземпляр из app.extensions)
     csrf.init_app(app)
     # Разрешаем API маршруты календаря обходить CSRF (AJAX запросы отправляют токен отдельно)
     try:

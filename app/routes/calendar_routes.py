@@ -11,24 +11,31 @@ from app.schemas import BookingSchema
 from app.services.google import get_google_services, add_event_to_calendar
 from app.services.google_sheets_service import append_record
 from flask import Blueprint, request, jsonify, current_app, redirect, render_template
-from flask_wtf import csrf
+from app.extensions import csrf
 from marshmallow import Schema, fields
 from datetime import datetime, timedelta
 from googleapiclient.errors import HttpError
 from app.services.google_sheets_service import read_records
 from app.modules.calendar_integration import create_workout_if_not_exists
-
-calendar_bp = Blueprint('calendar', __name__)
-
-MAX_PER_SLOT = 2  # Максимальное количество записей на один слот
-
-def normalize_day_of_week(day):
-    """Нормализует название дня недели"""
-    # Словарь для маппинга русских названий на английские
-    ru_to_en = {
-        'понедельник': 'monday',
-        'вторник': 'tuesday',
-        'среда': 'wednesday',
+        try:
+            cal_id = current_app.config.get('GOOGLE_CALENDAR_ID')
+            if cal_id:
+                try:
+                    service = get_google_services()
+                    add_event_to_calendar(
+                        service,
+                        data['date'],
+                        data['time'],
+                        data['name'],
+                        data['phone']
+                    )
+                except Exception as e:
+                    current_app.logger.error(f"Ошибка создания события в календаре: {e}")
+            else:
+                # Конфигурация календаря не задана — работаем в degraded mode
+                current_app.logger.info('GOOGLE_CALENDAR_ID не задан — пропускаем добавление события в календарь')
+        except Exception as e:
+            current_app.logger.error(f"Ошибка при инициализации Google сервисов для календаря: {e}")
         'четверг': 'thursday',
         'пятница': 'friday',
         'суббота': 'saturday',
@@ -421,19 +428,25 @@ def book_slot():
         except Exception as e:
             current_app.logger.error(f"Ошибка обновления счетчика мест: {str(e)}")
             # Не прерываем процесс, так как бронь уже создана
-
-        # 5. Создание события в Google Calendar
+        # 5. Создание события в Google Calendar (если настроен calendar_id)
         try:
-            service = get_google_services()
-            add_event_to_calendar(
-                service,
-                data['date'],
-                data['time'],
-                data['name'],
-                data['phone']
-            )
+            cal_id = current_app.config.get('GOOGLE_CALENDAR_ID')
+            if cal_id:
+                try:
+                    service = get_google_services()
+                    add_event_to_calendar(
+                        service,
+                        data['date'],
+                        data['time'],
+                        data['name'],
+                        data['phone']
+                    )
+                except Exception as e:
+                    current_app.logger.error(f"Ошибка создания события в календаре: {str(e)}")
+            else:
+                current_app.logger.info('GOOGLE_CALENDAR_ID не задан — пропускаем добавление события в календарь')
         except Exception as e:
-            current_app.logger.error(f"Ошибка создания события в календаре: {str(e)}")
+            current_app.logger.error(f"Неожиданная ошибка при попытке добавить событие в календарь: {str(e)}")
             # Не прерываем процесс, так как это некритичная ошибка
 
         return jsonify({'message': 'Успешно забронировано'}), 201
