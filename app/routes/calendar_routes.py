@@ -1,5 +1,5 @@
 from marshmallow.exceptions import ValidationError
-from flask import Blueprint, request, jsonify, current_app, render_template
+from flask import Blueprint, request, jsonify, current_app, render_template, redirect
 from marshmallow import Schema, fields
 from datetime import datetime, timedelta
 from googleapiclient.errors import HttpError
@@ -7,35 +7,18 @@ from app.services.google import get_google_services, add_event_to_calendar
 from app.services.google_sheets_service import append_record, read_records
 from app.schemas import BookingSchema
 from app.modules.calendar_integration import create_workout_if_not_exists
-from app.schemas import BookingSchema
-from app.services.google import get_google_services, add_event_to_calendar
-from app.services.google_sheets_service import append_record
-from flask import Blueprint, request, jsonify, current_app, redirect, render_template
 from app.extensions import csrf
-from marshmallow import Schema, fields
-from datetime import datetime, timedelta
-from googleapiclient.errors import HttpError
-from app.services.google_sheets_service import read_records
-from app.modules.calendar_integration import create_workout_if_not_exists
-        try:
-            cal_id = current_app.config.get('GOOGLE_CALENDAR_ID')
-            if cal_id:
-                try:
-                    service = get_google_services()
-                    add_event_to_calendar(
-                        service,
-                        data['date'],
-                        data['time'],
-                        data['name'],
-                        data['phone']
-                    )
-                except Exception as e:
-                    current_app.logger.error(f"Ошибка создания события в календаре: {e}")
-            else:
-                # Конфигурация календаря не задана — работаем в degraded mode
-                current_app.logger.info('GOOGLE_CALENDAR_ID не задан — пропускаем добавление события в календарь')
-        except Exception as e:
-            current_app.logger.error(f"Ошибка при инициализации Google сервисов для календаря: {e}")
+
+calendar_bp = Blueprint('calendar', __name__)
+
+def normalize_day_of_week(day):
+    """
+    Нормализует название дня недели (поддерживает русские названия и сокращения)
+    """
+    ru_to_en = {
+        'понедельник': 'monday',
+        'вторник': 'tuesday',
+        'среда': 'wednesday',
         'четверг': 'thursday',
         'пятница': 'friday',
         'суббота': 'saturday',
@@ -49,7 +32,7 @@ from app.modules.calendar_integration import create_workout_if_not_exists
         'сб': 'saturday',
         'вс': 'sunday'
     }
-    
+
     day = str(day).strip().lower()
     # Если день недели на русском, конвертируем в английский
     return ru_to_en.get(day, day)
