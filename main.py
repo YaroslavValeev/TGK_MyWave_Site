@@ -11,4 +11,5 @@ os.environ['PROMETHEUS_MULTIPROC_DIR'] = prometheus_dir
 app = create_app()
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, host='0.0.0.0', port=5000)
+    # Disable the reloader to avoid double-binding the socket when using eventlet
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000, use_reloader=False)
