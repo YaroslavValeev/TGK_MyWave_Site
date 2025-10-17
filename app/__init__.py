@@ -29,7 +29,8 @@ from app.routes.content_calendar import bp as content_bp, get_events_by_month
 # Создаем экземпляры расширений
 migrate = Migrate()
 
-from flask_wtf.csrf import CSRFProtect, generate_csrf
+from app.extensions import csrf
+from flask_wtf.csrf import generate_csrf
 
 def create_app(config_name="development"):
     template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates"))
@@ -39,12 +40,28 @@ def create_app(config_name="development"):
     @app.route('/api/csrf-token', methods=['GET'])
     def get_csrf_token():
         from flask_wtf.csrf import generate_csrf
-        print('CSRF endpoint registered')
-        return jsonify({'csrf_token': generate_csrf()})
+        # Return CSRF token in JSON and also set it as a non-HttpOnly cookie
+        # so frontend JS (XHR/fetch) can read it and send in the X-CSRFToken header.
+        # Cookie name 'XSRF-TOKEN' is commonly used by clients (axios, etc.).
+        token = generate_csrf()
+        resp = jsonify({'csrf_token': token})
+        # Set cookie attributes conservatively; respect production settings
+        secure = app.config.get('SESSION_COOKIE_SECURE', False)
+        samesite = app.config.get('SESSION_COOKIE_SAMESITE', 'Lax')
+        resp.set_cookie('XSRF-TOKEN', token, secure=secure, samesite=samesite, path='/')
+        app.logger.debug('CSRF endpoint registered and cookie set')
+        return resp
     
-    # Инициализация CSRF защиты
-    csrf = CSRFProtect()
+    # Инициализация CSRF защиты (используем общий экземпляр из app.extensions)
     csrf.init_app(app)
+    # Разрешаем API маршруты календаря обходить CSRF (AJAX запросы отправляют токен отдельно)
+    try:
+        # Exempt only the booking view to allow AJAX POSTs from the client without CSRF cookie
+        from app.routes.calendar_routes import book_slot as _book_slot
+        csrf.exempt(_book_slot)
+    except Exception:
+        # Не критично, если по каким-то причинам не получится — продолжим без падения
+        app.logger.debug('Could not exempt calendar_bp from CSRF')
     
     # Обработчик CSRF ошибок
     @app.errorhandler(400)
@@ -163,6 +180,18 @@ def create_app(config_name="development"):
     app.register_blueprint(booking_api_bp)
     api.add_namespace(api_ns, path='/api')
 
+    # Целенаправленно исключаем CSRF только для обработчика бронирования календаря
+    try:
+        # view function name в calendar_routes.py — 'book_slot'
+        view = app.view_functions.get('calendar.book_slot')
+        if view:
+            csrf.exempt(view)
+            app.logger.info('CSRF exempt applied to calendar.book_slot')
+        else:
+            app.logger.debug('calendar.book_slot view not found for CSRF exemption')
+    except Exception as e:
+        app.logger.debug(f'Error applying CSRF exemption for calendar.book_slot: {e}')
+
     @app.after_request
     def add_security_headers(response):
         csp = app.config.get('CSP_POLICY', {})
@@ -186,7 +215,8 @@ def create_app(config_name="development"):
             services = get_google_services()
             app.logger.info("Google services successfully initialized")
             
-            # Verify access to the spreadsheet
+            # Verify access to the spreadsheet (best-effort). In dev we prefer app to start
+            # even if Google Sheets is temporarily unavailable. Log the error and continue.
             if app.config.get('SPREADSHEET_ID'):
                 sheets_service = services[1]
                 try:
@@ -195,10 +225,10 @@ def create_app(config_name="development"):
                     ).execute()
                     app.logger.info("Successfully validated access to Google Sheets")
                 except Exception as e:
-                    app.logger.error(f"Error accessing Google Sheet: {e}")
+                    app.logger.error(f"Error accessing Google Sheet (continuing without fail): {e}")
                     if 'invalid_grant' in str(e):
                         app.logger.error("Invalid JWT Signature. Check your service_account.json file")
-                    raise
+                    # do not raise — continue running the app in degraded mode
                     
         except Exception as e:
             app.logger.error(f"Failed to initialize Google services: {e}")

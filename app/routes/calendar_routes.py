@@ -1,5 +1,5 @@
 from marshmallow.exceptions import ValidationError
-from flask import Blueprint, request, jsonify, current_app, render_template
+from flask import Blueprint, request, jsonify, current_app, render_template, redirect
 from marshmallow import Schema, fields
 from datetime import datetime, timedelta
 from googleapiclient.errors import HttpError
@@ -7,23 +7,14 @@ from app.services.google import get_google_services, add_event_to_calendar
 from app.services.google_sheets_service import append_record, read_records
 from app.schemas import BookingSchema
 from app.modules.calendar_integration import create_workout_if_not_exists
-from app.schemas import BookingSchema
-from app.services.google import get_google_services, add_event_to_calendar
-from app.services.google_sheets_service import append_record
-from flask import Blueprint, request, jsonify, current_app, redirect, render_template
-from marshmallow import Schema, fields
-from datetime import datetime, timedelta
-from googleapiclient.errors import HttpError
-from app.services.google_sheets_service import read_records
-from app.modules.calendar_integration import create_workout_if_not_exists
+from app.extensions import csrf
 
 calendar_bp = Blueprint('calendar', __name__)
 
-MAX_PER_SLOT = 2  # Максимальное количество записей на один слот
-
 def normalize_day_of_week(day):
-    """Нормализует название дня недели"""
-    # Словарь для маппинга русских названий на английские
+    """
+    Нормализует название дня недели (поддерживает русские названия и сокращения)
+    """
     ru_to_en = {
         'понедельник': 'monday',
         'вторник': 'tuesday',
@@ -41,7 +32,7 @@ def normalize_day_of_week(day):
         'сб': 'saturday',
         'вс': 'sunday'
     }
-    
+
     day = str(day).strip().lower()
     # Если день недели на русском, конвертируем в английский
     return ru_to_en.get(day, day)
@@ -343,17 +334,33 @@ def update_workout_capacity(row_idx, new_capacity):
         update_record(spreadsheet_id, 'Workouts', cell, [str(new_capacity)])
 
 @calendar_bp.route('/api/calendar/book', methods=['POST'])
+@csrf.exempt
 def book_slot():
     """
     Бронирование слота тренировки.
     """
-    # Проверяем формат входных данных
-    if not request.is_json:
-        return jsonify({'error': 'Ожидается JSON'}), 400
+    # Поддерживаем как JSON, так и form-encoded POST от старых форм
+    raw_data = None
+    if request.is_json:
+        raw_data = request.get_json()
+    else:
+        # Попробуем взять данные из form (application/x-www-form-urlencoded или multipart)
+        if request.form:
+            raw_data = request.form.to_dict()
+        else:
+            # Попытка распарсить тело как JSON (на случай, если заголовки неверны)
+            try:
+                raw_text = request.get_data(as_text=True)
+                import json
+                raw_data = json.loads(raw_text) if raw_text else {}
+            except Exception:
+                raw_data = {}
+
+    current_app.logger.info(f"📥 Получен запрос на бронирование (raw): {raw_data}")
 
     try:
         # Валидация данных через схему
-        data = BookingSchema().load(request.get_json())
+        data = BookingSchema().load(raw_data)
         
         # Проверяем доступность слота
         slots = get_available_slots(data['date'])
@@ -404,22 +411,29 @@ def book_slot():
         except Exception as e:
             current_app.logger.error(f"Ошибка обновления счетчика мест: {str(e)}")
             # Не прерываем процесс, так как бронь уже создана
-
-        # 5. Создание события в Google Calendar
+        # 5. Создание события в Google Calendar (если настроен calendar_id)
         try:
-            service = get_google_services()
-            add_event_to_calendar(
-                service,
-                data['date'],
-                data['time'],
-                data['name'],
-                data['phone']
-            )
+            cal_id = current_app.config.get('GOOGLE_CALENDAR_ID')
+            if cal_id:
+                try:
+                    service = get_google_services()
+                    add_event_to_calendar(
+                        service,
+                        data['date'],
+                        data['time'],
+                        data['name'],
+                        data['phone']
+                    )
+                except Exception as e:
+                    current_app.logger.error(f"Ошибка создания события в календаре: {str(e)}")
+            else:
+                current_app.logger.info('GOOGLE_CALENDAR_ID не задан — пропускаем добавление события в календарь')
         except Exception as e:
-            current_app.logger.error(f"Ошибка создания события в календаре: {str(e)}")
+            current_app.logger.error(f"Неожиданная ошибка при попытке добавить событие в календарь: {str(e)}")
             # Не прерываем процесс, так как это некритичная ошибка
 
         return jsonify({'message': 'Успешно забронировано'}), 201
+
 
     except ValidationError as ve:
         return jsonify({'error': 'Ошибка валидации данных', 'details': ve.messages}), 400

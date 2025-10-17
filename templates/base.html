@@ -10,12 +10,12 @@
   <meta name="description" content="{{ meta_description|default('MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.') }}">
   <meta property="og:title" content="{{ title|default('MyWave') }}">
   <meta property="og:description" content="{{ meta_description|default('MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.') }}">
-  <meta property="og:image" content="{{ og_image|default(url_for('static', filename='images/og-image.jpg')) }}">
+  <meta property="og:image" content="{{ og_image|default(url_for('static', filename='images/og-image.jpg', _external=True)) }}">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ title|default('MyWave') }}">
   <meta name="twitter:description" content="{{ meta_description|default('MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.') }}">
-  <meta name="twitter:image" content="{{ og_image|default(url_for('static', filename='images/og-image.jpg')) }}">
+  <meta name="twitter:image" content="{{ og_image|default(url_for('static', filename='images/og-image.jpg', _external=True)) }}">
 
   <title>{% block title %}{{ title|default('MyWave') }}{% endblock %}</title>
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
@@ -30,6 +30,7 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}" />
 
   <!-- Flatpickr -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -69,6 +70,23 @@
       <img src="https://mc.yandex.ru/watch/99772473" style="position:absolute; left:-9999px;" alt="Счётчик Яндекс.Метрики" />
     </div>
   </noscript>
+
+  <!-- Structured data: Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "MyWave",
+    "url": "{{ request.url_root }}",
+    "logo": "{{ url_for('static', filename='images/logo.png', _external=True) }}",
+    "contactPoint": [{
+      "@type": "ContactPoint",
+      "telephone": "+7 916 011-71-79",
+      "contactType": "customer service",
+      "areaServed": "RU"
+    }]
+  }
+  </script>
 
   <link rel="preload" href="/static/fonts/pangolin.woff2" as="font" type="font/woff2" crossorigin>
   {% block critical_css %}

@@ -3,7 +3,7 @@ import logging
 import datetime
 from flask import request, current_app
 from flask_socketio import emit, disconnect
-from app.routes.calendar_routes import get_schedule_slots
+from app.routes.calendar_routes import get_available_slots
 from app.extensions import socketio  # ✅ используем общий экземпляр
 
 # Глобальный набор подключенных клиентов
@@ -54,13 +54,19 @@ def handle_disconnect():
 def handle_request_slots(data):
     current_app.logger.info(f"WebSocket: запрос слотов от клиента {request.sid}")
     selected_date = data.get("date")
-    selected_day_of_week = get_day_of_week(selected_date) if selected_date else None
-
-    if not selected_day_of_week:
+    # Ожидается, что клиент присылает конкретную дату в формате YYYY-MM-DD
+    if not selected_date:
         emit("update_slots", {"error": "Неверная или отсутствующая дата"})
         return
 
-    slots = get_schedule_slots(selected_day_of_week)
+    try:
+        # get_available_slots возвращает список слотов для переданной даты
+        slots = get_available_slots(selected_date)
+    except Exception as e:
+        current_app.logger.error(f"Ошибка при получении слотов: {e}")
+        emit("update_slots", {"error": "Не удалось получить слоты"})
+        return
+
     print(f"📡 WebSocket отправляет: {slots}")
     emit("update_slots", slots)
 

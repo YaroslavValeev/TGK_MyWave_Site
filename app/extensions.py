@@ -64,11 +64,21 @@ def init_extensions(app, db=None):
         supports_credentials=True
     )
     api.init_app(app)
-    metrics = PrometheusMetrics(app)
+    try:
+        # In some test environments PROMETHEUS_MULTIPROC_DIR is not set and
+        # PrometheusMetrics may raise ValueError; ignore metrics in that case.
+        metrics = PrometheusMetrics(app)
+    except Exception:
+        # skip metrics initialization in constrained/test environments
+        metrics = None
     if db is not None:
         migrate.init_app(app, db)
         try:
             from prometheus_flask_exporter.multiprocess import GunicornPrometheusMetrics
-            GunicornPrometheusMetrics(app, group_by='endpoint')
+            try:
+                GunicornPrometheusMetrics(app, group_by='endpoint')
+            except ValueError:
+                # PROMETHEUS_MULTIPROC_DIR not configured for tests — skip
+                app.logger.debug('PROMETHEUS_MULTIPROC_DIR missing; skipping GunicornPrometheusMetrics')
         except ImportError:
             pass

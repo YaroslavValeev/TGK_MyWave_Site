@@ -1,0 +1,50 @@
+/* Branding variables and simple button styles */
+:root {
+  --primary-color: #00a9d6;
+  --accent-color: #00cc88;
+  --color-bg: #ffffff;
+  --color-text: #222222;
+  --color-header: #0a5273;
+  --color-white: #ffffff;
+}
+
+/* Buttons */
+.btn,
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary,
+.btn {
+  background: var(--primary-color);
+  color: var(--color-white);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+}
+
+.btn:focus,
+.btn-primary:focus,
+.btn-secondary:focus {
+  outline: 3px solid rgba(0,0,0,0.08);
+  outline-offset: 2px;
+}
+
+/* Utility */
+.hidden { display: none !important; }
+
+/* Make hero title more prominent */
+.hero-title { font-size: 2.25rem; line-height: 1.1; }
+.hero-subtitle { font-size: 1.125rem; }
