@@ -1,0 +1,13 @@
+Server initialized for eventlet.
+(8544) wsgi starting up on http://0.0.0.0:5000
+(8544) accepted ('127.0.0.1', 55062)
+127.0.0.1 - - [17/Oct/2025 22:59:20] "GET /api/health HTTP/1.1" 200 1556 0.003999
+(8544) accepted ('127.0.0.1', 55093)
+127.0.0.1 - - [17/Oct/2025 22:59:34] "GET /api/csrf-token HTTP/1.1" 200 1911 0.002998
+[2025-10-17 22:59:38,545] ERROR in sheets_access: [DEBUG] Заголовки Clients: ['client_id', 'telegram_user_id', 'name', 'phone', 'email', 'level', 'created_at', 'source', 'status', 'ref_code', 'last_active']
+[2025-10-17 22:59:38,545] ERROR in sheets_access: [DEBUG] Заголовки Clients: ['client_id', 'telegram_user_id', 'name', 'phone', 'email', 'level', 'created_at', 'source', 'status', 'ref_code', 'last_active']
+ERROR:app.modules.logger:[DEBUG] Заголовки Clients: ['client_id', 'telegram_user_id', 'name', 'phone', 'email', 'level', 'created_at', 'source', 'status', 'ref_code', 'last_active']
+[2025-10-17 22:59:38,547] ERROR in sheets_access: [DEBUG] Формируемые значения для записи: ['client_1760720375', '', 'Auto Test 3', '+70000000003', '', 'beginner', '2025-10-17T19:59:35.244812', 'web', 'new', '', '2025-10-17T19:59:35.244812']
+[2025-10-17 22:59:38,547] ERROR in sheets_access: [DEBUG] Формируемые значения для записи: ['client_1760720375', '', 'Auto Test 3', '+70000000003', '', 'beginner', '2025-10-17T19:59:35.244812', 'web', 'new', '', '2025-10-17T19:59:35.244812']
+ERROR:app.modules.logger:[DEBUG] Формируемые значения для записи: ['client_1760720375', '', 'Auto Test 3', '+70000000003', '', 'beginner', '2025-10-17T19:59:35.244812', 'web', 'new', '', '2025-10-17T19:59:35.244812']
+127.0.0.1 - - [17/Oct/2025 22:59:40] "POST /api/calendar/book HTTP/1.1" 201 1660 6.141540
