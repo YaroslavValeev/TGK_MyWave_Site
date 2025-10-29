@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>{{ url_for('index', _external=True) }}</loc>
+    <lastmod>{{ lastmod }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>{{ url_for('about.about_page', _external=True) }}</loc>
+    <lastmod>{{ lastmod }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>{{ url_for('services.ask', _external=True) }}</loc>
+    <lastmod>{{ lastmod }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>{{ url_for('booking.book', _external=True) }}</loc>
+    <lastmod>{{ lastmod }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>{{ url_for('content_calendar.calendar_page', _external=True) }}</loc>
+    <lastmod>{{ lastmod }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>{{ url_for('content_calendar.events_list', _external=True) }}</loc>
+    <lastmod>{{ lastmod }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>{{ url_for('reviews.reviews', _external=True) }}</loc>
+    <lastmod>{{ lastmod }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>{{ url_for('contact.contact', _external=True) }}</loc>
+    <lastmod>{{ lastmod }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>{{ url_for('chat.chat_page', _external=True) }}</loc>
+    <lastmod>{{ lastmod }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+</urlset>

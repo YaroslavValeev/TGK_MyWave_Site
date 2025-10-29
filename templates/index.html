@@ -4,7 +4,7 @@
 
 {% block content %}
   <!-- Герой-блок -->
-  <section class="hero-section relative-section">
+  <section class="hero-section relative-section" id="hero">
     <img src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}" alt="Вейксерфинг на волне" class="hero-bg hero-bg-cover hero-bg-light" loading="lazy" />
     <img src="{{ url_for('static', filename='images/hero-wakesurf-dark.webp') }}" alt="Вейксерфинг на волне (тёмная тема)" class="hero-bg hero-bg-cover hero-bg-dark" loading="lazy" />
     <div class="hero-content center-padding hero-content-relative">
@@ -42,6 +42,14 @@
         <p>Тренировка на авторских тренажёрах по уникальной методике вейксерфинга. Развиваем баланс, координацию, биомеханику и нейронные связи, чтобы вы уверенно и эффектно выполняли трюки.</p>
         <p>Цена: 3500 рублей</p>
         <button class="btn-secondary btn-book">Записаться</button>
+      </div>
+      <div class="service-card service-card--discovery" id="wake-discovery">
+        <h4>Wake Discovery</h4>
+        <p>Познакомимся, определим ваши цели и подберём подходящий формат тренировок. Калькулятор поможет рассчитать программу и бюджет на сезон.</p>
+        <div class="service-actions">
+          <a class="btn-primary service-card__cta" href="/calculator" aria-label="Открыть калькулятор Wake Discovery">Перейти к калькулятору</a>
+          <button class="btn-secondary btn-book">Записаться</button>
+        </div>
       </div>
       <div class="service-card" id="boat-card">
         <h4>Запись на катер</h4>

@@ -174,18 +174,35 @@ html, body {
   list-style: none;
   margin: 0;
   padding: 0;
+  align-items: center;
+}
+.site-nav li {
+  display: flex;
+  align-items: center;
 }
 .site-nav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: 'Inter', sans-serif;
   font-size: 1.1em;
   color: var(--color-white);
   text-decoration: none;
-  padding: 0.5em 0.8em;
+  padding: 0 1.1em;
+  min-height: 44px;
+  min-width: 44px;
   border-radius: 8px;
+  line-height: 1.1;
   transition: background 0.2s, color 0.2s;
 }
 .site-nav a:hover, .site-nav a.active {
   background: rgba(0,188,212,0.12);
+  color: #00BCD4;
+}
+.site-nav a:focus-visible {
+  outline: 3px solid #00BCD4;
+  outline-offset: 2px;
+  background: rgba(0,188,212,0.16);
   color: #00BCD4;
 }
 [data-theme="dark"] .site-nav a {
@@ -2218,6 +2235,36 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
   border-radius: 12px;
   background: #fff;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.service-card--discovery {
+  background: linear-gradient(135deg, rgba(0,188,212,0.18), rgba(0,188,212,0.04));
+  border: 1px solid rgba(0,188,212,0.25);
+}
+.service-card--discovery h3,
+.service-card--discovery h4 {
+  color: #046473;
+}
+.service-card--discovery p {
+  color: #134046;
+}
+[data-theme="dark"] .service-card--discovery {
+  background: linear-gradient(135deg, rgba(0,188,212,0.32), rgba(0,188,212,0.12));
+  border-color: rgba(0,188,212,0.35);
+}
+[data-theme="dark"] .service-card--discovery h3,
+[data-theme="dark"] .service-card--discovery h4,
+[data-theme="dark"] .service-card--discovery p {
+  color: var(--color-white);
+}
+.service-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+.service-card__cta {
+  text-align: center;
+  flex: 1 1 200px;
 }
 .service-card h3 {
   margin-top: 0;

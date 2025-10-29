@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from flask import Flask, render_template, send_from_directory, jsonify
 from flask_socketio import SocketIO, emit
 from flask_sqlalchemy import SQLAlchemy
@@ -88,6 +89,12 @@ def create_app(config_name="development"):
     def favicon():
         return send_from_directory(os.path.join(app.root_path, 'static'),
                                  'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+    @app.route('/sitemap.xml')
+    def sitemap():
+        today = datetime.utcnow().date().isoformat()
+        xml = render_template('sitemap.xml', lastmod=today)
+        return app.response_class(xml, mimetype='application/xml')
 
     # CSP политика из конфига
     app.config['CSP_POLICY'] = app.config.get('CSP_POLICY')
