@@ -1,6 +1,40 @@
 {% extends "base.html" %}
 
 {% block content %}
+{# JSON-LD structured data for events. If the view provides `events` (already shaped), it will be used; otherwise we emit two fallback events. #}
+<script type="application/ld+json" nonce="{{ g.csp_nonce }}">
+{%- if events is defined and events %}
+{{ events|tojson(indent=2) }}
+{%- else %}
+[
+    {
+        "@context": "https://schema.org",
+        "@type": "Event",
+        "name": "WakeSurf Safari 2025",
+        "startDate": "2025-07-01",
+        "location": { "@type": "Place", "name": "Волга", "address": "Волга, Россия" },
+        "image": [ "{{ url_for('static', filename='images/wakesurf-safari.webp') }}" ],
+        "description": "Эксклюзивный тур по Волге с обучением",
+        "eventStatus": "https://schema.org/EventScheduled",
+        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+        "url": "{{ url_for('events') }}"
+    },
+    {
+        "@context": "https://schema.org",
+        "@type": "Event",
+        "name": "Тренировочный кемп в Сочи",
+        "startDate": "2025-12-01",
+        "location": { "@type": "Place", "name": "Сочи", "address": "Сочи, Россия" },
+        "image": [ "{{ url_for('static', filename='images/sochi-camp.webp') }}" ],
+        "description": "Зимние тренировки в горном регионе",
+        "eventStatus": "https://schema.org/EventScheduled",
+        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+        "url": "{{ url_for('events') }}"
+    }
+]
+{%- endif %}
+</script>
+
         <section class="events-section" id="events-section">
                 <h2>Ближайшие мероприятия</h2>
 
@@ -73,39 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Перепроверяем наличие событий после удаления пустых месяцев
     const stillHasEvents = document.querySelectorAll(eventSelectors).length > 0;
 
-{# JSON-LD structured data for events. If the view provides `events` (already shaped), it will be used; otherwise we emit two fallback events. #}
-<script type="application/ld+json" nonce="{{ g.csp_nonce }}">
-{%- if events is defined and events %}
-{{ events|tojson(indent=2) }}
-{%- else %}
-[
-    {
-        "@context": "https://schema.org",
-        "@type": "Event",
-        "name": "WakeSurf Safari 2025",
-        "startDate": "2025-07-01",
-        "location": { "@type": "Place", "name": "Волга", "address": "Волга, Россия" },
-        "image": [ "{{ url_for('static', filename='images/wakesurf-safari.webp') }}" ],
-        "description": "Эксклюзивный тур по Волге с обучением",
-        "eventStatus": "https://schema.org/EventScheduled",
-        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-        "url": "{{ url_for('events') }}"
-    },
-    {
-        "@context": "https://schema.org",
-        "@type": "Event",
-        "name": "Тренировочный кемп в Сочи",
-        "startDate": "2025-12-01",
-        "location": { "@type": "Place", "name": "Сочи", "address": "Сочи, Россия" },
-        "image": [ "{{ url_for('static', filename='images/sochi-camp.webp') }}" ],
-        "description": "Зимние тренировки в горном регионе",
-        "eventStatus": "https://schema.org/EventScheduled",
-        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-        "url": "{{ url_for('events') }}"
-    }
-]
-{%- endif %}
-</script>
     if (!hasEvents && !stillHasEvents) {
         // Скрываем пустой раздел целиком
         const section = document.getElementById('events-section');
