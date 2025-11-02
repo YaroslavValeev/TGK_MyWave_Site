@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 from app.services.openai_service import get_response, ChatMode
-# from app.services.ai_router import get_user_chat_history, save_chat_message  # Удалено из глобального импорта
+from app.services.ai_router import get_user_chat_history, save_chat_message
 from app.routes.api import get_knowledge
 import json
 

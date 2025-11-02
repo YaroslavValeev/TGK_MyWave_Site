@@ -8,6 +8,9 @@ class Config:
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
     GOOGLE_CALENDAR_ID = os.environ.get('GOOGLE_CALENDAR_ID')
     SPREADSHEET_ID = os.environ.get('SPREADSHEET_ID')
+    # Analytics sheet config (used for logging events and calculator history)
+    ANALYTICS_SHEET_SPREADSHEET_ID = os.getenv("ANALYTICS_SHEET_SPREADSHEET_ID", "")
+    ANALYTICS_SHEET_NAME = os.getenv("ANALYTICS_SHEET_NAME", "analytics_statistics")
     TIMEZONE = 'Europe/Moscow'
     SESSION_TYPE = 'filesystem'
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)

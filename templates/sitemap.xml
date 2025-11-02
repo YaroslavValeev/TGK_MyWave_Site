@@ -1,0 +1,23 @@
+{% set base = request.url_root.rstrip('/') %}
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  {# Статика #}
+  {% for path in urls.static %}
+  <url>
+    <loc>{{ base }}{{ path }}</loc>
+    <lastmod>{{ lastmod }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  {% endfor %}
+
+  {# Динамика: если будут /projects/<slug> #}
+  {% for slug in urls.project_slugs %}
+  <url>
+    <loc>{{ base }}/projects/{{ slug }}</loc>
+    <lastmod>{{ lastmod }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  {% endfor %}
+</urlset>

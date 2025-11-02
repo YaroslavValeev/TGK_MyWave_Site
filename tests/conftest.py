@@ -1,4 +1,13 @@
+import os
+import sys
 import pytest
+
+# Ensure repo root is on sys.path so tests can import the `app` package when
+# pytest is executed from different working directories or under CI.
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
 from app import create_app
 
 @pytest.fixture(scope='session')

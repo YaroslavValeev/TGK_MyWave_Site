@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="content-language" content="ru" />
+  <meta name="csrf-token" content="" />
+  
+  <!-- SEO -->
+  <meta name="description" content="MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.">
+  <meta property="og:title" content="MyWave">
+  <meta property="og:description" content="MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.">
+  <meta property="og:image" content="/static">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MyWave">
+  <meta name="twitter:description" content="MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.">
+  <meta name="twitter:image" content="/static">
+
+  <title>MyWave</title>
+  <link rel="icon" href="/static">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet" />
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/static" />
+
+  <!-- Flatpickr -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-343773438"></script>
+  <script nonce="X">
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-343773438');
+  </script>
+
+  <!-- Yandex.Metrika counter -->
+  <script nonce="X" type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){ (m[i].a=m[i].a||[]).push(arguments); };
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {
+            if (document.scripts[j].src === r) { return; }
+        }
+        k = e.createElement(t), a = e.getElementsByTagName(t)[0],
+        k.async = 1, k.src = r, a.parentNode.insertBefore(k,a)
+    })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+    
+    ym(99772473, "init", {
+        clickmap:true,
+        trackLinks:true,
+        accurateTrackBounce:true,
+        webvisor:true
+    });
+  </script>
+  <noscript>
+    <div>
+      <img src="https://mc.yandex.ru/watch/99772473" style="position:absolute; left:-9999px;" alt="Счётчик Яндекс.Метрики" />
+    </div>
+  </noscript>
+
+  <link rel="preload" href="/static/fonts/pangolin.woff2" as="font" type="font/woff2" crossorigin>
+  
+  <style>
+      body { 
+        font-family: 'Pangolin', sans-serif; 
+        background: var(--color-bg); 
+        color: var(--color-text); 
+      }
+      .site-header { 
+        background: var(--color-header); 
+        color: var(--color-white); 
+      }
+  </style>
+  
+
+  
+</head>
+
+<body>
+  <!-- Шапка -->
+  <header class="site-header" id="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <a href="/index">MyWave</a>
+      </div>
+      <nav class="site-nav" id="site-nav">
+        <ul>
+          <li><a href="#hero">Главная</a></li>
+          <li><a href="#services">Услуги</a></li>
+          <li><a href="#events">Мероприятия</a></li>
+          <li><a href="#blog">Блог</a></li>
+          <li><a href="#contacts">Контакты</a></li><li><a href="/content_calendar.calendar_page">Контент-календарь</a></li>
+        </ul>
+      </nav>
+      <button id="dark-mode-toggle" class="theme-toggle" aria-label="Переключить тему">🌙</button>
+      <button class="burger-menu" id="burger-menu" aria-label="Открыть меню">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+  <div id="header-pull-tab" class="header-pull-tab" aria-label="Показать меню">
+    <i class="fas fa-chevron-down"></i>
+  </div>
+
+  <div id="progress-bar" class="progress-bar">
+    <div id="progress-fill"></div>
+  </div>
+
+  <!-- Контент -->
+  <main>
+    <div id="socket-status-indicator" class="socket-status-indicator">Оффлайн</div>
+    
+        <section class="events-section" id="events-section">
+                <h2>Ближайшие мероприятия</h2>
+
+                <!-- Модалка "мероприятий пока нет" -->
+                <div id="no-events-modal" class="modal" style="display:none;">
+                    <div class="modal-content">
+                        <button class="close-modal" aria-label="Закрыть">&times;</button>
+                        <h2>Мероприятий пока нет</h2>
+                        <p>Мы готовим расписание. Подпишитесь на новости и загляните позже 👋</p>
+
+                        <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
+                            <a class="btn-primary" href="/blog">Перейти в блог</a>
+                            <a class="btn-secondary" href="/contacts">Связаться</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="event-card">
+            <img src="/static/images/wakesurf-safari.webp" alt="WakeSurf Safari 2025" width="300" height="200" loading="lazy">
+            <h3>WakeSurf Safari 2025</h3>
+            <p>Эксклюзивный тур по Волге с обучением.</p>
+            <p>Дата: июль 2025</p>
+            <div class="event-actions">
+                <a href="#" class="btn-primary">Подробнее</a>
+                <button class="btn-secondary btn-book">Записаться</button>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <img src="/static/images/sochi-camp.webp" alt="Тренировочный кемп в Сочи" width="300" height="200" loading="lazy">
+            <h3>Тренировочный кемп в Сочи</h3>
+            <p>Зимние тренировки в горном регионе.</p>
+            <p>Дата: декабрь 2025</p>
+            <div class="event-actions">
+                <a href="#" class="btn-primary">Подробнее</a>
+                <button class="btn-secondary btn-book">Записаться</button>
+            </div>
+        </div>
+    </section>
+
+  </main>
+
+  <!-- Плавающий чат -->
+  <div class="floating-chat" id="floating-chat">
+    <button class="chat-toggle" id="chat-toggle" aria-label="Открыть чат">
+      <i class="fas fa-comments"></i>
+    </button>
+    
+    <div class="chat-widget hidden" id="chat-widget">
+      <div class="chat-header">
+        <h4>Чат с экспертом по вейку</h4>
+        <button class="close-chat" id="close-chat" aria-label="Закрыть чат">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-suggestions" id="chat-suggestions"></div>
+      
+      <form class="chat-form" id="chat-form">
+        <input type="hidden" name="csrf_token" value="">
+        <div class="chat-input-wrapper">
+          <input type="text" 
+                 id="chat-input" 
+                 class="chat-input" 
+                 placeholder="Напишите сообщение..." 
+                 aria-label="Сообщение">
+          <button type="submit" class="send-button" aria-label="Отправить">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Индикатор загрузки -->
+  <div id="loading-indicator" class="loading-indicator hidden" aria-hidden="true">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Подключение socket.io-client через CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/static"></script>
+  <script src="/static"></script>
+  <script src="/static/js/socket.io.js"></script>
+  <script type="module" nonce="X">
+    import { SocketStatus } from '/static/js/socket-status.js';
+    const socket = io({
+      auth: {
+        csrf_token: document.querySelector('meta[name="csrf-token"]')?.content
+      }
+    });
+    new SocketStatus(socket);
+  </script>
+  
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Универсальная проверка наличия событий: поддерживаем карточки и списки по месяцам/таблицы
+    const eventSelectors = '.event-card, .events-ul li, .events-table tbody tr, .event-item';
+    const hasEvents = document.querySelectorAll(eventSelectors).length > 0;
+
+    // Если есть месячная разметка (h3 + список/таблица), удалим пустые месяцы
+    const eventsSection = document.getElementById('events-section');
+    if (eventsSection) {
+        const monthHeadings = Array.from(eventsSection.querySelectorAll('h3'));
+        monthHeadings.forEach(h => {
+            // ищем следующий элемент-узел (пропуская текстовые узлы)
+            const el = h.nextElementSibling;
+            if (!el) return;
+
+            const containsNoEventsMsg = !!el.querySelector && !!el.querySelector('.no-events-message');
+            const isEmptyList = el.tagName === 'UL' && el.children.length === 0;
+            const isEmptyTable = el.tagName === 'TABLE' && (!el.querySelectorAll('tbody tr').length);
+            const textIndicatesEmpty = (el.textContent || '').trim().toLowerCase().includes('нет меропр');
+
+            if (containsNoEventsMsg || isEmptyList || isEmptyTable || textIndicatesEmpty) {
+                // Удаляем заголовок и блок-описание месяца
+                h.remove();
+                el.remove();
+            }
+        });
+    }
+
+    // Перепроверяем наличие событий после удаления пустых месяцев
+    const stillHasEvents = document.querySelectorAll(eventSelectors).length > 0;
+
+
+<script type="application/ld+json" nonce="X">
+[
+    {
+        "@context": "https://schema.org",
+        "@type": "Event",
+        "name": "WakeSurf Safari 2025",
+        "startDate": "2025-07-01",
+        "location": { "@type": "Place", "name": "Волга", "address": "Волга, Россия" },
+        "image": [ "/static" ],
+        "description": "Эксклюзивный тур по Волге с обучением",
+        "eventStatus": "https://schema.org/EventScheduled",
+        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+        "url": "/events"
+    },
+    {
+        "@context": "https://schema.org",
+        "@type": "Event",
+        "name": "Тренировочный кемп в Сочи",
+        "startDate": "2025-12-01",
+        "location": { "@type": "Place", "name": "Сочи", "address": "Сочи, Россия" },
+        "image": [ "/static" ],
+        "description": "Зимние тренировки в горном регионе",
+        "eventStatus": "https://schema.org/EventScheduled",
+        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+        "url": "/events"
+    }
+]
+</script>
+    if (!hasEvents && !stillHasEvents) {
+        // Скрываем пустой раздел целиком
+        const section = document.getElementById('events-section');
+        if (section) section.style.display = 'none';
+
+        // Показываем модалку
+        const modal = document.getElementById('no-events-modal');
+        if (modal) {
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+
+            // Закрытие по крестику
+            const closeBtn = modal.querySelector('.close-modal');
+            if (closeBtn) closeBtn.addEventListener('click', () => {
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+                if (section) section.style.display = '';
+            });
+
+            // Закрытие по клику на фон
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                    modal.style.display = 'none';
+                    if (section) section.style.display = '';
+                }
+            });
+        }
+    }
+});
+</script>
+
+  <script src="/static"></script>
+
+  <!-- booking.js должен быть после блока content и всех модалок -->
+  <script src="/static"></script>
+
+  <!-- Контейнер для success-view partial (подгружается динамически) -->
+  <div id="success-modal" aria-live="polite"></div>
+
+  <div id="toast" class="toast hidden" aria-live="polite" aria-label="Уведомление"></div>
+
+  <footer class="site-footer">
+    <p>© 2025 MyWave. Все права защищены.</p>
+    <p>Разработка: MyWave Team</p>
+  </footer>
+
+  <script nonce="X">
+    const themeBtn = document.getElementById('dark-mode-toggle');
+    const boatCard = document.getElementById('boat-card');
+
+    if (themeBtn) {
+      // Авто-применение при загрузке
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme','dark');
+        themeBtn.textContent = '☀️';
+      }
+
+      themeBtn.addEventListener('click', () => {
+        const isDark = document.documentElement.hasAttribute('data-theme');
+        if (isDark) {
+          document.documentElement.removeAttribute('data-theme');
+          localStorage.removeItem('theme');
+          themeBtn.textContent = '🌙';
+        } else {
+          document.documentElement.setAttribute('data-theme','dark');
+          localStorage.setItem('theme','dark');
+          themeBtn.textContent = '☀️';
+        }
+
+        // Подсветка карточки катера
+        if (boatCard) {
+          boatCard.classList.add('highlight-boat');
+          setTimeout(() => boatCard.classList.remove('highlight-boat'), 800);
+        }
+      });
+    }
+  </script>
+</body>
+</html>

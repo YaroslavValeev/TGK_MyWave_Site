@@ -1,0 +1,8 @@
+run_local_server failed: [WinError 10048] ╬с√ўэю ЁрчЁх°рхЄё  Єюы№ъю юфэю шёяюы№чютрэшх рфЁхёр ёюъхЄр (яЁюЄюъюы/ёхЄхтющ рфЁхё/яюЁЄ)
+Auto port selection is disabled (--no-auto-port). Falling back to manual console flow. Follow the printed URL and paste the code here.
+
+Open the following URL in your browser, complete the consent, then paste the authorization code here:
+
+https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=854665020123-abmteqd2qbcbdn0crclnsq0becsaihgi.apps.googleusercontent.com&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fwebmasters.readonly+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fwebmasters&state=gONz59gTXXDyuoP3bZD41apK5WscKE&access_type=offline&prompt=consent
+
+

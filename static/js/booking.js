@@ -337,9 +337,62 @@ async function getFreshCsrfToken() {
       const result = await response.json();
       console.log("📩 Ответ сервера:", result);
       if (response.ok) {
-        hideAllModals();
-        showToast(`✅ ${result.message || "Запись успешно создана!"}`);
-        socket.emit('booking_confirmed', payload);
+        // Если сервер вернул ссылку на success-view — подгружаем её и показываем в модалке
+        if (result && result.success_view_url) {
+          fetch(result.success_view_url, { method: 'GET', headers: { 'X-Requested-With': 'fetch' } })
+            .then(r => r.text())
+            .then(html => {
+              const container = document.querySelector('#success-modal');
+              if (container) {
+                container.innerHTML = html;
+                container.classList.add('is-open');
+
+                // Логирование показа (GA и Sheets)
+                if (window.gtag) { gtag('event', 'success_view_shown', { 'event_category': 'booking' }); }
+                fetch('/analytics/log', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ event: 'success_view_shown', label: 'booking', phone: window.lastSubmittedPhone || '' })
+                });
+
+                // Обработчики кнопок
+                container.querySelectorAll('[data-action]').forEach(btn => {
+                  btn.addEventListener('click', () => {
+                    const action = btn.getAttribute('data-action');
+                    if (action === 'close') {
+                      container.classList.remove('is-open');
+                    } else if (action === 'share') {
+                      if (navigator.share) {
+                        navigator.share({ title: 'MyWave', text: 'Я записался на тренировку!', url: location.href });
+                      }
+                    }
+                    // Лог клика
+                    if (window.gtag) { gtag('event', 'success_view_cta_click', { 'event_category': 'booking', 'event_label': action }); }
+                    fetch('/analytics/log', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ event: 'success_view_cta_click', label: action, phone: window.lastSubmittedPhone || '' })
+                    });
+                  });
+                });
+              } else {
+                // fallback: закрываем модал и показываем toast
+                hideAllModals();
+                showToast(`✅ ${result.message || "Запись успешно создана!"}`);
+              }
+              socket.emit('booking_confirmed', payload);
+            })
+            .catch(err => {
+              console.error('Ошибка загрузки success-view:', err);
+              hideAllModals();
+              showToast(`✅ ${result.message || "Запись успешно создана!"}`);
+              socket.emit('booking_confirmed', payload);
+            });
+        } else {
+          hideAllModals();
+          showToast(`✅ ${result.message || "Запись успешно создана!"}`);
+          socket.emit('booking_confirmed', payload);
+        }
       } else {
         showToast(`❌ ${result.error || result.message || "Не удалось записаться"}`);
       }

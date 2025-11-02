@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Проекты — MyWave{% endblock %}
+{% block content %}
+<section class="container projects">
+  <h1 class="section-title">Проекты</h1>
+
+  <ul class="projects-grid">
+    {% for p in projects %}
+      <li class="project-card">
+        <img
+          src="{{ url_for('static', filename=p.cover) }}"
+          alt="{{ p.name }} — обложка проекта"
+          loading="lazy" width="1200" height="800">
+        <div class="project-card__body">
+          <h2 class="project-card__title">{{ p.name }}</h2>
+          <p class="project-card__summary">{{ p.summary }}</p>
+          <p class="project-card__meta">
+            <span class="city">{{ p.city }}</span>
+            {% if p.tags %}
+              <span class="tags">
+                {% for t in p.tags %}
+                  <span class="tag">{{ t }}</span>
+                {% endfor %}
+              </span>
+            {% endif %}
+          </p>
+          {% if p.images %}
+          <div class="project-card__gallery" aria-label="Превью галереи">
+            {% for img in p.images %}
+              <img src="{{ url_for('static', filename=img) }}"
+                   alt="{{ p.name }} — превью {{ loop.index }}"
+                   loading="lazy" width="400" height="266">
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          {% if p.has_detail %}
+            <a class="btn btn-primary" href="{{ url_for('project_detail', slug=p.slug) }}">Подробнее</a>
+          {% else %}
+            <a class="btn btn-outline" href="{{ url_for('projects_page') }}">Подробнее</a>
+          {% endif %}
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+
+{# --- JSON-LD: один скрипт с nonce, @graph включает ItemList + Project[] --- #}
+<script type="application/ld+json" nonce="{{ csp_nonce }}">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "ItemList",
+      "itemListElement": [
+        {% for p in projects %}
+          {
+            "@type": "ListItem",
+            "position": {{ loop.index }},
+            "url": "{% if p.has_detail %}{{ url_for('project_detail', slug=p.slug, _external=True) }}{% else %}{{ url_for('projects_page', _external=True) }}{% endif %}"
+          }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }
+    {% for p in projects %},{% endfor %}
+    {% for p in projects %}
+    ,{
+      "@type": "Project",
+      "name": "{{ p.name|e }}",
+      "description": "{{ p.summary|e }}",
+      "image": [
+        "{{ url_for('static', filename=p.cover, _external=True) }}"
+        {% for img in p.images %},"{{ url_for('static', filename=img, _external=True) }}"{% endfor %}
+      ],
+      "url": "{% if p.has_detail %}{{ url_for('project_detail', slug=p.slug, _external=True) }}{% else %}{{ url_for('projects_page', _external=True) }}{% endif %}",
+      "keywords": "{{ (p.tags or [])|join(', ') }}",
+      "identifier": "{{ p.slug }}",
+      "areaServed": "{{ p.city }}"
+    }
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}

@@ -9,8 +9,18 @@ from app.services.google_sheets_service import get_sheet_data, append_to_sheet, 
 
 logger = logging.getLogger(__name__)
 
-# Создание клиента OpenAI
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+def _get_openai_client():
+    """
+    Lazy OpenAI client factory — avoid creating client at import time to
+    prevent side-effects during testing.
+    """
+    try:
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            return None
+        return OpenAI(api_key=api_key)
+    except Exception:
+        return None
 
 def get_user_chat_history(client_id):
     """

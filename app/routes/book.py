@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, current_app, render_template, flash, redirect, url_for
+from flask import Blueprint, jsonify, request, current_app, render_template, flash, redirect, url_for, make_response
 from app.extensions import csrf  
 from app.forms.booking_form import BookingForm
 from app.database.models import db, Booking
@@ -14,6 +14,37 @@ from app.services.sheets_writer import save_client_to_sheets
 
 booking_bp = Blueprint("booking", __name__, url_prefix="/booking")
 logger = logging.getLogger(__name__)
+
+
+@booking_bp.route("/success-view", methods=["GET"])
+def booking_success_view():
+    """
+    Partial view для отображения после успешного бронирования.
+    Возвращает HTML фрагмент (partial), помеченный X-Robots-Tag: noindex, nofollow
+    """
+    SUCCESS_VIEW_CONTENT = {
+        "title": "Запись подтверждена!",
+        "sections": [
+            {
+                "h": "Что взять с собой",
+                "p": "Гидрокостюм по погоде, полотенце, вода, отличное настроение.",
+                "img": "images/booking/gear-checklist-v1.webp"
+            },
+            {
+                "h": "Что вас ждёт на причале",
+                "p": "Инструктаж по безопасности, знакомство с лодкой, быстрый брифинг и на воду.",
+                "img": "images/booking/dock-experience-v1.webp"
+            }
+        ],
+        "cta": {
+            "primary": {"text": "Готово", "action": "close"},
+            "secondary": {"text": "Поделиться", "action": "share"}
+        }
+    }
+    html = render_template('book_success.html', content=SUCCESS_VIEW_CONTENT)
+    resp = make_response(html, 200)
+    resp.headers['X-Robots-Tag'] = 'noindex, nofollow'
+    return resp
 
 
 # ------------------------------------------------------------
@@ -36,7 +67,7 @@ def book():
                 # Проверка на занятость слота (можно вынести в отдельную функцию)
                 exists = Booking.query.filter_by(date=date, time=time, phone=phone).first()
                 if exists:
-                    flash("Вы уже записаны на это время", "warning")
+                    flash("Вы уже записаны на этот слот. Если хотите изменить, напишите нам.", "warning")
                     return render_template("book.html", form=form), 409
                 # --- Запись в БД ---
                 booking = Booking(name=name, phone=phone, date=date, time=time)
@@ -85,7 +116,7 @@ def api_book():
     try:
         exists = Booking.query.filter_by(date=date, time=time, phone=phone).first()
         if exists:
-            return jsonify({"success": False, "error": "Вы уже записаны на это время"}), 409
+            return jsonify({"success": False, "error": "Вы уже записаны на этот слот. Если хотите изменить, напишите нам."}), 409
         booking = Booking(name=name, phone=phone, date=date, time=time)
         db.session.add(booking)
         db.session.commit()
@@ -100,7 +131,11 @@ def api_book():
             create_calendar_event(event_data)
         except Exception as e:
             logger.error(f"Ошибка создания события в календаре: {e}")
-        return jsonify({"success": True, "message": "Запись успешно создана!"}), 200
+        return jsonify({
+            "success": True,
+            "message": "Запись успешно создана!",
+            "success_view_url": url_for("booking.booking_success_view")
+        }), 200
     except Exception as e:
         logger.error(f"Ошибка API бронирования: {e}")
         return jsonify({"success": False, "error": str(e)}), 500

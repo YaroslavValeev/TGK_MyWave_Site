@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Калькулятор — MyWave{% endblock %}
+{% block content %}
+<section class="container">
+  <h1>Калькулятор</h1>
+  <!-- {{нужен_контент}}: форма ввода и вывод результата -->
+  <form id="calc-form" novalidate>
+    <!-- Пример полей (заглушки) -->
+    <label>Параметр A <input name="a" type="number" required></label>
+    <label>Параметр B <input name="b" type="number" required></label>
+    <button class="btn btn-primary" type="submit">Рассчитать</button>
+  </form>
+  <div id="calc-result" aria-live="polite"></div>
+  <hr>
+  <button class="btn btn-outline" id="load-my-history">Мои прошлые расчёты</button>
+  <div id="calc-history"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/calculator.js') }}" defer></script>
+{% endblock %}

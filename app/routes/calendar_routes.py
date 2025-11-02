@@ -1,5 +1,5 @@
 from marshmallow.exceptions import ValidationError
-from flask import Blueprint, request, jsonify, current_app, render_template
+from flask import Blueprint, request, jsonify, current_app, render_template, url_for
 from marshmallow import Schema, fields
 from datetime import datetime, timedelta
 from googleapiclient.errors import HttpError
@@ -419,7 +419,12 @@ def book_slot():
             current_app.logger.error(f"Ошибка создания события в календаре: {str(e)}")
             # Не прерываем процесс, так как это некритичная ошибка
 
-        return jsonify({'message': 'Успешно забронировано'}), 201
+        # Возвращаем ссылку на success-view (partial) для фронтенда
+        try:
+            success_view = url_for('booking.booking_success_view', _external=False)
+        except Exception:
+            success_view = '/booking/success-view'
+        return jsonify({'message': 'Успешно забронировано', 'success_view_url': success_view}), 201
 
     except ValidationError as ve:
         return jsonify({'error': 'Ошибка валидации данных', 'details': ve.messages}), 400

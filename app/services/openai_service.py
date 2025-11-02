@@ -1,6 +1,6 @@
 import logging
 from openai import OpenAI
-from flask import current_app, session
+from flask import current_app, session, has_app_context
 from app.services.rules import ChatMode
 from app.services.google_sheets_service import append_record
 from datetime import datetime
@@ -9,6 +9,9 @@ import time
 logger = logging.getLogger(__name__)
 
 client = None  # OpenAI client будет инициализирован при первом вызове
+# Default model names used by the code and tests
+DEFAULT_MODEL = "gpt-4"
+FALLBACK_MODEL = "gpt-3.5-turbo"
 
 def log_dialog(client_id, source, message, reply):
     """
@@ -85,7 +88,8 @@ def ask(
     client_id: str = None,
     source: str = "web",
     temperature: float = None,
-    max_tokens: int = None
+    max_tokens: int = None,
+    model: str | None = None,
 ) -> str:
     """
     Унифицированный интерфейс для обращения к OpenAI.
@@ -93,22 +97,26 @@ def ask(
     if not isinstance(prompt, str) or not prompt.strip():
         raise ValueError("Prompt must be a non-empty string")
     try:
-        # Если есть ассистент — используем его
-        assistant_id = current_app.config.get('ASSISTANT_ID')
+        # If running inside Flask, read config; otherwise use safe defaults
+        cfg = current_app.config if has_app_context() else {}
+        assistant_id = cfg.get('ASSISTANT_ID') if cfg else None
         if assistant_id:
             return ask_with_assistant(prompt, client_id=client_id)
         # Fallback: обычная модель
         global client
         if client is None:
-            api_key = current_app.config.get('OPENAI_API_KEY')
+            api_key = cfg.get('OPENAI_API_KEY') if cfg else None
             if not api_key:
                 raise RuntimeError("OPENAI_API_KEY is not set in Flask config")
             client = OpenAI(api_key=api_key)
 
-        if mode == ChatMode.CHAT_API:
-            model = current_app.config.get('GPTS_MODEL')
+        if model is not None:
+            chosen_model = model
         else:
-            model = "gpt-4"  # Жёстко указываем стандартную модель
+            if mode == ChatMode.CHAT_API:
+                chosen_model = cfg.get('GPTS_MODEL') if cfg else None
+            else:
+                chosen_model = cfg.get('GPTS_MODEL') if cfg else None or DEFAULT_MODEL
 
         system_prompt = current_app.config.get('CHAT_SYSTEM_PROMPT', "You are a helpful assistant.")
         messages = []
@@ -123,7 +131,7 @@ def ask(
             messages.append({"role": "user", "content": prompt})
 
         params = {
-            "model": model,
+            "model": chosen_model,
             "messages": messages
         }
         if temperature is not None:

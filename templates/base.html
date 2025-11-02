@@ -38,7 +38,7 @@
 
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-343773438"></script>
-  <script nonce="{{ csp_nonce }}">
+  <script nonce="{{ g.csp_nonce }}">
     window.dataLayer = window.dataLayer || [];
     function gtag(){ dataLayer.push(arguments); }
     gtag('js', new Date());
@@ -46,7 +46,7 @@
   </script>
 
   <!-- Yandex.Metrika counter -->
-  <script nonce="{{ csp_nonce }}" type="text/javascript">
+  <script nonce="{{ g.csp_nonce }}" type="text/javascript">
     (function(m,e,t,r,i,k,a){
         m[i]=m[i]||function(){ (m[i].a=m[i].a||[]).push(arguments); };
         m[i].l=1*new Date();
@@ -167,7 +167,7 @@
   <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
   <script src="{{ url_for('static', filename='js/storeFilter.js') }}"></script>
   <script src="/static/js/socket.io.js"></script>
-  <script type="module">
+  <script type="module" nonce="{{ g.csp_nonce }}">
     import { SocketStatus } from '/static/js/socket-status.js';
     const socket = io({
       auth: {
@@ -182,6 +182,9 @@
   <!-- booking.js должен быть после блока content и всех модалок -->
   <script src="{{ url_for('static', filename='js/booking.js') }}"></script>
 
+  <!-- Контейнер для success-view partial (подгружается динамически) -->
+  <div id="success-modal" aria-live="polite"></div>
+
   <div id="toast" class="toast hidden" aria-live="polite" aria-label="Уведомление"></div>
 
   <footer class="site-footer">
@@ -189,7 +192,7 @@
     <p>Разработка: MyWave Team</p>
   </footer>
 
-  <script>
+  <script nonce="{{ g.csp_nonce }}">
     const themeBtn = document.getElementById('dark-mode-toggle');
     const boatCard = document.getElementById('boat-card');
 

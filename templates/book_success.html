@@ -1,0 +1,22 @@
+<div class="modal-content modal-content--success" role="dialog" aria-modal="true" aria-label="Подтверждение записи">
+  <header class="booking-success__header">
+    <h3>{{ content.title }}</h3>
+  </header>
+  <div class="booking-success__body">
+    <ul class="booking-success__list">
+      {% for s in content.sections %}
+      <li class="booking-success__item">
+        <img src="{{ url_for('static', filename=s.img) }}" alt="{{ s.h }}" loading="lazy" width="400" height="266">
+        <div class="booking-success__text">
+          <h4>{{ s.h }}</h4>
+          <p>{{ s.p }}</p>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <footer class="booking-success__footer">
+    <button class="btn btn-primary" data-action="{{ content.cta.primary.action }}">{{ content.cta.primary.text }}</button>
+    <button class="btn btn-ghost" data-action="{{ content.cta.secondary.action }}">{{ content.cta.secondary.text }}</button>
+  </footer>
+</div>

@@ -10,9 +10,16 @@ import asyncio
 
 telegram_bp = Blueprint('telegram', __name__, url_prefix='/telegram')
 
-# Инициализация приложения Telegram
+# Инициализация приложения Telegram (отложенная, только если есть токен)
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+application = None
+if TELEGRAM_BOT_TOKEN:
+    try:
+        application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+    except Exception:
+        # При проблемах с инициализацией (например, несовместимость httpx) — логируем и не падаем
+        import logging
+        logging.getLogger(__name__).exception('Telegram Application init failed; continuing without telegram.')
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Команда /start для приветствия пользователя"""
@@ -62,6 +69,8 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def init_telegram():
     """Регистрация всех хэндлеров"""
+    if not application:
+        return
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     application.add_handler(MessageHandler(filters.PHOTO | filters.VIDEO, handle_media))
@@ -69,6 +78,8 @@ def init_telegram():
 @telegram_bp.route('/webhook', methods=['POST'])
 def webhook():
     """Принимаем обновления от Telegram по webhook"""
+    if not application:
+        return jsonify({'error': 'Telegram not configured'}), 503
     update = Update.de_json(request.get_json(force=True), application.bot)
     asyncio.run(application.process_update(update))
     return jsonify(ok=True)
@@ -76,9 +87,16 @@ def webhook():
 @telegram_bp.route('/set_webhook')
 def set_webhook():
     """Помощник для установки webhook на стороне Telegram"""
+    if not application:
+        return jsonify({'error': 'Telegram not configured'}), 503
     url = os.getenv("WEBHOOK_URL") + "/telegram/webhook"
     success = asyncio.run(application.bot.set_webhook(url))
     return jsonify(webhook_set=success)
 
-# Инициализация хэндлеров при импорте
-init_telegram() 
+# Инициализация хэндлеров при импорте (только если приложение создано)
+if application:
+    try:
+        init_telegram()
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception('Failed to init telegram handlers; continuing without telegram.')

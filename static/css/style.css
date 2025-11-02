@@ -7,6 +7,17 @@
   border-radius: 4px;
 }
 
+/* Root theme variables (inserted for hero overlay, colors and easy tuning) */
+:root{
+  --primary:#0077B6;
+  --accent:#FF8500;
+  --white:#FFFFFF;
+  --bg:#ffffff;
+  --text:#101828;
+  --color-header:#101827;
+  --color-white:#ffffff;
+}
+
 .form-control:invalid {
   border-color: #dc3545;
 }
