@@ -248,35 +248,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Перепроверяем наличие событий после удаления пустых месяцев
     const stillHasEvents = document.querySelectorAll(eventSelectors).length > 0;
 
-
-<script type="application/ld+json" nonce="X">
-[
-    {
-        "@context": "https://schema.org",
-        "@type": "Event",
-        "name": "WakeSurf Safari 2025",
-        "startDate": "2025-07-01",
-        "location": { "@type": "Place", "name": "Волга", "address": "Волга, Россия" },
-        "image": [ "/static" ],
-        "description": "Эксклюзивный тур по Волге с обучением",
-        "eventStatus": "https://schema.org/EventScheduled",
-        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-        "url": "/events"
-    },
-    {
-        "@context": "https://schema.org",
-        "@type": "Event",
-        "name": "Тренировочный кемп в Сочи",
-        "startDate": "2025-12-01",
-        "location": { "@type": "Place", "name": "Сочи", "address": "Сочи, Россия" },
-        "image": [ "/static" ],
-        "description": "Зимние тренировки в горном регионе",
-        "eventStatus": "https://schema.org/EventScheduled",
-        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-        "url": "/events"
-    }
-]
-</script>
     if (!hasEvents && !stillHasEvents) {
         // Скрываем пустой раздел целиком
         const section = document.getElementById('events-section');
@@ -354,6 +325,73 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
+  </script>
+
+  <!-- JSON-LD structured data for events (must be outside other <script> blocks) -->
+  <script type="application/ld+json" nonce="X">
+  [
+    {
+      "@context": "https://schema.org",
+      "@type": "Event",
+      "name": "WakeSurf Safari 2025",
+      "startDate": "2025-07-01",
+      "endDate": "2025-07-14",
+      "location": {
+        "@type": "Place",
+        "name": "Волга",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Волга",
+          "addressCountry": "RU"
+        }
+      },
+      "image": [ "https://mywave.com/static/images/wakesurf-safari.webp" ],
+      "description": "Эксклюзивный тур по Волге с обучением",
+      "eventStatus": "https://schema.org/EventScheduled",
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+      "url": "https://mywave.com/events/wakesurf-safari-2025",
+      "offers": {
+        "@type": "Offer",
+        "url": "https://mywave.com/events/wakesurf-safari-2025#book",
+        "price": "75000",
+        "priceCurrency": "RUB",
+        "availability": "https://schema.org/InStock",
+        "validFrom": "2024-11-01"
+      },
+      "organizer": { "@type": "Organization", "name": "MyWave", "url": "https://mywave.com" }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Event",
+      "name": "Тренировочный кемп в Сочи",
+      "startDate": "2025-12-01",
+      "endDate": "2025-12-14",
+      "location": {
+        "@type": "Place",
+        "name": "Сочи",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Сочи",
+          "addressRegion": "Краснодарский край",
+          "addressCountry": "RU"
+        }
+      },
+      "image": [ "https://mywave.com/static/images/sochi-camp.webp" ],
+      "description": "Зимние тренировки в горном регионе",
+      "eventStatus": "https://schema.org/EventScheduled",
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+      "url": "https://mywave.com/events/sochi-camp-2025",
+      "offers": {
+        "@type": "Offer",
+        "url": "https://mywave.com/events/sochi-camp-2025#book",
+        "price": "65000",
+        "priceCurrency": "RUB",
+        "availability": "https://schema.org/InStock",
+        "validFrom": "2024-11-01"
+      },
+      "organizer": { "@type": "Organization", "name": "MyWave", "url": "https://mywave.com" }
+    }
+  ]
   </script>
 </body>
 </html>

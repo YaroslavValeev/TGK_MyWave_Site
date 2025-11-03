@@ -41,7 +41,7 @@ def render_events_html():
         return ''
     return template.render(g=_G(), url_for=lambda e, **k: '/'+e, csrf_token=_csrf_token, events=None)
 
-def run_playwright(html, headless=True, slow_mo=50):
+def run_playwright(html, headless=True, slow_mo=50, dump_controls=False):
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=headless, slow_mo=slow_mo)
         context = browser.new_context()
@@ -50,12 +50,45 @@ def run_playwright(html, headless=True, slow_mo=50):
         page.goto('https://search.google.com/test/rich-results', timeout=60000)
         time.sleep(1)
 
+        # If requested, enumerate visible controls (buttons, tabs, links) and save to a file
+        if dump_controls:
+            try:
+                elems = page.query_selector_all('button, [role="button"], [role="tab"], a, div[role="tab"]')
+                out_lines = []
+                for e in elems:
+                    try:
+                        txt = e.inner_text().strip()
+                    except Exception:
+                        txt = ''
+                    try:
+                        aria = page.evaluate('(el)=>el.getAttribute("aria-label")', e)
+                    except Exception:
+                        aria = None
+                    try:
+                        role = page.evaluate('(el)=>el.getAttribute("role")', e)
+                    except Exception:
+                        role = None
+                    line = f'TEXT: "{txt}" | ARIA: "{aria}" | ROLE: "{role}"'
+                    out_lines.append(line)
+                out_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'tmp_rich_controls.txt'))
+                with open(out_path, 'w', encoding='utf-8') as fh:
+                    fh.write('\n'.join(out_lines))
+                print('Wrote control texts to:', out_path)
+            except Exception as exc:
+                print('Failed to dump controls:', exc)
+            finally:
+                browser.close()
+                return {'controls_file': out_path}
+
         # Try multiple localized labels for the "Test code" / "Code" UI
         test_buttons = [
             'text=/Test code/i',
             'text=/TEST CODE/i',
             'text=/Code/i',
             'text=/Код/i',
+            'text=/КОД/i',
+            'role=tab[name=/КОД/i]',
+            'role=tab[name=/Code/i]',
             'text=/Проверить код/i',
             'text=/Проверить HTML/i',
         ]
@@ -294,6 +327,8 @@ def run_playwright(html, headless=True, slow_mo=50):
                 'button:has-text("Run")',
                 'button:has-text("Запустить тест")',
                 'button:has-text("Проверить")',
+                'button:has-text("Проверить код")',
+                'button:has-text("ПРОВЕРИТЬ СТРАНИЦУ")',
             ]
             for rb in run_buttons:
                 try:
@@ -334,12 +369,13 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('--headless', type=lambda s: s.lower() in ('1','true','yes'), default=False, help='Run browser headless')
     p.add_argument('--slow-mo', type=int, default=50, help='Slow motion ms for Playwright')
+    p.add_argument('--dump-controls', action='store_true', help='Open page and dump nearby button/tab texts to tmp_rich_controls.txt')
     args = p.parse_args()
 
     html = render_events_html()
     print('Rendered HTML length:', len(html))
     print('Launching browser, headless=' + str(args.headless))
-    res = run_playwright(html, headless=args.headless, slow_mo=args.slow_mo)
+    res = run_playwright(html, headless=args.headless, slow_mo=args.slow_mo, dump_controls=args.dump_controls)
     if res is None:
         print('No automated result (manual interaction required).')
         sys.exit(2)
