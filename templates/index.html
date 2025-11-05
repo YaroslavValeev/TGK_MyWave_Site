@@ -10,7 +10,7 @@
     <div class="hero-content center-padding hero-content-relative">
       <h1 class="hero-title">MyWave</h1>
       <p class="hero-subtitle">Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
-      <button class="btn-primary book-now" id="openBookingBtn">Записаться</button>
+      <button class="btn-primary book-now" id="openBookingBtn" data-service="boat">Записаться</button>
     </div>
   </section>
 
@@ -36,19 +36,38 @@
   <!-- Услуги -->
   <section id="services" class="services-section">
     <h2>Услуги</h2>
-    <div class="cards-grid">
-      <div class="service-card">
-        <h4>Тренировка</h4>
-        <p>Тренировка на авторских тренажёрах по уникальной методике вейксерфинга. Развиваем баланс, координацию, биомеханику и нейронные связи, чтобы вы уверенно и эффектно выполняли трюки.</p>
-        <p>Цена: 3500 рублей</p>
-        <button class="btn-secondary btn-book">Записаться</button>
+    <div class="services-carousel">
+      <button class="carousel-prev" aria-label="Предыдущие услуги">◀</button>
+      <div class="carousel-track">
+        <div class="service-card">
+          <h4>Тренировка</h4>
+          <p>Тренировка на авторских тренажёрах по уникальной методике вейксерфинга. Развиваем баланс, координацию, биомеханику и нейронные связи, чтобы вы уверенно и эффектно выполняли трюки.</p>
+          <p>Цена: 3500 рублей</p>
+          <a class="btn-secondary btn-book" href="{{ url_for('services.wake_challenge') }}" data-service="gym">Подробнее / Записаться</a>
+        </div>
+
+        <div class="service-card" id="boat-card">
+          <h4>Запись на катер</h4>
+          <p>Тренировка за катером с тренером (30 минут)</p>
+          <p>Цена: 10 000 рублей</p>
+          <a class="btn-secondary btn-book" href="{{ url_for('services.wakesurf_safari') }}" data-service="boat">Подробнее / Записаться</a>
+        </div>
+
+        <div class="service-card">
+          <h4>Wake Discovery</h4>
+          <p>Короткая ознакомительная сессия для новичков с инструктором. Можно открыть калькулятор для расчёта тура.</p>
+          <p>Цена: 2500 рублей</p>
+          <a class="btn-secondary btn-book" href="{{ url_for('services.wake_discovery') }}">Подробнее / Калькулятор</a>
+        </div>
+
+        <div class="service-card">
+          <h4>Wake Camp</h4>
+          <p>Интенсивный лагерь для постоянной работы над техникой и физичечской подготовкой.</p>
+          <p>Цена: от 15 000 рублей</p>
+          <a class="btn-secondary btn-book" href="{{ url_for('services.wake_camp') }}">Подробнее / Записаться</a>
+        </div>
       </div>
-      <div class="service-card" id="boat-card">
-        <h4>Запись на катер</h4>
-        <p>Тренировка за катером с тренером (30 минут)</p>
-        <p>Цена: 10 000 рублей</p>
-        <button class="btn-secondary btn-book">Записаться</button>
-      </div>
+      <button class="carousel-next" aria-label="Следующие услуги">▶</button>
     </div>
   </section>
 
@@ -73,22 +92,31 @@
     </div>
   </section>
 
-  <!-- Мероприятия -->
+  {# Рендерим секцию мероприятий только если есть хотя бы одно событие #}
+  {% set total_events = 0 %}
+  {% for month, events in months.items() %}
+    {% set total_events = total_events + (events|length) %}
+  {% endfor %}
+
+  {% if total_events > 0 %}
   <section id="events" class="events-section section">
     <h2>Мероприятия</h2>
     {% for month, events in months.items() %}
-      <h3>{{ month }}</h3>
       {% if events %}
-        <ul class="events-ul">{%- for event in events -%}<li>
-                <strong>{{ event['date_range'] }}:</strong>
-                {{ event['name'] }} ({{ event['level'] }}, {{ event['organizer'] }}, {{ event['location'] }}, {{ event['type'] }})
-                {%- if event['link'] and event['link'] != '-' -%} — <a href="https://{{ event['link'] }}" target="_blank" rel="noopener">{{ event['link'] }}</a>{%- endif -%}
-              </li>{%- endfor -%}</ul>
-      {% else %}
-        <div class="no-events-message">Нет мероприятий в этом месяце.</div>
+        <h3>{{ month }}</h3>
+        <ul class="events-ul">
+          {% for event in events %}
+            <li>
+              <strong>{{ event['date_range'] }}:</strong>
+              {{ event['name'] }} ({{ event['level'] }}, {{ event['organizer'] }}, {{ event['location'] }}, {{ event['type'] }})
+              {% if event['link'] and event['link'] != '-' %} — <a href="https://{{ event['link'] }}" target="_blank" rel="noopener">{{ event['link'] }}</a>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
       {% endif %}
     {% endfor %}
   </section>
+  {% endif %}
 
   <!-- Блог -->
   <section id="blog" class="blog-section">

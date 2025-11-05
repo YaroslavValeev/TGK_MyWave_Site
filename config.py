@@ -94,7 +94,8 @@ class DevelopmentConfig(Config):
             "https://api.openai.com",
             "https://mc.yandex.com",
             "https://mc.yandex.ru",
-            "https://www.google-analytics.com"
+            "https://www.google-analytics.com",
+            "https://*.googleapis.com"
         ],
         'frame-src': ["'self'", "https://cdn.jsdelivr.net", "https://calendar.google.com", "https://mc.yandex.com", "https://mc.yandex.ru"],
         'object-src': ["'none'"],

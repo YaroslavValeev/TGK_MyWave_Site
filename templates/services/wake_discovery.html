@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Wake Discovery — MyWave{% endblock %}
+
+{% block content %}
+<section class="service-page">
+  <h1>Wake Discovery</h1>
+  <p>Короткая ознакомительная сессия для тех, кто хочет попробовать вейксерф впервые. Под руководством инструктора вы пройдёте весь цикл от безопасности до первых волн.</p>
+  <h3>Что включает</h3>
+  <ul>
+    <li>Инструктаж по безопасности</li>
+    <li>Тренировка на воде с инструктором</li>
+    <li>Мини‑разбор ошибок и рекомендации</li>
+  </ul>
+  <p class="price">Цена: 2500 рублей</p>
+  <a class="btn btn-ghost" href="{{ url_for('calculator_page') }}">Открыть калькулятор тура Wake Discovery</a>
+</section>
+{% include 'partials/booking_modals.html' %}
+{% endblock %}

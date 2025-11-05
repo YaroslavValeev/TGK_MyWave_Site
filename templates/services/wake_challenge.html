@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Wake Challenge — MyWave{% endblock %}
+
+{% block content %}
+<section class="service-page">
+  <h1>Wake Challenge</h1>
+  <p>Интенсивная программа для спортсменов и любителей — серия соревнований и тренировок, направленных на развитие трюковой базы, выносливости и соревновательного опыта.</p>
+  <h3>Что входит</h3>
+  <ul>
+    <li>Серийные тренировки на воде</li>
+    <li>Специализированные занятия по трюкам и безопасности</li>
+    <li>Подготовка к соревнованиям и участие в чемпионатах</li>
+  </ul>
+  <p class="price">Стоимость по договорённости — свяжитесь с тренером для расчёта пакета.</p>
+  <a class="btn btn-primary-lg" href="{{ url_for('services.ask') }}#book">Записаться</a>
+</section>
+{% include 'partials/booking_modals.html' %}
+{% endblock %}

@@ -42,6 +42,7 @@ async function getFreshCsrfToken() {
   };
 
   let currentStep = 1;
+  let currentService = 'boat'; // По умолчанию используем лодку
 
   if (!UI.bookingDateInput || !UI.slotButtonsContainer) {
     console.warn("⚠️ booking.js не может инициализироваться — отсутствуют ключевые элементы.");
@@ -306,6 +307,7 @@ async function getFreshCsrfToken() {
       time: selectedSlotInput.value,
       name: UI.bookingName.value.trim(),
       phone: UI.bookingPhone.value.trim(),
+      service: currentService // Добавляем тип сервиса
     };
 
     // Добавляем логирование
@@ -339,20 +341,37 @@ async function getFreshCsrfToken() {
       if (response.ok) {
         // Если сервер вернул ссылку на success-view — подгружаем её и показываем в модалке
         if (result && result.success_view_url) {
-          fetch(result.success_view_url, { method: 'GET', headers: { 'X-Requested-With': 'fetch' } })
+          // Добавляем тип сервиса к URL для success-view
+          const successUrl = new URL(result.success_view_url, window.location.origin);
+          successUrl.searchParams.set('type', payload.service);
+          
+          fetch(successUrl.toString(), { method: 'GET', headers: { 'X-Requested-With': 'fetch' } })
             .then(r => r.text())
             .then(html => {
               const container = document.querySelector('#success-modal');
               if (container) {
+                // Очищаем старые классы и состояния
+                container.className = '';
+                // Добавляем базовые классы модального окна
+                container.classList.add('modal', 'success-modal');
+                // Убираем hidden и добавляем классы для видимости
+                container.classList.remove('hidden');
+                // Вставляем новый HTML
                 container.innerHTML = html;
-                container.classList.add('is-open');
+                // Добавляем классы активного состояния
+                container.classList.add('is-open', 'show');
+                // Сохраняем тип сервиса в data-атрибуте
+                container.dataset.serviceType = payload.service;
 
                 // Логирование показа (GA и Sheets)
                 if (window.gtag) { gtag('event', 'success_view_shown', { 'event_category': 'booking' }); }
-                fetch('/analytics/log', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ event: 'success_view_shown', label: 'booking', phone: window.lastSubmittedPhone || '' })
+                getFreshCsrfToken().then(token => {
+                  fetch('/analytics/log', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': token },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ event: 'success_view_shown', label: 'booking', phone: window.lastSubmittedPhone || '' })
+                  });
                 });
 
                 // Обработчики кнопок
@@ -360,18 +379,38 @@ async function getFreshCsrfToken() {
                   btn.addEventListener('click', () => {
                     const action = btn.getAttribute('data-action');
                     if (action === 'close') {
-                      container.classList.remove('is-open');
+                      container.classList.remove('is-open', 'show');
+                      container.classList.add('hidden');
                     } else if (action === 'share') {
-                      if (navigator.share) {
-                        navigator.share({ title: 'MyWave', text: 'Я записался на тренировку!', url: location.href });
+                      try {
+                        const serviceType = container.dataset.serviceType || 'boat';
+                        let shareText = 'Я записался на тренировку в MyWave!';
+                        if (serviceType === 'gym') {
+                          shareText = 'Я записался на тренировку в зале MyWave!';
+                        } else if (serviceType === 'boat') {
+                          shareText = 'Я записался на вейксерф в MyWave!';
+                        }
+                        if (navigator.share) {
+                          navigator.share({ title: 'MyWave', text: shareText, url: location.href }).catch(err => {
+                            console.warn('Share failed or was cancelled', err);
+                          });
+                        } else {
+                          // fallback: copy URL to clipboard
+                          if (navigator.clipboard) navigator.clipboard.writeText(location.href).then(()=> showToast('Ссылка скопирована в буфер обмена'));
+                        }
+                      } catch (err) {
+                        console.error('Ошибка при шаринге:', err);
                       }
                     }
                     // Лог клика
                     if (window.gtag) { gtag('event', 'success_view_cta_click', { 'event_category': 'booking', 'event_label': action }); }
-                    fetch('/analytics/log', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ event: 'success_view_cta_click', label: action, phone: window.lastSubmittedPhone || '' })
+                    getFreshCsrfToken().then(token => {
+                      fetch('/analytics/log', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': token },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({ event: 'success_view_cta_click', label: action, phone: window.lastSubmittedPhone || '' })
+                      });
                     });
                   });
                 });
@@ -413,6 +452,9 @@ async function getFreshCsrfToken() {
     console.log(`[booking.js] Назначаю обработчик на кнопку 'Записаться' с текстом: '${btn.textContent.trim()}'`);
     btn.addEventListener("click", () => {
       console.log(`[booking.js] Клик по кнопке 'Записаться' с текстом: '${btn.textContent.trim()}'`);
+      // Сохраняем тип сервиса из data-атрибута
+      currentService = btn.getAttribute('data-service') || 'boat';
+      console.log(`[booking.js] Тип сервиса: ${currentService}`);
       showModal(UI.calendarModal);
       goToStep(1);
     });

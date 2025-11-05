@@ -1,0 +1,45 @@
+/* Styles for horizontal services carousel */
+.services-carousel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 1em 0;
+}
+.services-carousel .carousel-prev,
+.services-carousel .carousel-next {
+  background: #f0f0f0;
+  border: 1px solid #e0e0e0;
+  color: #333;
+  font-size: 20px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.services-carousel .carousel-prev[disabled],
+.services-carousel .carousel-next[disabled] {
+  opacity: 0.4;
+  cursor: default;
+}
+.services-carousel .carousel-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 4px;
+}
+.services-carousel .carousel-track::-webkit-scrollbar { height: 8px; }
+.services-carousel .carousel-track::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 8px; }
+.services-carousel .service-card {
+  min-width: 280px;
+  max-width: 360px;
+  flex: 0 0 auto;
+}
+.services-carousel .service-card h3,
+.services-carousel .service-card h4 { margin-top: 0; }
+.services-carousel .service-card p { color: #444; }
+.services-carousel .carousel-track.dragging { cursor: grabbing; }
+
+@media (max-width: 900px) {
+  .services-carousel .service-card { min-width: 220px; }
+}

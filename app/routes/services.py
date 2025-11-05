@@ -98,6 +98,47 @@ def ask():
         logger.error(f"Ошибка в ask: {e}", exc_info=True)
         return {"ok": False, "error": str(e)}, 500
 
+
+# --- Страницы отдельных услуг ---
+@services_bp.route('/wake-challenge')
+def wake_challenge():
+    """Страница Wake Challenge"""
+    try:
+        return render_template('services/wake_challenge.html')
+    except Exception as e:
+        logger.error(f"Ошибка в wake_challenge: {e}", exc_info=True)
+        return {"ok": False, "error": str(e)}, 500
+
+
+@services_bp.route('/wakesurf-safari')
+def wakesurf_safari():
+    """Страница WakeSurf Safari"""
+    try:
+        return render_template('services/wakesurf_safari.html')
+    except Exception as e:
+        logger.error(f"Ошибка в wakesurf_safari: {e}", exc_info=True)
+        return {"ok": False, "error": str(e)}, 500
+
+
+@services_bp.route('/wake-discovery')
+def wake_discovery():
+    """Страница Wake Discovery — содержит информацию и ссылку на калькулятор"""
+    try:
+        return render_template('services/wake_discovery.html')
+    except Exception as e:
+        logger.error(f"Ошибка в wake_discovery: {e}", exc_info=True)
+        return {"ok": False, "error": str(e)}, 500
+
+
+@services_bp.route('/wake-camp')
+def wake_camp():
+    """Страница Wake Camp"""
+    try:
+        return render_template('services/wake_camp.html')
+    except Exception as e:
+        logger.error(f"Ошибка в wake_camp: {e}", exc_info=True)
+        return {"ok": False, "error": str(e)}, 500
+
 # Новый Telegram webhook endpoint
 @services_bp.route('/api/telegram/webhook', methods=['POST'])
 def api_telegram_webhook():

@@ -22,24 +22,50 @@ def booking_success_view():
     Partial view для отображения после успешного бронирования.
     Возвращает HTML фрагмент (partial), помеченный X-Robots-Tag: noindex, nofollow
     """
-    SUCCESS_VIEW_CONTENT = {
-        "title": "Запись подтверждена!",
-        "sections": [
-            {
-                "h": "Что взять с собой",
-                "p": "Гидрокостюм по погоде, полотенце, вода, отличное настроение.",
-                "img": "images/booking/gear-checklist-v1.webp"
-            },
-            {
-                "h": "Что вас ждёт на причале",
-                "p": "Инструктаж по безопасности, знакомство с лодкой, быстрый брифинг и на воду.",
-                "img": "images/booking/dock-experience-v1.webp"
-            }
-        ],
-        "cta": {
-            "primary": {"text": "Готово", "action": "close"},
-            "secondary": {"text": "Поделиться", "action": "share"}
+    # Определяем тип услуги из параметра запроса
+    service_type = request.args.get('type', 'boat')  # По умолчанию - катер
+    
+    # Контент для разных типов услуг
+    CONTENT_MAPPING = {
+        'boat': {
+            "title": "Запись подтверждена!",
+            "sections": [
+                {
+                    "h": "Что взять с собой",
+                    "p": "Полотенце, вода, отличное настроение.",
+                    "img": "images/booking/gear-checklist-v1.webp"
+                },
+                {
+                    "h": "Что вас ждёт на причале",
+                    "p": "Инструктаж по безопасности, знакомство с лодкой, быстрый брифинг и на воду.",
+                    "img": "images/booking/dock-experience-v1.webp"
+                }
+            ]
+        },
+        'gym': {
+            "title": "Запись подтверждена!",
+            "sections": [
+                {
+                    "h": "Что взять с собой",
+                    "p": "Полотенце, воду, хорошее настроение.",
+                    "img": "images/booking/gym-checklist-v1.webp"
+                },
+                {
+                    "h": "Что вас ждёт",
+                    "p": "Тренировка на баланс, ловкость, сила, исполнение трюков, нейронные связи в биомеханнике движений, подготовка к соревнованиям и тренерской деятельности и многое другое о индустрии вейксерфинга.",
+                    "img": "images/booking/gym-experience-v1.webp"
+                }
+            ]
         }
+    }
+    
+    # Получаем контент для нужного типа услуги
+    SUCCESS_VIEW_CONTENT = CONTENT_MAPPING.get(service_type, CONTENT_MAPPING['boat'])
+    
+    # Добавляем общие кнопки действий
+    SUCCESS_VIEW_CONTENT["cta"] = {
+        "primary": {"text": "Готово", "action": "close"},
+        "secondary": {"text": "Поделиться", "action": "share"}
     }
     html = render_template('book_success.html', content=SUCCESS_VIEW_CONTENT)
     resp = make_response(html, 200)
@@ -109,6 +135,7 @@ def api_book():
     phone = data.get("phone")
     date = data.get("date")
     time = data.get("time")
+    service = data.get("service", "boat")  # По умолчанию - катер
     if not all([name, phone, date, time]):
         return jsonify({"success": False, "error": "Не хватает данных"}), 400
     if not re.match(r'^\+7\d{10}$', phone):
@@ -134,7 +161,7 @@ def api_book():
         return jsonify({
             "success": True,
             "message": "Запись успешно создана!",
-            "success_view_url": url_for("booking.booking_success_view")
+            "success_view_url": url_for("booking.booking_success_view", type=service)
         }), 200
     except Exception as e:
         logger.error(f"Ошибка API бронирования: {e}")

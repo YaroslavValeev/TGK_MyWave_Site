@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}WakeSurf Safari — MyWave{% endblock %}
+
+{% block content %}
+<section class="service-page">
+  <h1>WakeSurf Safari</h1>
+  <p>Эксклюзивные туры по рекам и озёрам с проживанием и обучающей программой. Идеально подходит для тех, кто хочет совместить путешествие и прокачку навыков.</p>
+  <h3>Программа тура</h3>
+  <ol>
+    <li>Трансфер и размещение</li>
+    <li>Ежедневные тренировки и теоретические сессии</li>
+    <li>Мастер-классы с приглашёнными атлетами</li>
+  </ol>
+  <p class="price">Цены зависят от длительности и набора опций. Пожалуйста, свяжитесь для расчёта.</p>
+  <a class="btn btn-primary-lg" href="{{ url_for('services.ask') }}#book">Узнать подробнее / записаться</a>
+</section>
+{% include 'partials/booking_modals.html' %}
+{% endblock %}

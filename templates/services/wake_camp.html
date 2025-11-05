@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Wake Camp — MyWave{% endblock %}
+
+{% block content %}
+<section class="service-page">
+  <h1>Wake Camp</h1>
+  <p>Интенсивный тренировочный лагерь для участников всех уровней. В программе — ежедневные занятия, теория, разобранные видеофидбеки и работа над индивидуальными целями.</p>
+  <h3>Типичный день</h3>
+  <ul>
+    <li>Утренняя разминка и техника</li>
+    <li>Практика на воде</li>
+    <li>Видеоанализ и рекомендации</li>
+  </ul>
+  <p class="price">Стоимость — в зависимости от продолжительности и условий. Пожалуйста, оставьте заявку.</p>
+  <a class="btn btn-primary-lg" href="{{ url_for('services.ask') }}#book">Оставить заявку</a>
+</section>
+{% include 'partials/booking_modals.html' %}
+{% endblock %}

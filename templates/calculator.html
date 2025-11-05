@@ -1,20 +1,172 @@
 {% extends "base.html" %}
-{% block title %}Калькулятор — MyWave{% endblock %}
+{% block title %}Калькулятор тура Wake Discovery — MyWave{% endblock %}
+
 {% block content %}
-<section class="container">
-  <h1>Калькулятор</h1>
-  <!-- {{нужен_контент}}: форма ввода и вывод результата -->
-  <form id="calc-form" novalidate>
-    <!-- Пример полей (заглушки) -->
-    <label>Параметр A <input name="a" type="number" required></label>
-    <label>Параметр B <input name="b" type="number" required></label>
-    <button class="btn btn-primary" type="submit">Рассчитать</button>
-  </form>
-  <div id="calc-result" aria-live="polite"></div>
-  <hr>
-  <button class="btn btn-outline" id="load-my-history">Мои прошлые расчёты</button>
-  <div id="calc-history"></div>
+<section class="calculator-section container">
+    <h1>Калькулятор тура Wake Discovery</h1>
+    
+    <form id="calc-form" class="calculator-form" novalidate>
+        <div class="form-group">
+            <label for="zone">Регион:</label>
+            <select id="zone" name="zone" required>
+                <option value="Central">Центр</option>
+                <option value="Ural">Урал</option>
+                <option value="Siberia">Сибирь</option>
+                <option value="Far East">Дальний Восток</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="package">Пакет:</label>
+            <select id="package" name="package" required>
+                <option value="Base">Base (новички)</option>
+                <option value="Pro" selected>Pro (базовый рекомендуемый)</option>
+                <option value="Elite">Elite (продвинутые)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="days">Дней:</label>
+            <select id="days" name="days" required>
+                <option value="2">2</option>
+                <option value="3">3</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="participants">Количество участников:</label>
+            <input type="number" id="participants" name="participants" value="1" min="1" max="20" required>
+        </div>
+
+        <div class="form-group">
+            <label for="extra_sets">Дополнительные сеты (25–30 мин):</label>
+            <div class="input-hint">11 000 ₽/сет на каждого</div>
+            <input type="number" id="extra_sets" name="extra_sets" value="0" min="0" max="5">
+        </div>
+
+        <div class="form-group">
+            <label for="pilot_hours">Часы обучения пилотированию:</label>
+            <div class="input-hint">3 500 ₽/час, группой</div>
+            <input type="number" step="0.5" id="pilot_hours" name="pilot_hours" value="0" min="0" max="10">
+        </div>
+
+        <div class="form-group checkbox-group">
+            <label>
+                <input type="checkbox" name="personal_clip">
+                Персональный видеоклип
+                <span class="price-hint">(7 000 ₽ на участника)</span>
+            </label>
+            <label>
+                <input type="checkbox" name="drone_session">
+                Съёмка дрона
+                <span class="price-hint">(5 000 ₽ за сессию)</span>
+            </label>
+        </div>
+
+        <div class="form-group">
+            <label>Мерч:</label>
+            <div class="input-hint">цена указана за участника</div>
+            <div class="merch-grid checkbox-group">
+                <label>
+                    <input type="checkbox" name="merch" value="tshirt">
+                    Футболка <span class="price-hint">(4 000 ₽)</span>
+                </label>
+                <label>
+                    <input type="checkbox" name="merch" value="hoodie">
+                    Худи <span class="price-hint">(8 000 ₽)</span>
+                </label>
+                <label>
+                    <input type="checkbox" name="merch" value="poncho">
+                    Пончо <span class="price-hint">(10 000 ₽)</span>
+                </label>
+                <label>
+                    <input type="checkbox" name="merch" value="cap">
+                    Кепка <span class="price-hint">(3 000 ₽)</span>
+                </label>
+                <label>
+                    <input type="checkbox" name="merch" value="balance_board">
+                    Баланс борд <span class="price-hint">(10 000 ₽)</span>
+                </label>
+                <label>
+                    <input type="checkbox" name="merch" value="smooth_trainer">
+                    Тренажёр «гладкий» <span class="price-hint">(6 000 ₽)</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-footer">
+            <button type="submit" class="btn btn-primary">Рассчитать стоимость</button>
+            <a href="#" class="btn btn-outline" id="load-my-history">Мои прошлые расчёты</a>
+        </div>
+    </form>
+
+    <div id="calc-result" class="calculation-result" aria-live="polite"></div>
+    <div id="calc-history" class="calculation-history"></div>
 </section>
+{% endblock %}
+
+{% block head %}
+<style>
+.calculator-form {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: var(--color-bg-secondary);
+    border-radius: 8px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.input-hint {
+    font-size: 0.9em;
+    color: var(--color-text-muted);
+    margin: 0.25rem 0;
+}
+
+.price-hint {
+    font-size: 0.9em;
+    color: var(--color-text-muted);
+    margin-left: 0.5rem;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    margin: 0.5rem 0;
+}
+
+.merch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.form-footer {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.calculation-result {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: var(--color-success-bg);
+    border: 1px solid var(--color-success-border);
+    border-radius: 8px;
+    display: none;
+}
+
+.calculation-result.visible {
+    display: block;
+}
+
+.calculation-history {
+    margin-top: 2rem;
+}
+</style>
 {% endblock %}
 
 {% block scripts %}

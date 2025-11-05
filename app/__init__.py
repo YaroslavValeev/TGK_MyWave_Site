@@ -1,3 +1,12 @@
+# Патч для DNS
+import eventlet
+eventlet.monkey_patch()
+
+# Import DNS patch
+from app.patches.dns_patch import _getaddrinfo
+import socket
+socket.getaddrinfo = _getaddrinfo
+
 import os
 from flask import Flask, render_template, send_from_directory, jsonify, g, request, url_for, make_response, current_app
 from flask_socketio import SocketIO, emit
@@ -23,7 +32,13 @@ from app.routes.api import api_bp
 from app.routes.booking_api import booking_api_bp
 from app.routes.reviews import reviews_bp
 from app.services.responses_api import responses_bp
-from app.routes.telegram.routes import telegram_bp
+try:
+    from app.routes.telegram.routes import telegram_bp
+except Exception:
+    telegram_bp = None
+    # Do not let telegram import errors (eg. httpx/telegram incompatibility) break app startup
+    import logging
+    logging.getLogger(__name__).exception('Failed to import telegram_bp; continuing without telegram support')
 from app.routes.content_calendar import bp as content_bp, get_events_by_month
 
 # Создаем экземпляры расширений
@@ -100,6 +115,22 @@ def create_app(config_name="development"):
         "development": "config.DevelopmentConfig",
         "production": "config.ProductionConfig"
     }.get(config_name.lower(), "config.DevelopmentConfig"))
+
+    # Safety: disable Google services by default for non-production runs to avoid
+    # startup failures when local credentials are missing or invalid.
+    # To enable Google services locally set the environment variable ENABLE_GOOGLE_SERVICES=1
+    enable_google_env = os.getenv('ENABLE_GOOGLE_SERVICES')
+    if config_name.lower() != 'production':
+        if enable_google_env is None:
+            app.config['ENABLE_GOOGLE_SERVICES'] = False
+        else:
+            app.config['ENABLE_GOOGLE_SERVICES'] = str(enable_google_env).lower() in ('1', 'true', 'yes')
+    else:
+        # In production, prefer explicit config or enable by default if not specified
+        if enable_google_env is None:
+            app.config.setdefault('ENABLE_GOOGLE_SERVICES', True)
+        else:
+            app.config['ENABLE_GOOGLE_SERVICES'] = str(enable_google_env).lower() in ('1', 'true', 'yes')
 
     # Сначала инициализируем базу данных
     db.init_app(app)
@@ -182,7 +213,12 @@ def create_app(config_name="development"):
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(reviews_bp)
     app.register_blueprint(responses_bp)
-    app.register_blueprint(telegram_bp)
+    # Register telegram blueprint only if import succeeded
+    if telegram_bp:
+        try:
+            app.register_blueprint(telegram_bp)
+        except Exception:
+            app.logger.exception('Failed to register telegram blueprint; continuing without telegram')
     app.register_blueprint(content_bp)
     app.register_blueprint(booking_api_bp)
     api.add_namespace(api_ns, path='/api')
@@ -315,11 +351,14 @@ def create_app(config_name="development"):
     def health_check():
         return jsonify(status="ok", version=app.config.get('VERSION')), 200
 
-    # Initialize Google Services (skip during testing to avoid network/auth side-effects)
+    # Initialize Google Services (disabled by default for local runs to avoid network/auth side-effects)
+    # To enable in production set app.config['ENABLE_GOOGLE_SERVICES'] = True
     with app.app_context():
-        if app.config.get('TESTING'):
-            app.logger.info('TESTING mode: skipping Google services initialization')
+        enable_google = app.config.get('ENABLE_GOOGLE_SERVICES', False)
+        if not enable_google:
+            app.logger.info('Google services initialization is disabled (ENABLE_GOOGLE_SERVICES not set).')
         else:
+            # proceed with the existing initialization (kept defensive)
             try:
                 if not app.config.get('SPREADSHEET_ID'):
                     app.logger.warning("SPREADSHEET_ID не задан в конфигурации")
@@ -340,7 +379,7 @@ def create_app(config_name="development"):
                         app.logger.error(f"Error accessing Google Sheet: {e}")
                         if 'invalid_grant' in str(e):
                             app.logger.error("Invalid JWT Signature. Check your service_account.json file")
-                        raise
+                        # do not raise here to avoid breaking app startup
 
             except Exception as e:
                 app.logger.error(f"Failed to initialize Google services: {e}")

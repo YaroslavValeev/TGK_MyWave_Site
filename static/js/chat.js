@@ -129,29 +129,35 @@ document.addEventListener("DOMContentLoaded", () => {
         chatMessages: document.getElementById("chat-messages")
     };
 
-    // WebSocket подключение
-    const socket = io({ 
-        transports: ["websocket", "polling"],
-        auth: {
-            csrf_token: Utils.getCSRFToken()
+    // Инициализация защищенного WebSocket подключения
+    const socket = new SecureSocketIO(window.location.origin, {
+        transports: ["websocket"],
+        autoConnect: false,
+        reconnectionAttempts: 5,
+        onCSRFError: () => {
+            // Показываем сообщение об ошибке и перенаправляем на страницу логина
+            appendMessage("Ошибка валидации безопасности. Необходимо войти заново.", "bot");
+            setTimeout(() => window.location.href = '/login', 3000);
         }
     });
 
+    // Приветственное сообщение при подключении
     socket.on("connect", () => {
         console.log("✅ WebSocket подключён");
-        // Отправляем приветственное сообщение при первом открытии чата
         appendMessage("О чём я могу тебя спросить?", "bot");
     });
 
+    // Обработка ошибок подключения
     socket.on("connect_error", (error) => {
         console.error("WebSocket ошибка подключения:", error);
         if (error.message.includes("CSRF")) {
-            appendMessage("Ошибка валидации безопасности. Пожалуйста, обновите страницу.", "bot");
+            appendMessage("Ошибка валидации безопасности. Пожалуйста, подождите...", "bot");
         } else {
             appendMessage("Ошибка подключения к серверу. Пожалуйста, попробуйте позже.", "bot");
         }
     });
 
+    // Обработка сообщений
     socket.on("message", (data) => {
         if (data && data.response) {
             appendMessage(data.response, "bot");
@@ -160,6 +166,9 @@ document.addEventListener("DOMContentLoaded", () => {
             appendMessage("Ошибка: " + data.error, "bot");
         }
     });
+
+    // Подключаем сокет
+    socket.connect();
 
     // Функции для работы с сообщениями
     function decodeEntities(s) {

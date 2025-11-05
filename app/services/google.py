@@ -8,6 +8,9 @@ from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 from google.oauth2.credentials import Credentials as OAuth2Credentials
 from google_auth_oauthlib.flow import Flow
+import httpx
+from google.auth.transport.requests import Request
+from google.auth.transport.requests import AuthorizedSession
 from flask import current_app
 from googleapiclient.http import MediaIoBaseUpload
 import io
@@ -26,6 +29,8 @@ def get_google_services():
     Берёт путь к service account из current_app.config["GOOGLE_SERVICE_ACCOUNT_FILE"].
     """
     global _drive, _sheets, _calendar
+    
+    # Проверяем кеш сервисов
     if _drive and _sheets and _calendar:
         return _drive, _sheets, _calendar
 
@@ -40,31 +45,72 @@ def get_google_services():
         logging.critical(msg)
         raise FileNotFoundError(msg)
 
-    try:
-        # Используем Credentials.from_service_account_file напрямую.
-        # Тесты мокируют os.path.isfile и Credentials, поэтому
-        # дополнительная проверка содержимого файла здесь не нужна
-        # и только мешает CI/юнит-тестам, если файла нет.
-        creds = service_account.Credentials.from_service_account_file(creds_path, scopes=SCOPES)
-        _drive = build("drive", "v3", credentials=creds, cache_discovery=False)
-        _sheets = build("sheets", "v4", credentials=creds, cache_discovery=False)
-        _calendar = build("calendar", "v3", credentials=creds, cache_discovery=False)
-        
-        # Проверка валидности токена через тестовый запрос к Sheets API
-        try:
-            _sheets.spreadsheets().get(spreadsheetId=current_app.config.get('SPREADSHEET_ID')).execute()
-        except Exception as e:
-            if 'invalid_grant' in str(e):
-                msg = "Неверная подпись JWT. Проверьте private_key в файле сервисного аккаунта"
-                logging.critical(msg)
-                raise ValueError(msg)
-            raise
+    # Максимальное количество попыток подключения
+    max_retries = 3
+    retry_delay = 1  # начальная задержка в секундах
 
-        logging.info("✅ Google services initialized")
-        return _drive, _sheets, _calendar
-    except Exception as e:
-        logging.critical(f"Failed to initialize Google services: {e}")
-        raise
+    for attempt in range(max_retries):
+        try:
+            # Читаем файл сервисного аккаунта
+            with open(creds_path, 'r', encoding='utf-8') as f:
+                service_account_info = json.load(f)
+            
+            # Форматируем private_key
+            if 'private_key' in service_account_info:
+                service_account_info['private_key'] = service_account_info['private_key'].replace('\\n', '\n')
+            
+            # Создаем credentials
+            creds = service_account.Credentials.from_service_account_info(
+                service_account_info,
+                scopes=SCOPES
+            )
+            
+            # Пробуем обновить токен с таймаутом
+            with httpx.Client(timeout=10.0) as client:
+                try:
+                    request = Request(session=client)
+                    creds.refresh(request)
+                except Exception as e:
+                    current_app.logger.warning(f"Попытка {attempt + 1}: Ошибка обновления токена: {e}")
+                    if attempt == max_retries - 1:  # Если это последняя попытка
+                        raise
+            
+            # Создаем сервисы с увеличенным таймаутом
+            _drive = build("drive", "v3", credentials=creds, cache_discovery=False)
+            _sheets = build("sheets", "v4", credentials=creds, cache_discovery=False)
+            _calendar = build("calendar", "v3", credentials=creds, cache_discovery=False)
+            
+            # Проверяем подключение через тестовый запрос
+            try:
+                spreadsheet_id = current_app.config.get('SPREADSHEET_ID')
+                if spreadsheet_id:
+                    _sheets.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
+            except Exception as e:
+                if 'invalid_grant' in str(e):
+                    msg = "Неверная подпись JWT. Проверьте private_key в файле сервисного аккаунта"
+                    logging.critical(msg)
+                    raise ValueError(msg)
+                elif any(err in str(e) for err in ['WSAENETUNREACH', 'getaddrinfo failed']):
+                    if attempt < max_retries - 1:
+                        current_app.logger.warning(f"Попытка {attempt + 1}: Проблема с сетью, повторная попытка через {retry_delay} сек")
+                        import time
+                        time.sleep(retry_delay)
+                        retry_delay *= 2  # Увеличиваем задержку экспоненциально
+                        continue
+                raise
+
+            logging.info(f"✅ Google services initialized (попытка {attempt + 1})")
+            return _drive, _sheets, _calendar
+
+        except Exception as e:
+            if attempt < max_retries - 1:
+                current_app.logger.warning(f"Попытка {attempt + 1} не удалась: {e}")
+                import time
+                time.sleep(retry_delay)
+                retry_delay *= 2
+                continue
+            logging.critical(f"Failed to initialize Google services after {max_retries} attempts: {e}")
+            raise
 
 def read_sheet(spreadsheet_id: str, sheet_name: str) -> tuple[list[dict], list[str]]:
     svc = get_google_services()[1]

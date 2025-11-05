@@ -1,3 +1,4 @@
+import os
 from marshmallow.exceptions import ValidationError
 from flask import Blueprint, request, jsonify, current_app, render_template, url_for
 from marshmallow import Schema, fields
@@ -88,10 +89,37 @@ def get_available_slots(date_str):
     Возвращает список доступных слотов для указанной даты.
     Фильтрует статическое расписание по дню недели и вычитает уже сделанные брони.
     """
+    current_app.logger.info(f"\n{'='*50}\nЗАПРОС СЛОТОВ\n{'='*50}")
+    current_app.logger.info(f"Запрошенная дата: {date_str}")
+    
     # 1) Проверяем наличие необходимых конфигураций
-    if not current_app.config.get('SPREADSHEET_ID'):
+    spreadsheet_id = current_app.config.get('SPREADSHEET_ID')
+    if not spreadsheet_id:
         current_app.logger.error("SPREADSHEET_ID не настроен в конфигурации")
         raise ValueError("Ошибка конфигурации: ID таблицы не настроен")
+    
+    current_app.logger.info(f"Используется SPREADSHEET_ID: {spreadsheet_id}")
+    
+    service_account = current_app.config.get('GOOGLE_SERVICE_ACCOUNT_FILE')
+    if not service_account:
+        current_app.logger.error("GOOGLE_SERVICE_ACCOUNT_FILE не настроен")
+        raise ValueError("Ошибка конфигурации: путь к сервисному аккаунту не настроен")
+    
+    if not os.path.exists(service_account):
+        current_app.logger.error(f"Файл сервисного аккаунта не найден по пути: {service_account}")
+        raise FileNotFoundError(f"Файл сервисного аккаунта не найден: {service_account}")
+    
+    current_app.logger.info(f"Используется сервисный аккаунт: {service_account}")
+    
+    # Проверяем подключение к Google API
+    # Проверяем подключение к Google API
+    drive, sheets, calendar = get_google_services()
+    current_app.logger.info("✅ Подключение к Google API установлено")
+        
+    # Проверяем наличие файла сервисного аккаунта
+    if not current_app.config.get('GOOGLE_SERVICE_ACCOUNT_FILE'):
+        current_app.logger.error("GOOGLE_SERVICE_ACCOUNT_FILE не настроен")
+        raise ValueError("Ошибка конфигурации: путь к сервисному аккаунту не настроен")
 
     # 2) Преобразуем строку в дату и определяем день недели
     try:
@@ -109,24 +137,51 @@ def get_available_slots(date_str):
 
     # 3) Считываем и валидируем записи из листа Schedule
     try:
+        current_app.logger.info("Попытка чтения листа Schedule...")
+        
+        # Пробуем получить доступ к таблице сначала
+        try:
+            sheets.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
+            current_app.logger.info("✅ Доступ к таблице подтвержден")
+        except HttpError as e:
+            if e.resp.status == 404:
+                current_app.logger.error(f"❌ Таблица не найдена (ID: {spreadsheet_id})")
+                raise ValueError(f"Таблица не найдена. Проверьте SPREADSHEET_ID: {spreadsheet_id}")
+            elif e.resp.status == 403:
+                current_app.logger.error("❌ Нет прав доступа к таблице")
+                raise ValueError("Нет прав доступа к таблице. Проверьте настройки доступа для сервисного аккаунта.")
+            else:
+                raise
+                
         schedule = read_records(current_app.config['SPREADSHEET_ID'], 'Schedule')
+        current_app.logger.info(f"Прочитано записей из Schedule: {len(schedule) if schedule else 0}")
+        
         if not schedule:
-            current_app.logger.warning("Таблица расписания пуста")
+            current_app.logger.warning("Таблица расписания пуста или не удалось получить данные")
             return []
 
         # Валидируем каждую запись
         validated_schedule = []
+        invalid_records = []
         for idx, record in enumerate(schedule):
+            current_app.logger.debug(f"Валидация записи {idx}: {record}")
             is_valid, validated_record = validate_schedule_record(record, idx)
             if is_valid:
                 validated_schedule.append(validated_record)
+            else:
+                invalid_records.append(record)
+                
+        if invalid_records:
+            current_app.logger.warning(f"Найдено {len(invalid_records)} некорректных записей:")
+            for rec in invalid_records:
+                current_app.logger.warning(f"- {rec}")
 
         if not validated_schedule:
             current_app.logger.warning("После валидации не осталось корректных записей в расписании")
             return []
 
         schedule = validated_schedule
-        current_app.logger.info(f"Обработано {len(schedule)} записей расписания")
+        current_app.logger.info(f"Успешно обработано {len(schedule)} записей расписания")
 
     except HttpError as he:
         current_app.logger.error(f"Ошибка API Google Sheets: {str(he)}")
@@ -251,6 +306,13 @@ def get_slots(date_str):
 
     except Exception as e:
         current_app.logger.error(f"Непредвиденная ошибка: {str(e)}", exc_info=True)
+        # В режиме разработки возвращаем подробный трейсбэк для диагностики
+        try:
+            if current_app.config.get('DEBUG'):
+                import traceback
+                return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
+        except Exception:
+            pass
         return jsonify({"error": "Произошла ошибка при получении данных. Пожалуйста, попробуйте позже."}), 500
 
 @calendar_bp.route('/api/calendar/slots', methods=['GET'])
@@ -347,11 +409,11 @@ def book_slot():
     """
     Бронирование слота тренировки.
     """
-    # Проверяем формат входных данных
-    if not request.is_json:
-        return jsonify({'error': 'Ожидается JSON'}), 400
-
     try:
+        # Проверяем формат входных данных
+        if not request.is_json:
+            return jsonify({'error': 'Ожидается JSON'}), 400
+
         # Валидация данных через схему
         data = BookingSchema().load(request.get_json())
         
@@ -407,14 +469,16 @@ def book_slot():
 
         # 5. Создание события в Google Calendar
         try:
+            current_app.logger.info(f"GOOGLE_CALENDAR_ID config: {current_app.config.get('GOOGLE_CALENDAR_ID')}")
             service = get_google_services()
-            add_event_to_calendar(
+            created = add_event_to_calendar(
                 service,
                 data['date'],
                 data['time'],
                 data['name'],
                 data['phone']
             )
+            current_app.logger.info(f"Добавление события в календарь вернуло: {created}")
         except Exception as e:
             current_app.logger.error(f"Ошибка создания события в календаре: {str(e)}")
             # Не прерываем процесс, так как это некритичная ошибка

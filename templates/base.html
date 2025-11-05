@@ -30,6 +30,7 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/services-carousel.css') }}" />
 
   <!-- Flatpickr -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -101,7 +102,7 @@
           <li><a href="#services">Услуги</a></li>
           <li><a href="#events">Мероприятия</a></li>
           <li><a href="#blog">Блог</a></li>
-          <li><a href="#contacts">Контакты</a></li><li><a href="{{ url_for('content_calendar.calendar_page') }}">Контент-календарь</a></li>
+          <li><a href="#contacts">Контакты</a></li>
         </ul>
       </nav>
       <button id="dark-mode-toggle" class="theme-toggle" aria-label="Переключить тему">🌙</button>
@@ -162,28 +163,36 @@
     <div class="spinner"></div>
   </div>
 
-  <!-- Подключение socket.io-client через CDN -->
+  <!-- Подключение socket.io и клиентских скриптов -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="{{ url_for('static', filename='js/socket-client.js') }}"></script>
   <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
   <script src="{{ url_for('static', filename='js/storeFilter.js') }}"></script>
-  <script src="/static/js/socket.io.js"></script>
   <script type="module" nonce="{{ g.csp_nonce }}">
     import { SocketStatus } from '/static/js/socket-status.js';
-    const socket = io({
-      auth: {
-        csrf_token: document.querySelector('meta[name="csrf-token"]')?.content
+    const socket = new SecureSocketIO(window.location.origin, {
+      transports: ['websocket'],
+      autoConnect: false,
+      reconnectionAttempts: 5,
+      onCSRFError: () => {
+        document.getElementById('socket-status-indicator').textContent = 'Ошибка безопасности';
+        setTimeout(() => window.location.reload(), 3000);
       }
     });
     new SocketStatus(socket);
+    socket.connect();
   </script>
   {% block scripts %}{% endblock %}
+  <script src="{{ url_for('static', filename='js/services-carousel.js') }}"></script>
   <script src="{{ url_for('static', filename='js/inline.js') }}"></script>
 
   <!-- booking.js должен быть после блока content и всех модалок -->
   <script src="{{ url_for('static', filename='js/booking.js') }}"></script>
 
   <!-- Контейнер для success-view partial (подгружается динамически) -->
-  <div id="success-modal" aria-live="polite"></div>
+  <div id="success-modal" class="modal success-modal hidden" aria-hidden="true">
+    <div class="modal-overlay"></div>
+  </div>
 
   <div id="toast" class="toast hidden" aria-live="polite" aria-label="Уведомление"></div>
 

@@ -3,7 +3,7 @@ import logging
 import datetime
 from flask import request, current_app
 from flask_socketio import emit, disconnect
-from app.routes.calendar_routes import get_schedule_slots
+from app.routes.calendar_routes import get_available_slots
 from app.extensions import socketio  # ✅ используем общий экземпляр
 
 # Глобальный набор подключенных клиентов
@@ -60,7 +60,7 @@ def handle_request_slots(data):
         emit("update_slots", {"error": "Неверная или отсутствующая дата"})
         return
 
-    slots = get_schedule_slots(selected_day_of_week)
+    slots = get_available_slots(selected_date)
     print(f"📡 WebSocket отправляет: {slots}")
     emit("update_slots", slots)
 

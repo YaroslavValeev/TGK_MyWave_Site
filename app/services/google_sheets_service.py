@@ -102,11 +102,39 @@ def save_message(credentials_file, sheet_id, worksheet_name, client_id, message)
 def read_records(spreadsheet_id=None, worksheet_name=None):
     """Читает записи из Google Sheets."""
     try:
+        logger.info(f"\n{'='*50}\nЧТЕНИЕ GOOGLE SHEETS\n{'='*50}")
+        logger.info(f"Spreadsheet ID: {spreadsheet_id or SPREADSHEET_ID}")
+        logger.info(f"Worksheet: {worksheet_name or GOOGLE_SHEET_NAME}")
+        
         sheets_service = get_google_services()[1]  # Получаем только sheets сервис
+        logger.info("Sheets service получен успешно")
+        
+        range_name = f"{(worksheet_name or GOOGLE_SHEET_NAME)}!A1:Z1000"
+        logger.info(f"Запрашиваем диапазон: {range_name}")
+        
+        # Сначала проверим метаданные таблицы
+        try:
+            metadata = sheets_service.spreadsheets().get(
+                spreadsheetId=spreadsheet_id or SPREADSHEET_ID
+            ).execute()
+            sheets = metadata.get('sheets', [])
+            sheet_titles = [sheet['properties']['title'] for sheet in sheets]
+            logger.info(f"Доступные листы: {', '.join(sheet_titles)}")
+            
+            if worksheet_name not in sheet_titles:
+                logger.error(f"Лист '{worksheet_name}' не найден в таблице!")
+                return []
+        except Exception as e:
+            logger.error(f"Ошибка при проверке метаданных таблицы: {e}")
+            raise
+            
+        # Теперь запрашиваем данные
         result = sheets_service.spreadsheets().values().get(
             spreadsheetId=spreadsheet_id or SPREADSHEET_ID,
-            range=f"{(worksheet_name or GOOGLE_SHEET_NAME)}!A1:Z1000"
+            range=range_name
         ).execute()
+        logger.info("Запрос к API выполнен успешно")
+        
         values = result.get('values', [])
         if not values:
             return []

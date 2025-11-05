@@ -28,30 +28,45 @@ def init_websocket(app):
     @socketio.on('connect')
     def handle_connect(auth=None):
         csrf_token = None
-        # Если auth передан (Flask-SocketIO >=5.0), ищем токен там
-        if auth and isinstance(auth, dict):
+        
+        # 1. Проверяем данные аутентификации из сообщения подключения
+        if isinstance(auth, dict):
             csrf_token = auth.get('csrf_token')
-        # Если не найден — пробуем из query string
+            
+        # 2. Проверяем первое сообщение с данными аутентификации
+        @socketio.on('message')
+        def handle_message(message):
+            nonlocal csrf_token
+            try:
+                if isinstance(message, dict) and 'csrf_token' in message:
+                    csrf_token = message['csrf_token']
+                    try:
+                        validate_csrf(csrf_token)
+                        app.logger.info(f"CSRF token validated from message")
+                        return {'status': 'authenticated'}
+                    except CSRFValidationError:
+                        app.logger.warning("Invalid CSRF token in message")
+                        return {'status': 'error', 'message': 'Invalid CSRF token'}
+            except Exception as e:
+                app.logger.error(f"Error processing message: {e}")
+                return {'status': 'error', 'message': 'Internal error'}
+
+        # 3. Если токен не найден, даем клиенту шанс отправить его в сообщении
         if not csrf_token:
-            csrf_token = request.args.get('csrf_token')
-        # Если не найден — пробуем из заголовка
-        if not csrf_token:
-            csrf_token = request.headers.get('X-CSRFToken')
-        # Если не найден — пробуем из Authorization
-        if not csrf_token:
-            auth_header = request.headers.get('Authorization', '').split(' ')
-            if len(auth_header) > 1:
-                csrf_token = auth_header[1]
-        # Если не найден — пробуем из request.auth
-        if not csrf_token and hasattr(request, 'auth') and request.auth:
-            csrf_token = request.auth.get('csrf_token')
+            app.logger.info("No CSRF token in initial connection, waiting for auth message")
+            return True
+            
+        # 4. Проверяем валидность токена
         try:
             validate_csrf(csrf_token)
+            app.logger.info("WebSocket connection accepted with valid CSRF token")
+            return True
         except CSRFValidationError:
-            app.logger.error("WebSocket connection rejected: Invalid CSRF token")
+            app.logger.warning("WebSocket connection rejected: Invalid CSRF token")
             return False
-        app.logger.info(f"WebSocket connection accepted with valid CSRF token")
-        return True
+        except Exception as e:
+            app.logger.error(f"Error validating CSRF token: {e}")
+            return False
     
     socketio.init_app(app)
     return socketio
@@ -64,7 +79,20 @@ def init_extensions(app, db=None):
         supports_credentials=True
     )
     api.init_app(app)
-    metrics = PrometheusMetrics(app)
+    # Prometheus multiprocess exporter raises if PROMETHEUS_MULTIPROC_DIR
+    # is not configured. Make this robust so local dev doesn't crash.
+    try:
+        metrics = PrometheusMetrics(app)
+    except ValueError as ve:
+        # This typically says PROMETHEUS_MULTIPROC_DIR must be set
+        app.logger.warning(f"Prometheus multiprocess not configured: {ve}")
+        try:
+            # Attempt a non-multiprocess fallback (single-process metrics)
+            metrics = PrometheusMetrics(app, export_defaults=False)
+        except Exception:
+            # As a last resort, skip metrics but continue startup
+            app.logger.exception("Failed to initialize PrometheusMetrics; continuing without metrics")
+            metrics = None
     if db is not None:
         migrate.init_app(app, db)
         try:
