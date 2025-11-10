@@ -1,0 +1,138 @@
+/* Эффекты для изображений */
+.service-image {
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: scale(0.98) translateY(10px);
+    will-change: opacity, transform;
+    position: relative;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.service-image.loaded {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+/* Контейнер для изображения */
+.service-image-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    aspect-ratio: 16/9;
+    background: #f5f5f5;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-image-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Плейсхолдер и эффекты загрузки */
+.image-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Анимированный индикатор загрузки */
+.loader {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Состояния ошибки */
+.service-image-container.error {
+    background: #fff5f5;
+    border: 1px solid #fed7d7;
+}
+
+.service-image-container.error .image-placeholder {
+    background: linear-gradient(90deg, #ffe5e5 25%, #ffcccc 50%, #ffe5e5 75%);
+}
+
+.image-error-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 12px 20px;
+    border-radius: 6px;
+    color: #e53e3e;
+    font-size: 14px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    z-index: 2;
+}
+
+.image-error-message:hover {
+    background: #ffffff;
+}
+
+/* Адаптивные стили */
+@media screen and (max-width: 768px) {
+    .loader {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .image-error-message {
+        font-size: 12px;
+        padding: 8px 16px;
+    }
+}
+
+/* Поддержка темной темы */
+@media (prefers-color-scheme: dark) {
+    .service-image-container {
+        background: #2d3748;
+    }
+    
+    .image-placeholder {
+        background: linear-gradient(90deg, #2d3748 25%, #4a5568 50%, #2d3748 75%);
+    }
+    
+    .service-image-container.error {
+        background: #2c1616;
+        border-color: #742a2a;
+    }
+    
+    .image-error-message {
+        background: rgba(45, 55, 72, 0.95);
+        color: #fc8181;
+    }
+    
+    .image-error-message:hover {
+        background: #2d3748;
+    }
+}

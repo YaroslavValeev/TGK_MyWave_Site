@@ -1,7 +1,7 @@
-from flask import Blueprint, jsonify, request, current_app, render_template
-from flask.templating import render_template
+from flask import Blueprint, jsonify, request, current_app, render_template, url_for
 from app.services.openai_service import ask
 from app.services.google import get_google_services
+from app.services.images_service import get_image_url, save_image
 from app.modules.sheets import get_available_slots
 import datetime
 import logging
@@ -27,7 +27,7 @@ def ping():
 
 # 🧠 Вопрос к GPT (OpenAI Assistant API)
 @services_bp.route("/ask", methods=["POST"])
-def show_services():
+def ask_assistant():
     try:
         data = request.get_json()
         prompt = data.get("prompt", "")
@@ -36,7 +36,7 @@ def show_services():
         response = ask(prompt)
         return jsonify({"response": response})
     except Exception as e:
-        logger.error(f"Ошибка в show_services: {e}", exc_info=True)
+        logger.error(f"Ошибка в ask_assistant: {e}", exc_info=True)
         return {"ok": False, "error": str(e)}, 500
 
 # 📅 Слоты расписания (Google Sheets + Calendar)
@@ -91,11 +91,71 @@ def upload():
         return {"ok": False, "error": str(e)}, 500
 
 @services_bp.route("/services")
-def ask():
+def services_list():
+    """Страница списка всех услуг"""
     try:
-        return render_template("services.html")
+        services = [
+            {
+                'name': 'Тренировка',
+                'description': 'Тренировка на авторских тренажёрах по уникальной методике вейксерфинга. '
+                             'Развиваем баланс, координацию, биомеханику и нейронные связи для уверенного выполнения трюков.',
+                'price': '3500 рублей',
+                'image_url': 'training1.jpg',
+                'service_id': 'gym',
+                'modal_id': 'modalCalendar',
+                'button_text': 'Подробнее / Записаться'
+            },
+            {
+                'name': 'Сет за катером с тренером',
+                'description': '1 час за катером + баланс-борд перед стартом. Индивидуальная тренировка для вашего прогресса.',
+                'price': '10 000 рублей',
+                'image_url': 'hero-wakesurf.png',
+                'service_id': 'boat',
+                'modal_id': 'modalBoat',
+                'button_text': 'Подробнее / Записаться'
+            },
+            {
+                'name': 'Wake Challenge',
+                'description': 'Интенсивная программа для спортсменов и любителей — серия соревнований и тренировок.',
+                'price': 'По договорённости',
+                'image_url': 'wake_challenge.jpg',
+                'service_id': 'challenge',
+                'book_url': url_for('services.wake_challenge'),
+                'button_text': 'Подробнее'
+            },
+            {
+                'name': 'WakeSurf Safari',
+                'description': 'Эксклюзивные туры по рекам и озёрам с проживанием и обучающей программой.',
+                'price': 'От 15 000 рублей',
+                'image_url': 'wakesurf_safari.jpg',
+                'service_id': 'safari',
+                'book_url': url_for('services.wakesurf_safari'),
+                'button_text': 'Подробнее'
+            },
+            {
+                'name': 'Wake Discovery',
+                'description': 'Короткая ознакомительная сессия: попробуйте вейксерф впервые с инструктором. '
+                             'Включает базовый инструктаж и практику.',
+                'price': '2500 рублей',
+                'image_url': 'students/training1.jpg',
+                'service_id': 'discovery',
+                'book_url': url_for('services.wake_discovery'),
+                'button_text': 'Подробнее / Калькулятор'
+            },
+            {
+                'name': 'Wake Camp',
+                'description': 'Интенсивный лагерной формат для систематической прокачки навыков и техники. '
+                             'Погрузитесь в мир вейксерфинга с головой!',
+                'price': 'от 15 000 рублей',
+                'image_url': 'balans_trick_trening1.jpg',
+                'service_id': 'camp',
+                'book_url': url_for('services.wake_camp'),
+                'button_text': 'Подробнее / Записаться'
+            }
+        ]
+        return render_template("services.html", services=services)
     except Exception as e:
-        logger.error(f"Ошибка в ask: {e}", exc_info=True)
+        logger.error(f"Ошибка в services_list: {e}", exc_info=True)
         return {"ok": False, "error": str(e)}, 500
 
 
@@ -139,7 +199,67 @@ def wake_camp():
         logger.error(f"Ошибка в wake_camp: {e}", exc_info=True)
         return {"ok": False, "error": str(e)}, 500
 
-# Новый Telegram webhook endpoint
+# Эндпоинт бронирования
+@services_bp.route('/book', methods=['GET', 'POST'])
+def book_service():
+    """Endpoint для бронирования услуги"""
+    try:
+        data = request.get_json()
+        
+        # Валидация входных данных
+        required_fields = ['service_id', 'date', 'time', 'name', 'phone']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+
+        # Логирование запроса
+        logger.info(f"Получен запрос на бронирование: {data}")
+
+        # Получаем user_id из сессии если пользователь авторизован
+        from flask_login import current_user
+        user_id = current_user.id if not current_user.is_anonymous else None
+
+        # Используем сервис для создания бронирования
+        from app.services.booking_service import create_booking
+        
+        result = create_booking(
+            data={
+                'name': data['name'],
+                'phone': data['phone'],
+                'date': data['date'],
+                'time': data['time'],
+                'service_id': data['service_id']
+            },
+            user_id=user_id
+        )
+
+        if result['success']:
+            return jsonify({
+                "status": "success",
+                "message": "Бронирование успешно создано",
+                "booking_id": result['booking_id']
+            })
+        else:
+            error = result.get('error', 'unknown_error')
+            if error in ['invalid_date', 'invalid_time', 'date_in_past', 'invalid_phone', 'duplicate_booking']:
+                return jsonify({
+                    "status": "error",
+                    "error": error
+                }), 400
+            else:
+                logger.error(f"Ошибка при бронировании: {error}")
+                return jsonify({
+                    "status": "error",
+                    "error": "Произошла внутренняя ошибка сервера"
+                }), 500
+            
+    except Exception as e:
+        logger.error(f"Ошибка при обработке запроса бронирования: {e}", exc_info=True)
+        return jsonify({
+            "status": "error",
+            "error": str(e)
+        }), 500
+
 @services_bp.route('/api/telegram/webhook', methods=['POST'])
 def api_telegram_webhook():
     try:

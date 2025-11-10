@@ -1,0 +1,834 @@
+document.addEventListener("DOMContentLoaded", () => {
+// Получение свежего CSRF-токена с сервера
+async function getFreshCsrfToken() {
+  try {
+    const resp = await fetch('/api/csrf-token', { 
+      credentials: 'same-origin',
+      cache: 'no-cache'
+    });
+    if (!resp.ok) throw new Error('Failed to get CSRF token');
+    const data = await resp.json();
+    return data.csrf_token;
+  } catch (err) {
+    console.error('Error getting CSRF token:', err);
+    throw err;
+  }
+}
+
+  console.log("[booking.js] DOMContentLoaded");
+  const modalCalendar = document.getElementById('modalCalendar');
+  const bookingDateInput = document.getElementById('bookingDateInput');
+  const slotButtonsContainer = document.getElementById('slotButtonsContainer');
+  if (!modalCalendar) console.warn('[booking.js] modalCalendar не найден в DOM!');
+  if (!bookingDateInput) console.warn('[booking.js] bookingDateInput не найден в DOM!');
+  if (!slotButtonsContainer) console.warn('[booking.js] slotButtonsContainer не найден в DOM!');
+  if (!document.getElementById('modalCalendar')) return;
+  console.log("📦 booking.js загружен и готов");
+
+  // ==============================
+  // 🔧 DOM-элементы
+  // ==============================
+  const UI = {
+    bookingDateInput: document.getElementById("bookingDateInput"),
+    dateIcon: document.getElementById("dateIcon"),
+    slotButtonsContainer: document.getElementById("slotButtonsContainer"),
+    confirmDateBtn: document.getElementById("confirmDateBtn"),
+    confirmSlotBtn: document.getElementById("confirmSlotBtn"),
+    confirmContactBtn: document.getElementById("confirmContactBtn"),
+    finalConfirmBtn: document.getElementById("finalConfirmBtn"),
+    bookingName: document.getElementById("bookingName"),
+    bookingPhone: document.getElementById("bookingPhone"),
+    confirmDetails: document.getElementById("confirmDetails"),
+    homeLink: document.getElementById("home-link"),
+    slotSelectHidden: document.getElementById("slotSelect"),
+    calendarModal: document.getElementById("modalCalendar"),
+    slotsModal: document.getElementById("modalSlots"),
+    contactModal: document.getElementById("modalContact"),
+    confirmModal: document.getElementById("modalConfirm"),
+    modalCloseButtons: document.querySelectorAll(".close-modal"),
+    openBookingButtons: document.querySelectorAll("#openBookingBtn, .book-now, .btn-book"),
+    toast: document.getElementById("toast"),
+    stepIndicator: document.getElementById("step-indicator")
+  };
+
+  let currentStep = 1;
+  let currentService = 'boat'; // По умолчанию используем лодку
+
+  if (!UI.bookingDateInput || !UI.slotButtonsContainer) {
+    console.warn("⚠️ booking.js не может инициализироваться — отсутствуют ключевые элементы.");
+    return;
+  }
+
+  // ==============================
+  // 🔄 WebSocket для бронирования
+  // ==============================
+  let wsToken = '';
+  let socket = null;
+  let wsReconnectAttempts = 0;
+  const MAX_WS_RECONNECT_ATTEMPTS = 3;
+
+  // Асинхронная инициализация WebSocket
+  (async function initWebSocket() {
+    try {
+      const token = await getFreshCsrfToken();
+      wsToken = token;
+      
+      socket = io({
+        auth: { 
+          csrf_token: token
+        },
+        transports: ['websocket', 'polling'],
+        upgrade: true,
+        rememberUpgrade: true,
+        reconnection: true,
+        reconnectionAttempts: MAX_WS_RECONNECT_ATTEMPTS,
+        reconnectionDelay: 1000
+      });
+      
+      socket.on('connect', () => {
+        console.log('WebSocket connected successfully');
+        wsReconnectAttempts = 0;
+      });
+      
+      socket.on('connect_error', (error) => {
+        console.error('WebSocket connection error:', error);
+        wsReconnectAttempts++;
+        
+        if (wsReconnectAttempts >= MAX_WS_RECONNECT_ATTEMPTS) {
+          console.error('Max WebSocket reconnection attempts reached');
+          socket.disconnect();
+        }
+      });
+
+      socket.on('disconnect', (reason) => {
+        console.log('WebSocket disconnected:', reason);
+      });
+      
+      socket.on('booking_update', (data) => {
+        if (data.success) {
+          showToast('✅ Бронирование подтверждено');
+          hideAllModals();
+        } else {
+          showToast(`❌ Ошибка: ${data.error}`);
+        }
+      });
+    } catch (err) {
+      console.error('Failed to initialize WebSocket:', err);
+    }
+  })();
+
+  // Инициализация flatpickr для выбора даты
+  if (UI.bookingDateInput) {
+    flatpickr(UI.bookingDateInput, {
+      locale: "ru",
+      minDate: "today",
+      dateFormat: "Y-m-d",
+      disableMobile: true,
+      onChange: function(selectedDates) {
+        if (selectedDates.length > 0) {
+          const dateObj = selectedDates[0];
+          const dateStr = dateObj.getFullYear() + '-' + String(dateObj.getMonth()+1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0');
+          console.log("Selected (local):", dateStr);
+          updateSlotOptions(dateStr);
+          showModal(UI.slotsModal);
+        }
+      }
+    });
+  }
+
+  // Обработчик для иконки календаря
+  if (UI.dateIcon) {
+    UI.dateIcon.addEventListener("click", () => {
+      if (UI.bookingDateInput._flatpickr) {
+        UI.bookingDateInput._flatpickr.open();
+      }
+    });
+  }
+
+  // Закрытие модального окна по клику вне его
+  document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("modal")) {
+      hideAllModals();
+    }
+  });
+
+  // ==============================
+  // 🔧 Служебные функции
+  // ==============================
+  function clearContainer(container) {
+    while (container && container.firstChild) container.removeChild(container.firstChild);
+  }
+
+  function createLoadingSlots() {
+    const wrap = document.createElement('div');
+    wrap.className = 'loading-slots';
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner';
+    const text = document.createElement('div');
+    text.className = 'text-gray-500';
+    text.textContent = 'Загрузка доступных слотов...';
+    wrap.appendChild(spinner);
+    wrap.appendChild(text);
+    return wrap;
+  }
+
+  function createErrorMessageNode(userMessage, dateStr) {
+    const container = document.createElement('div');
+    container.className = 'error-message';
+    const icon = document.createElement('div');
+    icon.className = 'error-icon';
+    icon.textContent = '❌';
+    const text = document.createElement('div');
+    text.className = 'error-text';
+    text.textContent = userMessage;
+    const retry = document.createElement('button');
+    retry.className = 'retry-button';
+    retry.type = 'button';
+    retry.textContent = 'Попробовать снова';
+    retry.addEventListener('click', () => updateSlotOptions(dateStr));
+    container.appendChild(icon);
+    container.appendChild(text);
+    container.appendChild(retry);
+    return container;
+  }
+
+  function createNoSlotsNode() {
+    const wrap = document.createElement('div');
+    wrap.className = 'no-slots-message';
+    const info = document.createElement('div');
+    info.className = 'info-icon';
+    info.textContent = 'ℹ️';
+    const text = document.createElement('div');
+    text.className = 'text-gray-500';
+    text.appendChild(document.createTextNode('На выбранную дату нет доступных слотов.'));
+    text.appendChild(document.createElement('br'));
+    text.appendChild(document.createTextNode('Пожалуйста, выберите другую дату.'));
+    wrap.appendChild(info);
+    wrap.appendChild(text);
+    return wrap;
+  }
+
+  let hideAllModals = () => {
+    [UI.calendarModal, UI.slotsModal, UI.contactModal, UI.confirmModal].forEach((m) => {
+      if (m) {
+        m.classList.remove("show");
+        m.style.display = "none";
+      }
+    });
+    document.body.style.overflow = "auto";
+  };
+
+  let showModal = (modal) => {
+    if (!modal) return;
+    hideAllModals();
+    modal.classList.remove("hidden");
+    modal.classList.add("show");
+    modal.style.setProperty('display', 'flex', 'important');
+    document.body.style.overflow = "hidden";
+    // Сбрасываем скролл модального окна
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+      modalContent.scrollTop = 0;
+    }
+  };
+
+  const showToast = (message) => {
+    const toast = document.createElement("div");
+    toast.className = "toast-success";
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  };
+
+  const validatePhone = (phone) => {
+    return /^\+?\d{10,15}$/.test(phone);
+  };
+
+  // ==============================
+  // 📅 Получение слотов
+  // ==============================
+  async function updateSlotOptions(dateStr) {
+    if (!dateStr) {
+      clearContainer(UI.slotButtonsContainer);
+      const div = document.createElement('div');
+      div.className = 'text-gray-500';
+      div.textContent = 'Пожалуйста, выберите дату';
+      UI.slotButtonsContainer.appendChild(div);
+      return;
+    }
+
+    try {
+      clearContainer(UI.slotButtonsContainer);
+      UI.slotButtonsContainer.appendChild(createLoadingSlots());
+      
+      // Получаем свежий CSRF токен для запроса
+      const token = await getFreshCsrfToken();
+      const response = await fetch(`/api/calendar/slots/${dateStr}`, {
+        headers: {
+          'X-CSRFToken': token
+        },
+        credentials: 'same-origin'
+      });
+      const data = await response.json();
+      
+      if (!response.ok) {
+        const errorMessage = data.error || 'Произошла ошибка при загрузке слотов';
+        console.error('Ошибка при загрузке слотов:', errorMessage);
+        
+        let userMessage = 'Извините, произошла ошибка при загрузке слотов. ';
+        if (response.status === 400) {
+          userMessage += 'Пожалуйста, проверьте выбранную дату.';
+        } else if (response.status === 503 || response.status === 502) {
+          userMessage += 'Сервер временно недоступен. Пожалуйста, попробуйте позже.';
+        } else {
+          userMessage += 'Пожалуйста, попробуйте позже или обратитесь в поддержку.';
+        }
+        
+        clearContainer(UI.slotButtonsContainer);
+        UI.slotButtonsContainer.appendChild(createErrorMessageNode(userMessage, dateStr));
+        return;
+      }
+      
+      clearContainer(UI.slotButtonsContainer);
+      
+      if (!Array.isArray(data) || data.length === 0) {
+        UI.slotButtonsContainer.appendChild(createNoSlotsNode());
+        return;
+      }
+      
+      let hasAvailableSlots = false;
+      
+      data.forEach(slot => {
+        if (slot.available && slot.remaining > 0) {
+          hasAvailableSlots = true;
+        }
+        
+        const button = document.createElement('button');
+        button.className = `slot-btn ${slot.available ? 'available' : 'booked'}`;
+        button.textContent = `${slot.time} ${slot.available ? `(Свободно: ${slot.remaining})` : '(Занято)'}`;
+        button.disabled = !slot.available;
+        
+        if (slot.available) {
+          button.addEventListener('click', () => {
+            document.getElementById('selectedSlot').value = slot.time;
+            goToStep(3); // Переходим к шагу 3 после выбора слота
+          });
+        }
+        
+        UI.slotButtonsContainer.appendChild(button);
+      });
+      
+      if (!hasAvailableSlots) {
+        clearContainer(UI.slotButtonsContainer);
+        const div = document.createElement('div');
+        div.className = 'text-gray-500';
+        div.textContent = 'Нет свободных слотов на эту дату';
+        UI.slotButtonsContainer.appendChild(div);
+        return;
+      }
+      
+      // Показываем модальное окно со слотами только если есть доступные слоты
+      showModal(UI.slotsModal);
+      setTimeout(() => {
+        UI.slotsModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    } catch (error) {
+      console.error('Ошибка загрузки слотов:', error);
+      clearContainer(UI.slotButtonsContainer);
+      const div = document.createElement('div');
+      div.className = 'text-red-500';
+      div.textContent = `Ошибка: ${error.message}`;
+      UI.slotButtonsContainer.appendChild(div);
+      showToast('❌ Ошибка загрузки слотов');
+    }
+  }
+
+  // ==============================
+  // ✅ Отправка заявки
+  // ==============================
+    async function submitBooking() {
+    try {
+      const csrfToken = await getFreshCsrfToken();
+      if (!csrfToken) throw new Error("Не удалось получить CSRF токен");
+
+      const bookingData = {
+        date: UI.bookingDateInput.value,
+        time: UI.slotSelectHidden.value,
+        name: UI.bookingName.value,
+        phone: UI.bookingPhone.value,
+        service: currentService // Using the currentService value
+      };
+
+      console.log("Отправка данных бронирования:", bookingData);
+
+      const response = await fetch("/api/calendar/book", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken
+        },
+        body: JSON.stringify(bookingData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        // Отправляем уведомление через WebSocket если есть соединение
+        if (socket && socket.connected) {
+          socket.emit("booking_confirmed", {
+            ...bookingData,
+            type: "client",
+            csrf_token: csrfToken
+          });
+        }
+
+        // Показываем success view
+        const successViewUrl = result.success_view_url;
+        const successResponse = await fetch(successViewUrl);
+        if (successResponse.ok) {
+          const successHtml = await successResponse.text();
+          const successModal = document.createElement("div");
+          successModal.innerHTML = successHtml;
+          document.body.appendChild(successModal);
+          hideAllModals();
+          successModal.querySelector(".modal").classList.remove("hidden");
+        }
+
+        return true;
+      } else {
+        throw new Error(result.error || "Неизвестная ошибка при бронировании");
+      }
+    } catch (error) {
+      console.error("Ошибка при отправке бронирования:", error);
+      showToast(error.message || "Произошла ошибка при бронировании");
+      return false;
+    }
+  }
+    const selectedSlotInput = document.getElementById("selectedSlot");
+    if (!selectedSlotInput) {
+        console.error("❌ Элемент selectedSlot не найден в DOM.");
+        return;
+    }
+    const payload = {
+      date: UI.bookingDateInput.value,
+      time: selectedSlotInput.value,
+      name: UI.bookingName.value.trim(),
+      phone: UI.bookingPhone.value.trim(),
+      service: currentService
+    };
+
+    // Валидация данных
+    console.log("📝 Отправляемые данные:", payload);
+    if (!payload.date) {
+      showToast('❌ Выберите дату');
+      return;
+    }
+    if (!payload.time) {
+      showToast('❌ Выберите время');
+      return;
+    }
+    if (!payload.name) {
+      showToast('❌ Введите имя');
+      return;
+    }
+    if (!payload.phone) {
+      showToast('❌ Введите телефон');
+      return;
+    }
+
+    if (!validatePhone(payload.phone)) {
+      showToast('❌ Введите корректный номер телефона');
+      return;
+    }
+
+    try {
+      const csrfToken = await getFreshCsrfToken();
+      const headers = {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken
+      };
+      
+      console.log("Заголовки запроса:", headers);
+      const response = await fetch("/api/calendar/book", {
+        method: "POST",
+        headers,
+        credentials: "same-origin",
+        body: JSON.stringify(payload),
+      });
+      
+      const result = await response.json();
+      console.log("📩 Ответ сервера:", result);
+      
+      if (response.ok) {
+        // Если сервер вернул ссылку на success-view
+        if (result && result.success_view_url) {
+          const successUrl = new URL(result.success_view_url, window.location.origin);
+          successUrl.searchParams.set('type', payload.service);
+          
+          const successResponse = await fetch(successUrl.toString(), { 
+            method: 'GET', 
+            headers: { 
+              'X-Requested-With': 'fetch',
+              'X-CSRFToken': csrfToken 
+            },
+            credentials: 'same-origin'
+          });
+
+          if (!successResponse.ok) {
+            throw new Error('Failed to load success view');
+          }
+
+          const html = await successResponse.text();
+          const container = document.querySelector('#success-modal');
+          
+          if (container) {
+            container.className = '';
+            container.classList.add('modal', 'success-modal');
+            container.classList.remove('hidden');
+            container.innerHTML = html;
+            container.classList.add('is-open', 'show');
+            container.dataset.serviceType = payload.service;
+
+            // Логирование показа
+            if (window.gtag) {
+              gtag('event', 'success_view_shown', { 'event_category': 'booking' });
+            }
+            
+            const analyticsToken = await getFreshCsrfToken();
+            await fetch('/analytics/log', {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json', 
+                'X-CSRFToken': analyticsToken
+              },
+              credentials: 'same-origin',
+              body: JSON.stringify({ 
+                event: 'success_view_shown', 
+                label: 'booking', 
+                phone: window.lastSubmittedPhone || '' 
+              })
+            });
+
+            // Обработчики кнопок
+            container.querySelectorAll('[data-action]').forEach(btn => {
+              btn.addEventListener('click', async () => {
+                const action = btn.getAttribute('data-action');
+                if (action === 'close') {
+                  container.classList.remove('is-open', 'show');
+                  container.classList.add('hidden');
+                } else if (action === 'share') {
+                  try {
+                    const serviceType = container.dataset.serviceType || 'boat';
+                    let shareText = 'Я записался на тренировку в MyWave!';
+                    if (serviceType === 'gym') {
+                      shareText = 'Я записался на тренировку в зале MyWave!';
+                    } else if (serviceType === 'boat') {
+                      shareText = 'Я записался на вейксерф в MyWave!';
+                    }
+                    
+                    if (navigator.share) {
+                      await navigator.share({ 
+                        title: 'MyWave', 
+                        text: shareText, 
+                        url: location.href 
+                      });
+                    } else {
+                      if (navigator.clipboard) {
+                        await navigator.clipboard.writeText(location.href);
+                        showToast('Ссылка скопирована в буфер обмена');
+                      }
+                    }
+                  } catch (err) {
+                    console.error('Ошибка при шаринге:', err);
+                  }
+                }
+                
+                // Лог клика
+                if (window.gtag) {
+                  gtag('event', 'success_view_cta_click', { 
+                    'event_category': 'booking', 
+                    'event_label': action 
+                  });
+                }
+                
+                const clickToken = await getFreshCsrfToken();
+                await fetch('/analytics/log', {
+                  method: 'POST',
+                  headers: { 
+                    'Content-Type': 'application/json', 
+                    'X-CSRFToken': clickToken 
+                  },
+                  credentials: 'same-origin',
+                  body: JSON.stringify({ 
+                    event: 'success_view_cta_click', 
+                    label: action, 
+                    phone: window.lastSubmittedPhone || '' 
+                  })
+                });
+              });
+            });
+          } else {
+            hideAllModals();
+            showToast(`✅ ${result.message || "Запись успешно создана!"}`);
+          }
+          
+          if (socket) {
+            socket.emit('booking_confirmed', payload);
+          }
+          
+        } else {
+          hideAllModals();
+          showToast(`✅ ${result.message || "Запись успешно создана!"}`);
+          if (socket) {
+            socket.emit('booking_confirmed', payload);
+          }
+        }
+      } else {
+        showToast(`❌ ${result.error || result.message || "Не удалось записаться"}`);
+      }
+    } catch (err) {
+      console.error("Ошибка отправки записи:", err);
+      showToast("❌ Ошибка при отправке. Повторите позже.");
+    }
+  }
+
+  // ==============================
+  // 🎯 Обработчики событий
+  // ==============================
+    UI.openBookingButtons.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      hideAllModals();
+      currentService = btn.dataset.service || btn.getAttribute('data-service') || 'boat';
+      console.log('Selected service:', currentService);
+      showModal(UI.calendarModal);
+      goToStep(1);
+    });
+  });
+    if (!btn) {
+      console.warn(`[booking.js] Кнопка 'Записаться' с индексом ${idx} не найдена!`);
+      return;
+    }
+    console.log(`[booking.js] Назначаю обработчик на кнопку 'Записаться' с текстом: '${btn.textContent.trim()}'`);
+    btn.addEventListener("click", () => {
+      console.log(`[booking.js] Клик по кнопке 'Записаться' с текстом: '${btn.textContent.trim()}'`);
+      currentService = btn.getAttribute('data-service') || 'boat';
+      console.log(`[booking.js] Тип сервиса: ${currentService}`);
+      showModal(UI.calendarModal);
+      goToStep(1);
+    });
+  });
+
+  if (UI.confirmDateBtn) {
+    UI.confirmDateBtn.addEventListener("click", () => {
+      const date = UI.bookingDateInput.value;
+      if (!date) {
+        showToast('❌ Выберите дату');
+        return;
+      }
+      updateSlotOptions(date);
+    });
+  }
+
+  if (UI.confirmContactBtn) {
+    UI.confirmContactBtn.addEventListener("click", () => {
+      if (!UI.bookingName.value.trim() || !UI.bookingPhone.value.trim()) {
+        showToast('❌ Заполните все поля');
+        return;
+      }
+      if (!validatePhone(UI.bookingPhone.value.trim())) {
+        showToast('❌ Введите корректный номер телефона');
+        return;
+      }
+      showModal(UI.confirmModal);
+      setTimeout(() => {
+        UI.confirmModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    });
+  }
+
+  if (UI.finalConfirmBtn) {
+    UI.finalConfirmBtn.addEventListener("click", submitBooking);
+  }
+
+  // Закрытие модальных окон
+  UI.modalCloseButtons.forEach((btn) => {
+    btn.addEventListener("click", hideAllModals);
+  });
+
+  // Закрытие по Escape
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      hideAllModals();
+    }
+  });
+
+  // Скрываем все модальные окна при загрузке
+  hideAllModals();
+
+  // ==============================
+  // ✅ UX улучшения
+  // ==============================
+  const focusMap = {
+    modalCalendar: "#bookingDateInput",
+    modalContact: "#bookingName"
+  };
+
+  function focusModalField(modal) {
+    const focusSelector = focusMap[modal.id];
+    if (focusSelector) {
+      const field = modal.querySelector(focusSelector);
+      if (field) field.focus();
+    }
+  }
+
+  function animateModal(modal, show = true) {
+    if (show) {
+      modal.classList.remove("hidden");
+      setTimeout(() => {
+        modal.classList.add("show");
+        focusModalField(modal);
+      }, 10);
+    } else {
+      modal.classList.remove("show");
+      setTimeout(() => {
+        modal.classList.add("hidden");
+      }, 300);
+    }
+  }
+
+  const _showModal = showModal;
+  showModal = (modal) => {
+    if (!modal) return;
+    hideAllModals();
+    animateModal(modal, true);
+  };
+
+  hideAllModals = () => {
+    [UI.calendarModal, UI.slotsModal, UI.contactModal, UI.confirmModal].forEach((m) => {
+      if (m) animateModal(m, false);
+    });
+  };
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") hideAllModals();
+  });
+
+  document.querySelectorAll(".modal").forEach((modal) => {
+    modal.addEventListener("mousedown", (e) => {
+      if (e.target === modal) hideAllModals();
+    });
+  });
+
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      const visibleModal = document.querySelector(".modal.show:not(.hidden)");
+      if (visibleModal) {
+        const btn = visibleModal.querySelector("button.btn-primary, button[type='submit']");
+        if (btn && !btn.disabled) {
+          e.preventDefault();
+          btn.click();
+        }
+      }
+    }
+  });
+
+  function goToStep(step) {
+    currentStep = step;
+    
+    if (UI.stepIndicator) {
+      UI.stepIndicator.textContent = `Шаг ${step}/4`;
+    }
+
+    const progressFill = document.getElementById("progress-fill");
+    if (progressFill) {
+      progressFill.style.width = `${(step / 4) * 100}%`;
+    }
+
+    switch(step) {
+      case 1:
+        showModal(UI.calendarModal);
+        if (UI.bookingDateInput) UI.bookingDateInput.focus();
+        break;
+      case 2:
+        showModal(UI.slotsModal);
+        if (UI.slotButtonsContainer) {
+          UI.slotButtonsContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        break;
+      case 3:
+        showModal(UI.contactModal);
+        if (UI.bookingName) UI.bookingName.focus();
+        break;
+      case 4:
+        showModal(UI.confirmModal);
+        if (UI.stepIndicator) UI.stepIndicator.textContent = `Шаг 4/4`;
+        const progressFill = document.getElementById("progress-fill");
+        if (progressFill) progressFill.style.width = `${(4 / 4) * 100}%`;
+        break;
+    }
+  }
+
+  console.log("📅 booking.js инициализирован");
+});
+
+// Вспомогательные функции
+function openModal() {
+  document.getElementById("modalCalendar").classList.remove("hidden");
+}
+
+function setBookingDateTime(selectedDate, selectedTime) {
+  const dateInput = document.getElementById('bookingDate');
+  const timeInput = document.getElementById('bookingTime');
+  if (dateInput) dateInput.value = selectedDate;
+  if (timeInput) timeInput.value = selectedTime;
+  console.log("Selected:", selectedDate, selectedTime);
+}
+
+function renderSlots(slots) {
+  const container = document.getElementById("slotButtonsContainer");
+  if (!container) {
+    console.error("❌ slotButtonsContainer не найден в DOM");
+    return;
+  }
+    
+  clearContainer(container);
+
+  if (!Array.isArray(slots) || slots.length === 0) {
+    const p = document.createElement('p');
+    p.className = 'text-center text-gray-500';
+    p.textContent = 'Нет доступных слотов на эту дату';
+    container.appendChild(p);
+    return;
+  }
+    
+  slots.forEach(slot => {
+    const button = document.createElement('button');
+    const buttonClass = slot.available ? 'btn-primary-lg' : 'btn-secondary-sm disabled';
+    button.className = `slot-btn ${buttonClass}`;
+    if (!slot.available) button.setAttribute('disabled', 'disabled');
+    button.dataset.time = slot.time;
+    button.textContent = `${slot.time} ${slot.available ? `(${slot.remaining} мест)` : '(занято)'}`;
+    container.appendChild(button);
+  });
+    
+  container.querySelectorAll('.slot-btn:not(.disabled)').forEach(button => {
+    button.addEventListener('click', () => {
+      container.querySelectorAll('.slot-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      button.classList.add('active');
+      const selectedTime = button.dataset.time;
+      if (selectedTime) {
+        document.getElementById('selectedSlot').value = selectedTime;
+        goToStep(3);
+      }
+    });
+  });
+
+  goToStep(2);
+}

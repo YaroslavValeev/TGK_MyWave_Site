@@ -5,6 +5,7 @@ from flask_wtf.csrf import validate_csrf, ValidationError as CSRFValidationError
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_restx import Api
+from flask_caching import Cache
 from prometheus_flask_exporter import PrometheusMetrics
 
 socketio = SocketIO(
@@ -22,6 +23,7 @@ socketio = SocketIO(
 csrf = CSRFProtect()
 migrate = Migrate()
 api = Api(doc='/swagger/')
+cache = Cache()
 
 def init_websocket(app):
     # Добавляем проверку CSRF токена при подключении WebSocket
@@ -72,15 +74,32 @@ def init_websocket(app):
     return socketio
 
 def init_extensions(app, db=None):
+    # Инициализация CSRF защиты
     csrf.init_app(app)
+    
+    # Инициализация CORS
     CORS(
         app,
         resources={r"/api/*": {"origins": ["https://mywavetreaning.ru", "https://www.mywave.ru"]}},
         supports_credentials=True
     )
+    
+    # Инициализация API
     api.init_app(app)
-    # Prometheus multiprocess exporter raises if PROMETHEUS_MULTIPROC_DIR
-    # is not configured. Make this robust so local dev doesn't crash.
+    
+    # Инициализация кэширования
+    try:
+        from app.config.cache_config import CACHE_CONFIG
+        cache.init_app(app, config=CACHE_CONFIG)
+        app.app = app  # Fix for cache.app attribute
+        app.logger.info("Cache initialized successfully")
+    except Exception as e:
+        app.logger.error(f"Failed to initialize cache: {e}")
+        # Fallback к базовой конфигурации кэша
+        cache.init_app(app, config={'CACHE_TYPE': 'SimpleCache'})
+        app.app = app  # Fix for cache.app attribute
+    
+    # Инициализация Prometheus метрик
     try:
         metrics = PrometheusMetrics(app)
     except ValueError as ve:
@@ -93,6 +112,8 @@ def init_extensions(app, db=None):
             # As a last resort, skip metrics but continue startup
             app.logger.exception("Failed to initialize PrometheusMetrics; continuing without metrics")
             metrics = None
+    
+    # Инициализация базы данных
     if db is not None:
         migrate.init_app(app, db)
         try:
@@ -100,3 +121,16 @@ def init_extensions(app, db=None):
             GunicornPrometheusMetrics(app, group_by='endpoint')
         except ImportError:
             pass
+    
+    # Настройка заголовков кэширования
+    @app.after_request
+    def add_cache_headers(response):
+        if request.endpoint == 'static':
+            # Статические файлы кэшируются на год
+            response.cache_control.max_age = 31536000  # 1 год
+            response.cache_control.public = True
+        elif request.endpoint and 'images.' in request.endpoint:
+            # Изображения кэшируются на неделю
+            response.cache_control.max_age = 604800  # 7 дней
+            response.cache_control.public = True
+        return response

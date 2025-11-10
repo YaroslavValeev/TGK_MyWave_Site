@@ -1,0 +1,102 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Управление изображениями{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Управление изображениями</h1>
+        <a href="{{ url_for('admin_images.upload') }}" class="btn btn-primary">
+            <i class="fas fa-upload"></i> Загрузить изображение
+        </a>
+    </div>
+
+    {% if images.items %}
+    <div class="row">
+        {% for image in images.items %}
+        <div class="col-md-3 mb-4">
+            <div class="card">
+                <img src="{{ url_for('static', filename='uploads/images/' + image.filename) }}" 
+                     class="card-img-top" 
+                     alt="{{ image.alt or image.title or 'Изображение' }}"
+                     loading="lazy">
+                <div class="card-body">
+                    <h5 class="card-title text-truncate">{{ image.title or image.orig_filename }}</h5>
+                    <p class="card-text small">
+                        <span class="badge bg-info">{{ image.group }}</span>
+                        <br>
+                        {{ image.width }}x{{ image.height }}
+                    </p>
+                    <div class="btn-group w-100">
+                        <a href="{{ url_for('admin_images.edit', id=image.id) }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button type="button" 
+                                class="btn btn-sm btn-outline-danger"
+                                onclick="confirmDelete({{ image.id }}, '{{ image.title or image.orig_filename }}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if images.pages > 1 %}
+    <nav aria-label="Навигация по страницам">
+        <ul class="pagination justify-content-center">
+            {% for page in images.iter_pages() %}
+                {% if page %}
+                    <li class="page-item {{ 'active' if page == images.page else '' }}">
+                        <a class="page-link" href="{{ url_for('admin_images.index', page=page) }}">{{ page }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="alert alert-info">
+        Нет загруженных изображений
+    </div>
+    {% endif %}
+</div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы действительно хотите удалить изображение "<span id="deleteImageName"></span>"?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Удалить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmDelete(id, name) {
+    document.getElementById('deleteImageName').textContent = name;
+    document.getElementById('deleteForm').action = "{{ url_for('admin_images.delete', id=0) }}".replace('0', id);
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

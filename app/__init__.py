@@ -13,11 +13,13 @@ from flask_socketio import SocketIO, emit
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from config import Config
+from app.patches.ssl_patch import patch_ssl, with_ssl_retry
 
 from app.database.models import db
 from app.routes.calendar_routes import calendar_bp
 from app.routes.services import services_bp
-from app.routes.book import booking_bp
+from app.routes.booking import booking_bp
+from app.routes.admin_images import admin_images_bp
 from app.extensions import init_extensions, init_websocket, socketio, api
 from app.routes.api import api_ns
 
@@ -50,6 +52,12 @@ def create_app(config_name="development"):
     template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates"))
     static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "static"))
     app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+    
+    # Применяем SSL-патч
+    if patch_ssl():
+        app.logger.info("SSL patch applied successfully")
+    else:
+        app.logger.warning("SSL patch failed to apply")
 
     @app.route('/api/csrf-token', methods=['GET'])
     def get_csrf_token():
@@ -139,6 +147,15 @@ def create_app(config_name="development"):
     # Затем остальные расширения
     init_extensions(app, db)
     init_websocket(app)
+    
+    # Инициализация кэширования
+    from app.extensions import cache
+    from app.config.cache_config import CACHE_CONFIG
+    cache.init_app(app, config=CACHE_CONFIG)
+
+    # Регистрация blueprint для изображений
+    from app.routes.images import images
+    app.register_blueprint(images)
 
     # ----------------------------
     # CSP nonce: генерация на запрос и прокидка в шаблоны
@@ -221,6 +238,7 @@ def create_app(config_name="development"):
             app.logger.exception('Failed to register telegram blueprint; continuing without telegram')
     app.register_blueprint(content_bp)
     app.register_blueprint(booking_api_bp)
+    app.register_blueprint(admin_images_bp)
     api.add_namespace(api_ns, path='/api')
 
     # Exempt API blueprints from CSRF to allow programmatic API clients/tests

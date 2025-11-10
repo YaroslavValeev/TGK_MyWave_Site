@@ -1,0 +1,135 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Загрузка изображения{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Загрузка изображения</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.csrf_token }}
+                        
+                        <div class="mb-3">
+                            <label for="image" class="form-label">{{ form.image.label }}</label>
+                            {{ form.image(class="form-control") }}
+                            {% if form.image.errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.image.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="title" class="form-label">{{ form.title.label }}</label>
+                            {{ form.title(class="form-control") }}
+                            {% if form.title.errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.title.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="alt" class="form-label">{{ form.alt.label }}</label>
+                            {{ form.alt(class="form-control") }}
+                            {% if form.alt.errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.alt.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="caption" class="form-label">{{ form.caption.label }}</label>
+                            {{ form.caption(class="form-control", rows=3) }}
+                            {% if form.caption.errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.caption.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="group" class="form-label">{{ form.group.label }}</label>
+                            {{ form.group(class="form-control") }}
+                            {% if form.group.errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.group.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="order" class="form-label">{{ form.order.label }}</label>
+                            {{ form.order(class="form-control", type="number") }}
+                            {% if form.order.errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.order.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload"></i> Загрузить
+                            </button>
+                            <a href="{{ url_for('admin_images.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Назад
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+// Предпросмотр изображения
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.createElement('img');
+            preview.src = e.target.result;
+            preview.style.maxWidth = '100%';
+            preview.style.maxHeight = '300px';
+            preview.className = 'mt-3';
+            
+            const previewContainer = document.getElementById('imagePreview');
+            if (previewContainer) {
+                previewContainer.innerHTML = '';
+                previewContainer.appendChild(preview);
+            } else {
+                const container = document.createElement('div');
+                container.id = 'imagePreview';
+                container.className = 'text-center';
+                container.appendChild(preview);
+                document.getElementById('image').parentNode.appendChild(container);
+            }
+        }
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

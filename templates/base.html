@@ -31,6 +31,9 @@
   <!-- Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/services-carousel.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/preloader.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/image-effects.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/modals.css') }}" />
 
   <!-- Flatpickr -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -185,6 +188,8 @@
   {% block scripts %}{% endblock %}
   <script src="{{ url_for('static', filename='js/services-carousel.js') }}"></script>
   <script src="{{ url_for('static', filename='js/inline.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/preloader.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/image-effects.js') }}"></script>
 
   <!-- booking.js должен быть после блока content и всех модалок -->
   <script src="{{ url_for('static', filename='js/booking.js') }}"></script>

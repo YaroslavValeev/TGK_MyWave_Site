@@ -1,0 +1,101 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Редактирование изображения{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Редактирование изображения</h2>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <img src="{{ url_for('static', filename='uploads/images/' + image.filename) }}"
+                             alt="{{ image.alt or image.title or 'Изображение' }}"
+                             class="img-fluid mb-2"
+                             style="max-height: 300px;">
+                        <div class="text-muted">
+                            {{ image.width }}x{{ image.height }} | {{ (image.size / 1024)|round(1) }} KB
+                        </div>
+                    </div>
+
+                    <form method="POST">
+                        {{ form.csrf_token }}
+                        
+                        <div class="mb-3">
+                            <label for="title" class="form-label">{{ form.title.label }}</label>
+                            {{ form.title(class="form-control") }}
+                            {% if form.title.errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.title.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="alt" class="form-label">{{ form.alt.label }}</label>
+                            {{ form.alt(class="form-control") }}
+                            {% if form.alt.errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.alt.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="caption" class="form-label">{{ form.caption.label }}</label>
+                            {{ form.caption(class="form-control", rows=3) }}
+                            {% if form.caption.errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.caption.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="group" class="form-label">{{ form.group.label }}</label>
+                            {{ form.group(class="form-control") }}
+                            {% if form.group.errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.group.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="order" class="form-label">{{ form.order.label }}</label>
+                            {{ form.order(class="form-control", type="number") }}
+                            {% if form.order.errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.order.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Сохранить
+                            </button>
+                            <a href="{{ url_for('admin_images.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Назад
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

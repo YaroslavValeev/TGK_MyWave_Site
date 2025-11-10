@@ -1,0 +1,145 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Панель управления{% endblock %}
+
+{% block admin_content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Обзор</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>{{ blog_posts_count }}</h3>
+                        <p>Блог посты</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-blog"></i>
+                    </div>
+                    <a href="{{ url_for('admin_blog.index') }}" class="small-box-footer">
+                        Подробнее <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>{{ events_count }}</h3>
+                        <p>События</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <a href="{{ url_for('admin_events.index') }}" class="small-box-footer">
+                        Подробнее <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>{{ images_count }}</h3>
+                        <p>Изображения</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-images"></i>
+                    </div>
+                    <a href="{{ url_for('admin_images.index') }}" class="small-box-footer">
+                        Подробнее <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>{{ users_count }}</h3>
+                        <p>Пользователи</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <a href="{{ url_for('admin_users.index') }}" class="small-box-footer">
+                        Подробнее <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Последние действия</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            {% for action in recent_actions %}
+                            <div>
+                                <i class="fas fa-{{ action.icon }} bg-blue"></i>
+                                <div class="timeline-item">
+                                    <span class="time">
+                                        <i class="fas fa-clock"></i> {{ action.time }}
+                                    </span>
+                                    <h3 class="timeline-header">{{ action.title }}</h3>
+                                    <div class="timeline-body">
+                                        {{ action.description }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <p class="text-muted">Нет недавних действий</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Аналитика</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="visitsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Демо-данные для графика
+    const ctx = document.getElementById('visitsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн'],
+            datasets: [{
+                label: 'Посещения',
+                data: [12, 19, 3, 5, 2, 3],
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

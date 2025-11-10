@@ -1,0 +1,223 @@
+/* Модальные окна */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4);
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.modal.show {
+  display: flex !important;
+  opacity: 1;
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 500px;
+  border-radius: 8px;
+  position: relative;
+  transform: scale(0.7);
+  transition: transform 0.3s ease-in-out;
+}
+
+.modal.show .modal-content {
+  transform: scale(1);
+}
+
+.close-modal {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  position: absolute;
+  right: 20px;
+  top: 10px;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Слоты времени */
+.slot-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.slot-btn:hover:not(:disabled) {
+  background-color: #f0f0f0;
+  border-color: #aaa;
+}
+
+.slot-btn.active {
+  background-color: #4CAF50;
+  color: white;
+  border-color: #4CAF50;
+}
+
+.slot-btn:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Прогресс-бар */
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: #f0f0f0;
+  margin: 20px 0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+#progress-fill {
+  width: 25%;
+  height: 100%;
+  background-color: #4CAF50;
+  transition: width 0.3s ease;
+}
+
+#step-indicator {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Сообщения об ошибках и загрузке */
+.loading-slots {
+  text-align: center;
+  padding: 20px;
+}
+
+.error-message {
+  background-color: #fff3f3;
+  border: 1px solid #ffd1d1;
+  padding: 15px;
+  border-radius: 4px;
+  margin: 10px 0;
+  text-align: center;
+}
+
+.error-message .error-icon {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.retry-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.retry-button:hover {
+  background-color: #d32f2f;
+}
+
+.no-slots-message {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+/* Toast уведомления */
+.toast-success {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 4px;
+  z-index: 1000;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translate(-50%, 100%); }
+  to { transform: translate(-50%, 0); }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    margin: 10px;
+    padding: 15px;
+  }
+  
+  .slot-btn {
+    padding: 12px; /* Увеличенная область нажатия для мобильных */
+  }
+}
+
+/* Спиннер загрузки */
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 20px auto;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Календарь */
+.calendar-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.form-group {
+  position: relative;
+  margin-bottom: 15px;
+}

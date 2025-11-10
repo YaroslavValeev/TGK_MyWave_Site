@@ -28,32 +28,62 @@ def booking_success_view():
     # Контент для разных типов услуг
     CONTENT_MAPPING = {
         'boat': {
-            "title": "Запись подтверждена!",
+            "title": "Запись на катер подтверждена!",
             "sections": [
                 {
                     "h": "Что взять с собой",
-                    "p": "Полотенце, вода, отличное настроение.",
+                    "p": "Полотенце, вода, сменная одежда, солнцезащитный крем, отличное настроение.",
                     "img": "images/booking/gear-checklist-v1.webp"
                 },
                 {
                     "h": "Что вас ждёт на причале",
-                    "p": "Инструктаж по безопасности, знакомство с лодкой, быстрый брифинг и на воду.",
+                    "p": "Инструктаж по безопасности, знакомство с лодкой, быстрый брифинг и незабываемое время на воде.",
                     "img": "images/booking/dock-experience-v1.webp"
                 }
             ]
         },
         'gym': {
-            "title": "Запись подтверждена!",
+            "title": "Запись на тренировку подтверждена!",
             "sections": [
                 {
                     "h": "Что взять с собой",
-                    "p": "Полотенце, воду, хорошее настроение.",
-                    "img": "images/booking/gym-checklist-v1.webp"
+                    "p": "Спортивная одежда, сменная обувь, полотенце, вода.",
+                    "img": "images/booking/gear-checklist-v1.webp"
                 },
                 {
                     "h": "Что вас ждёт",
-                    "p": "Тренировка на баланс, ловкость, сила, исполнение трюков, нейронные связи в биомеханнике движений, подготовка к соревнованиям и тренерской деятельности и многое другое о индустрии вейксерфинга.",
+                    "p": "Тренировка на баланс-бордах, отработка техники, силовые упражнения для вейксерфинга, работа над координацией.",
                     "img": "images/booking/gym-experience-v1.webp"
+                }
+            ]
+        },
+        'wake_discovery': {
+            "title": "Запись на Wake Discovery подтверждена!",
+            "sections": [
+                {
+                    "h": "Что взять с собой",
+                    "p": "Купальный костюм, полотенце, сменная одежда, солнцезащитный крем.",
+                    "img": "images/booking/gear-checklist-v1.webp"
+                },
+                {
+                    "h": "Что вас ждёт",
+                    "p": "Знакомство с вейксерфингом, базовый инструктаж, практика на воде с инструктором.",
+                    "img": "images/booking/wake-experience-v1.webp"
+                }
+            ]
+        },
+        'wake_camp': {
+            "title": "Запись на Wake Camp подтверждена!",
+            "sections": [
+                {
+                    "h": "Что взять с собой",
+                    "p": "Спортивная и сменная одежда, купальный костюм, полотенце, солнцезащитный крем.",
+                    "img": "images/booking/gear-checklist-v1.webp"
+                },
+                {
+                    "h": "Что вас ждёт",
+                    "p": "Интенсивные тренировки, теория и практика вейксерфинга, работа с инструктором, прогресс в технике.",
+                    "img": "images/booking/dock-experience-v1.webp"
                 }
             ]
         }
@@ -79,6 +109,27 @@ def booking_success_view():
 @booking_bp.route("/book", methods=["GET", "POST"])
 def book():
     form = BookingForm()
+    # Получаем контент для модального окна подтверждения
+    SUCCESS_VIEW_CONTENT = {
+        "title": "Запись на катер подтверждена!",
+        "sections": [
+            {
+                "h": "Что взять с собой",
+                "p": "Полотенце, вода, сменная одежда, солнцезащитный крем, отличное настроение.",
+                "img": "images/booking/gear-checklist-v1.webp"
+            },
+            {
+                "h": "Что вас ждёт на причале", 
+                "p": "Инструктаж по безопасности, знакомство с лодкой, быстрый брифинг и незабываемое время на воде.",
+                "img": "images/booking/dock-experience-v1.webp"
+            }
+        ],
+        "cta": {
+            "primary": {"text": "Готово", "action": "close"},
+            "secondary": {"text": "Поделиться", "action": "share"}
+        }
+    }
+    
     if request.method == "POST":
         if form.validate_on_submit():
             date = form.date.data
@@ -88,7 +139,7 @@ def book():
             # Валидация телефона
             if not re.match(r'^\+7\d{10}$', phone):
                 flash("Неверный номер телефона. Введите в формате +7XXXXXXXXXX", "danger")
-                return render_template("book.html", form=form), 400
+                return render_template("book.html", form=form, content=SUCCESS_VIEW_CONTENT), 400
             try:
                 # Проверка на занятость слота (можно вынести в отдельную функцию)
                 exists = Booking.query.filter_by(date=date, time=time, phone=phone).first()
@@ -117,11 +168,11 @@ def book():
             except Exception as e:
                 logger.error(f"Ошибка при бронировании: {e}")
                 flash("Ошибка при бронировании. Попробуйте позже.", "danger")
-                return render_template("book.html", form=form), 500
+                return render_template("book.html", form=form, content=SUCCESS_VIEW_CONTENT), 500
         else:
             flash("Проверьте правильность заполнения формы", "danger")
-            return render_template("book.html", form=form), 400
-    return render_template("book.html", form=form)
+            return render_template("book.html", form=form, content=SUCCESS_VIEW_CONTENT), 400
+    return render_template("book.html", form=form, content=SUCCESS_VIEW_CONTENT)
 
 
 # ------------------------------------------------------------

@@ -413,6 +413,12 @@ def book_slot():
         # Проверяем формат входных данных
         if not request.is_json:
             return jsonify({'error': 'Ожидается JSON'}), 400
+            
+        # Проверяем CSRF токен
+        from app.services.csrf import check_csrf
+        if not check_csrf():
+            current_app.logger.warning("Неверный CSRF токен при попытке бронирования")
+            return jsonify({'error': 'Ошибка безопасности: неверный CSRF токен'}), 403
 
         # Валидация данных через схему
         data = BookingSchema().load(request.get_json())

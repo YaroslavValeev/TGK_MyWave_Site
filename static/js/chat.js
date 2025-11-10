@@ -270,13 +270,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Функция отправки сообщения на сервер
     async function sendMessageToServer(message) {
+        if (!message) {
+            console.error('Получено пустое сообщение');
+            return;
+        }
         updateContext('user', message);
         try {
             console.log('Отправка сообщения:', message);
             const endpoint = (function(){
-                const t = String(message).toLowerCase().trim();
+                const t = String(message || '').toLowerCase().trim();
+                if (!t) return '/chat/api';
                 if (/^\s*\d{1,2}:\d{2}\s*$/.test(t)) return '/api/booking';
-                if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return '/api/booking';
+                if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return '/api/booking'; 
                 if (/(сегодня|завтра|послезавтра|запис|трениров|слот|время)/i.test(t)) return '/api/booking';
                 return '/chat/api';
             })();
@@ -650,14 +655,15 @@ document.addEventListener("DOMContentLoaded", () => {
       sendBtn.disabled = true;
       // Отправляем сообщение на /chat/api
       try {
-        const endpoint2 = (function(){
-            const t = String(message).toLowerCase().trim();
+        const endpoint = (function(){
+            const t = String(message || '').toLowerCase().trim();
+            if (!t) return '/chat/api';
             if (/^\s*\d{1,2}:\d{2}\s*$/.test(t)) return '/api/booking';
             if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return '/api/booking';
             if (/(сегодня|завтра|послезавтра|запис|трениров|слот|время)/i.test(t)) return '/api/booking';
             return '/chat/api';
         })();
-        const response = await fetch(endpoint2, {
+    const response = await fetch(endpoint, {
           method: "POST",
           headers: Utils.getHeaders(),
           body: JSON.stringify({ message })
@@ -680,8 +686,8 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (err) {
         appendChatMessage(err.message || "Ошибка соединения с сервером", "bot");
       }
-      chatInput.value = "";
-      sendBtn.disabled = true;
+            chatInput.value = "";
+            sendBtn.disabled = false;
     });
     chatInput.addEventListener("input", () => {
       sendBtn.disabled = !chatInput.value.trim();
@@ -716,15 +722,7 @@ function validateBotResponse(response) {
     return required.every(section => response.includes(section));
 }
 
-// В обработчике ответа от сервера:
-if (data.response) {
-    if (validateBotResponse(data.response)) {
-        appendMessage('bot', data.response);
-    } else {
-        console.warn('Ответ не соответствует формату');
-        appendMessage('bot', 'Извините, попробуйте переформулировать вопрос');
-    }
-}
+// (Removed stray global handler that referenced 'data' outside of any response context)
 
 function formatBotResponse(text) {
     // Return a DocumentFragment with safe, escaped nodes instead of raw HTML

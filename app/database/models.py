@@ -24,6 +24,65 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+# --- Изображения ---
+class Image(db.Model):
+    """
+    Модель для хранения метаданных изображений
+    """
+    __tablename__ = 'image'
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255), nullable=False)  # Имя файла с расширением
+    orig_filename = db.Column(db.String(255), nullable=False)  # Оригинальное имя файла
+    mime_type = db.Column(db.String(128), nullable=False)  # MIME тип
+    size = db.Column(db.Integer, nullable=False)  # Размер в байтах
+    width = db.Column(db.Integer)  # Ширина в пикселях
+    height = db.Column(db.Integer)  # Высота в пикселях
+    title = db.Column(db.String(255))  # Название изображения
+    alt = db.Column(db.String(255))  # Alt текст
+    caption = db.Column(db.Text)  # Подпись к изображению
+    group = db.Column(db.String(64), index=True)  # Группа изображений (например, "services", "blog")
+    order = db.Column(db.Integer, default=0)  # Порядок в группе
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'))  # Кто загрузил
+    optimized = db.Column(db.Boolean, default=False)  # Было ли оптимизировано
+    format = db.Column(db.String(32))  # Формат изображения
+    focal_point = db.Column(db.String(32))  # Точка фокуса для кропа (x,y)
+    meta = db.Column(db.JSON)  # Дополнительные метаданные
+
+    def __repr__(self):
+        return f'<Image {self.filename}>'
+
+    @property
+    def url(self):
+        """
+        Возвращает URL изображения
+        """
+        return f'/images/{self.filename}'
+        
+    @property
+    def thumbnail_url(self):
+        """
+        Возвращает URL миниатюры
+        """
+        return f'/images/{self.filename}?w=150&h=150'
+
+    @property 
+    def srcset(self):
+        """
+        Возвращает srcset для респонсивных изображений
+        """
+        sizes = {
+            'small': '800w',
+            'medium': '1024w',
+            'large': '1920w',
+            'xlarge': '2560w'
+        }
+        return ', '.join([
+            f'{self.url}?w={int(size)} {desc}'
+            for size, desc in sizes.items()
+        ])
+
 # --- Аналитика ---
 class Analytics(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -84,6 +143,8 @@ class BlogPost(db.Model):
     slug = db.Column(db.String(100), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     chat_messages = db.relationship('ChatMessage', backref='blog_post', lazy=True)
+    image_id = db.Column(db.Integer, db.ForeignKey('image.id'))  # Обложка поста
+    image = db.relationship('Image', backref='blog_posts', lazy=True)
 
 class ChatMessage(db.Model):
     __tablename__ = 'chat_message'

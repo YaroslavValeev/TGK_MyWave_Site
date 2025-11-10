@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content_header %}
+<div class="container-fluid">
+    <div class="row mb-2">
+        <div class="col-sm-6">
+            <h1 class="m-0">{% block admin_title %}Административная панель{% endblock %}</h1>
+        </div>
+        <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.index') }}">Главная</a></li>
+                {% block breadcrumbs %}{% endblock %}
+            </ol>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Меню</h3>
+                </div>
+                <div class="card-body p-0">
+                    <nav class="nav flex-column">
+                        <a class="nav-link {% if request.endpoint == 'admin.index' %}active{% endif %}" 
+                           href="{{ url_for('admin.index') }}">
+                            <i class="fas fa-home"></i> Главная
+                        </a>
+                        <a class="nav-link {% if request.endpoint.startswith('admin_blog') %}active{% endif %}" 
+                           href="{{ url_for('admin_blog.index') }}">
+                            <i class="fas fa-blog"></i> Блог
+                        </a>
+                        <a class="nav-link {% if request.endpoint.startswith('admin_events') %}active{% endif %}" 
+                           href="{{ url_for('admin_events.index') }}">
+                            <i class="fas fa-calendar"></i> События
+                        </a>
+                        <a class="nav-link {% if request.endpoint.startswith('admin_images') %}active{% endif %}" 
+                           href="{{ url_for('admin_images.index') }}">
+                            <i class="fas fa-images"></i> Изображения
+                        </a>
+                        <a class="nav-link {% if request.endpoint.startswith('admin_users') %}active{% endif %}" 
+                           href="{{ url_for('admin_users.index') }}">
+                            <i class="fas fa-users"></i> Пользователи
+                        </a>
+                        <a class="nav-link {% if request.endpoint.startswith('admin_settings') %}active{% endif %}" 
+                           href="{{ url_for('admin_settings.index') }}">
+                            <i class="fas fa-cog"></i> Настройки
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            {% block admin_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Дополнительные скрипты для админки -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+{% endblock %}
