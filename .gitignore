@@ -66,3 +66,8 @@ token.json
 .DS_Store
 Thumbs.db
 EOF
+# Secrets
+tmp_token.txt
+client_secret*.json
+configs/service_account.json
+*.json
