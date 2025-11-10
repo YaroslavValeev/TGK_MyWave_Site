@@ -10,7 +10,10 @@ __pycache__/
 .env
 *.env
 credentials.json
-
+# Virtual environments
+venv/
+.venv/
+env/
 config/service_account.json
 # IDE
 .vscode/
