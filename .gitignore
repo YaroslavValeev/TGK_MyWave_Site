@@ -36,3 +36,30 @@ knowledge_base/
 instance/knowledge_base/
 *.p12
 *.pem
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Secrets
+credentials.json
+client_secret*.json
+*.key
+*.pem
+token.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+EOF
