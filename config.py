@@ -45,6 +45,14 @@ class Config:
     CHAT_SYSTEM_PROMPT = "You are a helpful assistant."
 
     VERSION = "1.0.0"
+    
+    # Feature flags for new features
+    ENABLE_ANALYTICS = os.getenv('ENABLE_ANALYTICS', 'True') == 'True'
+    ENABLE_RECOMMENDATIONS = os.getenv('ENABLE_RECOMMENDATIONS', 'True') == 'True'
+    ENABLE_SITEMAP = os.getenv('ENABLE_SITEMAP', 'True') == 'True'
+    
+    # Sitemap build timestamp (for lastmod)
+    SITEMAP_BUILD_TS = os.getenv('SITEMAP_BUILD_TS') or None
 
 class DevelopmentConfig(Config):
     """Конфигурация для разработки."""

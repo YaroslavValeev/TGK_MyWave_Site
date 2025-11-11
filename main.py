@@ -35,6 +35,12 @@ def _gen_csp_nonce():
     g.csp_nonce = secrets.token_urlsafe(16)
 
 
+@app.context_processor
+def inject_nonce():
+    """Инжектируем csp_nonce в все шаблоны"""
+    return {"csp_nonce": getattr(g, "csp_nonce", "")}
+
+
 @app.after_request
 def _set_csp(response):
     # Разрешаем только собственные скрипты + JSON-LD с nonce
@@ -70,6 +76,16 @@ def analytics_event():
     return {"ok": True}
 # Note: analytics_log route is implemented in `app.create_app()` (app/__init__.py).
 # To avoid duplicate endpoint registration we rely on the implementation there.
+
+# Register analytics blueprint for event logging
+if os.getenv('ENABLE_ANALYTICS', 'True') == 'True':
+    from app.routes.analytics_api import analytics_bp
+    app.register_blueprint(analytics_bp)
+
+# Register calculator blueprint for history saving
+if os.getenv('ENABLE_RECOMMENDATIONS', 'True') == 'True':
+    from app.routes.calculator_api import calculator_api
+    app.register_blueprint(calculator_api)
 
 if __name__ == '__main__':
     # Run with eventlet; disable the Flask reloader to avoid multiple processes

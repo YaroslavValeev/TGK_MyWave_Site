@@ -156,3 +156,45 @@ python app.py
 - `static/` - статические файлы (CSS, JS, изображения)
 - `.env` - переменные окружения (не коммитится)
 - `.env.sample` - шаблон для `.env`
+
+## 🔒 Content Security Policy & Nonce Strategy
+
+Все скрипты на сайте защищены через **nonce-based CSP**:
+
+### Как это работает
+1. На каждом запросе генерируется уникальный `nonce` (случайная строка)
+2. `nonce` передаётся во все шаблоны через `{{ csp_nonce }}`
+3. Inline-скрипты должны иметь атрибут `nonce="{{ csp_nonce }}"`
+
+---
+
+## 📊 Analytics & Sheets Integration
+
+Новые события логируются в Google Sheets через POST `/analytics/log`:
+
+### Поддерживаемые события
+- `reco_show` — блок рекомендаций отрисован
+- `reco_click` — пользователь кликнул на карточку
+
+### Retry-логика
+- При ошибке записи в Sheets функция повторяет попытку до 3 раз
+- Exponential backoff: 1s, 2s, 4s
+
+---
+
+## 📝 Feature Flags
+
+```bash
+# .env
+ENABLE_ANALYTICS=True
+ENABLE_RECOMMENDATIONS=True
+ENABLE_SITEMAP=True
+```
+
+## 🚀 Smoke-тесты
+
+```bash
+pytest tests/smoke_test_csp.py -v
+pytest tests/smoke_test_routes.py -v
+pytest tests/smoke_test_sheets.py -v
+```

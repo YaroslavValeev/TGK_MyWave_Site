@@ -7,6 +7,7 @@
     <div>
         {{ post.content | safe }}
     </div>
+    {% include 'partials/reco_block.html' %}
     <a href="{{ url_for('blog.blog') }}" class="btn">← К списку статей</a>
 </section>
 {% endblock %}

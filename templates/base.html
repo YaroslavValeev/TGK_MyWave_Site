@@ -42,7 +42,7 @@
 
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-343773438"></script>
-  <script nonce="{{ g.csp_nonce }}">
+  <script nonce="{{ csp_nonce }}">
     window.dataLayer = window.dataLayer || [];
     function gtag(){ dataLayer.push(arguments); }
     gtag('js', new Date());
@@ -237,5 +237,8 @@
       });
     }
   </script>
+
+  <!-- Recommendations & Analytics -->
+  <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/reco.js') }}" defer></script>
 </body>
 </html>

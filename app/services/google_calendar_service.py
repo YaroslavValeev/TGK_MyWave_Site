@@ -6,6 +6,11 @@ from flask import current_app
 
 logger = logging.getLogger(__name__)
 
+
+class CalendarServiceError(Exception):
+    """Raised when a calendar service operation fails."""
+    pass
+
 def _get_calendar_service():
     """Get authenticated Google Calendar service."""
     creds = service_account.Credentials.from_service_account_file(
@@ -51,11 +56,11 @@ def create_event(date: str, time: str, duration_minutes: int = 60) -> dict:
             calendarId=calendar_id, 
             body=event
         ).execute()
-        logger.info(f"Created calendar event: {created_event['id']}")
+        logger.debug(f"Created calendar event: {created_event['id']}")
         return created_event
     except Exception as e:
         logger.error(f"Failed to create calendar event: {e}")
-        raise
+        raise CalendarServiceError(f"Could not create event: {str(e)}")
 
 def get_events(start_date: str, end_date: str = None) -> list:
     """Get calendar events between start_date and optional end_date.
@@ -122,11 +127,11 @@ def update_event(event_id: str, **updates) -> dict:
             body=event
         ).execute()
         
-        logger.info(f"Updated calendar event: {event_id}")
+        logger.debug(f"Updated calendar event: {event_id}")
         return updated_event
     except Exception as e:
         logger.error(f"Failed to update calendar event: {e}")
-        raise
+        raise CalendarServiceError(f"Could not update event: {str(e)}")
 
 def delete_event(event_id: str) -> bool:
     """Delete a calendar event.

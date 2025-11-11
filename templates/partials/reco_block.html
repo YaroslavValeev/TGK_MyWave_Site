@@ -1,0 +1,16 @@
+{# Блок рекомендаций — общий для всех контекстов (index, post, projects, success-view) #}
+<section class="reco-block">
+  <h3>Вам может понравиться</h3>
+  <div class="reco-grid">
+    <div class="reco-item">
+      <img src="{{ url_for('static', filename='images/wake_board.jpg') }}" alt="Тренировки за катером" loading="lazy">
+      <p>Тренировки за катером с тренером MyWave</p>
+      <a href="{{ url_for('services.wakesurf_safari') }}" class="btn-secondary">Подробнее</a>
+    </div>
+    <div class="reco-item">
+      <img src="{{ url_for('static', filename='images/balans_trick_trening.jpg') }}" alt="Баланс борд" loading="lazy">
+      <p>Баланс-борд MyWave для отработки техники</p>
+      <a href="#store" class="btn-secondary">Купить</a>
+    </div>
+  </div>
+</section>

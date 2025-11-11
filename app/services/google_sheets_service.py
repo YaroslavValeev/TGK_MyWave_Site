@@ -191,3 +191,49 @@ def update_record(spreadsheet_id=None, worksheet_name=None, range_=None, values=
     except Exception as e:
         logger.error(f"Ошибка обновления записи в Google Sheets: {e}")
         raise
+
+
+def log_analytics_event(event: dict, sheet_id=None, worksheet="Analitycs"):
+    """
+    Логирует событие аналитики (рекомендации, клики) в Google Sheets.
+    
+    Args:
+        event: dict with keys {ts, event, context, rule_id, user_key, ...}
+        sheet_id: spreadsheet ID (defaults to SPREADSHEET_ID)
+        worksheet: worksheet name (defaults to "Analitycs")
+    
+    Returns:
+        result from Google Sheets API
+    """
+    import time
+    import json
+    
+    max_retries = 3
+    retry_delay = 1  # начальная задержка в секундах
+    
+    for attempt in range(max_retries):
+        try:
+            values = [
+                event.get("ts", ""),
+                event.get("event", ""),
+                event.get("context", ""),
+                event.get("user_key", ""),
+                event.get("rule_id", ""),
+                json.dumps(event.get("meta", {}), ensure_ascii=False) if event.get("meta") else ""
+            ]
+            
+            result = append_record(
+                spreadsheet_id=sheet_id or SPREADSHEET_ID,
+                worksheet_name=worksheet,
+                values=values
+            )
+            logger.debug(f"Analytics event logged: {event.get('event')} at {event.get('ts')}")
+            return result
+        except Exception as e:
+            if attempt < max_retries - 1:
+                logger.warning(f"Retry {attempt + 1}/{max_retries} for analytics event: {e}")
+                time.sleep(retry_delay)
+                retry_delay *= 2  # exponential backoff
+            else:
+                logger.error(f"Failed to log analytics event after {max_retries} attempts: {e}")
+                # не рейзим, чтобы не блокировать клиент
