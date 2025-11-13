@@ -33,8 +33,10 @@ def register_default_tools(app=None):
                 projects = [p for p in projects if p.get('slug') == slug]
             return {'projects': projects}
 
+        from app.ai.tools_schema import get_schema_for
+
         gateway.register_tool(
-            ToolDefinition(name='get_services', description='List available services/projects'),
+            ToolDefinition(name='get_services', description='List available services/projects', schema=get_schema_for('get_services')),
             get_services_tool,
         )
 
@@ -47,7 +49,7 @@ def register_default_tools(app=None):
             return {'date': date, 'slots': slots}
 
         gateway.register_tool(
-            ToolDefinition(name='get_available_slots', description='Get available slots for a date'),
+            ToolDefinition(name='get_available_slots', description='Get available slots for a date', schema=get_schema_for('get_available_slots')),
             get_slots_tool,
         )
 
@@ -64,7 +66,7 @@ def register_default_tools(app=None):
             return result
 
         gateway.register_tool(
-            ToolDefinition(name='create_booking', description='Create booking on sheets'),
+            ToolDefinition(name='create_booking', description='Create booking on sheets', schema=get_schema_for('create_booking')),
             create_booking_tool,
         )
 

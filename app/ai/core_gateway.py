@@ -18,6 +18,9 @@ from dataclasses import dataclass
 from typing import Any, Callable, Dict, Optional
 import json
 import os
+import logging
+import time
+import uuid
 
 
 @dataclass
@@ -79,18 +82,100 @@ class CoreAIGateway:
     def __init__(self, client: OpenAIClientInterface, system_prompt: Optional[str] = None):
         self.client = client
         self.system_prompt = system_prompt or "You are a helpful assistant."
-        self.tools: Dict[str, Callable[[Dict[str, Any]], Any]] = {}
+        # store mapping: tool_name -> {'def': ToolDefinition, 'fn': callable}
+        self.tools: Dict[str, Dict[str, Any]] = {}
 
     def register_tool(self, tool: ToolDefinition, fn: Callable[[Dict[str, Any]], Any]) -> None:
         if tool.name in self.tools:
             raise ValueError(f"tool already registered: {tool.name}")
-        self.tools[tool.name] = fn
+        self.tools[tool.name] = {'def': tool, 'fn': fn}
 
     def call_tool(self, tool_name: str, payload: Dict[str, Any]) -> Any:
-        fn = self.tools.get(tool_name)
-        if fn is None:
+        entry = self.tools.get(tool_name)
+        if entry is None:
             raise KeyError(f"unknown tool: {tool_name}")
-        return fn(payload)
+
+        tool_def: ToolDefinition = entry.get('def')
+        fn: Callable[[Dict[str, Any]], Any] = entry.get('fn')
+
+        # Tracing / logging: generate a tool_call_id
+        tool_call_id = str(uuid.uuid4())
+        logger = logging.getLogger(__name__)
+        logger.info("tool_call.start", extra={"tool": tool_name, "tool_call_id": tool_call_id})
+
+        # expose last tool call id on the gateway instance for callers that need it
+        try:
+            self._last_tool_call_id = tool_call_id
+        except Exception:
+            pass
+
+        # Validate payload against tool schema if provided
+        if tool_def and tool_def.schema:
+            try:
+                # Lazy import to avoid adding jsonschema as a hard runtime dep for code paths
+                from jsonschema import validate as _validate
+                from jsonschema.exceptions import ValidationError as _ValidationError
+
+                _validate(instance=payload or {}, schema=tool_def.schema)
+            except Exception as e:
+                # Normalize jsonschema ValidationError and re-raise for callers to handle
+                logger.warning("tool_call.validation_failed", extra={"tool": tool_name, "tool_call_id": tool_call_id, "reason": str(e)})
+                raise e
+
+        # Retries/backoff configuration via env
+        try:
+            retry_count = int(os.environ.get('TOOL_RETRY_COUNT', '2'))
+        except Exception:
+            retry_count = 2
+        try:
+            backoff_base = float(os.environ.get('TOOL_RETRY_BACKOFF_SEC', '0.5'))
+        except Exception:
+            backoff_base = 0.5
+
+        # Exceptions that should NOT be retried
+        non_retryable = ()
+        try:
+            from jsonschema.exceptions import ValidationError as _ValidationError2
+            non_retryable = (_ValidationError2, ValueError, KeyError)
+        except Exception:
+            non_retryable = (ValueError, KeyError)
+
+        attempt = 0
+        start_ts = time.time()
+        last_exc = None
+        while attempt <= retry_count:
+            try:
+                attempt += 1
+                logger.debug("tool_call.attempt", extra={"tool": tool_name, "tool_call_id": tool_call_id, "attempt": attempt})
+                result = fn(payload)
+                elapsed = time.time() - start_ts
+                logger.info("tool_call.success", extra={"tool": tool_name, "tool_call_id": tool_call_id, "attempts": attempt, "elapsed": elapsed})
+                # ensure last id remains accessible
+                try:
+                    self._last_tool_call_id = tool_call_id
+                except Exception:
+                    pass
+                return result
+            except Exception as exc:
+                last_exc = exc
+                # If non-retryable exception, re-raise immediately
+                if isinstance(exc, non_retryable):
+                    logger.error("tool_call.failed_non_retryable", extra={"tool": tool_name, "tool_call_id": tool_call_id, "attempt": attempt, "error": str(exc)})
+                    raise
+
+                # If we've exhausted retries, raise
+                if attempt > retry_count:
+                    elapsed = time.time() - start_ts
+                    logger.error("tool_call.failed", extra={"tool": tool_name, "tool_call_id": tool_call_id, "attempts": attempt, "elapsed": elapsed, "error": str(exc)})
+                    raise
+
+                # Otherwise sleep backing off and retry
+                sleep_for = backoff_base * (2 ** (attempt - 1))
+                logger.warning("tool_call.retrying", extra={"tool": tool_name, "tool_call_id": tool_call_id, "attempt": attempt, "sleep": sleep_for, "error": str(exc)})
+                time.sleep(sleep_for)
+
+        # If we exit loop, raise last exception
+        raise last_exc
 
     def handle_message(self, user_message: str, user_id: Optional[str] = None) -> Dict[str, Any]:
         """Send message to client and handle possible tool-call responses.
