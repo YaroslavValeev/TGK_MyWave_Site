@@ -8,6 +8,7 @@ import socket
 socket.getaddrinfo = _getaddrinfo
 
 import os
+import time
 from flask import Flask, render_template, send_from_directory, jsonify, g, request, url_for, make_response, current_app
 from flask_socketio import SocketIO, emit
 from flask_sqlalchemy import SQLAlchemy
@@ -67,6 +68,10 @@ def create_app(config_name="development"):
     
     # Инициализация CSRF защиты
     csrf = CSRFProtect()
+    # For testing environment, disable CSRF to simplify API tests
+    if config_name.lower() == 'testing':
+        app.config['WTF_CSRF_ENABLED'] = False
+        app.logger.debug('CSRF disabled for testing environment')
     csrf.init_app(app)
     
     # Обработчик CSRF ошибок
@@ -143,7 +148,37 @@ def create_app(config_name="development"):
     # Сначала инициализируем базу данных
     db.init_app(app)
     migrate.init_app(app, db)
+    # AI Gateway security defaults (can be overridden via environment variables)
+    # AI_GATEWAY_API_KEYS: comma-separated API keys allowed to call the AI gateway
+    raw_keys = os.getenv('AI_GATEWAY_API_KEYS') or os.getenv('AI_GATEWAY_API_KEYS'.lower())
+    if raw_keys:
+        app.config['AI_GATEWAY_API_KEYS'] = [k.strip() for k in raw_keys.split(',') if k.strip()]
+    else:
+        app.config.setdefault('AI_GATEWAY_API_KEYS', [])
 
+    # Whether the AI gateway requires an API key. Default: False in non-production (easier testing/dev).
+    require_key = os.getenv('AI_GATEWAY_REQUIRE_API_KEY')
+    if require_key is None:
+        # In production enable by default, otherwise keep disabled for dev/tests
+        app.config['AI_GATEWAY_REQUIRE_API_KEY'] = (config_name.lower() == 'production')
+    else:
+        app.config['AI_GATEWAY_REQUIRE_API_KEY'] = str(require_key).lower() in ('1', 'true', 'yes')
+
+    # Rate limiting for AI gateway (per API key). Disabled by default; enable via env.
+    rate_limit_enabled = os.getenv('AI_GATEWAY_ENABLE_RATE_LIMIT')
+    if rate_limit_enabled is None:
+        app.config['AI_GATEWAY_ENABLE_RATE_LIMIT'] = False
+    else:
+        app.config['AI_GATEWAY_ENABLE_RATE_LIMIT'] = str(rate_limit_enabled).lower() in ('1', 'true', 'yes')
+    # Rate limit params (count per window)
+    try:
+        app.config['AI_GATEWAY_RATE_LIMIT_COUNT'] = int(os.getenv('AI_GATEWAY_RATE_LIMIT_COUNT') or 60)
+    except Exception:
+        app.config['AI_GATEWAY_RATE_LIMIT_COUNT'] = 60
+    try:
+        app.config['AI_GATEWAY_RATE_LIMIT_WINDOW'] = int(os.getenv('AI_GATEWAY_RATE_LIMIT_WINDOW') or 60)
+    except Exception:
+        app.config['AI_GATEWAY_RATE_LIMIT_WINDOW'] = 60
     # Затем остальные расширения
     init_extensions(app, db)
     init_websocket(app)
@@ -230,6 +265,38 @@ def create_app(config_name="development"):
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(reviews_bp)
     app.register_blueprint(responses_bp)
+    # Recommendations blueprint (optional)
+    try:
+        from app.routes.recommendations_api import reco_bp
+        app.register_blueprint(reco_bp, url_prefix='/api')
+    except Exception:
+        app.logger.debug('reco_bp not found or failed to import')
+    
+    # CSP violations API blueprint (optional)
+    try:
+        from app.routes.csp_api import csp_bp
+        app.register_blueprint(csp_bp, url_prefix='/api')
+    except Exception:
+        app.logger.debug('csp_bp not found or failed to import')
+    # AI Gateway blueprint (optional)
+    try:
+        from app.routes.ai_gateway_api import ai_gateway_bp
+        # Mount the AI gateway under /api/ai/gateway for clarity
+        app.register_blueprint(ai_gateway_bp, url_prefix='/api/ai/gateway')
+        # Try to register default tools for the gateway (non-fatal)
+        try:
+            from app.ai.register_tools import register_default_tools
+            register_default_tools(app)
+        except Exception:
+            app.logger.debug('register_default_tools failed or not present')
+    except Exception:
+        app.logger.debug('ai_gateway_bp not found or failed to import')
+    # Site Concierge blueprint (simple chat API)
+    try:
+        from app.routes.concierge import concierge_bp
+        app.register_blueprint(concierge_bp, url_prefix='/api/concierge')
+    except Exception:
+        app.logger.debug('concierge_bp not found or failed to import')
     # Register telegram blueprint only if import succeeded
     if telegram_bp:
         try:
@@ -245,6 +312,12 @@ def create_app(config_name="development"):
     try:
         csrf.exempt(api_bp)
         csrf.exempt(booking_api_bp)
+        # Exempt AI gateway API from CSRF for programmatic clients/tests
+        try:
+            from app.routes.ai_gateway_api import ai_gateway_bp as _ai_bp
+            csrf.exempt(_ai_bp)
+        except Exception:
+            app.logger.debug('Could not exempt ai_gateway_bp from CSRF (maybe not registered)')
     except Exception:
         app.logger.debug('Could not exempt blueprints from CSRF (maybe not needed)')
 
@@ -350,24 +423,158 @@ def create_app(config_name="development"):
         label = data.get('label', '')
         phone = data.get('phone', '')
         timestamp = datetime.utcnow().isoformat()
-        # Попробуем записать событие в Google Sheets, если есть конфиг
+        # Use standardized log_analytics_event helper when available; keep fallback for older format
         try:
-            from app.services.google_sheets_service import append_record
+            from app.services.google_sheets_service import log_analytics_event
             sheet_id = app.config.get('ANALYTICS_SHEET_SPREADSHEET_ID') or app.config.get('SPREADSHEET_ID')
-            sheet_name = app.config.get('ANALYTICS_SHEET_NAME') or 'analytics_statistics'
-            row = [timestamp, event, label, phone, request.remote_addr or '', request.headers.get('User-Agent','')]
+            payload = {
+                'event': event,
+                'context': data.get('context') or label or '',
+                'user_key': data.get('user_key') or data.get('user') or '',
+                'rule_id': data.get('rule_id', ''),
+                'item_id': data.get('item_id', ''),
+                'type': data.get('type', ''),
+                'meta': data.get('meta', {}),
+                'ip': request.remote_addr or '',
+                'user_agent': request.headers.get('User-Agent', '')
+            }
             if sheet_id:
-                append_record(sheet_id, sheet_name, row)
-                app.logger.info(f"Analytics logged to sheet {sheet_name}")
+                log_analytics_event(payload, spreadsheet_id=sheet_id)
+                app.logger.info('Analytics logged via log_analytics_event')
             else:
-                app.logger.warning("ANALYTICS_SHEET_SPREADSHEET_ID / SPREADSHEET_ID not configured; skipping sheet write")
-        except Exception as e:
-            app.logger.error(f"Failed to write analytics to sheet: {e}")
+                app.logger.warning('ANALYTICS_SHEET_SPREADSHEET_ID / SPREADSHEET_ID not configured; skipping sheet write')
+        except Exception:
+            # Fallback to append_record for compatibility
+            try:
+                from app.services.google_sheets_service import append_record
+                sheet_id = app.config.get('ANALYTICS_SHEET_SPREADSHEET_ID') or app.config.get('SPREADSHEET_ID')
+                sheet_name = app.config.get('ANALYTICS_SHEET_NAME') or 'analytics_statistics'
+                row = [timestamp, event, label, phone, request.remote_addr or '', request.headers.get('User-Agent','')]
+                if sheet_id:
+                    append_record(sheet_id, sheet_name, row)
+                    app.logger.info(f"Analytics logged to sheet {sheet_name} (fallback)")
+                else:
+                    app.logger.warning('ANALYTICS_SHEET_SPREADSHEET_ID / SPREADSHEET_ID not configured; skipping sheet write')
+            except Exception as e:
+                app.logger.error(f'Failed to write analytics to sheet (fallback): {e}')
         return jsonify({'ok': True})
 
     @app.route('/api/health', methods=['GET'])
     def health_check():
-        return jsonify(status="ok", version=app.config.get('VERSION')), 200
+        """
+        Enhanced health check:
+        - basic status + version
+        - optional DB check (if SQLALCHEMY_DATABASE_URI set)
+        - cache check (if cache extension present)
+        - optional AI gateway quick ping (only when ENABLE_AI_HEALTH_CHECK=1)
+        """
+        checks = {}
+        overall_ok = True
+
+        # Basic info
+        checks['version'] = app.config.get('VERSION')
+        checks['mode'] = os.environ.get('MYWAVE_AI_MODE', 'mock')
+
+        # DB check
+        try:
+            db_uri = app.config.get('SQLALCHEMY_DATABASE_URI')
+            if db_uri:
+                try:
+                    # simple lightweight query
+                    with app.app_context():
+                        res = db.session.execute('SELECT 1')
+                        _ = res.fetchall()
+                    checks['database'] = {'ok': True}
+                except Exception as e:
+                    checks['database'] = {'ok': False, 'error': str(e)}
+                    overall_ok = False
+            else:
+                checks['database'] = {'ok': False, 'error': 'SQLALCHEMY_DATABASE_URI not configured'}
+                # non-fatal if app intentionally has no DB; mark as missing rather than failure
+        except Exception as e:
+            checks['database'] = {'ok': False, 'error': f'unexpected: {e}'}
+            overall_ok = False
+
+        # Cache check (try a set/get when cache is available)
+        try:
+            from app.extensions import cache
+            key = f"health_check_{int(time.time())}"
+            try:
+                cache.set(key, '1', timeout=5)
+                val = cache.get(key)
+                if str(val) == '1':
+                    checks['cache'] = {'ok': True}
+                else:
+                    checks['cache'] = {'ok': False, 'error': 'cache mismatch'}
+                    overall_ok = False
+            except Exception as e:
+                checks['cache'] = {'ok': False, 'error': str(e)}
+                overall_ok = False
+        except Exception:
+            # Cache extension missing or not configured - report as not present but non-fatal
+            checks['cache'] = {'ok': False, 'error': 'cache extension not available'}
+
+        # Optional AI gateway quick check
+        try:
+            enable_ai_check = os.getenv('ENABLE_AI_HEALTH_CHECK') or app.config.get('ENABLE_AI_HEALTH_CHECK')
+            if str(enable_ai_check).lower() in ('1', 'true', 'yes'):
+                try:
+                    from app.ai.core_gateway import create_default_gateway
+                    gw = create_default_gateway()
+                    # perform a lightweight mock ping - non-destructive
+                    resp = gw.handle_message('__health_ping__')
+                    checks['ai_gateway'] = {'ok': True, 'response_type': resp.get('type')}
+                except Exception as e:
+                    checks['ai_gateway'] = {'ok': False, 'error': str(e)}
+                    overall_ok = False
+            else:
+                checks['ai_gateway'] = {'ok': False, 'error': 'ai health check disabled'}
+        except Exception as e:
+            checks['ai_gateway'] = {'ok': False, 'error': f'unexpected: {e}'}
+            overall_ok = False
+
+        status_code = 200 if overall_ok else 503
+        ret = jsonify(status=('ok' if overall_ok else 'unhealthy'), checks=checks), status_code
+
+        # return assembled response
+        return ret
+
+    # Global exception handler: report to Sentry (if configured) and trigger a Telegram alert
+    # It's defensive: HTTPExceptions are re-raised so Flask can handle them normally.
+    from werkzeug.exceptions import HTTPException
+
+    @app.errorhandler(Exception)
+    def handle_unexpected_exception(e):
+        if isinstance(e, HTTPException):
+            # Let Flask handle HTTPExceptions (e.g., 404/400) as usual
+            return e
+
+        # Log locally
+        app.logger.exception('Unhandled exception caught')
+
+        # Try to capture in Sentry if available
+        try:
+            import sentry_sdk
+            sentry_sdk.capture_exception(e)
+        except Exception:
+            app.logger.debug('Sentry SDK not available or failed to capture')
+
+        # Trigger a non-blocking Telegram monitoring alert
+        try:
+            from app.services.monitoring import send_monitoring_alert
+            import threading
+
+            def _alert():
+                try:
+                    send_monitoring_alert(f"Unhandled exception in MyWave ({app.config.get('VERSION')}): {str(e)}")
+                except Exception:
+                    app.logger.debug('Monitoring alert failed')
+
+            threading.Thread(target=_alert, daemon=True).start()
+        except Exception:
+            app.logger.debug('Failed to start monitoring alert thread')
+
+        return jsonify(error='internal server error'), 500
 
     # Initialize Google Services (disabled by default for local runs to avoid network/auth side-effects)
     # To enable in production set app.config['ENABLE_GOOGLE_SERVICES'] = True
@@ -405,3 +612,13 @@ def create_app(config_name="development"):
                     app.logger.error("Google Service Account authorization failed. Please check your service_account.json file")
 
     return app
+
+
+    # NOTE: The following global exception handler is added after app construction
+    # to capture unhandled exceptions, forward them to Sentry (if configured)
+    # and trigger a lightweight Telegram monitoring alert without blocking request
+    # processing. This handler is defensive and will not raise if monitoring
+    # services are missing.
+
+    # (kept below return for visual grouping in file; Flask will register handlers
+    # during app creation because create_app executes this module's code.)

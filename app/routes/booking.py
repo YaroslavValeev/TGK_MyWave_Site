@@ -52,12 +52,11 @@ def book_service():
             })
         else:
             error = result.get('error', 'unknown_error')
-            if error in ['invalid_date', 'invalid_time', 'date_in_past', 
-                        'invalid_phone', 'duplicate_booking']:
-                return jsonify({
-                    "status": "error",
-                    "error": error
-                }), 400
+            # Duplicate booking should be reported as 409 Conflict
+            if error == 'duplicate_booking':
+                return jsonify({"status": "error", "error": error}), 409
+            if error in ['invalid_date', 'invalid_time', 'date_in_past', 'invalid_phone']:
+                return jsonify({"status": "error", "error": error}), 400
             else:
                 logger.error(f"Ошибка при бронировании: {error}")
                 return jsonify({

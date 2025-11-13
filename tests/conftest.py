@@ -2,6 +2,12 @@ import os
 import sys
 import pytest
 
+# Ensure prometheus multiproc dir exists for tests to avoid startup errors
+import tempfile
+PROM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'prometheus_multiproc'))
+os.makedirs(PROM_DIR, exist_ok=True)
+os.environ.setdefault('PROMETHEUS_MULTIPROC_DIR', PROM_DIR)
+
 # Ensure repo root is on sys.path so tests can import the `app` package when
 # pytest is executed from different working directories or under CI.
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))

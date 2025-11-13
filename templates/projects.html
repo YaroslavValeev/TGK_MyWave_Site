@@ -45,6 +45,8 @@
   </ul>
 </section>
 
+{% include 'partials/reco_block.html' with context='projects' %}
+
 {# --- JSON-LD: один скрипт с nonce, @graph включает ItemList + Project[] --- #}
 <script type="application/ld+json" nonce="{{ csp_nonce }}">
 {

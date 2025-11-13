@@ -21,6 +21,16 @@ docker-compose up --build
 pytest --cov
 ```
 
+## Monitoring & Error Reporting
+
+This project includes optional integrations to help monitor production issues.
+
+- Sentry: set `SENTRY_DSN` in your environment to enable error forwarding to Sentry. Adjust `SENTRY_TRACES_SAMPLE_RATE` for performance tracing (defaults to 0.1).
+- Telegram alerts: provide `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` to enable sending short monitoring alerts to the configured chat. The helper used is `app.services.monitoring.send_monitoring_alert()`.
+- Health endpoint: `GET /api/health` returns a JSON with checks for database, cache and (optionally) the AI gateway. Enable AI gateway quick check by setting `ENABLE_AI_HEALTH_CHECK=1`.
+
+The Sentry SDK is optional at runtime; the app will start even if `sentry-sdk` is not installed. To enable Sentry in production, add `sentry-sdk` to `requirements.txt` and provide a valid `SENTRY_DSN`.
+
 ## CI/CD
 
 - Сборка и деплой через GitHub Actions (см. `.github/workflows/deploy.yml`).

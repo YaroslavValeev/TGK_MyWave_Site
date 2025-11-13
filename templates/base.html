@@ -68,6 +68,9 @@
         webvisor:true
     });
   </script>
+
+  <!-- CSP Violation Monitor -->
+  <script src="{{ url_for('static', filename='js/csp-monitor.js') }}" nonce="{{ g.csp_nonce }}"></script>
   <noscript>
     <div>
       <img src="https://mc.yandex.ru/watch/99772473" style="position:absolute; left:-9999px;" alt="Счётчик Яндекс.Метрики" />
@@ -190,6 +193,9 @@
   <script src="{{ url_for('static', filename='js/inline.js') }}"></script>
   <script src="{{ url_for('static', filename='js/preloader.js') }}"></script>
   <script src="{{ url_for('static', filename='js/image-effects.js') }}"></script>
+
+  <!-- Recommendations client script (loads recommendation widgets & analytics pings) -->
+  <script type="module" src="{{ url_for('static', filename='js/reco.js') }}" nonce="{{ g.csp_nonce }}"></script>
 
   <!-- booking.js должен быть после блока content и всех модалок -->
   <script src="{{ url_for('static', filename='js/booking.js') }}"></script>

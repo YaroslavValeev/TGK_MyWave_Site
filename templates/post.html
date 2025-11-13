@@ -1,12 +1,42 @@
 {% extends "base.html" %}
 
+{% block head %}
+<!-- BlogPosting JSON-LD structured data -->
+<script type="application/ld+json" nonce="{{ csp_nonce }}">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "{{ post.title|e }}",
+  "description": "{{ (post.content|striptags)[:160]|e }}",
+  "image": "{{ post.image.url if post.image else url_for('static', filename='images/og-image.jpg', _external=True) }}",
+  "datePublished": "{{ post.created_at.isoformat() }}",
+  "author": {
+    "@type": "Organization",
+    "name": "MyWave"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "MyWave",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ url_for('static', filename='images/logo.png', _external=True) }}"
+    }
+  }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <section class="blog">
-    <h2>{{ post.title }}</h2>
-    <p><em>{{ post.created_at.strftime('%d.%m.%Y') }}</em></p>
-    <div>
-        {{ post.content | safe }}
-    </div>
+    <article>
+        <h2>{{ post.title }}</h2>
+        <p><em>{{ post.created_at.strftime('%d.%m.%Y') }}</em></p>
+        <div>
+            {{ post.content | safe }}
+        </div>
+    </article>
     <a href="{{ url_for('blog.blog') }}" class="btn">← К списку статей</a>
 </section>
+
+{% include 'partials/reco_block.html' with context='blog_post' %}
 {% endblock %}

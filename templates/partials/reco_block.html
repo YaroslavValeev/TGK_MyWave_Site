@@ -1,0 +1,14 @@
+<section class="reco" aria-label="Рекомендации">
+  <style nonce="{{ csp_nonce }}">
+    .reco { padding: 1rem 0; }
+    .reco-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 0.8rem; }
+    .reco-card { background: var(--color-card); border-radius: 8px; padding: 0.6rem; box-shadow: 0 2px 6px rgba(0,0,0,0.06);} 
+    .reco-card img { width:100%; height:120px; object-fit:cover; border-radius:6px; }
+    .reco-card .title { font-weight:600; margin-top:0.5rem; }
+  </style>
+
+  <div class="container">
+    <h3>Вам может понравиться</h3>
+    <div class="reco-grid" data-context="{{ context|default('index') }}"></div>
+  </div>
+</section>

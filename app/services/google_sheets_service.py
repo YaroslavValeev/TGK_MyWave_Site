@@ -191,3 +191,49 @@ def update_record(spreadsheet_id=None, worksheet_name=None, range_=None, values=
     except Exception as e:
         logger.error(f"Ошибка обновления записи в Google Sheets: {e}")
         raise
+
+
+def log_analytics_event(payload: dict, spreadsheet_id: str = None, worksheet_name: str = None):
+    """
+    Записывает аналитическое событие в Google Sheets в стандартизированном формате.
+
+    Формат строки (колонки):
+      timestamp, event, context, user_key, rule_id, item_id, type, meta_json, ip, user_agent
+
+    payload должен содержать хотя бы 'event'. Допустимые ключи: event, context, user_key,
+    rule_id, item_id, type, meta (dict | str).
+    """
+    try:
+        ts = datetime.utcnow().isoformat()
+        event = payload.get('event', 'unknown')
+        context = payload.get('context', '')
+        user_key = payload.get('user_key', '')
+        rule_id = payload.get('rule_id', '')
+        item_id = payload.get('item_id', '')
+        typ = payload.get('type', '')
+        meta = payload.get('meta', '')
+        # Ensure meta is JSON-string-ish
+        try:
+            import json
+            meta_json = json.dumps(meta, ensure_ascii=False)
+        except Exception:
+            meta_json = str(meta)
+
+        ip = payload.get('ip', '')
+        ua = payload.get('user_agent', '')
+
+        row = [ts, event, context, user_key, rule_id, item_id, typ, meta_json, ip, ua]
+
+        sheet_id = spreadsheet_id or SPREADSHEET_ID
+        sheet_name = worksheet_name or (os.environ.get('ANALYTICS_SHEET_NAME') or 'analytics_statistics')
+
+        if not sheet_id:
+            logger.warning('log_analytics_event: SPREADSHEET_ID not configured; skipping write')
+            return False
+
+        append_record(sheet_id, sheet_name, row)
+        logger.info(f'Analytics event logged: {event} to {sheet_name}')
+        return True
+    except Exception as e:
+        logger.error(f'Failed to log analytics event: {e}')
+        return False

@@ -1,0 +1,20 @@
+groups:
+  - name: mywave-alerts
+    rules:
+      - alert: MyWaveHighErrorRate
+        expr: increase(flask_http_request_errors_total[5m]) > 5
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on MyWave"
+          description: "{{ $labels.instance }} has >5 errors in the last 5m"
+
+      - alert: MyWaveHealthUnhealthy
+        expr: up{job="mywave"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MyWave instance down"
+          description: "Instance {{ $labels.instance }} is down according to up metric"

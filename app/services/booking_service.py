@@ -67,6 +67,15 @@ def create_booking(data: dict, user_id: Optional[int] = None) -> Dict[str, Union
         return {'success': False, 'error': 'calendar_error'}
 
     # Create booking record
+    # Check for duplicate booking (same phone, date, time)
+    try:
+        existing = Booking.query.filter_by(date=data['date'], time=data['time'], phone=data['phone'].strip()).first()
+        if existing:
+            return {'success': False, 'error': 'duplicate_booking'}
+    except Exception:
+        # If DB is unavailable for check, continue and let commit handle uniqueness if enforced
+        pass
+
     booking = Booking(
         name=data['name'].strip(),
         phone=data['phone'].strip(),

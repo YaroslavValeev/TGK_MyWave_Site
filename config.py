@@ -11,6 +11,17 @@ class Config:
     # Analytics sheet config (used for logging events and calculator history)
     ANALYTICS_SHEET_SPREADSHEET_ID = os.getenv("ANALYTICS_SHEET_SPREADSHEET_ID", "")
     ANALYTICS_SHEET_NAME = os.getenv("ANALYTICS_SHEET_NAME", "analytics_statistics")
+    # Feature flags and recommendations tuning
+    ENABLE_RECOMMENDATIONS = os.getenv('ENABLE_RECOMMENDATIONS', 'True') in ('1', 'true', 'True')
+    ENABLE_ANALYTICS = os.getenv('ENABLE_ANALYTICS', 'True') in ('1', 'true', 'True')
+    # A/B experiment split size (number of groups). Default 2 (A/B).
+    AB_CONTROL_GROUP_SIZE = int(os.getenv('AB_CONTROL_GROUP_SIZE', '2'))
+    # Recommendation cache time-to-live (seconds)
+    RECO_CACHE_TTL = int(os.getenv('RECO_CACHE_TTL', '300'))
+    # CSP toggle — allow enabling/disabling strict CSP rules via env
+    CSP_ENABLED = os.getenv('CSP_ENABLED', 'True') in ('1', 'true', 'True')
+    # Sitemap build timestamp (optional override)
+    SITEMAP_BUILD_TS = os.getenv('SITEMAP_BUILD_TS', '')
     TIMEZONE = 'Europe/Moscow'
     SESSION_TYPE = 'filesystem'
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)

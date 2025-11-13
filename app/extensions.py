@@ -1,5 +1,6 @@
 from flask_socketio import SocketIO
 from flask import request
+import os
 from flask_wtf import CSRFProtect
 from flask_wtf.csrf import validate_csrf, ValidationError as CSRFValidationError
 from flask_cors import CORS
@@ -112,6 +113,28 @@ def init_extensions(app, db=None):
             # As a last resort, skip metrics but continue startup
             app.logger.exception("Failed to initialize PrometheusMetrics; continuing without metrics")
             metrics = None
+
+    # Optional Sentry initialization (safe - won't break startup if SDK missing)
+    try:
+        sentry_dsn = app.config.get('SENTRY_DSN') or os.getenv('SENTRY_DSN')
+        if sentry_dsn:
+            try:
+                import sentry_sdk
+                from sentry_sdk.integrations.flask import FlaskIntegration
+
+                sentry_sdk.init(
+                    dsn=sentry_dsn,
+                    integrations=[FlaskIntegration()],
+                    traces_sample_rate=float(app.config.get('SENTRY_TRACES_SAMPLE_RATE', 0.1)),
+                    release=app.config.get('RELEASE')
+                )
+                app.logger.info('Sentry initialized')
+            except Exception as e:
+                # If sentry_sdk isn't installed or init fails, warn but continue
+                app.logger.warning(f"Sentry init failed or sentry-sdk missing: {e}")
+    except Exception:
+        # Defensive: don't let monitoring setup crash the app
+        app.logger.exception('Unexpected error during optional Sentry init; continuing')
     
     # Инициализация базы данных
     if db is not None:
