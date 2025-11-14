@@ -79,11 +79,17 @@ class CoreAIGateway:
     - call `handle_message(user_message, user_id)` to get a response
     """
 
-    def __init__(self, client: OpenAIClientInterface, system_prompt: Optional[str] = None):
+    def __init__(
+        self,
+        client: OpenAIClientInterface,
+        system_prompt: Optional[str] = None,
+        tool_validator: Optional[Callable[[str, Dict[str, Any] | None], Any]] = None,
+    ):
         self.client = client
         self.system_prompt = system_prompt or "You are a helpful assistant."
         # store mapping: tool_name -> {'def': ToolDefinition, 'fn': callable}
         self.tools: Dict[str, Dict[str, Any]] = {}
+        self.tool_validator = tool_validator
 
     def register_tool(self, tool: ToolDefinition, fn: Callable[[Dict[str, Any]], Any]) -> None:
         if tool.name in self.tools:
@@ -200,6 +206,23 @@ class CoreAIGateway:
                 except Exception:
                     pass
 
+                if self.tool_validator:
+                    try:
+                        self.tool_validator(tool_name, payload)
+                    except Exception as exc:
+                        logger = logging.getLogger(__name__)
+                        logger.warning(
+                            "tool_call.gateway_validation_failed",
+                            extra={"tool": tool_name, "error": str(exc)},
+                        )
+                        try:
+                            from app.ai.metrics import TOOL_VALIDATION_FAILURE_COUNTER
+
+                            TOOL_VALIDATION_FAILURE_COUNTER.inc()
+                        except Exception:
+                            pass
+                        return {'type': 'error', 'error': 'invalid_payload'}
+
                 result = self.call_tool(tool_name, payload)
             except Exception as exc:
                 return {'type': 'tool_error', 'tool': tool_name, 'error': str(exc)}
@@ -243,7 +266,13 @@ def create_default_gateway() -> CoreAIGateway:
         client = MockOpenAIClient()
 
     system = os.environ.get('MYWAVE_AI_SYSTEM_PROMPT', 'You are a helpful assistant for MyWave.')
-    return CoreAIGateway(client=client, system_prompt=system)
+
+    try:
+        from app.ai.tools_schema import validate_tool_input as _validate_tool_input
+    except Exception:
+        _validate_tool_input = None
+
+    return CoreAIGateway(client=client, system_prompt=system, tool_validator=_validate_tool_input)
 
 
 __all__ = ['CoreAIGateway', 'MockOpenAIClient', 'ToolDefinition', 'create_default_gateway']
