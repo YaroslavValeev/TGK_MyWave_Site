@@ -14,7 +14,12 @@ def test_tool_registration_and_valid_payload():
 
     gateway.register_tool(ToolDefinition(name='create_booking', description='test', schema=schema), echo_tool)
 
-    valid = {'date': '2025-12-01', 'time': '10:00', 'name': 'Alice', 'phone': '+123'}
+    valid = {
+        'name': 'Alice',
+        'phone': '+1234567',
+        'service_id': 'svc_wsc',
+        'slot': {'date': '2025-12-01', 'time': '10:00'},
+    }
     res = gateway.call_tool('create_booking', valid)
     assert res['ok'] is True
     assert res['payload'] == valid
@@ -30,7 +35,7 @@ def test_tool_registration_and_invalid_payload_raises():
 
     gateway.register_tool(ToolDefinition(name='create_booking', description='test', schema=schema), echo_tool)
 
-    invalid = {'date': '2025-12-01', 'name': 'Alice'}  # missing required time and phone
+    invalid = {'name': 'Alice', 'phone': '+123'}  # missing service_id and slot
     import jsonschema
 
     with pytest.raises(jsonschema.exceptions.ValidationError):
