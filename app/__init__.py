@@ -291,12 +291,12 @@ def create_app(config_name="development"):
             app.logger.debug('register_default_tools failed or not present')
     except Exception:
         app.logger.debug('ai_gateway_bp not found or failed to import')
-    # Site Concierge blueprint (simple chat API)
+    # Site Concierge blueprint (AI-powered concierge API)
     try:
-        from app.routes.concierge import concierge_bp
-        app.register_blueprint(concierge_bp, url_prefix='/api/concierge')
+        from app.routes.ai_concierge_api import ai_concierge_bp
+        app.register_blueprint(ai_concierge_bp, url_prefix='/api/concierge')
     except Exception:
-        app.logger.debug('concierge_bp not found or failed to import')
+        app.logger.debug('ai_concierge_bp not found or failed to import')
     # Register telegram blueprint only if import succeeded
     if telegram_bp:
         try:
@@ -318,6 +318,11 @@ def create_app(config_name="development"):
             csrf.exempt(_ai_bp)
         except Exception:
             app.logger.debug('Could not exempt ai_gateway_bp from CSRF (maybe not registered)')
+        try:
+            from app.routes.ai_concierge_api import ai_concierge_bp as _ai_concierge_bp
+            csrf.exempt(_ai_concierge_bp)
+        except Exception:
+            app.logger.debug('Could not exempt ai_concierge_bp from CSRF (maybe not registered)')
     except Exception:
         app.logger.debug('Could not exempt blueprints from CSRF (maybe not needed)')
 
