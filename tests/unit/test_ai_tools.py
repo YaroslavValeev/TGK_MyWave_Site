@@ -25,11 +25,12 @@ def test_get_slots_tool(monkeypatch, client):
     from app.routes.ai_gateway_api import gateway
 
     def fake_get_slots_tool(payload):
-        return {'date': payload.get('date'), 'slots': fake_slots}
+        return {'service_id': payload.get('service_id'), 'date': payload.get('date'), 'slots': fake_slots}
 
-    gateway.tools['get_available_slots'] = fake_get_slots_tool
+    entry = gateway.tools.get('get_available_slots')
+    gateway.tools['get_available_slots'] = {'def': entry.get('def'), 'fn': fake_get_slots_tool} if isinstance(entry, dict) else {'def': None, 'fn': fake_get_slots_tool}
 
-    resp = post_message(client, '__call_tool__:get_available_slots:{"date":"2025-12-01"}')
+    resp = post_message(client, '__call_tool__:get_available_slots:{"service_id":"svc_wsc","date":"2025-12-01"}')
     assert resp.status_code == 200
     data = resp.get_json()
     assert data.get('type') == 'tool_result'
@@ -47,9 +48,15 @@ def test_create_booking_tool(monkeypatch, client):
         # emulate book_slot return
         return {'success': True, 'confirm_text': 'http://confirm'}
 
-    gateway.tools['create_booking'] = fake_create_booking
+    entry = gateway.tools.get('create_booking')
+    gateway.tools['create_booking'] = {'def': entry.get('def'), 'fn': fake_create_booking} if isinstance(entry, dict) else {'def': None, 'fn': fake_create_booking}
 
-    payload = json.dumps({"date":"2025-12-01","time":"10:00","name":"Ivan","phone":"+70000000000"})
+    payload = json.dumps({
+        "name": "Ivan",
+        "phone": "+70000000000",
+        "service_id": "svc_wsc",
+        "slot": {"date": "2025-12-01", "time": "10:00"}
+    })
     resp = post_message(client, f'__call_tool__:create_booking:{payload}')
     assert resp.status_code == 200
     data = resp.get_json()

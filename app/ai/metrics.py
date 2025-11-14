@@ -32,6 +32,16 @@ TOOL_RESULT_COUNTER = Counter(
     'Total number of successful tool results returned',
 )
 
+TOOL_VALIDATION_FAILURE_COUNTER = Counter(
+    'mywave_ai_gateway_tool_validation_failures_total',
+    'Total number of AI tool payload validation failures',
+)
+
+CONCIERGE_REQUEST_COUNTER = Counter(
+    'mywave_ai_concierge_requests_total',
+    'Total number of concierge API requests received',
+)
+
 LATENCY_HISTOGRAM = Histogram(
     'mywave_ai_gateway_request_latency_seconds',
     'Latency of AI gateway request handling',

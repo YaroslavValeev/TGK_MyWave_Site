@@ -7,6 +7,7 @@ def test_concierge_message_endpoint(app, client):
     resp = client.post('/api/concierge/message', data=json.dumps(payload), content_type='application/json')
     assert resp.status_code == 200
     data = resp.get_json()
-    assert isinstance(data, dict)
+    assert 'reply' in data
+    assert isinstance(data['reply'], dict)
     # mock client should return assistant type
-    assert data.get('type') in ('assistant',)
+    assert data['reply'].get('type') in ('assistant',)
