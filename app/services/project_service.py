@@ -12,7 +12,8 @@ def get_projects() -> List[Dict[str, Any]]:
             "description": "Экспедиционный формат по Волге с обучением вейксерфингу",
             "image": "images/projects/wakesurfsafari/cover.webp",
             "detail": False,
-            "tags": ["вейтревел", "мероприятия", "высокий сезон"]
+            "city": "Самара",
+            "tags": ["вейтревел", "мероприятия", "высокий сезон"],
         },
         {
             "slug": "wsc",
@@ -20,6 +21,7 @@ def get_projects() -> List[Dict[str, Any]]:
             "description": "Интенсивный курс обучения вейксерфингу в формате летнего лагеря",
             "image": "images/projects/wsc/cover.webp",
             "detail": True,
-            "tags": ["обучение", "интенсив", "лето"]
-        }
+            "city": "Москва",
+            "tags": ["обучение", "интенсив", "лето"],
+        },
     ]
