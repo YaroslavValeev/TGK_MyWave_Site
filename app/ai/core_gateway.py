@@ -37,7 +37,13 @@ class OpenAIClientInterface:
     `parse_function_response` if using function calling.
     """
 
-    def send_chat(self, system: str, user_message: str, user_id: Optional[str] = None) -> Dict[str, Any]:
+    def send_chat(
+        self,
+        system: str,
+        user_message: str,
+        user_id: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
         raise NotImplementedError()
 
 
@@ -50,7 +56,13 @@ class MockOpenAIClient(OpenAIClientInterface):
     - Otherwise returns a trivial assistant reply.
     """
 
-    def send_chat(self, system: str, user_message: str, user_id: Optional[str] = None) -> Dict[str, Any]:
+    def send_chat(
+        self,
+        system: str,
+        user_message: str,
+        user_id: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
         # Detect fake function-calling trigger
         if user_message.startswith("__call_tool__:"):
             try:
@@ -79,11 +91,17 @@ class CoreAIGateway:
     - call `handle_message(user_message, user_id)` to get a response
     """
 
-    def __init__(self, client: OpenAIClientInterface, system_prompt: Optional[str] = None):
+    def __init__(
+        self,
+        client: OpenAIClientInterface,
+        system_prompt: Optional[str] = None,
+        tool_validator: Optional[Callable[[str, Dict[str, Any] | None], Any]] = None,
+    ):
         self.client = client
         self.system_prompt = system_prompt or "You are a helpful assistant."
         # store mapping: tool_name -> {'def': ToolDefinition, 'fn': callable}
         self.tools: Dict[str, Dict[str, Any]] = {}
+        self.tool_validator = tool_validator
 
     def register_tool(self, tool: ToolDefinition, fn: Callable[[Dict[str, Any]], Any]) -> None:
         if tool.name in self.tools:
@@ -181,14 +199,24 @@ class CoreAIGateway:
         # If we exit loop, raise last exception
         raise last_exc
 
-    def handle_message(self, user_message: str, user_id: Optional[str] = None) -> Dict[str, Any]:
+    def handle_message(
+        self,
+        user_message: str,
+        user_id: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
         """Send message to client and handle possible tool-call responses.
 
         Returns a dict with keys depending on response type:
         - assistant: {'type': 'assistant', 'text': '...'}
         - tool_result: {'type': 'tool_result', 'tool': name, 'result': ...}
         """
-        resp = self.client.send_chat(self.system_prompt, user_message, user_id=user_id)
+        resp = self.client.send_chat(
+            self.system_prompt,
+            user_message,
+            user_id=user_id,
+            context=context,
+        )
 
         if not isinstance(resp, dict):
             return {'type': 'assistant', 'text': str(resp)}
@@ -203,6 +231,23 @@ class CoreAIGateway:
                     TOOL_CALL_COUNTER.inc()
                 except Exception:
                     pass
+
+                if self.tool_validator:
+                    try:
+                        self.tool_validator(tool_name, payload)
+                    except Exception as exc:
+                        logger = logging.getLogger(__name__)
+                        logger.warning(
+                            "tool_call.gateway_validation_failed",
+                            extra={"tool": tool_name, "error": str(exc)},
+                        )
+                        try:
+                            from app.ai.metrics import TOOL_VALIDATION_FAILURE_COUNTER
+
+                            TOOL_VALIDATION_FAILURE_COUNTER.inc()
+                        except Exception:
+                            pass
+                        return {'type': 'error', 'error': 'invalid_payload'}
 
                 result = self.call_tool(tool_name, payload)
             except Exception as exc:
@@ -226,7 +271,13 @@ def create_default_gateway() -> CoreAIGateway:
     if mode == 'real':
         # Production: use a real client backed by app.services.openai_service.respond_structured
         class RealOpenAIClient(OpenAIClientInterface):
-            def send_chat(self, system: str, user_message: str, user_id: Optional[str] = None) -> Dict[str, Any]:
+            def send_chat(
+                self,
+                system: str,
+                user_message: str,
+                user_id: Optional[str] = None,
+                context: Optional[Dict[str, Any]] = None,
+            ) -> Dict[str, Any]:
                 # Import lazily to avoid circular imports at module load time
                 try:
                     from app.services.openai_service import respond_structured
@@ -235,7 +286,11 @@ def create_default_gateway() -> CoreAIGateway:
 
                 # Call the structured responder
                 try:
-                    data = respond_structured(user_message)
+                    enriched_message = user_message
+                    if context:
+                        ctx_str = json.dumps(context, ensure_ascii=False)
+                        enriched_message = f"[context]{ctx_str}[/context]\n{user_message}"
+                    data = respond_structured(enriched_message)
                 except Exception as e:
                     return {'type': 'assistant', 'text': f'error: {e}'}
 
@@ -254,7 +309,13 @@ def create_default_gateway() -> CoreAIGateway:
         client = MockOpenAIClient()
 
     system = os.environ.get('MYWAVE_AI_SYSTEM_PROMPT', 'You are a helpful assistant for MyWave.')
-    return CoreAIGateway(client=client, system_prompt=system)
+
+    try:
+        from app.ai.tools_schema import validate_tool_input as _validate_tool_input
+    except Exception:
+        _validate_tool_input = None
+
+    return CoreAIGateway(client=client, system_prompt=system, tool_validator=_validate_tool_input)
 
 
 __all__ = ['CoreAIGateway', 'MockOpenAIClient', 'ToolDefinition', 'create_default_gateway']
