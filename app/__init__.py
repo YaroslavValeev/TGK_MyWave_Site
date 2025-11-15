@@ -1,11 +1,19 @@
-# Патч для DNS
-import eventlet
-eventlet.monkey_patch()
+# Патч для DNS (необязателен для unit-тестов)
+try:
+    import eventlet  # type: ignore
+
+    eventlet.monkey_patch()
+except Exception:  # pragma: no cover - optional dependency
+    eventlet = None  # type: ignore
 
 # Import DNS patch
-from app.patches.dns_patch import _getaddrinfo
-import socket
-socket.getaddrinfo = _getaddrinfo
+try:
+    from app.patches.dns_patch import _getaddrinfo
+    import socket
+
+    socket.getaddrinfo = _getaddrinfo
+except Exception:  # pragma: no cover - optional DNS hardening
+    _getaddrinfo = None  # type: ignore
 
 import os
 import time
@@ -23,6 +31,7 @@ from app.routes.booking import booking_bp
 from app.routes.admin_images import admin_images_bp
 from app.extensions import init_extensions, init_websocket, socketio, api
 from app.routes.api import api_ns
+from app.routes.admin import bp as admin_bp
 
 # Импорт остальных blueprint-ов
 from app.routes.auth import auth_bp
@@ -43,6 +52,7 @@ except Exception:
     import logging
     logging.getLogger(__name__).exception('Failed to import telegram_bp; continuing without telegram support')
 from app.routes.content_calendar import bp as content_bp, get_events_by_month
+from app.routes.health import health_bp
 
 # Создаем экземпляры расширений
 migrate = Migrate()
@@ -280,21 +290,32 @@ def create_app(config_name="development"):
         app.logger.debug('csp_bp not found or failed to import')
     # AI Gateway blueprint (optional)
     try:
-        from app.routes.ai_gateway_api import ai_gateway_bp
+        from app.routes.ai_gateway_api import ai_gateway_bp, ai_safari_bp, gateway
         # Mount the AI gateway under /api/ai/gateway for clarity
         app.register_blueprint(ai_gateway_bp, url_prefix='/api/ai/gateway')
+        # Optional safari-specific AI endpoint
+        try:
+            app.register_blueprint(ai_safari_bp, url_prefix='/api/ai/safari')
+        except Exception:
+            app.logger.debug('ai_safari_bp not found or failed to import')
         # Try to register default tools for the gateway (non-fatal)
         try:
             from app.ai.register_tools import register_default_tools
             register_default_tools(app)
         except Exception:
             app.logger.debug('register_default_tools failed or not present')
+        # Voice streaming handlers reuse the same gateway instance so register them lazily.
+        try:
+            from app.voice import register_voice_handlers
+            register_voice_handlers(app, gateway=gateway)
+        except Exception:
+            app.logger.debug('voice handlers not registered')
     except Exception:
         app.logger.debug('ai_gateway_bp not found or failed to import')
-    # Site Concierge blueprint (simple chat API)
+    # Site Concierge blueprint (AI-powered concierge API)
     try:
-        from app.routes.concierge import concierge_bp
-        app.register_blueprint(concierge_bp, url_prefix='/api/concierge')
+        from app.routes.concierge import concierge_bp as ai_concierge_bp
+        app.register_blueprint(ai_concierge_bp, url_prefix='/api/concierge')
     except Exception:
         app.logger.debug('concierge_bp not found or failed to import')
     # Register telegram blueprint only if import succeeded
@@ -305,7 +326,14 @@ def create_app(config_name="development"):
             app.logger.exception('Failed to register telegram blueprint; continuing without telegram')
     app.register_blueprint(content_bp)
     app.register_blueprint(booking_api_bp)
+    app.register_blueprint(admin_bp)
     app.register_blueprint(admin_images_bp)
+    app.register_blueprint(health_bp)
+    try:
+        from app.safari.routes import safari_bp
+        app.register_blueprint(safari_bp, url_prefix='/api/safari')
+    except Exception:
+        app.logger.debug('safari_bp not found or failed to import')
     api.add_namespace(api_ns, path='/api')
 
     # Exempt API blueprints from CSRF to allow programmatic API clients/tests
@@ -314,10 +342,21 @@ def create_app(config_name="development"):
         csrf.exempt(booking_api_bp)
         # Exempt AI gateway API from CSRF for programmatic clients/tests
         try:
-            from app.routes.ai_gateway_api import ai_gateway_bp as _ai_bp
+            from app.routes.ai_gateway_api import ai_gateway_bp as _ai_bp, ai_safari_bp as _ai_safari_bp
             csrf.exempt(_ai_bp)
+            csrf.exempt(_ai_safari_bp)
         except Exception:
             app.logger.debug('Could not exempt ai_gateway_bp from CSRF (maybe not registered)')
+        try:
+            from app.routes.concierge import concierge_bp as _ai_concierge_bp
+            csrf.exempt(_ai_concierge_bp)
+        except Exception:
+            app.logger.debug('Could not exempt concierge_bp from CSRF (maybe not registered)')
+        try:
+            from app.safari.routes import safari_bp as _safari_bp
+            csrf.exempt(_safari_bp)
+        except Exception:
+            app.logger.debug('Could not exempt safari_bp from CSRF (maybe not registered)')
     except Exception:
         app.logger.debug('Could not exempt blueprints from CSRF (maybe not needed)')
 
@@ -459,86 +498,6 @@ def create_app(config_name="development"):
                 app.logger.error(f'Failed to write analytics to sheet (fallback): {e}')
         return jsonify({'ok': True})
 
-    @app.route('/api/health', methods=['GET'])
-    def health_check():
-        """
-        Enhanced health check:
-        - basic status + version
-        - optional DB check (if SQLALCHEMY_DATABASE_URI set)
-        - cache check (if cache extension present)
-        - optional AI gateway quick ping (only when ENABLE_AI_HEALTH_CHECK=1)
-        """
-        checks = {}
-        overall_ok = True
-
-        # Basic info
-        checks['version'] = app.config.get('VERSION')
-        checks['mode'] = os.environ.get('MYWAVE_AI_MODE', 'mock')
-
-        # DB check
-        try:
-            db_uri = app.config.get('SQLALCHEMY_DATABASE_URI')
-            if db_uri:
-                try:
-                    # simple lightweight query
-                    with app.app_context():
-                        res = db.session.execute('SELECT 1')
-                        _ = res.fetchall()
-                    checks['database'] = {'ok': True}
-                except Exception as e:
-                    checks['database'] = {'ok': False, 'error': str(e)}
-                    overall_ok = False
-            else:
-                checks['database'] = {'ok': False, 'error': 'SQLALCHEMY_DATABASE_URI not configured'}
-                # non-fatal if app intentionally has no DB; mark as missing rather than failure
-        except Exception as e:
-            checks['database'] = {'ok': False, 'error': f'unexpected: {e}'}
-            overall_ok = False
-
-        # Cache check (try a set/get when cache is available)
-        try:
-            from app.extensions import cache
-            key = f"health_check_{int(time.time())}"
-            try:
-                cache.set(key, '1', timeout=5)
-                val = cache.get(key)
-                if str(val) == '1':
-                    checks['cache'] = {'ok': True}
-                else:
-                    checks['cache'] = {'ok': False, 'error': 'cache mismatch'}
-                    overall_ok = False
-            except Exception as e:
-                checks['cache'] = {'ok': False, 'error': str(e)}
-                overall_ok = False
-        except Exception:
-            # Cache extension missing or not configured - report as not present but non-fatal
-            checks['cache'] = {'ok': False, 'error': 'cache extension not available'}
-
-        # Optional AI gateway quick check
-        try:
-            enable_ai_check = os.getenv('ENABLE_AI_HEALTH_CHECK') or app.config.get('ENABLE_AI_HEALTH_CHECK')
-            if str(enable_ai_check).lower() in ('1', 'true', 'yes'):
-                try:
-                    from app.ai.core_gateway import create_default_gateway
-                    gw = create_default_gateway()
-                    # perform a lightweight mock ping - non-destructive
-                    resp = gw.handle_message('__health_ping__')
-                    checks['ai_gateway'] = {'ok': True, 'response_type': resp.get('type')}
-                except Exception as e:
-                    checks['ai_gateway'] = {'ok': False, 'error': str(e)}
-                    overall_ok = False
-            else:
-                checks['ai_gateway'] = {'ok': False, 'error': 'ai health check disabled'}
-        except Exception as e:
-            checks['ai_gateway'] = {'ok': False, 'error': f'unexpected: {e}'}
-            overall_ok = False
-
-        status_code = 200 if overall_ok else 503
-        ret = jsonify(status=('ok' if overall_ok else 'unhealthy'), checks=checks), status_code
-
-        # return assembled response
-        return ret
-
     # Global exception handler: report to Sentry (if configured) and trigger a Telegram alert
     # It's defensive: HTTPExceptions are re-raised so Flask can handle them normally.
     from werkzeug.exceptions import HTTPException
@@ -552,27 +511,19 @@ def create_app(config_name="development"):
         # Log locally
         app.logger.exception('Unhandled exception caught')
 
-        # Try to capture in Sentry if available
         try:
-            import sentry_sdk
-            sentry_sdk.capture_exception(e)
+            from app.services.monitoring import report_exception
+
+            report_exception(
+                e,
+                {
+                    'path': request.path,
+                    'method': request.method,
+                    'endpoint': request.endpoint,
+                },
+            )
         except Exception:
-            app.logger.debug('Sentry SDK not available or failed to capture')
-
-        # Trigger a non-blocking Telegram monitoring alert
-        try:
-            from app.services.monitoring import send_monitoring_alert
-            import threading
-
-            def _alert():
-                try:
-                    send_monitoring_alert(f"Unhandled exception in MyWave ({app.config.get('VERSION')}): {str(e)}")
-                except Exception:
-                    app.logger.debug('Monitoring alert failed')
-
-            threading.Thread(target=_alert, daemon=True).start()
-        except Exception:
-            app.logger.debug('Failed to start monitoring alert thread')
+            app.logger.debug('Failed to report exception via monitoring stack')
 
         return jsonify(error='internal server error'), 500
 

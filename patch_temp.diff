@@ -1,0 +1,77 @@
+diff --git a/.env.sample b/.env.sample
+index 3c25b6ff2368a7c746e9f60c83fe6ad9d4e088d3..010384133029eb7d368b4b62fdda852b9d0c9ab7 100644
+--- a/.env.sample
++++ b/.env.sample
+@@ -1,57 +1,65 @@
+ # OpenAI API
+ OPENAI_API_KEY=your_openai_api_key_here
+ GPTS_MODEL=gpt-4
+ FINE_TUNED_MODEL=ft:gpt-4o-mini-2024-07-18:mywave:mywavesite:Axgy7lSh
+ FALLBACK_MODEL=gpt-4o
+ ASSISTANT_ID=your_assistant_id_here
+ 
+ # Google Services
+ GOOGLE_CALENDAR_ID=your_calendar_id_here
+ SPREADSHEET_ID=your_spreadsheet_id_here
+ GOOGLE_SHEETS_CREDENTIALS=your_credentials_here
+ DRIVE_FOLDER_ID=your_folder_id_here
+ 
+ # Telegram
+ TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
+ TELEGRAM_CHAT_ID=your_telegram_chat_id_here
+ ADMIN_CHAT_ID=your_admin_chat_id_here
+ 
+ # Database
+ DATABASE_URL=sqlite:///app.db
+ DEV_DATABASE_URL=sqlite:///dev-app.db
++POSTGRES_USER=mywave
++POSTGRES_PASSWORD=secret
++POSTGRES_DB=mywave
+ 
+ # Application
+ SECRET_KEY=your_secret_key_here
+ TIMEZONE=Europe/Moscow
+ 
+ # Notifications
+ NOTIFICATION_BOT_TOKEN=your_notification_bot_token_here
+ TRAINER_CHAT_ID=your_trainer_chat_id_here
+ 
+ # AI Gateway (API access control)
+ # - AI_GATEWAY_API_KEYS: comma-separated API keys allowed to call the AI gateway endpoints
+ # - AI_GATEWAY_REQUIRE_API_KEY: if set to 1/true will require a valid API key
+-# - AI_GATEWAY_ENABLE_RATE_LIMIT: if set to 1/true will enable the simple in-memory rate limiter
++# - AI_GATEWAY_ENABLE_RATE_LIMIT: if set to 1/true will enable the configured rate limiter
+ # - AI_GATEWAY_RATE_LIMIT_COUNT: number of requests allowed per window (default 60)
+ # - AI_GATEWAY_RATE_LIMIT_WINDOW: sliding window in seconds for rate limiting (default 60)
+ AI_GATEWAY_API_KEYS=your_api_key_here
+ AI_GATEWAY_REQUIRE_API_KEY=0
+ AI_GATEWAY_ENABLE_RATE_LIMIT=0
+ AI_GATEWAY_RATE_LIMIT_COUNT=60
+ AI_GATEWAY_RATE_LIMIT_WINDOW=60
+-# AI_GATEWAY_RATE_LIMIT_BACKEND: '' or 'redis'. When set to 'redis', the app will
+-# attempt to use a Redis-backed rate limiter. Requires REDIS_URL and the
+-# `redis` Python package installed (pip install redis).
++# AI_GATEWAY_RATE_LIMIT_BACKEND: '' or 'redis'. When set to 'redis', the app attempts to use
++# a Redis-backed limiter. Requires REDIS_URL and the `redis` Python package installed.
+ AI_GATEWAY_RATE_LIMIT_BACKEND=
+ # REDIS_URL used by RedisRateLimiter (e.g. redis://localhost:6379/0)
+ REDIS_URL=
+ 
+ # Optional monitoring / error tracking
+ # SENTRY_DSN: set to your Sentry DSN to enable error forwarding
+ # Example: SENTRY_DSN=https://public_key@o0.ingest.sentry.io/123456
+ SENTRY_DSN=
+ # Sentry traces sample rate (float 0.0 - 1.0) used for performance tracing
+ SENTRY_TRACES_SAMPLE_RATE=0.1
+ 
+ # Enable AI health check inside /api/health (set to 1 to perform a lightweight ping)
+-ENABLE_AI_HEALTH_CHECK=0
+\ No newline at end of file
++ENABLE_AI_HEALTH_CHECK=0
++
++# Docker / Gunicorn runtime
++APP_MODULE=main:app
++GUNICORN_WORKERS=3
++GUNICORN_THREADS=2
++GUNICORN_TIMEOUT=90
+

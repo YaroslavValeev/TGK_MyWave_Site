@@ -71,3 +71,6 @@ tmp_token.txt
 client_secret*.json
 configs/service_account.json
 *.json
+knowledge_base/*
+!knowledge_base/**/
+!knowledge_base/**/*.py

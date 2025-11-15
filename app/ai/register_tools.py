@@ -24,50 +24,127 @@ def register_default_tools(app=None):
         from app.services.tools import get_available_slots, book_slot
         from app.services.project_service import get_projects
 
-        # Tool: get_routes / get_services -> project listing
+        # Tool: get_services -> project listing with optional filters
         def get_services_tool(payload: Dict[str, Any]):
             projects = get_projects()
-            # allow optional filter by slug
-            slug = payload.get('slug') if isinstance(payload, dict) else None
-            if slug:
-                projects = [p for p in projects if p.get('slug') == slug]
-            return {'projects': projects}
+            city = payload.get('city') if isinstance(payload, dict) else None
+            tags = payload.get('tags') if isinstance(payload, dict) else None
+            
+            # Filter by city (if implemented in project metadata)
+            if city:
+                # For now, city filtering is not implemented in project_service
+                # but structure is ready for future extension
+                pass
+            
+            # Filter by tags
+            if tags and isinstance(tags, list):
+                filtered = []
+                for p in projects:
+                    project_tags = p.get('tags', [])
+                    if any(tag in project_tags for tag in tags):
+                        filtered.append(p)
+                projects = filtered
+            
+            return {'services': projects}
 
         from app.ai.tools_schema import get_schema_for
 
         gateway.register_tool(
-            ToolDefinition(name='get_services', description='List available services/projects', schema=get_schema_for('get_services')),
+            ToolDefinition(name='get_services', description='List available services/projects with optional filters (city, tags)', schema=get_schema_for('get_services')),
             get_services_tool,
         )
 
         # Tool: get_available_slots -> calls into app.services.tools
         def get_slots_tool(payload: Dict[str, Any]):
+            service_id = payload.get('service_id') if isinstance(payload, dict) else None
             date = payload.get('date') if isinstance(payload, dict) else None
             if not date:
                 raise ValueError('date is required')
+            if not service_id:
+                raise ValueError('service_id is required')
+            
+            # For now, service_id is accepted but not used (future extension)
             slots = get_available_slots(date)
-            return {'date': date, 'slots': slots}
+            return {'service_id': service_id, 'date': date, 'slots': slots}
 
         gateway.register_tool(
-            ToolDefinition(name='get_available_slots', description='Get available slots for a date', schema=get_schema_for('get_available_slots')),
+            ToolDefinition(name='get_available_slots', description='Get available slots for a service and date', schema=get_schema_for('get_available_slots')),
             get_slots_tool,
         )
 
         # Tool: create_booking -> uses book_slot
         def create_booking_tool(payload: Dict[str, Any]):
-            # expect {date, time, name, phone}
+            # expect {service_id, date, slot, name, phone, email?}
+            service_id = payload.get('service_id')
             date = payload.get('date')
-            time = payload.get('time')
+            slot = payload.get('slot')
             name = payload.get('name')
             phone = payload.get('phone')
-            if not all([date, time, name, phone]):
-                raise ValueError('date,time,name,phone required')
-            result = book_slot(date, time, name, phone)
+            email = payload.get('email')
+            
+            if not all([service_id, date, slot, name, phone]):
+                raise ValueError('service_id,date,slot,name,phone required')
+            
+            # For now, service_id is accepted but not used (future extension)
+            # slot is used as time
+            result = book_slot(date, slot, name, phone)
+            
+            # Add service_id and email to result if provided
+            if email:
+                result['email'] = email
+            result['service_id'] = service_id
+            
             return result
 
         gateway.register_tool(
-            ToolDefinition(name='create_booking', description='Create booking on sheets', schema=get_schema_for('create_booking')),
+            ToolDefinition(name='create_booking', description='Create booking for a service with date, slot, name, phone', schema=get_schema_for('create_booking')),
             create_booking_tool,
+        )
+        
+        # Tool: get_faq_answer -> search FAQ knowledge base
+        def get_faq_answer_tool(payload: Dict[str, Any]):
+            question = payload.get('question') if isinstance(payload, dict) else None
+            if not question:
+                raise ValueError('question is required')
+            
+            # Try to find answer in static FAQ or knowledge base
+            try:
+                import os
+                import json
+                from flask import current_app
+                
+                # Try static FAQ file first
+                faq_path = os.path.join(current_app.root_path, '..', 'static', 'data', 'faq.json')
+                if os.path.exists(faq_path):
+                    with open(faq_path, 'r', encoding='utf-8') as f:
+                        faq_data = json.load(f)
+                        faq_list = faq_data.get('faq', faq_data) if isinstance(faq_data, dict) else faq_data
+                        
+                        # Simple keyword matching
+                        question_lower = question.lower()
+                        for item in faq_list:
+                            item_question = str(item.get('script_id') or item.get('question', '')).lower()
+                            item_answer = str(item.get('script_name') or item.get('answer', ''))
+                            if question_lower in item_question or any(word in item_question for word in question_lower.split() if len(word) > 3):
+                                return {'question': question, 'answer': item_answer, 'source': 'static_faq'}
+                
+                # Fallback to knowledge base if no match
+                try:
+                    from app.routes.api import get_knowledge
+                    # This would require refactoring get_knowledge to accept question and search
+                    # For now, return a generic response
+                    return {'question': question, 'answer': 'Для получения более подробной информации обратитесь к нашему FAQ разделу или свяжитесь с нами.', 'source': 'fallback'}
+                except Exception:
+                    pass
+                
+                return {'question': question, 'answer': 'К сожалению, я не нашел точного ответа на ваш вопрос. Пожалуйста, уточните вопрос или свяжитесь с нами напрямую.', 'source': 'not_found'}
+            except Exception as e:
+                logger.warning(f'Error in get_faq_answer: {e}')
+                return {'question': question, 'answer': 'Произошла ошибка при поиске ответа. Попробуйте позже.', 'source': 'error'}
+
+        gateway.register_tool(
+            ToolDefinition(name='get_faq_answer', description='Search FAQ and knowledge base for answer to a question', schema=get_schema_for('get_faq_answer')),
+            get_faq_answer_tool,
         )
 
         logger.info('Default AI tools registered successfully')

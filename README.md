@@ -15,6 +15,64 @@ cp .env.sample .env
 docker-compose up --build
 ```
 
+Контейнер собирает production-образ (Gunicorn + Nginx). После запуска UI и API доступны на `http://localhost:8080`. Redis уже проброшен как `redis://redis:6379/0`, а Postgres живёт во встроенном volume `pgdata`.
+
+### Production-образ
+
+- **Gunicorn** работает в `eventlet`-режиме и слушает `127.0.0.1:8000`. Конфиг (`docker/gunicorn.conf.py`) настраивается через переменные `GUNICORN_*` и `APP_MODULE`.
+- **Nginx** принимает трафик на `:8080`, проксирует `/api/*` и статику, и отдаёт health-check `/healthz`, который пробрасывается в `/api/health` приложения.
+- **Health-check** внутри Dockerfile проверяет `http://127.0.0.1:8080/api/health`, поэтому продовый оркестратор сразу узнает о сбое БД/Redis.
+- **Логи** Nginx и Gunicorn отправляются в stdout/stderr, что упрощает сбор через Docker/Timeweb.
+
+Для продакшн‑деплоя достаточно передать переменные окружения (`.env` или secrets) и запустить `docker build` / `docker run`.
+
+## AI Gateway (консьерж и инструменты)
+
+Гейтвей объединяет чат-консьержа, функции Site/Safari/Challenge и валидацию payload'ов.
+
+- Реестр инструментов описан через JSON Schema (см. `docs/ai_tools_site_concierge.md`).
+- HTTP‑контракт чата задокументирован в `docs/ai_concierge_api.md`.
+- Метрики публикуются через Prometheus (`mywave_ai_concierge_requests_total`, latency, tool validation).
+- Пилотная обратная связь фиксируется через `POST /api/concierge/feedback` и влияет на порядок регистрации инструментов.
+
+### Режимы работы
+
+| Режим | Env | Когда использовать |
+| --- | --- | --- |
+| Mock (по умолчанию) | `MYWAVE_AI_MODE=mock` или переменная отсутствует | Локальная разработка и CI. Используется `MockOpenAIClient`, который умеет имитировать tool-calls через строку `__call_tool__:<name>:<json>` |
+| Real (OpenAI) | `MYWAVE_AI_MODE=real` + `OPENAI_API_KEY` | Продакшн/стенды, где нужен живой ответ модели. Контекст страницы/языка прокидывается в промпт, ответы инструментов возвращаются в UI |
+
+#### Пример запуска в mock-режиме
+
+```bash
+export MYWAVE_AI_MODE=mock
+flask --app app:create_app --debug run
+```
+
+#### Пример запуска в реальном режиме
+
+```bash
+export MYWAVE_AI_MODE=real
+export OPENAI_API_KEY="sk-..."
+
+flask --app app:create_app run --host=0.0.0.0 --port=5000
+```
+
+После запуска используйте `POST /api/concierge/message`:
+
+```bash
+curl -X POST http://localhost:5000/api/concierge/message \
+  -H 'Content-Type: application/json' \
+  -d '{"user_id": "local-dev", "message": "Покажи свободные слоты"}'
+```
+
+Ответ содержит поле `reply` и, при необходимости, структурированные результаты инструментов.
+
+## Документация
+
+- [AI Concierge API](docs/ai_concierge_api.md) — контракт `/api/concierge/message`, примеры ошибок и метрик.
+- [AI Tools](docs/ai_tools_site_concierge.md) — поля payload/ответов для Site/Safari/Challenge инструментов и рекомендации по расширению набора.
+
 ## Тесты
 
 ```bash
@@ -25,15 +83,17 @@ pytest --cov
 
 This project includes optional integrations to help monitor production issues.
 
-- Sentry: set `SENTRY_DSN` in your environment to enable error forwarding to Sentry. Adjust `SENTRY_TRACES_SAMPLE_RATE` for performance tracing (defaults to 0.1).
+- Sentry: set `SENTRY_DSN` in your environment to enable error forwarding to Sentry. SDK уже включён в зависимости, достаточно передать DSN и (опционально) `SENTRY_TRACES_SAMPLE_RATE`.
 - Telegram alerts: provide `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` to enable sending short monitoring alerts to the configured chat. The helper used is `app.services.monitoring.send_monitoring_alert()`.
 - Health endpoint: `GET /api/health` returns a JSON with checks for database, cache and (optionally) the AI gateway. Enable AI gateway quick check by setting `ENABLE_AI_HEALTH_CHECK=1`.
+- Локальный обзор логов: `scripts/review_monitoring_logs.py logs/app.log --tail 10000` покажет сводку ошибок, rate-limit событий и латентности.
 
-The Sentry SDK is optional at runtime; the app will start even if `sentry-sdk` is not installed. To enable Sentry in production, add `sentry-sdk` to `requirements.txt` and provide a valid `SENTRY_DSN`.
+Sentry и Redis клиенты уже входят в базовый образ. Если переменные окружения не заданы, интеграции остаются выключенными.
 
 ## CI/CD
 
-- Сборка и деплой через GitHub Actions (см. `.github/workflows/deploy.yml`).
+- Проверка стиля (`black --check`), юнит‑тестов и применимости миграций выполняется в `.github/workflows/ci.yml` на каждом push/PR.
+- Автодеплой на Timeweb/VPS проходит через `.github/workflows/deploy.yml`: перед публикацией прогоняются тесты и миграции, затем приложение обновляется и перезапускается.
 - Dockerfile и docker-compose для продакшн и локального запуска.
 
 ## ER-диаграмма

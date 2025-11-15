@@ -112,12 +112,16 @@ class CoreAIGateway:
         # Validate payload against tool schema if provided
         if tool_def and tool_def.schema:
             try:
-                # Lazy import to avoid adding jsonschema as a hard runtime dep for code paths
-                from jsonschema import validate as _validate
-                from jsonschema.exceptions import ValidationError as _ValidationError
-
-                _validate(instance=payload or {}, schema=tool_def.schema)
+                # Use centralized validation function
+                from app.ai.tools_schema import validate_tool_input
+                validate_tool_input(tool_name, payload or {})
             except Exception as e:
+                # Increment validation failure metric
+                try:
+                    from app.ai.metrics import TOOL_VALIDATION_FAILURE_COUNTER
+                    TOOL_VALIDATION_FAILURE_COUNTER.inc()
+                except Exception:
+                    pass
                 # Normalize jsonschema ValidationError and re-raise for callers to handle
                 logger.warning("tool_call.validation_failed", extra={"tool": tool_name, "tool_call_id": tool_call_id, "reason": str(e)})
                 raise e
@@ -202,6 +206,13 @@ class CoreAIGateway:
 
                 result = self.call_tool(tool_name, payload)
             except Exception as exc:
+                # Check if it's a validation error
+                try:
+                    from jsonschema.exceptions import ValidationError
+                    if isinstance(exc, ValidationError):
+                        return {'type': 'error', 'error': 'invalid_payload', 'tool': tool_name, 'message': str(exc)}
+                except Exception:
+                    pass
                 return {'type': 'tool_error', 'tool': tool_name, 'error': str(exc)}
             return {'type': 'tool_result', 'tool': tool_name, 'result': result}
 

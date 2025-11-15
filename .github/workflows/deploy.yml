@@ -1,40 +1,75 @@
-name: Deploy to Timeweb.cloud
+name: Deploy to Timeweb/VPS
 
 on:
   push:
     branches:
-      - main  # Основная ветка для деплоя
+      - main
+
+env:
+  PYTHON_VERSION: '3.11'
+  FLASK_APP: 'app:create_app'
+  FLASK_ENV: 'production'
+  DATABASE_URL: 'sqlite:///deploy-check.db'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v2
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Run formatter check
+        run: |
+          python -m black --check $(git ls-files '*.py')
+
+      - name: Run unit tests
+        run: |
+          pytest -q
+
+      - name: Verify migrations
+        run: |
+          flask db upgrade --directory migrations --sql > /tmp/migration.sql
+
       - name: Build Docker image
         run: docker build -t mywave:${{ github.sha }} .
 
-      - name: Deploy to Timeweb.cloud
+      - name: Prepare SSH key
         env:
-          SSH_PRIVATE_KEY: ~/.ssh/id_rsa
-          REMOTE_USER: root
-          SSH_KEY_PATH: ~/.ssh/id_rsa
-          REMOTE_HOST: mywavetreaning.ru
-          REMOTE_PATH: "C:\\home\\root\\mywave"
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $REMOTE_USER@$REMOTE_HOST "cd $REMOTE_PATH && git pull && systemctl restart mywave"
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_SERVICE: ${{ secrets.DEPLOY_SERVICE }}
+        run: |
+          ssh -i ~/.ssh/id_rsa ${DEPLOY_USER}@${DEPLOY_HOST} <<EOF
+          set -e
+          cd ${DEPLOY_PATH}
+          git fetch origin main
+          git reset --hard origin/main
+          python3 -m venv .venv
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          FLASK_APP=app:create_app FLASK_ENV=production flask db upgrade
+          sudo systemctl restart ${DEPLOY_SERVICE}
+          EOF

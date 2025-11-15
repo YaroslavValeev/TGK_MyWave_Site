@@ -10,28 +10,42 @@ SCHEMAS: Dict[str, Dict[str, Any]] = {
     'get_services': {
         'type': 'object',
         'properties': {
-            'slug': {'type': 'string'},
+            'city': {'type': ['string', 'null']},
+            'tags': {
+                'type': 'array',
+                'items': {'type': 'string'},
+            },
         },
         'additionalProperties': False,
     },
     'get_available_slots': {
         'type': 'object',
         'properties': {
+            'service_id': {'type': 'string'},
             'date': {'type': 'string', 'format': 'date'},
         },
-        'required': ['date'],
+        'required': ['service_id', 'date'],
         'additionalProperties': False,
     },
     'create_booking': {
         'type': 'object',
         'properties': {
+            'service_id': {'type': 'string'},
             'date': {'type': 'string', 'format': 'date'},
-            'time': {'type': 'string'},
+            'slot': {'type': 'string'},
             'name': {'type': 'string'},
             'phone': {'type': 'string'},
-            'email': {'type': 'string', 'format': 'email'},
+            'email': {'type': ['string', 'null'], 'format': 'email'},
         },
-        'required': ['date', 'time', 'name', 'phone'],
+        'required': ['service_id', 'date', 'slot', 'name', 'phone'],
+        'additionalProperties': False,
+    },
+    'get_faq_answer': {
+        'type': 'object',
+        'properties': {
+            'question': {'type': 'string'},
+        },
+        'required': ['question'],
         'additionalProperties': False,
     },
 }
@@ -40,3 +54,21 @@ SCHEMAS: Dict[str, Dict[str, Any]] = {
 def get_schema_for(tool_name: str) -> Dict[str, Any]:
     """Return schema for a tool name or None if not known."""
     return SCHEMAS.get(tool_name)
+
+
+def validate_tool_input(tool_name: str, payload: Dict[str, Any]) -> None:
+    """Validate tool input payload against its schema.
+
+    Raises jsonschema.ValidationError if validation fails.
+    """
+    schema = get_schema_for(tool_name)
+    if not schema:
+        # If no schema defined, skip validation (backward compatibility)
+        return
+
+    try:
+        from jsonschema import validate
+        validate(instance=payload or {}, schema=schema)
+    except ImportError:
+        # If jsonschema is not available, skip validation
+        pass
