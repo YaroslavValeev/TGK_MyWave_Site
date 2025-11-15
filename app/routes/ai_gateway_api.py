@@ -32,9 +32,13 @@ def message():
         pass
 
     # If model asked for tool calls, increment tool call counter (observability)
-    if isinstance(resp, dict) and resp.get('type') == 'tool_result':
-        TOOL_RESULT_COUNTER.inc()
-    return jsonify(resp)
+    status_code = 200
+    if isinstance(resp, dict):
+        if resp.get('type') == 'tool_result':
+            TOOL_RESULT_COUNTER.inc()
+        elif resp.get('type') == 'error':
+            status_code = 400
+    return jsonify(resp), status_code
 
 
 # Simple admin endpoint to register a test tool at runtime (useful for dev/tests)
