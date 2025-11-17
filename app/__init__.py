@@ -44,6 +44,8 @@ from app.routes.api import api_bp
 from app.routes.booking_api import booking_api_bp
 from app.routes.reviews import reviews_bp
 from app.services.responses_api import responses_bp
+from app.routes.safari_cms_api import safari_cms_bp
+from app.routes.safari import safari_bp
 try:
     from app.routes.telegram.routes import telegram_bp
 except Exception:
@@ -267,6 +269,7 @@ def create_app(config_name="development"):
     app.register_blueprint(chat_bp)
     app.register_blueprint(files_bp)
     app.register_blueprint(blog_bp)
+    app.register_blueprint(safari_bp)
     app.register_blueprint(about_bp)
     app.register_blueprint(contact_bp)
     app.register_blueprint(calendar_bp)
@@ -275,6 +278,11 @@ def create_app(config_name="development"):
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(reviews_bp)
     app.register_blueprint(responses_bp)
+    # Safari CMS API (routes, faq, sync)
+    try:
+        app.register_blueprint(safari_cms_bp)
+    except Exception:
+        app.logger.debug('safari_cms_bp not found or failed to import')
     # Recommendations blueprint (optional)
     try:
         from app.routes.recommendations_api import reco_bp
@@ -329,11 +337,30 @@ def create_app(config_name="development"):
     app.register_blueprint(admin_bp)
     app.register_blueprint(admin_images_bp)
     app.register_blueprint(health_bp)
+    
+    # Payment API blueprint
     try:
-        from app.safari.routes import safari_bp
-        app.register_blueprint(safari_bp, url_prefix='/api/safari')
+        from app.routes.payments_api import init_payments_api
+        init_payments_api(app)
     except Exception:
-        app.logger.debug('safari_bp not found or failed to import')
+        app.logger.debug('payments_api not found or failed to import')
+    
+    # Metrics API blueprint
+    try:
+        from app.routes.metrics_api import metrics_bp
+        app.register_blueprint(metrics_bp)
+        app.logger.info('Metrics API initialized')
+    except Exception:
+        app.logger.debug('metrics_api not found or failed to import')
+    
+    # Analytics middleware
+    try:
+        from app.services.analytics_service import AnalyticsMiddleware
+        AnalyticsMiddleware(app)
+        app.logger.info('Analytics middleware initialized')
+    except Exception:
+        app.logger.debug('analytics_service not found or failed to import')
+    
     api.add_namespace(api_ns, path='/api')
 
     # Exempt API blueprints from CSRF to allow programmatic API clients/tests
@@ -388,55 +415,19 @@ def create_app(config_name="development"):
 
     @app.route('/projects', methods=['GET'])
     def projects_page():
-        # Небольшой примитивный список проектов — шаблон отрисует грид + JSON-LD
-        projects = [
-            {
-                'slug': 'wsc',
-                'name': 'WakeSurf Challenge',
-                'summary': 'Соревнование и витрина KPI для спонсоров.',
-                'city': 'Moscow',
-                'cover': 'images/projects/wsc/wsc-main.webp',
-                'images': ['images/projects/wsc/wsc-preview-1.webp'],
-                'tags': ['#MyWave']
-            }
-        ]
-        return render_template('projects.html', projects=projects)
+        from app.services.showcases import get_project_cards, get_projects_graph
+
+        projects = get_project_cards()
+        jsonld = get_projects_graph()
+        return render_template('projects.html', projects=projects, showcase_graph=jsonld)
 
     @app.route('/events', methods=['GET'])
     def events_page():
-        """Simple events page which provides structured data (schema.org) to the template.
+        from app.services.showcases import get_events_schema, get_event_cards
 
-        This endpoint prepares a small `events_schema` list suitable for embedding
-        as JSON-LD in `events.html`. In a real app you'd map your Event model to
-        this structure.
-        """
-        events_schema = [
-            {
-                "@context": "https://schema.org",
-                "@type": "Event",
-                "name": "WakeSurf Safari 2025",
-                "startDate": "2025-07-01",
-                "location": {"@type": "Place", "name": "Волга", "address": "Волга, Россия"},
-                "image": [ url_for('static', filename='images/wakesurf-safari.webp') ],
-                "description": "Эксклюзивный тур по Волге с обучением",
-                "eventStatus": "https://schema.org/EventScheduled",
-                "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-                "url": url_for('events_page')
-            },
-            {
-                "@context": "https://schema.org",
-                "@type": "Event",
-                "name": "Тренировочный кемп в Сочи",
-                "startDate": "2025-12-01",
-                "location": {"@type": "Place", "name": "Сочи", "address": "Сочи, Россия"},
-                "image": [ url_for('static', filename='images/sochi-camp.webp') ],
-                "description": "Зимние тренировки в горном регионе",
-                "eventStatus": "https://schema.org/EventScheduled",
-                "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-                "url": url_for('events_page')
-            }
-        ]
-        return render_template('events.html', events=events_schema)
+        events_schema = get_events_schema()
+        cards = get_event_cards()
+        return render_template('events.html', events=events_schema, event_cards=cards)
 
     @app.route('/sitemap.xml', methods=['GET'])
     def sitemap():
@@ -461,7 +452,20 @@ def create_app(config_name="development"):
         event = data.get('event', 'unknown')
         label = data.get('label', '')
         phone = data.get('phone', '')
+        showcase_id = data.get('showcase_id')
+        channel = data.get('channel') or data.get('source') or 'web'
+        trip_date = data.get('trip_date')
         timestamp = datetime.utcnow().isoformat()
+        meta = data.get('meta') or {}
+        if not isinstance(meta, dict):
+            meta = {'payload': meta}
+        if showcase_id:
+            meta['showcase_id'] = showcase_id
+        if channel:
+            meta['channel'] = channel
+        if trip_date:
+            meta['trip_date'] = trip_date
+
         # Use standardized log_analytics_event helper when available; keep fallback for older format
         try:
             from app.services.google_sheets_service import log_analytics_event
@@ -472,8 +476,8 @@ def create_app(config_name="development"):
                 'user_key': data.get('user_key') or data.get('user') or '',
                 'rule_id': data.get('rule_id', ''),
                 'item_id': data.get('item_id', ''),
-                'type': data.get('type', ''),
-                'meta': data.get('meta', {}),
+                'type': data.get('type', '') or channel,
+                'meta': meta,
                 'ip': request.remote_addr or '',
                 'user_agent': request.headers.get('User-Agent', '')
             }
