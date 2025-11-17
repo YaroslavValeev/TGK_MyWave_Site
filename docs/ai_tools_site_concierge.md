@@ -229,3 +229,101 @@ Tool usage is tracked via Prometheus metrics:
 - `mywave_ai_gateway_tool_results_total`: Successful tool executions
 - `mywave_ai_gateway_tool_validation_failures_total`: Validation failures
 
+### 5. get_showcase_itinerary (v1)
+
+Return the itinerary/program for a Safari or Challenge showcase.
+
+**Schema:** `ai.tools.showcase.itinerary.v1`
+```json
+{
+  "$id": "ai.tools.showcase.itinerary.v1",
+  "type": "object",
+  "properties": {
+    "showcase_id": {"type": "string", "minLength": 3, "maxLength": 64},
+    "date": {"type": ["string", "null"], "pattern": "^\\d{1,2}$"}
+  },
+  "required": ["showcase_id"],
+  "additionalProperties": false
+}
+```
+
+**Example Payload:**
+```json
+{
+  "showcase_id": "wakesurf_safari",
+  "date": null
+}
+```
+
+**Response:**
+```json
+{
+  "showcase_id": "wakesurf_safari",
+  "itinerary": [
+    {"day": 1, "title": "Самара — welcome day", "description": "Трансфер, знакомство"}
+  ]
+}
+```
+
+### 6. get_challenge_leaderboard (v1)
+
+Return leaderboard entries for a challenge-style showcase.
+
+**Schema:** `ai.tools.showcase.leaderboard.v1`
+```json
+{
+  "$id": "ai.tools.showcase.leaderboard.v1",
+  "type": "object",
+  "properties": {
+    "showcase_id": {"type": "string"},
+    "limit": {"type": "integer", "minimum": 1, "maximum": 50}
+  },
+  "required": ["showcase_id"],
+  "additionalProperties": false
+}
+```
+
+**Response:**
+```json
+{
+  "showcase_id": "sochi_camp",
+  "entries": [
+    {"rider": "Анна С.", "score": 95}
+  ]
+}
+```
+
+### 7. join_challenge (v1)
+
+Register a participant in a challenge leaderboard or Safari waitlist.
+
+**Schema:** `ai.tools.showcase.join_challenge.v1`
+```json
+{
+  "$id": "ai.tools.showcase.join_challenge.v1",
+  "type": "object",
+  "properties": {
+    "showcase_id": {"type": "string"},
+    "name": {"type": "string", "minLength": 2},
+    "city": {"type": ["string", "null"]},
+    "experience_level": {"type": ["string", "null"]},
+    "channel": {"type": ["string", "null"]}
+  },
+  "required": ["showcase_id", "name"],
+  "additionalProperties": false
+}
+```
+
+**Response:**
+```json
+{
+  "ok": true,
+  "showcase_id": "sochi_camp",
+  "participant": {
+    "name": "Иван", "city": "Москва", "experience_level": "intermediate"
+  }
+}
+```
+
+> ℹ️ Версионирование: при изменении структуры добавляйте новую схему `...v2` и сохраняйте обработчики для предыдущих версий в шлюзе AI, чтобы не ломать интеграции.
+

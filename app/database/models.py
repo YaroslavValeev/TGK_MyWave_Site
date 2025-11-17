@@ -122,8 +122,6 @@ class Booking(db.Model):
     event_id = db.Column(db.Integer, db.ForeignKey('calendar_event.id'))
     status = db.Column(db.String(32), nullable=False, default='pending')
 
-Index('ix_booking_date', Booking.date)
-
 # --- Контактная форма ---
 class Contact(db.Model):
     __tablename__ = 'contact'
@@ -206,3 +204,28 @@ class Tag(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True, nullable=False)
+
+
+# --- Участники и бронирования сафари/маршрутов ---
+class Participant(db.Model):
+    __tablename__ = 'participant'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), nullable=False)
+    email = db.Column(db.String(256), unique=True, nullable=False, index=True)
+    phone = db.Column(db.String(32))
+    level = db.Column(db.String(64))
+    route_id = db.Column(db.Integer, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    bookings = db.relationship('SafariBooking', backref='participant', lazy=True)
+
+
+class SafariBooking(db.Model):
+    __tablename__ = 'safari_booking'
+    id = db.Column(db.Integer, primary_key=True)
+    participant_id = db.Column(db.Integer, db.ForeignKey('participant.id'), nullable=False)
+    status = db.Column(db.String(32), nullable=False, default='pending')
+    start_date = db.Column(db.Date, nullable=False)
+    days = db.Column(db.Integer, nullable=False, default=1)
+    message = db.Column(db.Text)
+    route_id = db.Column(db.Integer, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
