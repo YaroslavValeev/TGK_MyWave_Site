@@ -33,6 +33,16 @@ email_sent = Counter(
     ['email_type']
 )
 
+cache_hits = Counter(
+    'safari_cache_hits_total',
+    'Total number of cache hits'
+)
+
+cache_misses = Counter(
+    'safari_cache_misses_total',
+    'Total number of cache misses'
+)
+
 # Histograms
 booking_creation_time = Histogram(
     'safari_booking_creation_seconds',
@@ -110,3 +120,13 @@ def record_api_request(endpoint: str, method: str, status_code: int):
 def record_email(email_type: str):
     """Record an email sent."""
     email_sent.labels(email_type=email_type).inc()
+
+
+def record_cache_hit():
+    """Record a cache hit."""
+    cache_hits.inc()
+
+
+def record_cache_miss():
+    """Record a cache miss."""
+    cache_misses.inc()
