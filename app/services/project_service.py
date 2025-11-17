@@ -1,27 +1,27 @@
-from typing import List, Dict, Any
+from __future__ import annotations
+
+from typing import Any, Dict, List
+
+from app.services.showcases import get_project_cards
+
 
 def get_projects() -> List[Dict[str, Any]]:
-    """
-    Возвращает список проектов с их метаданными.
-    В будущем можно заменить на чтение из БД/Sheets.
-    """
-    return [
-        {
-            "slug": "wakesurfsafari",
-            "title": "WakeSurf Safari",
-            "description": "Экспедиционный формат по Волге с обучением вейксерфингу",
-            "image": "images/projects/wakesurfsafari/cover.webp",
-            "detail": False,
-            "city": "Самара",
-            "tags": ["вейтревел", "мероприятия", "высокий сезон"],
-        },
-        {
-            "slug": "wsc",
-            "title": "Wake School Camp",
-            "description": "Интенсивный курс обучения вейксерфингу в формате летнего лагеря",
-            "image": "images/projects/wsc/cover.webp",
-            "detail": True,
-            "city": "Москва",
-            "tags": ["обучение", "интенсив", "лето"],
-        },
-    ]
+    """Return normalized project cards for AI tools and legacy templates."""
+
+    cards = get_project_cards()
+    normalized = []
+    for card in cards:
+        normalized.append(
+            {
+                'slug': card['slug'],
+                'title': card['name'],
+                'description': card['summary'],
+                'image': card.get('cover'),
+                'detail': card.get('has_detail', False),
+                'city': card.get('city'),
+                'tags': card.get('tags', []),
+                'level': card.get('level'),
+                'price_from': card.get('price_from'),
+            }
+        )
+    return normalized

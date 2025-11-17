@@ -46,7 +46,7 @@ def add_booking_to_calendar(date_str, time_str, name, phone):
         print(f"❌ Ошибка при добавлении в календарь: {e}")
         return False, str(e)
 
-def create_workout_if_not_exists(date_str, time_str):
+def create_workout_if_not_exists(date_str, time_str, showcase_id=None, slot_type=None):
     sheet = get_google_sheet("Workouts")
     if not sheet.values or len(sheet.values) == 0:
         # Если лист пустой, создаём заголовки и первую строку
@@ -73,8 +73,8 @@ def create_workout_if_not_exists(date_str, time_str):
         "date": date_str,
         "time": time_str,
         "duration": 90,
-        "location": "зал",
-        "workout_type": "групповая",
+        "location": "зал" if not showcase_id else f"зал | {showcase_id}",
+        "workout_type": slot_type or "групповая",
         "max_capacity": 4,
         "coach_name": "Тренер",
         "workout_status": "активно",

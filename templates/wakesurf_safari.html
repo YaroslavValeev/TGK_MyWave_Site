@@ -1,0 +1,486 @@
+{% extends "base.html" %}
+
+{% block title %}WakeSurf Safari — Экспедиция в мир вейксерфинга | MyWave{% endblock %}
+
+{% block content %}
+<div class="safari-container">
+  <!-- Hero Section -->
+  <section class="safari-hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1>WakeSurf Safari</h1>
+      <p class="subtitle">Экспедиция в мир вейксерфинга</p>
+      <p class="description">Погрузитесь в уникальный опыт обучения вейксерфингу на живописных маршрутах</p>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <div class="container mt-5 mb-5">
+    <!-- Info Section -->
+    <section class="safari-info mb-5">
+      <h2 class="section-title">О программе</h2>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="info-card">
+            <div class="info-icon">
+              <i class="fas fa-map"></i>
+            </div>
+            <h3>Маршруты</h3>
+            <p>Выберите из разнообразных маршрутов, специально разработанных для всех уровней подготовки.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="info-card">
+            <div class="info-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <h3>Опытные инструкторы</h3>
+            <p>Профессиональные инструкторы с многолетним опытом помогут вам овладеть искусством вейксерфинга.</p>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-4">
+        <div class="col-md-6">
+          <div class="info-card">
+            <div class="info-icon">
+              <i class="fas fa-sun"></i>
+            </div>
+            <h3>Полная программа</h3>
+            <p>От 1 до 10 дней интенсивного обучения с полным снаряжением и питанием.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="info-card">
+            <div class="info-icon">
+              <i class="fas fa-star"></i>
+            </div>
+            <h3>Незабываемые впечатления</h3>
+            <p>Общение с единомышленниками и создание памятных моментов на свежем воздухе.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Routes Section -->
+    <section class="safari-routes mb-5">
+      <h2 class="section-title">Доступные маршруты</h2>
+      <div class="routes-grid">
+        <div class="route-card">
+          <div class="route-header">Safari Adventure 2025</div>
+          <div class="route-info">
+            <p><strong>Уровень:</strong> Все уровни</p>
+            <p><strong>Максимум дней:</strong> 10</p>
+            <p><strong>Особенности:</strong> Полный спектр обучения, включая базовые навыки и продвинутые техники</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Booking Form Section -->
+    <section class="safari-booking mb-5">
+      <h2 class="section-title">Забронируйте ваш Safari</h2>
+      <div class="booking-form-container">
+        <form id="safariBookingForm" class="safari-booking-form">
+          <div class="form-group">
+            <label for="name">Ваше имя *</label>
+            <input type="text" id="name" name="name" class="form-control" required />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" name="email" class="form-control" required />
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Телефон (с кодом страны) *</label>
+            <input type="tel" id="phone" name="phone" class="form-control" placeholder="+7 999 123 45 67" required />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="level">Уровень подготовки *</label>
+              <select id="level" name="level" class="form-control" required>
+                <option value="">-- Выберите уровень --</option>
+                <option value="beginner">Начинающий</option>
+                <option value="intermediate">Средний</option>
+                <option value="advanced">Продвинутый</option>
+              </select>
+            </div>
+
+            <div class="form-group col-md-6">
+              <label for="days">Количество дней *</label>
+              <input type="number" id="days" name="days" class="form-control" min="1" max="10" value="3" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="startDate">Дата начала (YYYY-MM-DD) *</label>
+            <input type="date" id="startDate" name="startDate" class="form-control" required />
+          </div>
+
+          <div class="form-group">
+            <label for="message">Дополнительное сообщение</label>
+            <textarea id="message" name="message" class="form-control" rows="4" placeholder="Расскажите о ваших пожеланиях и интересах..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-paper-plane"></i> Отправить заявку
+          </button>
+        </form>
+
+        <!-- Success/Error Messages -->
+        <div id="bookingStatus" class="alert-container"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Styles -->
+<style>
+  .safari-container {
+    background: #f8f9fa;
+  }
+
+  .safari-hero {
+    position: relative;
+    height: 400px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .safari-hero .hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 0;
+  }
+
+  .safari-hero .hero-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .safari-hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+  }
+
+  .safari-hero .subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .safari-hero .description {
+    font-size: 1.1rem;
+    opacity: 0.95;
+  }
+
+  .section-title {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #333;
+    font-weight: bold;
+  }
+
+  .safari-info {
+    background: white;
+    padding: 3rem 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .info-card {
+    text-align: center;
+    padding: 2rem;
+    border-radius: 8px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+  }
+
+  .info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: white;
+  }
+
+  .info-icon {
+    font-size: 3rem;
+    color: #667eea;
+    margin-bottom: 1rem;
+  }
+
+  .info-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+
+  .info-card p {
+    color: #666;
+    line-height: 1.6;
+  }
+
+  .safari-routes {
+    background: white;
+    padding: 3rem 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .routes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  .route-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+
+  .route-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+  }
+
+  .route-header {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 1rem;
+  }
+
+  .route-info p {
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+  }
+
+  .safari-booking {
+    background: white;
+    padding: 3rem 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .booking-form-container {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .safari-booking-form {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 8px;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .form-row {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .form-row .form-group {
+    flex: 1;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+  .alert-container {
+    margin-top: 1.5rem;
+  }
+
+  .alert {
+    padding: 1rem;
+    border-radius: 4px;
+    display: none;
+  }
+
+  .alert.show {
+    display: block;
+  }
+
+  .alert-success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+  }
+
+  .alert-danger {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+  }
+
+  .alert-info {
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+  }
+
+  .loading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  @media (max-width: 768px) {
+    .safari-hero h1 {
+      font-size: 2.5rem;
+    }
+
+    .safari-hero .subtitle {
+      font-size: 1.2rem;
+    }
+
+    .section-title {
+      font-size: 2rem;
+    }
+
+    .form-row {
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .info-card {
+      padding: 1.5rem;
+    }
+  }
+</style>
+
+<!-- Scripts -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('safariBookingForm');
+  const statusDiv = document.getElementById('bookingStatus');
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const data = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      level: formData.get('level'),
+      days: parseInt(formData.get('days'), 10),
+      startDate: formData.get('startDate'),
+      message: formData.get('message')
+    };
+
+    // Validate
+    if (!data.name || !data.email || !data.phone || !data.level || !data.days || !data.startDate) {
+      showAlert('Пожалуйста, заполните все обязательные поля', 'danger');
+      return;
+    }
+
+    // Show loading state
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
+
+    try {
+      const response = await fetch('/api/booking/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 'success') {
+        const bookingId = result.booking.id;
+        showAlert(
+          'Спасибо! Ваша заявка на бронирование принята. Мы вскоре свяжемся с вами.',
+          'success'
+        );
+        form.reset();
+        // Optional: redirect to success page after 2 seconds
+        setTimeout(() => {
+          window.location.href = `/wakesurf-safari/booking-success?id=${bookingId}`;
+        }, 2000);
+      } else {
+        const errorMsg = result.error || 'Произошла ошибка при создании бронирования';
+        showAlert(`Ошибка: ${errorMsg}`, 'danger');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showAlert('Произошла ошибка при отправке. Пожалуйста, попробуйте позже.', 'danger');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('loading');
+      submitBtn.innerHTML = originalText;
+    }
+  });
+
+  function showAlert(message, type) {
+    statusDiv.innerHTML = `<div class="alert alert-${type} show">${message}</div>`;
+    // Scroll to alert
+    statusDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+});
+</script>
+{% endblock %}

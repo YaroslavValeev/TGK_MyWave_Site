@@ -1,0 +1,53 @@
+id: wakesurf_safari
+slug: wakesurf-safari
+name: "WakeSurf Safari 2025"
+summary: "Экспедиционный тур по Волге с тренировками и проживанием"
+description: |
+  Семидневный маршрут с выездом на Волгу: катер Malibu, проживание в речных
+  отелях, питание и вечерние лекции с тренерами MyWave. Тур комбинирует учебный
+  формат и экспедиционный дух.
+category: safari
+kind: tour
+schema_type: TouristTrip
+status: scheduled
+city: Самара
+country: Россия
+start_date: 2025-07-01
+end_date: 2025-07-07
+tags:
+  - safari
+  - premium
+  - itinerary
+  - pro-coaches
+level: intermediate
+price_from: "от 180 000 ₽"
+capacity: 12
+cover_image: images/projects/wakesurfsafari/cover.webp
+gallery:
+  - images/projects/wakesurfsafari/stage-1.webp
+  - images/projects/wakesurfsafari/stage-2.webp
+cta_url: "/book?s=ws-safari"
+route: "/projects"
+channels:
+  - projects
+  - events
+metadata:
+  season: summer
+  timezone: Europe/Samara
+itinerary:
+  - day: 1
+    title: "Самара — welcome day"
+    description: "Трансфер, знакомство с командой, настройка оборудования"
+    city: Самара
+    focus: onboarding
+  - day: 2
+    title: "Стадия прогресса"
+    description: "Катание + видеосессия и индивидуальные задачи"
+    city: Жигулёвск
+    focus: technique
+  - day: 3
+    title: "День исследований"
+    description: "Поход на сапах и вечерний разбор ошибок"
+    city: Жигулёвское водохранилище
+    focus: recovery
+leaderboard: []

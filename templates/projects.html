@@ -7,10 +7,12 @@
   <ul class="projects-grid">
     {% for p in projects %}
       <li class="project-card">
+        {% if p.cover %}
         <img
           src="{{ url_for('static', filename=p.cover) }}"
           alt="{{ p.name }} — обложка проекта"
           loading="lazy" width="1200" height="800">
+        {% endif %}
         <div class="project-card__body">
           <h2 class="project-card__title">{{ p.name }}</h2>
           <p class="project-card__summary">{{ p.summary }}</p>
@@ -24,6 +26,13 @@
               </span>
             {% endif %}
           </p>
+          {% if p.price_from or p.level %}
+            <p class="project-card__pricing">
+              {% if p.price_from %}<span class="price">{{ p.price_from }}</span>{% endif %}
+              {% if p.level %}<span class="level">уровень: {{ p.level }}</span>{% endif %}
+            </p>
+          {% endif %}
+
           {% if p.images %}
           <div class="project-card__gallery" aria-label="Превью галереи">
             {% for img in p.images %}
@@ -34,10 +43,8 @@
           </div>
           {% endif %}
 
-          {% if p.has_detail %}
-            <a class="btn btn-primary" href="{{ url_for('project_detail', slug=p.slug) }}">Подробнее</a>
-          {% else %}
-            <a class="btn btn-outline" href="{{ url_for('projects_page') }}">Подробнее</a>
+          {% if p.cta_url %}
+            <a class="btn btn-primary" href="{{ p.cta_url }}">Записаться</a>
           {% endif %}
         </div>
       </li>
@@ -47,40 +54,9 @@
 
 {% include 'partials/reco_block.html' with context='projects' %}
 
-{# --- JSON-LD: один скрипт с nonce, @graph включает ItemList + Project[] --- #}
+{% if showcase_graph %}
 <script type="application/ld+json" nonce="{{ csp_nonce }}">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "ItemList",
-      "itemListElement": [
-        {% for p in projects %}
-          {
-            "@type": "ListItem",
-            "position": {{ loop.index }},
-            "url": "{% if p.has_detail %}{{ url_for('project_detail', slug=p.slug, _external=True) }}{% else %}{{ url_for('projects_page', _external=True) }}{% endif %}"
-          }{% if not loop.last %},{% endif %}
-        {% endfor %}
-      ]
-    }
-    {% for p in projects %},{% endfor %}
-    {% for p in projects %}
-    ,{
-      "@type": "Project",
-      "name": "{{ p.name|e }}",
-      "description": "{{ p.summary|e }}",
-      "image": [
-        "{{ url_for('static', filename=p.cover, _external=True) }}"
-        {% for img in p.images %},"{{ url_for('static', filename=img, _external=True) }}"{% endfor %}
-      ],
-      "url": "{% if p.has_detail %}{{ url_for('project_detail', slug=p.slug, _external=True) }}{% else %}{{ url_for('projects_page', _external=True) }}{% endif %}",
-      "keywords": "{{ (p.tags or [])|join(', ') }}",
-      "identifier": "{{ p.slug }}",
-      "areaServed": "{{ p.city }}"
-    }
-    {% endfor %}
-  ]
-}
+{{ showcase_graph|tojson(indent=2) }}
 </script>
+{% endif %}
 {% endblock %}

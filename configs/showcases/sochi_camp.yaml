@@ -1,0 +1,48 @@
+id: sochi_camp
+slug: sochi-camp
+name: "Тренировочный кемп в Сочи"
+summary: "Зимний интенсив в горах: бассейн с буксиром, ОФП и анализ ошибок"
+description: |
+  Закрытый недельный лагерь в горах Сочи. Утренние катания на волне, днём —
+  сухая подготовка и видеоанализ. Адаптирован для райдеров с уровнем от
+  начинающих до продвинутых.
+category: challenge
+kind: event
+schema_type: SportsEvent
+status: scheduled
+city: Сочи
+country: Россия
+start_date: 2025-12-01
+end_date: 2025-12-07
+tags:
+  - challenge
+  - offseason
+  - analytics
+level: all
+price_from: "от 95 000 ₽"
+capacity: 20
+cover_image: images/projects/wsc/cover.webp
+gallery:
+  - images/projects/wsc/wsc-preview-1.webp
+  - images/projects/wsc/wsc-preview-2.webp
+cta_url: "/book?s=sochi-camp"
+route: "/events"
+channels:
+  - projects
+  - events
+metadata:
+  season: winter
+  timezone: Europe/Moscow
+leaderboard:
+  - rider: "Анна С."
+    score: 95
+    city: Сочи
+    board: "SoulCraft"
+  - rider: "Максим Г."
+    score: 91
+    city: Москва
+    board: "Hyperlite"
+  - rider: "Юля Н."
+    score: 88
+    city: Казань
+    board: "Phase 5"

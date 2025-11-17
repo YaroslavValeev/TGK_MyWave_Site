@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% set event_cards = event_cards or [] %}
 {# JSON-LD structured data for events. If the view provides `events` (already shaped), it will be used; otherwise we emit two fallback events. #}
 <script type="application/ld+json" nonce="{{ g.csp_nonce }}">
 {%- if events is defined and events %}
@@ -17,7 +18,7 @@
         "description": "Эксклюзивный тур по Волге с обучением",
         "eventStatus": "https://schema.org/EventScheduled",
         "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-        "url": "{{ url_for('events') }}"
+        "url": "{{ url_for('events_page') }}"
     },
     {
         "@context": "https://schema.org",
@@ -29,7 +30,7 @@
         "description": "Зимние тренировки в горном регионе",
         "eventStatus": "https://schema.org/EventScheduled",
         "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-        "url": "{{ url_for('events') }}"
+        "url": "{{ url_for('events_page') }}"
     }
 ]
 {%- endif %}
@@ -52,27 +53,19 @@
                     </div>
                 </div>
 
-                <div class="event-card">
-            <img src="/static/images/wakesurf-safari.webp" alt="WakeSurf Safari 2025" width="300" height="200" loading="lazy">
-            <h3>WakeSurf Safari 2025</h3>
-            <p>Эксклюзивный тур по Волге с обучением.</p>
-            <p>Дата: июль 2025</p>
-            <div class="event-actions">
-                <a href="#" class="btn-primary">Подробнее</a>
-                <button class="btn-secondary btn-book">Записаться</button>
-            </div>
-        </div>
-
+        {% for event in event_cards %}
         <div class="event-card">
-            <img src="/static/images/sochi-camp.webp" alt="Тренировочный кемп в Сочи" width="300" height="200" loading="lazy">
-            <h3>Тренировочный кемп в Сочи</h3>
-            <p>Зимние тренировки в горном регионе.</p>
-            <p>Дата: декабрь 2025</p>
+            {% if event.cover %}
+            <img src="{{ url_for('static', filename=event.cover) }}" alt="{{ event.name }}" width="300" height="200" loading="lazy">
+            {% endif %}
+            <h3>{{ event.name }}</h3>
+            <p>{{ event.summary }}</p>
+            {% if event.date_range %}<p>Дата: {{ event.date_range }}</p>{% endif %}
             <div class="event-actions">
-                <a href="#" class="btn-primary">Подробнее</a>
-                <button class="btn-secondary btn-book">Записаться</button>
+                {% if event.cta_url %}<a href="{{ event.cta_url }}" class="btn-primary">Записаться</a>{% endif %}
             </div>
         </div>
+        {% endfor %}
     </section>
 {% endblock %}
 {% block scripts %}
