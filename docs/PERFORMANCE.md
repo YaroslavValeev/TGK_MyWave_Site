@@ -1,0 +1,440 @@
+# Performance Optimization Guide - MyWave Safari Application
+
+## Overview
+
+This guide provides comprehensive strategies for optimizing MyWave Safari application performance, including database queries, caching, lazy loading, and CDN configuration.
+
+## Key Metrics
+
+Before optimization:
+- Average API response time: ~200-500ms
+- Database queries per request: 5-15 (N+1 problems)
+- Cache hit rate: 0% (no caching)
+- Static asset load time: ~1-2s (no CDN)
+
+Target after optimization:
+- Average API response time: < 100ms
+- Queries per request: 1-2 (with eager loading)
+- Cache hit rate: > 70%
+- Static asset load time: < 200ms (with CDN)
+
+## Performance Service
+
+The `app/services/performance_service.py` module provides:
+
+### 1. Query Optimization
+
+#### Eager Loading
+```python
+from app.services.performance_service import QueryOptimizer
+
+# ❌ Bad - N+1 problem
+bookings = Booking.query.all()
+for booking in bookings:
+    print(booking.participant.name)  # 1 + N queries
+
+# ✅ Good - Eager loading
+bookings = QueryOptimizer.get_bookings_with_participants()
+for booking in bookings:
+    print(booking.participant.name)  # 1 query total
+```
+
+#### Available Optimized Queries
+```python
+# Bookings with loaded participants
+QueryOptimizer.get_bookings_with_participants(status='confirmed', limit=100)
+
+# Participants with booking history
+QueryOptimizer.get_participants_with_bookings(route_id=1)
+
+# Blog posts with images and comments
+QueryOptimizer.get_blog_posts_with_images(limit=50)
+
+# Upcoming bookings (next 7 days)
+QueryOptimizer.get_upcoming_bookings(days_ahead=7)
+
+# Count bookings by status
+QueryOptimizer.count_active_bookings_by_status()
+```
+
+### 2. Caching
+
+#### Cache Decorator
+```python
+from app.services.performance_service import cached_result
+
+@cached_result(timeout=600, key_prefix='bookings')
+def get_active_bookings():
+    return Booking.query.filter_by(status='confirmed').all()
+
+# Clear cache manually if needed
+get_active_bookings.clear_cache()
+```
+
+#### Cache Invalidation
+```python
+from app.services.performance_service import invalidate_cache
+
+@invalidate_cache(key_pattern='bookings:*')
+def create_booking(...):
+    # Create booking
+    # Cache automatically invalidated after function execution
+    pass
+```
+
+#### Predefined Cached Functions
+```python
+from app.services.performance_service import (
+    get_cached_active_bookings,      # Cached for 10 minutes
+    get_cached_booking_stats,        # Cached for 5 minutes
+    clear_booking_caches             # Clear all booking caches
+)
+
+# Use cached version
+bookings = get_cached_active_bookings()
+
+# Clear when data changes
+clear_booking_caches()
+```
+
+### 3. Lazy Loading
+
+#### Lightweight Serialization
+```python
+from app.services.performance_service import LazyLoadingHelper
+
+# For list views - minimal data
+booking_summary = LazyLoadingHelper.serialize_booking_summary(booking)
+# Returns: id, participant_id, status, start_date, days, created_at
+
+# For detail views - full data
+booking_data = booking.to_dict()  # All fields including relationships
+```
+
+#### Image Lazy Loading
+```python
+# Don't load images by default
+blog_post = BlogPost.query.filter_by(id=1).first()  # No images loaded
+
+# Load images only when needed
+data = LazyLoadingHelper.add_images_lazily(blog_post_id=1)
+# Returns: { blog_post: {...}, images: [...] }
+```
+
+### 4. CDN Configuration
+
+#### Basic CDN URL Generation
+```python
+from app.services.performance_service import CDNConfig
+
+# Get CDN URL (or fallback to local)
+url = CDNConfig.get_cdn_url('images/safari-1.jpg')
+# Output: https://cdn.mywave.com/images/safari-1.jpg
+
+# Without CDN configured
+url = CDNConfig.get_cdn_url('images/safari-1.jpg')
+# Output: /static/images/safari-1.jpg
+```
+
+#### Optimized Image URLs
+```python
+# Resize image on CDN
+url = CDNConfig.optimize_image_url('photo.jpg', width=800, height=600, quality=85)
+
+# Generate responsive images
+urls = CDNConfig.get_responsive_image_urls('photo.jpg')
+# Returns:
+# {
+#   'mobile': 'CDN_URL/...w_480.../photo.jpg',
+#   'tablet': 'CDN_URL/...w_768.../photo.jpg',
+#   'desktop': 'CDN_URL/...w_1200.../photo.jpg',
+#   'original': 'CDN_URL/photo.jpg'
+# }
+```
+
+#### Configuration
+```python
+# In config.py or .env
+CDN_URL = "https://cdn.mywave.com"
+CLOUDINARY_URL = "https://res.cloudinary.com/mywave-account"
+```
+
+### 5. Performance Monitoring
+
+#### Slow Query Logging
+```python
+from app.services.performance_service import PerformanceMonitor
+
+# Enable during app initialization
+PerformanceMonitor.enable_slow_query_logging(threshold_ms=200)
+
+# Queries slower than 200ms will be logged
+```
+
+#### Query Metrics
+```python
+PerformanceMonitor.log_query_metrics(result, "get_bookings", threshold_ms=100)
+```
+
+## Implementation Checklist
+
+### Step 1: Update Models with Relationships
+```python
+# app/database/models.py
+class Booking(db.Model):
+    participant = db.relationship('Participant', lazy='select')  # Not loaded by default
+    calendar_event = db.relationship('CalendarEvent', lazy='select')
+```
+
+### Step 2: Enable Performance Service
+```python
+# app/__init__.py
+from app.services.performance_service import init_performance_optimizations
+
+def create_app():
+    app = Flask(__name__)
+    init_performance_optimizations(app)  # Initialize caching and monitoring
+    return app
+```
+
+### Step 3: Update API Endpoints
+```python
+# Before
+@api.route('/bookings')
+def get_bookings():
+    return Booking.query.limit(100).all()  # N+1 problem
+
+# After
+@api.route('/bookings')
+def get_bookings():
+    return QueryOptimizer.get_bookings_with_participants(limit=100)
+```
+
+### Step 4: Add Caching to Heavy Queries
+```python
+# Queries called frequently
+@cached_result(timeout=300)
+def get_booking_stats():
+    return db.session.query(Booking.status, func.count(...)).group_by(Booking.status).all()
+```
+
+### Step 5: Configure CDN
+```python
+# In environment or config
+export CDN_URL="https://cdn.mywave.com"
+export CLOUDINARY_URL="https://res.cloudinary.com/mywave"
+```
+
+### Step 6: Update Templates
+```html
+<!-- Before -->
+<img src="/static/safari-image.jpg" />
+
+<!-- After - with lazy loading -->
+<img 
+    src="{{ cdn_config.optimize_image_url('safari-image.jpg', width=800, quality=85) }}"
+    srcset="{{ cdn_config.get_responsive_image_urls('safari-image.jpg') }}"
+/>
+```
+
+## Cache Configuration
+
+### In-Memory Cache (Development)
+```python
+# config.py
+CACHE_TYPE = "simple"
+```
+
+### Redis Cache (Production)
+```python
+# config.py
+CACHE_TYPE = "redis"
+CACHE_REDIS_URL = "redis://redis:6379/2"
+CACHE_DEFAULT_TIMEOUT = 300
+```
+
+### Memcached (Alternative)
+```python
+# config.py
+CACHE_TYPE = "memcached"
+CACHE_MEMCACHED_SERVERS = ["memcached:11211"]
+```
+
+## Database Connection Pooling
+
+```python
+# config.py
+SQLALCHEMY_ENGINE_OPTIONS = {
+    "pool_size": 20,
+    "pool_recycle": 3600,
+    "pool_pre_ping": True,
+    "max_overflow": 40,
+}
+```
+
+## Monitoring Performance
+
+### Prometheus Metrics
+
+The Prometheus integration automatically tracks:
+- Cache hits/misses (cache_hits_total, cache_misses_total)
+- Query performance
+- API response times
+- Database connections
+
+### Viewing Metrics
+```bash
+# Access Prometheus endpoint
+curl http://localhost:9090/metrics
+
+# Example output:
+# safari_cache_hits_total 145
+# safari_cache_misses_total 30
+# safari_api_response_seconds_bucket{le="0.1"} 89
+```
+
+### Grafana Dashboard
+```json
+{
+  "dashboard": {
+    "title": "MyWave Performance",
+    "panels": [
+      {
+        "title": "Cache Hit Rate",
+        "targets": [
+          {
+            "expr": "rate(safari_cache_hits_total[5m]) / (rate(safari_cache_hits_total[5m]) + rate(safari_cache_misses_total[5m]))"
+          }
+        ]
+      },
+      {
+        "title": "API Response Time (p95)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(safari_api_response_seconds_bucket[5m]))"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## Profiling and Benchmarking
+
+### Using Flask Debug Toolbar
+```python
+# In development
+from flask_debugtoolbar import DebugToolbarExtension
+
+toolbar = DebugToolbarExtension(app)
+
+# Visit http://localhost:5000/__debug__/ to see query times
+```
+
+### Using Python Profiler
+```python
+import cProfile
+import pstats
+
+# Profile a function
+pr = cProfile.Profile()
+pr.enable()
+
+# Your code here
+result = get_bookings()
+
+pr.disable()
+ps = pstats.Stats(pr)
+ps.sort_stats('cumulative')
+ps.print_stats(10)  # Top 10 functions by cumulative time
+```
+
+### Load Testing
+```bash
+# Using Apache Bench
+ab -n 1000 -c 10 http://localhost:5000/api/bookings
+
+# Using wrk
+wrk -t4 -c100 -d30s http://localhost:5000/api/bookings
+
+# Using Locust
+pip install locust
+locust -f locustfile.py --host=http://localhost:5000
+```
+
+## Common Performance Issues and Solutions
+
+### Issue: N+1 Query Problem
+**Symptom**: "SELECT * FROM bookings" followed by "SELECT * FROM participants WHERE id = X" (repeated)
+**Solution**: Use QueryOptimizer.get_bookings_with_participants()
+
+### Issue: Slow List Views
+**Symptom**: /api/bookings takes > 500ms
+**Solution**:
+1. Use pagination: limit(100).offset(0)
+2. Use lazy serialization: LazyLoadingHelper.serialize_booking_summary()
+3. Add caching: @cached_result(timeout=300)
+
+### Issue: Large Static Assets
+**Symptom**: CSS/JS/Images load slowly
+**Solution**:
+1. Configure CDN: CDN_URL environment variable
+2. Enable gzip: configured in Nginx
+3. Use lazy loading: defer image loading
+
+### Issue: Database Connection Pool Exhaustion
+**Symptom**: "QueuePool limit exceeded"
+**Solution**:
+1. Increase pool size: SQLALCHEMY_ENGINE_OPTIONS
+2. Use connection pooling
+3. Close unused connections properly
+
+## Best Practices
+
+1. **Always use eager loading for relationships**
+   ```python
+   # ❌ Avoid
+   bookings = Booking.query.all()
+   
+   # ✅ Use
+   bookings = QueryOptimizer.get_bookings_with_participants()
+   ```
+
+2. **Cache expensive calculations**
+   ```python
+   @cached_result(timeout=600)
+   def get_booking_statistics():
+       ...
+   ```
+
+3. **Lazy load heavy data**
+   ```python
+   # Don't load images by default
+   blog_post = BlogPost.query.first()  # No images
+   
+   # Load only when needed
+   images = blog_post.images  # Explicit access
+   ```
+
+4. **Use CDN for static assets**
+   ```html
+   <img src="{{ cdn_config.optimize_image_url(image, width=800) }}" />
+   ```
+
+5. **Monitor cache hit rates**
+   - Target: > 70%
+   - Review with: `curl http://localhost:9090/metrics | grep cache`
+
+6. **Profile before optimizing**
+   - Use cProfile or Flask-DebugToolbar
+   - Identify actual bottlenecks
+   - Measure impact after changes
+
+## References
+
+- [SQLAlchemy Performance Tuning](https://docs.sqlalchemy.org/en/14/faq/performance.html)
+- [Flask-Caching Documentation](https://flask-caching.readthedocs.io/)
+- [Cloudinary Image Optimization](https://cloudinary.com/documentation)
+- [Prometheus Client Library](https://github.com/prometheus/client_python)
+- [PostgreSQL Query Performance](https://www.postgresql.org/docs/current/performance.html)
