@@ -15,7 +15,14 @@ try:
 except Exception:  # pragma: no cover - optional DNS hardening
     _getaddrinfo = None  # type: ignore
 
+# Загружаем .env файл ПЕРЕД импортом конфигурации
 import os
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 import time
 from flask import Flask, render_template, send_from_directory, jsonify, g, request, url_for, make_response, current_app
 from flask_socketio import SocketIO, emit
@@ -46,6 +53,7 @@ from app.routes.reviews import reviews_bp
 from app.services.responses_api import responses_bp
 from app.routes.safari_cms_api import safari_cms_bp
 from app.routes.safari import safari_bp
+from app.routes.shop import shop_bp
 try:
     from app.routes.telegram.routes import telegram_bp
 except Exception:
@@ -138,6 +146,7 @@ def create_app(config_name="development"):
     # Инициализация базовых модулей
     app.config.from_object({
         "development": "config.DevelopmentConfig",
+        "testing": "config.TestingConfig",
         "production": "config.ProductionConfig"
     }.get(config_name.lower(), "config.DevelopmentConfig"))
 
@@ -274,6 +283,7 @@ def create_app(config_name="development"):
     app.register_blueprint(contact_bp)
     app.register_blueprint(calendar_bp)
     app.register_blueprint(services_bp)
+    app.register_blueprint(shop_bp)
     app.register_blueprint(booking_bp)
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(reviews_bp)

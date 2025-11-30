@@ -8,6 +8,7 @@ from flask_migrate import Migrate
 from flask_restx import Api
 from flask_caching import Cache
 from prometheus_flask_exporter import PrometheusMetrics
+from flask_sqlalchemy import SQLAlchemy
 
 socketio = SocketIO(
     cors_allowed_origins=[
@@ -25,6 +26,7 @@ csrf = CSRFProtect()
 migrate = Migrate()
 api = Api(doc='/swagger/')
 cache = Cache()
+db = SQLAlchemy()
 
 def init_websocket(app):
     # Добавляем проверку CSRF токена при подключении WebSocket

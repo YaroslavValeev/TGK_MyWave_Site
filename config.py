@@ -25,6 +25,9 @@ class Config:
     TIMEZONE = 'Europe/Moscow'
     SESSION_TYPE = 'filesystem'
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
+    
+    # Политика CSP по умолчанию (может быть переопределена в подклассах)
+    CSP_POLICY = {}
 
     # Настройки для OpenAI и GPT
     GPTS_MODEL = os.getenv("GPTS_MODEL", "gpt-4")
@@ -105,6 +108,8 @@ class DevelopmentConfig(Config):
             "https://api.openai.com",
             "https://mc.yandex.com",
             "https://mc.yandex.ru",
+            "wss://mc.yandex.com",
+            "wss://mc.yandex.ru",
             "https://www.google-analytics.com",
             "https://*.googleapis.com"
         ],
@@ -117,6 +122,13 @@ class DevelopmentConfig(Config):
         'manifest-src': ["'self'"],
         'media-src': ["'self'"],
     }
+
+class TestingConfig(Config):
+    """Конфигурация для тестирования."""
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'  # In-memory database для быстрых тестов
+    SQLALCHEMY_ECHO = False
+    WTF_CSRF_ENABLED = False  # Отключаем CSRF для тестов
 
 class ProductionConfig(Config):
     """Конфигурация для продакшн."""
@@ -159,6 +171,8 @@ class ProductionConfig(Config):
             "https://api.openai.com",
             "https://mc.yandex.com",
             "https://mc.yandex.ru",
+            "wss://mc.yandex.com",
+            "wss://mc.yandex.ru",
             "https://www.google-analytics.com"
         ],
         'frame-src': ["'self'", "https://calendar.google.com", "https://mc.yandex.com", "https://mc.yandex.ru"],

@@ -198,7 +198,7 @@
   <script type="module" src="{{ url_for('static', filename='js/reco.js') }}" nonce="{{ g.csp_nonce }}"></script>
 
   <!-- booking.js должен быть после блока content и всех модалок -->
-  <script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/booking.js') }}"></script>
 
   <!-- Контейнер для success-view partial (подгружается динамически) -->
   <div id="success-modal" class="modal success-modal hidden" aria-hidden="true">

@@ -19,7 +19,7 @@ How to enable
    `requirements.txt` for SocketIO; if not, run `pip install redis`).
 2. Set the following environment variables (example in `.env.sample`):
 
-```
+```text
 AI_GATEWAY_RATE_LIMIT_BACKEND=redis
 REDIS_URL=redis://localhost:6379/0
 AI_GATEWAY_RATE_LIMIT_COUNT=60
@@ -52,7 +52,7 @@ Testing
 
 Save example rule to `monitoring/alert_rules.yml` and configure Prometheus to load it.
 
-```
+```text
 groups:
   - name: mywave-alerts
     rules:

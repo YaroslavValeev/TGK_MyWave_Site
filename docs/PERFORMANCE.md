@@ -18,13 +18,14 @@ Target after optimization:
 - Cache hit rate: > 70%
 - Static asset load time: < 200ms (with CDN)
 
-## Performance Service
+\n## Performance Service
 
 The `app/services/performance_service.py` module provides:
 
-### 1. Query Optimization
+\n### 1. Query Optimization
 
-#### Eager Loading
+\n#### Eager Loading
+
 ```python
 from app.services.performance_service import QueryOptimizer
 
@@ -39,7 +40,8 @@ for booking in bookings:
     print(booking.participant.name)  # 1 query total
 ```
 
-#### Available Optimized Queries
+### Available Optimized Queries
+
 ```python
 # Bookings with loaded participants
 QueryOptimizer.get_bookings_with_participants(status='confirmed', limit=100)
@@ -60,6 +62,7 @@ QueryOptimizer.count_active_bookings_by_status()
 ### 2. Caching
 
 #### Cache Decorator
+
 ```python
 from app.services.performance_service import cached_result
 
@@ -72,6 +75,7 @@ get_active_bookings.clear_cache()
 ```
 
 #### Cache Invalidation
+
 ```python
 from app.services.performance_service import invalidate_cache
 
@@ -83,6 +87,7 @@ def create_booking(...):
 ```
 
 #### Predefined Cached Functions
+
 ```python
 from app.services.performance_service import (
     get_cached_active_bookings,      # Cached for 10 minutes
@@ -100,6 +105,7 @@ clear_booking_caches()
 ### 3. Lazy Loading
 
 #### Lightweight Serialization
+
 ```python
 from app.services.performance_service import LazyLoadingHelper
 
@@ -112,6 +118,7 @@ booking_data = booking.to_dict()  # All fields including relationships
 ```
 
 #### Image Lazy Loading
+
 ```python
 # Don't load images by default
 blog_post = BlogPost.query.filter_by(id=1).first()  # No images loaded
@@ -124,6 +131,7 @@ data = LazyLoadingHelper.add_images_lazily(blog_post_id=1)
 ### 4. CDN Configuration
 
 #### Basic CDN URL Generation
+
 ```python
 from app.services.performance_service import CDNConfig
 
@@ -137,6 +145,7 @@ url = CDNConfig.get_cdn_url('images/safari-1.jpg')
 ```
 
 #### Optimized Image URLs
+
 ```python
 # Resize image on CDN
 url = CDNConfig.optimize_image_url('photo.jpg', width=800, height=600, quality=85)
@@ -153,6 +162,7 @@ urls = CDNConfig.get_responsive_image_urls('photo.jpg')
 ```
 
 #### Configuration
+
 ```python
 # In config.py or .env
 CDN_URL = "https://cdn.mywave.com"
@@ -162,6 +172,7 @@ CLOUDINARY_URL = "https://res.cloudinary.com/mywave-account"
 ### 5. Performance Monitoring
 
 #### Slow Query Logging
+
 ```python
 from app.services.performance_service import PerformanceMonitor
 
@@ -172,6 +183,7 @@ PerformanceMonitor.enable_slow_query_logging(threshold_ms=200)
 ```
 
 #### Query Metrics
+
 ```python
 PerformanceMonitor.log_query_metrics(result, "get_bookings", threshold_ms=100)
 ```
@@ -179,6 +191,7 @@ PerformanceMonitor.log_query_metrics(result, "get_bookings", threshold_ms=100)
 ## Implementation Checklist
 
 ### Step 1: Update Models with Relationships
+
 ```python
 # app/database/models.py
 class Booking(db.Model):
@@ -187,6 +200,7 @@ class Booking(db.Model):
 ```
 
 ### Step 2: Enable Performance Service
+
 ```python
 # app/__init__.py
 from app.services.performance_service import init_performance_optimizations
@@ -198,6 +212,7 @@ def create_app():
 ```
 
 ### Step 3: Update API Endpoints
+
 ```python
 # Before
 @api.route('/bookings')
@@ -211,6 +226,7 @@ def get_bookings():
 ```
 
 ### Step 4: Add Caching to Heavy Queries
+
 ```python
 # Queries called frequently
 @cached_result(timeout=300)
@@ -219,6 +235,7 @@ def get_booking_stats():
 ```
 
 ### Step 5: Configure CDN
+
 ```python
 # In environment or config
 export CDN_URL="https://cdn.mywave.com"
@@ -226,12 +243,13 @@ export CLOUDINARY_URL="https://res.cloudinary.com/mywave"
 ```
 
 ### Step 6: Update Templates
+
 ```html
 <!-- Before -->
 <img src="/static/safari-image.jpg" />
 
 <!-- After - with lazy loading -->
-<img 
+<img
     src="{{ cdn_config.optimize_image_url('safari-image.jpg', width=800, quality=85) }}"
     srcset="{{ cdn_config.get_responsive_image_urls('safari-image.jpg') }}"
 />
@@ -240,12 +258,14 @@ export CLOUDINARY_URL="https://res.cloudinary.com/mywave"
 ## Cache Configuration
 
 ### In-Memory Cache (Development)
+
 ```python
 # config.py
 CACHE_TYPE = "simple"
 ```
 
 ### Redis Cache (Production)
+
 ```python
 # config.py
 CACHE_TYPE = "redis"
@@ -254,6 +274,7 @@ CACHE_DEFAULT_TIMEOUT = 300
 ```
 
 ### Memcached (Alternative)
+
 ```python
 # config.py
 CACHE_TYPE = "memcached"
@@ -283,6 +304,7 @@ The Prometheus integration automatically tracks:
 - Database connections
 
 ### Viewing Metrics
+
 ```bash
 # Access Prometheus endpoint
 curl http://localhost:9090/metrics
@@ -294,6 +316,7 @@ curl http://localhost:9090/metrics
 ```
 
 ### Grafana Dashboard
+
 ```json
 {
   "dashboard": {
@@ -323,6 +346,7 @@ curl http://localhost:9090/metrics
 ## Profiling and Benchmarking
 
 ### Using Flask Debug Toolbar
+
 ```python
 # In development
 from flask_debugtoolbar import DebugToolbarExtension
@@ -333,6 +357,7 @@ toolbar = DebugToolbarExtension(app)
 ```
 
 ### Using Python Profiler
+
 ```python
 import cProfile
 import pstats
@@ -351,6 +376,7 @@ ps.print_stats(10)  # Top 10 functions by cumulative time
 ```
 
 ### Load Testing
+
 ```bash
 # Using Apache Bench
 ab -n 1000 -c 10 http://localhost:5000/api/bookings
@@ -366,10 +392,12 @@ locust -f locustfile.py --host=http://localhost:5000
 ## Common Performance Issues and Solutions
 
 ### Issue: N+1 Query Problem
+
 **Symptom**: "SELECT * FROM bookings" followed by "SELECT * FROM participants WHERE id = X" (repeated)
 **Solution**: Use QueryOptimizer.get_bookings_with_participants()
 
 ### Issue: Slow List Views
+
 **Symptom**: /api/bookings takes > 500ms
 **Solution**:
 1. Use pagination: limit(100).offset(0)
@@ -377,6 +405,7 @@ locust -f locustfile.py --host=http://localhost:5000
 3. Add caching: @cached_result(timeout=300)
 
 ### Issue: Large Static Assets
+
 **Symptom**: CSS/JS/Images load slowly
 **Solution**:
 1. Configure CDN: CDN_URL environment variable
@@ -384,6 +413,7 @@ locust -f locustfile.py --host=http://localhost:5000
 3. Use lazy loading: defer image loading
 
 ### Issue: Database Connection Pool Exhaustion
+
 **Symptom**: "QueuePool limit exceeded"
 **Solution**:
 1. Increase pool size: SQLALCHEMY_ENGINE_OPTIONS
@@ -396,7 +426,7 @@ locust -f locustfile.py --host=http://localhost:5000
    ```python
    # ❌ Avoid
    bookings = Booking.query.all()
-   
+
    # ✅ Use
    bookings = QueryOptimizer.get_bookings_with_participants()
    ```
@@ -412,7 +442,7 @@ locust -f locustfile.py --host=http://localhost:5000
    ```python
    # Don't load images by default
    blog_post = BlogPost.query.first()  # No images
-   
+
    # Load only when needed
    images = blog_post.images  # Explicit access
    ```

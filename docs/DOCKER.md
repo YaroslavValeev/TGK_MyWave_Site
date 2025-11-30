@@ -7,12 +7,14 @@ This guide provides complete instructions for containerizing and deploying the M
 ## Architecture
 
 ### Services
+
 - **web**: Flask application with Gunicorn WSGI server
 - **db**: PostgreSQL 15 database
 - **redis**: Redis for caching and SocketIO message queue
 - **nginx**: Reverse proxy with SSL/TLS termination
 
 ### Key Features
+
 - Multi-stage Docker build for optimized image size
 - Health checks on all services
 - Non-root user for security
@@ -152,7 +154,8 @@ Then: `docker-compose up` (will merge both files)
 - Runtime stage: Copy wheels and app, run as non-root user
 
 **Gunicorn Configuration**:
-```
+
+```text
 Workers: 4
 Worker Class: gevent (for async/WebSocket support)
 Timeout: 120 seconds
@@ -160,11 +163,13 @@ Max Requests: 1000 (worker recycling for memory management)
 ```
 
 **Health Check**:
+
 ```bash
 curl http://localhost:5000/api/metrics/health
 ```
 
 Endpoint response:
+
 ```json
 {
   "status": "healthy",
@@ -214,12 +219,14 @@ docker-compose exec db du -sh /var/lib/postgresql/data
 - Rate limiting data
 
 **Health Check**:
+
 ```bash
 docker-compose exec redis redis-cli ping
 # Response: PONG
 ```
 
 **Monitor Memory**:
+
 ```bash
 docker-compose exec redis redis-cli info memory
 ```
@@ -237,7 +244,8 @@ docker-compose exec redis redis-cli info memory
 - Reverse proxy to Flask
 
 **Rate Limiting Zones**:
-```
+
+```text
 general: 10 req/s per IP (20 burst)
 api: 30 req/s per IP (50 burst)
 auth: 5 req/min per IP (5 burst)
@@ -401,7 +409,7 @@ cp /etc/letsencrypt/live/yourdomain.com/privkey.pem docker/ssl/key.pem
    # Update Docker images
    docker-compose pull
    docker-compose up -d
-   
+
    # Migrate database (if needed)
    docker-compose exec web flask db upgrade
    ```

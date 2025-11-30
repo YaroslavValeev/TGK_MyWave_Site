@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Debug Booking</title>
+  <link rel="stylesheet" href="static/css/modals.css">
+</head>
+<body>
+
+<!-- Copy of booking_modals.html -->
+<div id="modalCalendar" class="modal hidden">
+  <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Выберите дату</h2>
+      <p class="progress-info">Шаг 1 / 3</p>
+      <div class="date-input-container">
+          <input type="text" id="bookingDateInput" placeholder="Выберите дату" readonly>
+          <i id="dateIcon" class="fas fa-calendar-alt"></i>
+      </div>
+      <button id="confirmDateBtn" class="btn btn-primary">Далее</button>
+  </div>
+</div>
+
+<!-- Test button -->
+<button id="openBookingBtn" class="book-now" data-service="boat">Записаться</button>
+
+<script>
+console.log("🚀 DEBUG: Script loaded");
+console.log("Elements:", {
+  modal: !!document.getElementById("modalCalendar"),
+  button: !!document.getElementById("openBookingBtn"),
+  input: !!document.getElementById("bookingDateInput")
+});
+
+document.getElementById("openBookingBtn").addEventListener("click", (e) => {
+  console.log("✅ Button clicked!");
+  console.log("Event:", e);
+  e.preventDefault();
+  const modal = document.getElementById("modalCalendar");
+  if (modal) {
+    modal.classList.remove("hidden");
+    console.log("✅ Modal class removed hidden");
+    console.log("Modal classes:", modal.className);
+  }
+});
+</script>
+
+</body>
+</html>

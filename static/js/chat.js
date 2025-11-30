@@ -782,11 +782,20 @@ async function loadKnowledgeBase() {
         knowledgeBase.training = trainingData;
         knowledgeBase.tricks = tricksData;
         
-        generateSuggestedQuestions();
+        // Проверяем что функция существует перед вызовом
+        if (typeof generateSuggestedQuestions === 'function') {
+            generateSuggestedQuestions();
+        }
     } catch (error) {
         console.error('Failed to load knowledge base:', error);
     }
 }
 
 // Инициализация при загрузке
-document.addEventListener('DOMContentLoaded', loadKnowledgeBase);
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        loadKnowledgeBase();
+    } catch (err) {
+        console.warn('[chat.js] Non-critical error loading knowledge base:', err);
+    }
+});
