@@ -1,20 +1,19 @@
-// Оборачиваем в try-catch для отладки
-console.log("[booking.js] Script loaded (before DOMContentLoaded)");
+// Логирование загрузки скрипта
+console.log("[booking.js] Script loaded");
 window.bookingStatus = { loaded: true, initialized: false, error: null };
 
 // Function to initialize booking system
-async function initializeBooking() {
+function initializeBooking() {
   window.bookingStatus.initStarted = true;
-
+  
 try {
-
-// Получение свежего CSRF-токена с сервера
+  // Получение свежего CSRF-токена с сервера
 async function getFreshCsrfToken() {
   const resp = await fetch('/api/csrf-token', { credentials: 'same-origin' });
   const data = await resp.json();
   return data.csrf_token;
 }
-  console.log("[booking.js] DOMContentLoaded");
+  console.log("[booking.js] initializeBooking started");
   console.log("📦 booking.js начинает инициализацию...");
 
   // ==============================
@@ -1018,7 +1017,6 @@ async function getFreshCsrfToken() {
   // Инициализация при загрузке
   // goToStep(1);
   });
-} catch (err) {
   console.error("[booking.js] КРИТИЧЕСКАЯ ОШИБКА:", err);
   console.error("Стек:", err.stack);
   window.bookingStatus.error = {
@@ -1026,6 +1024,23 @@ async function getFreshCsrfToken() {
     stack: err.stack
   };
 }
+
+// Execute initialization when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener("DOMContentLoaded", initializeBooking);
+  console.log("[booking.js] Registered DOMContentLoaded listener");
+} else {
+  console.log("[booking.js] DOM already loaded, initializing now");
+  initializeBooking();
+}
+
+// Also register for window.onload as fallback
+window.addEventListener('load', () => {
+  console.log("[booking.js] window.onload fired");
+  if (!window.bookingStatus.initialized) {
+    initializeBooking();
+  }
+});
 
 function openModal() {
   document.getElementById("modalCalendar").classList.remove("hidden");
