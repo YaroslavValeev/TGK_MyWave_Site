@@ -1,4 +1,6 @@
-document.addEventListener("DOMContentLoaded", () => {
+// Оборачиваем в try-catch для отладки
+try {
+  document.addEventListener("DOMContentLoaded", () => {
 // Получение свежего CSRF-токена с сервера
 async function getFreshCsrfToken() {
   const resp = await fetch('/api/csrf-token', { credentials: 'same-origin' });
@@ -46,14 +48,14 @@ async function getFreshCsrfToken() {
   });
 
   if (!UI.bookingDateInput || !UI.slotButtonsContainer) {
-    console.warn("⚠️ booking.js не может инициализироваться — отсутствуют ключевые элементы.");
-    return;
+    console.warn("⚠️ Предупреждение: отсутствуют некоторые модальные элементы (это нормально, если они подгружаются позже).");
+    // NOTE: We do NOT return here anymore - this allows booking buttons to work even if modals aren't ready yet
   }
 
   // Проверяем инициализацию кнопок бронирования
   if (!UI.openBookingButtons || UI.openBookingButtons.length === 0) {
-    console.warn("⚠️ Не найдены кнопки для бронирования");
-    return;
+    console.warn("⚠️ Не найдены кнопки для бронирования - попытаемся продолжить");
+    // NOTE: We do NOT return here - let booking initialization continue
   }
 
   // ==============================
@@ -62,9 +64,12 @@ async function getFreshCsrfToken() {
   let wsToken = '';
   let socket = null;
 
-  // Асинхронная инициализация WebSocket
+  // Асинхронная инициализация WebSocket (опционально, не критично для UI)
   async function initWebSocket(forcePolling = false) {
     try {
+      // ВРЕМЕННО: Отключаем WebSocket чтобы не блокировать UI
+      console.warn('[booking.js] WebSocket инициализация отключена');
+      return;
       // Получаем свежий CSRF токен
       const token = await getFreshCsrfToken();
       wsToken = token;
@@ -130,13 +135,15 @@ async function getFreshCsrfToken() {
 
     } catch (err) {
       console.error('Ошибка при инициализации WebSocket:', err);
-      // Пробуем переподключиться через 5 секунд при ошибке
-      setTimeout(() => initWebSocket(forcePolling), 5000);
     }
   }
 
-  // Запускаем инициализацию WebSocket
-  initWebSocket();
+  // Запускаем инициализацию WebSocket (опционально)
+  try {
+    initWebSocket();
+  } catch (err) {
+    console.warn('[booking.js] WebSocket ошибка (не критично):', err);
+  }
 
   // Инициализация flatpickr для выбора даты
   if (UI.bookingDateInput) {
@@ -1003,7 +1010,11 @@ async function getFreshCsrfToken() {
 
   // Инициализация при загрузке
   // goToStep(1);
-});
+  });
+} catch (err) {
+  console.error("[booking.js] КРИТИЧЕСКАЯ ОШИБКА:", err);
+  console.error("Стек:", err.stack);
+}
 
 function openModal() {
   document.getElementById("modalCalendar").classList.remove("hidden");
