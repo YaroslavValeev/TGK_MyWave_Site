@@ -10,7 +10,8 @@ The AI concierge can use various tools to help users with bookings, FAQ lookup, 
 
 Get a list of available services/projects with optional filtering.
 
-**Schema:**
+## Schema:
+
 ```json
 {
   "type": "object",
@@ -25,7 +26,8 @@ Get a list of available services/projects with optional filtering.
 }
 ```
 
-**Example Payload:**
+## Example Payload:
+
 ```json
 {
   "city": null,
@@ -33,7 +35,8 @@ Get a list of available services/projects with optional filtering.
 }
 ```
 
-**Response:**
+## Response:
+
 ```json
 {
   "services": [
@@ -53,7 +56,8 @@ Get a list of available services/projects with optional filtering.
 
 Get available time slots for a specific service and date.
 
-**Schema:**
+## Schema:
+
 ```json
 {
   "type": "object",
@@ -66,7 +70,8 @@ Get available time slots for a specific service and date.
 }
 ```
 
-**Example Payload:**
+## Example Payload:
+
 ```json
 {
   "service_id": "wsc",
@@ -74,7 +79,8 @@ Get available time slots for a specific service and date.
 }
 ```
 
-**Response:**
+## Response:
+
 ```json
 {
   "service_id": "wsc",
@@ -100,7 +106,8 @@ Get available time slots for a specific service and date.
 
 Create a booking for a service.
 
-**Schema:**
+## Schema:
+
 ```json
 {
   "type": "object",
@@ -117,7 +124,8 @@ Create a booking for a service.
 }
 ```
 
-**Example Payload:**
+## Example Payload:
+
 ```json
 {
   "service_id": "wsc",
@@ -129,7 +137,8 @@ Create a booking for a service.
 }
 ```
 
-**Response:**
+## Response:
+
 ```json
 {
   "success": true,
@@ -143,7 +152,8 @@ Create a booking for a service.
 
 Search FAQ and knowledge base for an answer to a question.
 
-**Schema:**
+## Schema:
+
 ```json
 {
   "type": "object",
@@ -155,14 +165,16 @@ Search FAQ and knowledge base for an answer to a question.
 }
 ```
 
-**Example Payload:**
+## Example Payload:
+
 ```json
 {
   "question": "Какова стоимость тренировок?"
 }
 ```
 
-**Response:**
+## Response:
+
 ```json
 {
   "question": "Какова стоимость тренировок?",
@@ -171,7 +183,8 @@ Search FAQ and knowledge base for an answer to a question.
 }
 ```
 
-**Response Sources:**
+## Response Sources:
+
 - `static_faq`: Answer found in static FAQ file
 - `fallback`: Generic fallback response
 - `not_found`: No answer found
@@ -183,7 +196,8 @@ All tool inputs are validated against their schemas before execution. Validation
 1. Increment the `mywave_ai_gateway_tool_validation_failures_total` Prometheus counter
 2. Return an error response with `type: "error"` and `error: "invalid_payload"`
 
-**Example Validation Error Response:**
+## Example Validation Error Response:
+
 ```json
 {
   "type": "error",
@@ -204,6 +218,7 @@ Tools are registered automatically on application startup via `app.ai.register_t
 ## Error Handling
 
 Tool execution errors are caught and returned as:
+
 ```json
 {
   "type": "tool_error",
@@ -213,6 +228,7 @@ Tool execution errors are caught and returned as:
 ```
 
 Validation errors are returned as:
+
 ```json
 {
   "type": "error",
@@ -234,6 +250,7 @@ Tool usage is tracked via Prometheus metrics:
 Return the itinerary/program for a Safari or Challenge showcase.
 
 **Schema:** `ai.tools.showcase.itinerary.v1`
+
 ```json
 {
   "$id": "ai.tools.showcase.itinerary.v1",
@@ -247,7 +264,8 @@ Return the itinerary/program for a Safari or Challenge showcase.
 }
 ```
 
-**Example Payload:**
+## Example Payload:
+
 ```json
 {
   "showcase_id": "wakesurf_safari",
@@ -255,7 +273,8 @@ Return the itinerary/program for a Safari or Challenge showcase.
 }
 ```
 
-**Response:**
+## Response:
+
 ```json
 {
   "showcase_id": "wakesurf_safari",
@@ -270,6 +289,7 @@ Return the itinerary/program for a Safari or Challenge showcase.
 Return leaderboard entries for a challenge-style showcase.
 
 **Schema:** `ai.tools.showcase.leaderboard.v1`
+
 ```json
 {
   "$id": "ai.tools.showcase.leaderboard.v1",
@@ -283,7 +303,8 @@ Return leaderboard entries for a challenge-style showcase.
 }
 ```
 
-**Response:**
+## Response:
+
 ```json
 {
   "showcase_id": "sochi_camp",
@@ -298,6 +319,7 @@ Return leaderboard entries for a challenge-style showcase.
 Register a participant in a challenge leaderboard or Safari waitlist.
 
 **Schema:** `ai.tools.showcase.join_challenge.v1`
+
 ```json
 {
   "$id": "ai.tools.showcase.join_challenge.v1",
@@ -314,7 +336,8 @@ Register a participant in a challenge leaderboard or Safari waitlist.
 }
 ```
 
-**Response:**
+## Response:
+
 ```json
 {
   "ok": true,

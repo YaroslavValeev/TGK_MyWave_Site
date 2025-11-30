@@ -7,6 +7,7 @@ This project uses Alembic for database migrations. Alembic is a lightweight data
 ## Current Migrations
 
 ### Existing migrations:
+
 - `e89ecaa2c591` - Add email to user table
 - `b2f4a6c8d9e1` - Add unique constraint on booking date/time/phone
 - `b2a005fd0c4b` - Add image model and blog post image relationship
@@ -16,6 +17,7 @@ This project uses Alembic for database migrations. Alembic is a lightweight data
 ## Core Models with Migrations
 
 ### Participant Table
+
 - `id` (Integer, Primary Key)
 - `name` (String 128)
 - `email` (String 256, Unique)
@@ -25,6 +27,7 @@ This project uses Alembic for database migrations. Alembic is a lightweight data
 - `created_at` (DateTime)
 
 ### SafariBooking Table
+
 - `id` (Integer, Primary Key)
 - `participant_id` (Integer, Foreign Key → participant)
 - `status` (String 32, default: 'pending')
@@ -37,27 +40,32 @@ This project uses Alembic for database migrations. Alembic is a lightweight data
 ## Migration Commands
 
 ### Generate a new migration
+
 ```bash
 flask db migrate -m "Description of changes"
 ```
 
 ### Apply pending migrations (upgrade)
+
 ```bash
 flask db upgrade
 ```
 
 ### Rollback to previous version (downgrade)
+
 ```bash
 flask db downgrade
 ```
 
 ### View migration history
+
 ```bash
 flask db current  # Show current version
 flask db history  # Show all versions
 ```
 
 ### Downgrade to specific version
+
 ```bash
 flask db downgrade <revision>
 ```
@@ -75,6 +83,7 @@ When adding a new model to `app/database/models.py`:
 ## Testing Migrations
 
 Run unit tests to verify migration structure:
+
 ```bash
 pytest tests/unit/test_migrations.py -v
 ```
@@ -88,12 +97,14 @@ This verifies:
 ## Troubleshooting
 
 ### Migration conflicts
+
 If multiple migrations target the same revision, resolve by:
 1. Check `down_revision` in conflicting files
 2. Reorder migration files or rename them
 3. Ensure linear chain: A → B → C
 
 ### Migration failed
+
 ```bash
 # Rollback failed migration
 flask db downgrade -1
@@ -105,6 +116,7 @@ flask db current
 ```
 
 ### Circular dependencies
+
 Avoid circular foreign key constraints. Use nullable foreign keys or separate migrations if needed.
 
 ## Best Practices
@@ -137,6 +149,7 @@ flask db upgrade  # Apply pending migrations
 - Participant & SafariBooking
 
 Current database state can be verified with:
+
 ```bash
 flask db current
 ```

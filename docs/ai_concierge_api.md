@@ -12,10 +12,12 @@ Send a message to the AI concierge and receive a response.
 
 #### Request
 
-**Headers:**
+## Headers:
+
 - `Content-Type: application/json`
 
-**Body:**
+## Body:
+
 ```json
 {
   "message": "Привет! Какие услуги у вас есть?",
@@ -27,16 +29,18 @@ Send a message to the AI concierge and receive a response.
 }
 ```
 
-**Fields:**
+## Fields:
+
 - `message` (required, string): The user's message (max 4000 characters)
 - `user_id` (optional, string): Unique identifier for the user (used for rate limiting and context)
 - `context` (optional, object): Additional context for the request
   - `page` (optional, string): Current page name
   - `lang` (optional, string): Language code (e.g., "ru", "en")
 
-#### Response
+### Response
 
-**Success (200):**
+## Success (200):
+
 ```json
 {
   "type": "assistant",
@@ -45,6 +49,7 @@ Send a message to the AI concierge and receive a response.
 ```
 
 Or with tool result:
+
 ```json
 {
   "type": "tool_result",
@@ -55,21 +60,24 @@ Or with tool result:
 }
 ```
 
-**Validation Error (400):**
+## Validation Error (400):
+
 ```json
 {
   "error": "message required"
 }
 ```
 
-**Rate Limit Exceeded (429):**
+## Rate Limit Exceeded (429):
+
 ```json
 {
   "error": "rate_limit_exceeded"
 }
 ```
 
-**Server Error (500):**
+## Server Error (500):
+
 ```json
 {
   "error": "Internal server error message"

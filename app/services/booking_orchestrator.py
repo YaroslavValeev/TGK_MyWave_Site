@@ -151,7 +151,15 @@ def orchestrate(user_text: str, state: Dict[str, Any] | None = None) -> Tuple[st
     state = dict(state or {})
 
     # 1) Ask the model for structured interpretation (with tools context)
-    model_result = respond_structured(user_text, state=state, tools=TOOLS_MANIFEST)
+    try:
+        model_result = respond_structured(user_text, state=state, tools=TOOLS_MANIFEST)
+    except RuntimeError as e:
+        # Fallback if OpenAI API is not available
+        if "OPENAI_API_KEY" in str(e):
+            model_result = _heuristics(user_text, state)
+        else:
+            raise
+    
     if model_result.get("error"):
         model_result = _heuristics(user_text, state)
 

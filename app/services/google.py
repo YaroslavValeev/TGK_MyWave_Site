@@ -172,6 +172,11 @@ def GoogleService(service_account_file=None):
 
 def add_event_to_calendar(service, date, time, client_name, client_phone):
     try:
+        calendar_id = current_app.config.get('GOOGLE_CALENDAR_ID')
+        if not calendar_id:
+            logging.warning('⚠️ GOOGLE_CALENDAR_ID не настроен, событие не будет добавлено в календарь')
+            return False
+        
         start_time = datetime.strptime(f'{date} {time}', '%Y-%m-%d %H:%M')
         end_time = start_time + timedelta(hours=1, minutes=30)
         timezone = current_app.config.get('TIMEZONE', 'Europe/Moscow')
@@ -184,7 +189,7 @@ def add_event_to_calendar(service, date, time, client_name, client_phone):
         }
 
         service[2].events().insert(
-            calendarId=current_app.config['GOOGLE_CALENDAR_ID'],
+            calendarId=calendar_id,
             body=event_body
         ).execute()
 

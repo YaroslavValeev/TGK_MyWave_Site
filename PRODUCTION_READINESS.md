@@ -5,6 +5,7 @@
 ## 1. Analytics Endpoint Testing ✅
 
 ### Что сделано:
+
 - **Файл:** `scripts/test_analytics_log.py` (314 строк)
 - **Назначение:** Тестирует POST `/analytics/log` endpoint с реальными Google Sheets credentials
 - **События для тестирования:**
@@ -14,6 +15,7 @@
   - `calculator_result` — результат калькулятора
 
 ### Как использовать:
+
 ```bash
 # 1. Убедитесь, что приложение запущено
 python main.py
@@ -27,7 +29,8 @@ python scripts/test_analytics_log.py
 ```
 
 ### Endpoint структура:
-```
+
+```text
 POST /analytics/log
 Content-Type: application/json
 
@@ -51,18 +54,21 @@ Response:
 
 ## 2. Service Images Seeding ✅
 
-### Что сделано:
+### Что сделано:​
+
 - **Файл:** `scripts/seed_service_images.py` (160+ строк)
 - **Назначение:** Добавляет 10 тестовых записей в таблицу `Image` с `group='services'`
 - **Данные:** Реальные названия услуг (Тренировка, Wake Discovery, Wake Camp, etc.)
 
-### Как использовать:
+### Как использовать:​
+
 ```bash
 python scripts/seed_service_images.py
 ```
 
 ### Вывод:
-```
+
+```text
 📸 Добавление 10 изображений услуг...
 
    ✓ Тренировка на тренажёрах (order=1)
@@ -73,6 +79,7 @@ python scripts/seed_service_images.py
 ```
 
 ### Результат:
+
 - Рекомендации теперь будут возвращать эти изображения
 - Порядок сортировки через `order` поле
 - Каждое изображение имеет `title`, `alt`, `caption` для SEO
@@ -81,18 +88,21 @@ python scripts/seed_service_images.py
 
 ## 3. CSP Browser Monitoring ✅
 
-### Что сделано:
+### Что сделано:​
+
 - **Мониторинг CSP нарушений:** `static/js/csp-monitor.js` (180 строк)
 - **API endpoint:** `POST /api/csp-violations` (app/routes/csp_api.py)
 - **Интеграция:** Скрипт подключен в `templates/base.html`
 
 ### Как работает:
+
 1. **CSP Monitor** (JavaScript) слушает события `securitypolicyviolation`
 2. Накапливает нарушения в буфер (максимум 5 за раз)
 3. Отправляет на сервер каждые 30 секунд или при переполнении буфера
 4. **API endpoint** логирует нарушения в Google Sheets (`csp_violations` лист)
 
 ### Что мониторится:
+
 ```javascript
 {
   violatedDirective: "style-src",      // Какая директива CSP нарушена
@@ -106,6 +116,7 @@ python scripts/seed_service_images.py
 ```
 
 ### Проверка:
+
 ```bash
 # 1. Откройте DevTools → Console
 # 2. Должны видеть:
@@ -119,6 +130,7 @@ python scripts/seed_service_images.py
 ```
 
 ### Отключение мониторинга (если нужно):
+
 ```javascript
 window.CSPMonitor.config.enabled = false;
 ```
@@ -127,12 +139,14 @@ window.CSPMonitor.config.enabled = false;
 
 ## 4. Cache Hit/Miss Metrics ✅
 
-### Что сделано:
+### Что сделано:​
+
 - **Метрики в коде:** Добавлены глобальные счётчики в `recommendations_service.py`
 - **API endpoint:** `GET /api/reco/stats` (возвращает JSON статистика)
 - **Reset endpoint:** `POST /api/reco/stats/reset` (требует X-Admin-Token header)
 
 ### Как получить метрики:
+
 ```bash
 curl http://localhost:5000/api/reco/stats
 
@@ -148,11 +162,13 @@ curl http://localhost:5000/api/reco/stats
 ```
 
 ### Интерпретация метрик:
+
 - **hit_rate > 60%** ✅ — Хороший кэш, экономим ресурсы БД
 - **hit_rate 20-60%** ⚠️ — Среднее, может быть при разных контекстах
 - **hit_rate < 20%** ❌ — Плохо, кэш неэффективен, проверьте TTL
 
 ### Сброс счётчиков (для тестирования):
+
 ```bash
 curl -X POST http://localhost:5000/api/reco/stats/reset \
   -H "X-Admin-Token: your_admin_token"
@@ -162,6 +178,7 @@ curl -X POST http://localhost:5000/api/reco/stats/reset \
 ```
 
 ### Мониторинг в production:
+
 ```bash
 # Частый мониторинг (через пару часов нагрузки)
 watch -n 300 'curl -s http://localhost:5000/api/reco/stats | jq'
@@ -172,6 +189,7 @@ watch -n 300 'curl -s http://localhost:5000/api/reco/stats | jq'
 ## Complete Verification Checklist
 
 ### Скрипт для проверки всего:
+
 ```bash
 python scripts/verify_production_readiness.py
 ```
@@ -184,8 +202,9 @@ python scripts/verify_production_readiness.py
 5. ✅ Feature flags включены
 6. ✅ Service images в базе
 
-### Вывод:
-```
+### Вывод:​
+
+```text
 🚀 Проверка готовности приложения к production
 
 ============================================================
@@ -223,6 +242,7 @@ python scripts/verify_production_readiness.py
 ## Файлы, созданные/изменённые
 
 ### Новые файлы:
+
 - `scripts/test_analytics_log.py` — Тест аналитики
 - `scripts/seed_service_images.py` — Заполнение БД изображений
 - `scripts/verify_production_readiness.py` — Проверка готовности
@@ -230,6 +250,7 @@ python scripts/verify_production_readiness.py
 - `app/routes/csp_api.py` — API endpoint для CSP violations
 
 ### Изменённые файлы:
+
 - `app/services/recommendations_service.py` — +метрики кэша (+get_cache_stats, reset_cache_stats)
 - `app/routes/recommendations_api.py` — +GET /api/reco/stats, +POST /api/reco/stats/reset
 - `templates/base.html` — +CSP monitor скрипт
@@ -240,19 +261,25 @@ python scripts/verify_production_readiness.py
 ## FAQ
 
 ### Q: Что если Google Sheets недоступен?
+
 A: Analytix логируются в файл логов (`error`), не прерывая работу приложения. Проверьте `logs/` директорию.
 
 ### Q: Как отключить CSP мониторинг для production?
+
 A: Закомментируйте строку в `base.html`:
+
 ```html
 <!-- <script src="{{ url_for('static', filename='js/csp-monitor.js') }}" nonce="{{ g.csp_nonce }}"></script> -->
 ```
 
 ### Q: Кэш расходуется на что-то ещё?
+
 A: Только на рекомендации. Кэш in-memory, сбросится при перезагрузке приложения.
 
 ### Q: Как увеличить TTL кэша?
+
 A: Установите переменную окружения:
+
 ```bash
 export RECO_CACHE_TTL=600  # 600 секунд (10 минут) вместо 300 (5 минут)
 ```
@@ -262,12 +289,14 @@ export RECO_CACHE_TTL=600  # 600 секунд (10 минут) вместо 300 (
 ## Support & Debugging
 
 ### Логи:
+
 - Flask логи: STDOUT
 - Analytics: Google Sheets + файл логов
 - CSP violations: Google Sheets (`csp_violations` лист)
 - Errors: `logs/` директория
 
 ### Утилиты для отладки:
+
 ```bash
 # Проверить размер Image таблицы
 python -c "from app import create_app; from app.database.models import db, Image; app = create_app(); \

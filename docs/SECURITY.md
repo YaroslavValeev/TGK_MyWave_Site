@@ -8,7 +8,7 @@ This document describes the comprehensive security implementation for MyWave, in
 
 The security layer is built on a modular design with the following core components:
 
-```
+```text
 security_service.py
 ├── RateLimitConfig (Rate Limiting)
 ├── CORSConfig (Cross-Origin Resource Sharing)
@@ -75,11 +75,11 @@ Rate limiting is skipped if `RATELIMIT_DISABLED=true` in environment variables (
 
 ## 2. CORS Configuration
 
-### Overview
+### Overview​
 
 Cross-Origin Resource Sharing (CORS) controls which external domains can access MyWave APIs. Strict CORS configuration prevents unauthorized cross-origin requests.
 
-### Configuration
+### Configuration​
 
 The `CORSConfig` class manages CORS settings:
 
@@ -95,7 +95,7 @@ CORSConfig = {
 }
 ```
 
-### Implementation
+### Implementation​
 
 Initialize CORS in your Flask application:
 
@@ -115,7 +115,7 @@ Configure allowed origins via environment variable:
 CORS_ORIGINS="https://example.com,https://www.example.com"
 ```
 
-### Behavior
+### Behavior​
 
 - **Preflight requests**: OPTIONS requests are automatically handled
 - **Credentials**: Cookies and Authorization headers are supported
@@ -126,7 +126,7 @@ CORS_ORIGINS="https://example.com,https://www.example.com"
 
 ## 3. Input Validation & Sanitization
 
-### Overview
+### Overview​
 
 The `InputValidator` class provides comprehensive input validation and sanitization to prevent injection attacks (SQL, XSS, etc.).
 
@@ -229,17 +229,17 @@ from app.services.security_service import InputValidator
 @app.route('/api/profile', methods=['POST'])
 def update_profile():
     data = request.json
-    
+
     # Validate and sanitize inputs
     if not InputValidator.validate_email(data.get('email')):
         return {'error': 'Invalid email'}, 400
-    
+
     if not InputValidator.validate_phone(data.get('phone')):
         return {'error': 'Invalid phone'}, 400
-    
+
     # Sanitize HTML content
     bio = InputValidator.sanitize_html(data.get('bio', ''))
-    
+
     # Validate file upload
     if 'avatar' in request.files:
         valid, msg = InputValidator.validate_file_upload(
@@ -248,7 +248,7 @@ def update_profile():
         )
         if not valid:
             return {'error': msg}, 400
-    
+
     return {'status': 'updated'}
 ```
 
@@ -256,11 +256,11 @@ def update_profile():
 
 ## 4. Secrets Management
 
-### Overview
+### Overview​
 
 The `SecretsManager` class handles secure storage and management of sensitive data including passwords, API keys, and secrets.
 
-### Methods
+### Methods​
 
 #### 4.1 Secret Retrieval
 
@@ -330,7 +330,7 @@ decrypted = SecretsManager.get_secret('ENCRYPTION_KEY')
 - Provides both encryption and authentication
 - Prevents tampering
 
-### Configuration
+### Configuration​
 
 Set the following environment variables:
 
@@ -345,7 +345,7 @@ API_KEY="a" * 32  # At least 32 alphanumeric characters
 DATABASE_PASSWORD="secure_password"
 ```
 
-### Usage Example
+### Usage Example​
 
 ```python
 from app.services.security_service import SecretsManager
@@ -354,28 +354,28 @@ from app.services.security_service import SecretsManager
 def register_user(username, password):
     # Hash password securely
     hashed_password, salt = SecretsManager.hash_password(password)
-    
+
     # Store hashed password in database
     user = User(username=username, password=hashed_password, salt=salt)
     db.session.add(user)
     db.session.commit()
-    
+
     return user
 
 # Authenticate user
 def authenticate_user(username, password):
     user = User.query.filter_by(username=username).first()
-    
+
     if user and SecretsManager.verify_password(password, user.password):
         return user
-    
+
     return None
 
 # Validate API requests
 def validate_api_request(api_key):
     if not SecretsManager.validate_api_key(api_key):
         return False, 'Invalid API key format'
-    
+
     # Additional checks...
     return True, 'Valid'
 ```
@@ -384,7 +384,7 @@ def validate_api_request(api_key):
 
 ## 5. Security Headers
 
-### Overview
+### Overview​
 
 Security headers are HTTP response headers that instruct browsers to implement additional security controls. MyWave implements 8 essential security headers.
 
@@ -401,7 +401,7 @@ Security headers are HTTP response headers that instruct browsers to implement a
 | `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Forces HTTPS for 1 year |
 | `Expect-CT` | `max-age=86400, enforce` | Certificate transparency enforcement |
 
-### Implementation
+### Implementation​
 
 Initialize security headers in your Flask application:
 
@@ -437,7 +437,7 @@ SecurityHeaders = {
 
 ## 6. Initialization
 
-### Overview
+### Overview​
 
 The `init_security()` function initializes all security components in a single call.
 
@@ -595,6 +595,7 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 **Symptom**: Requests aren't being limited despite configuration
 
 **Solution**:
+
 ```bash
 # Check if Flask-Limiter is installed
 pip install flask-limiter
@@ -608,6 +609,7 @@ echo $RATELIMIT_DISABLED  # Should be empty or 'false'
 **Symptom**: Browser blocks cross-origin requests with CORS error
 
 **Solution**:
+
 ```bash
 # Verify CORS_ORIGINS environment variable
 echo $CORS_ORIGINS
@@ -621,6 +623,7 @@ export CORS_ORIGINS="https://example.com,https://www.example.com"
 **Symptom**: Dangerous tags not being removed
 
 **Solution**:
+
 ```bash
 # Install bleach for proper HTML sanitization
 pip install bleach
@@ -634,6 +637,7 @@ pip install bleach
 **Symptom**: `SecretsManager.get_secret()` returns None
 
 **Solution**:
+
 ```bash
 # Set environment variable
 export API_KEY="your_32_char_api_key_here"

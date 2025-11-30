@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="product-page container">
+  <div class="product-card">
+    <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.title }}" loading="lazy">
+    <h2>{{ product.title }}</h2>
+    <p class="price">{{ product.price }}</p>
+    <p>{{ product.description }}</p>
+    <div class="actions">
+      <a class="btn btn-primary-lg" href="#">Купить</a>
+      <a class="btn btn-outline" href="{{ url_for('shop.shop_index') }}">Вернуться в магазин</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

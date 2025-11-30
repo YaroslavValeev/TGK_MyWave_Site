@@ -31,4 +31,4 @@
 
 - `app/forms/*.py` — формы
 - `app/routes/api.py` — REST API
-- `wsgi.py` — WSGI entrypoint 
+- `wsgi.py` — WSGI entrypoint

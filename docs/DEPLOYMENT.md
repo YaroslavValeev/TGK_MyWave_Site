@@ -14,9 +14,9 @@ This guide provides comprehensive procedures for deploying MyWave to production.
 
 ---
 
-## Pre-Deployment Checklist
+\n## Pre-Deployment Checklist
 
-### 1. Code & Tests
+\n### 1. Code & Tests
 
 - [ ] All tests passing (`pytest tests/ -q`)
 - [ ] No pending git changes (`git status` clean)
@@ -211,7 +211,7 @@ sudo systemctl reload nginx  # Or update load balancer
 echo "Monitoring (5 minutes)..."
 for i in {1..5}; do
     echo "Monitoring... $i/5 minutes"
-    
+
     # Check error rate
     error_rate=$(curl -s http://prometheus:9090/api/v1/query?query=error_rate | jq '.data.result[0].value[1]')
     if (( $(echo "$error_rate > 0.05" | bc -l) )); then
@@ -219,7 +219,7 @@ for i in {1..5}; do
         echo "Rolling back..."
         exit 1
     fi
-    
+
     sleep 60
 done
 
@@ -614,7 +614,7 @@ docker-compose logs -f web
 
 Monitor these metrics closely:
 
-```
+```text
 Every 15 minutes:
 ✓ Error rate (should be < 1%)
 ✓ Response time (should be < 1s p95)
@@ -646,7 +646,7 @@ Set up alerts for:
 
 ### Regular Maintenance Schedule
 
-```
+```text
 Weekly:
   - Review error logs
   - Check disk usage
@@ -688,7 +688,7 @@ If issues occur after deployment:
 
 1. **Identify Issue**: Check logs, metrics, error rate
 2. **Notify Team**: Alert on-call engineer
-3. **Assess Severity**: 
+3. **Assess Severity**:
    - Critical: Roll back immediately
    - High: Attempt fix, monitor closely
    - Medium: Fix during maintenance window

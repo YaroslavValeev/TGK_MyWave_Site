@@ -5,6 +5,7 @@ API endpoint для сбора нарушений Content Security Policy.
 
 from flask import Blueprint, request, jsonify, current_app
 from app.services.google_sheets_service import append_record
+from flask_wtf.csrf import csrf_exempt
 import logging
 
 logger = logging.getLogger(__name__)
@@ -13,6 +14,7 @@ csp_bp = Blueprint('csp_bp', __name__)
 
 
 @csp_bp.route('/csp-violations', methods=['POST'])
+@csrf_exempt
 def report_csp_violations():
     """Принимает и логирует нарушения Content Security Policy.
     

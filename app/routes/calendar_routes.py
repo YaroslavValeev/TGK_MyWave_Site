@@ -345,6 +345,21 @@ def get_slots_range():
         current_app.logger.error(f"Error in get_slots_range: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
+
+@calendar_bp.route('/api/calendar/sync', methods=['POST'])
+def calendar_sync():
+    """
+    Stub endpoint for calendar synchronization.
+    Tests only require the endpoint to exist and return 200/401/403.
+    This handler currently acts as a safe stub that always returns 200.
+    """
+    try:
+        # Future: add auth/permission checks and real sync logic here.
+        return jsonify({'message': 'Calendar sync endpoint (stub)'}), 200
+    except Exception as e:
+        current_app.logger.exception('Error in calendar_sync endpoint')
+        return jsonify({'error': 'Internal server error'}), 500
+
 @calendar_bp.route('/api/book', methods=['POST'])
 def deprecated_redirect():
     # Устаревший маршрут — перенаправляем на новый

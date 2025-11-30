@@ -2,6 +2,14 @@ import eventlet
 eventlet.monkey_patch()
 
 import os
+
+# Загружаем .env файл ПЕРЕД импортом приложения
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 from app import create_app, socketio
 from flask import send_from_directory
 
@@ -41,14 +49,19 @@ def _set_csp(response):
     nonce = getattr(g, "csp_nonce", "")
     csp = (
         "default-src 'self'; "
-        f"script-src 'self' 'nonce-{nonce}' https://www.googletagmanager.com https://www.google-analytics.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
-        "style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data: https://www.google-analytics.com; "
-        "connect-src 'self' https://www.google-analytics.com https://*.googleapis.com; "
-        "font-src 'self' data:; "
+        f"script-src 'self' 'nonce-{nonce}' https://www.googletagmanager.com https://www.google-analytics.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://mc.yandex.ru https://mc.yandex.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+        "img-src 'self' data: https://www.google-analytics.com https://mc.yandex.ru https://mc.yandex.com; "
+        "connect-src 'self' https://www.google-analytics.com https://*.googleapis.com https://cdn.socket.io https://api.openai.com https://mc.yandex.com https://mc.yandex.ru wss://mc.yandex.com wss://mc.yandex.ru; "
+        "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
+        "frame-src 'self' https://calendar.google.com https://mc.yandex.com https://mc.yandex.ru; "
+        "object-src 'none'; "
         "frame-ancestors 'none'; "
         "base-uri 'self'; "
-        "form-action 'self'"
+        "form-action 'self'; "
+        "upgrade-insecure-requests; "
+        "manifest-src 'self'; "
+        "media-src 'self'"
     )
     response.headers["Content-Security-Policy"] = csp
     return response
@@ -73,4 +86,9 @@ def analytics_event():
 
 if __name__ == '__main__':
     # Run with eventlet; disable the Flask reloader to avoid multiple processes
-    socketio.run(app, host='0.0.0.0', port=5000, debug=False, use_reloader=False, log_output=True)
+    try:
+        socketio.run(app, host='0.0.0.0', port=5000, debug=False, use_reloader=False, log_output=True)
+    except Exception as e:
+        print(f"⚠️ SocketIO run failed: {e}")
+        print("Falling back to standard Flask run...")
+        app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
