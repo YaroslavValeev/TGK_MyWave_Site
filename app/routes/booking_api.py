@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify, session, current_app
 
 from app.services.booking_orchestrator import orchestrate
-from app.services.tools import get_available_slots
+from app.routes.calendar_routes import get_available_slots
+from app.services.analytics_service import log_booking_event
 
 
 booking_api_bp = Blueprint('booking_api', __name__, url_prefix='/api')
@@ -60,6 +61,14 @@ def booking_create_simple():
             'route_id': booking.route_id,
             'created_at': booking.created_at.isoformat() if booking.created_at else None
         }
+        # Логируем событие создания бронирования в Safari-аналитику
+        try:
+            log_booking_event(booking_dict, event_type='created')
+        except Exception:
+            current_app.logger.debug(
+                'Failed to log Safari booking analytics on create',
+                exc_info=True
+            )
         return jsonify({'status': 'success', 'booking': booking_dict}), 201
 
     except ValueError as e:
@@ -91,6 +100,14 @@ def booking_get_or_patch(booking_id: int):
                 'route_id': b.route_id,
                 'created_at': b.created_at.isoformat() if b.created_at else None
             }
+            # Опционально логируем факт просмотра бронирования
+            try:
+                log_booking_event(booking_dict, event_type='viewed')
+            except Exception:
+                current_app.logger.debug(
+                    'Failed to log Safari booking analytics on get',
+                    exc_info=True
+                )
             return jsonify({'status': 'success', 'booking': booking_dict})
 
         # PATCH
@@ -106,6 +123,16 @@ def booking_get_or_patch(booking_id: int):
             'route_id': b.route_id,
             'created_at': b.created_at.isoformat() if b.created_at else None
         }
+        
+        # Логируем обновление/смену статуса бронирования
+        try:
+            log_booking_event(booking_dict, event_type='updated')
+        except Exception:
+            current_app.logger.debug(
+                'Failed to log Safari booking analytics on patch',
+                exc_info=True
+            )
+
         return jsonify({'status': 'success', 'booking': booking_dict})
 
     except ValueError as e:

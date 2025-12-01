@@ -1,23 +1,40 @@
-<div class="modal-content modal-content--success" role="dialog" aria-modal="true" aria-label="Подтверждение записи">
-  <header class="booking-success__header">
-    <h3>{{ content.title }}</h3>
-  </header>
-  <div class="booking-success__body">
-    <ul class="booking-success__list">
-      {% for s in content.sections %}
-      <li class="booking-success__item">
-        <img src="{{ url_for('static', filename=s.img) }}" alt="{{ s.h }}" loading="lazy" width="400" height="266">
-        <div class="booking-success__text">
-          <h4>{{ s.h }}</h4>
-          <p>{{ s.p }}</p>
-        </div>
-      </li>
-      {% endfor %}
-    </ul>
-    {% include 'partials/reco_block.html' with context='book_success' %}
+{% extends "base.html" %}
+{% block title %}Запись подтверждена — MyWave{% endblock %}
+
+{% block content %}
+<section class="section-padding">
+  <div class="container">
+    <div class="success-card">
+      <div class="success-icon">
+        <!-- Можно подключить свою SVG-иконку успеха -->
+        <span>✅</span>
+      </div>
+      <h1 class="section-title">Запись успешно оформлена</h1>
+      <p class="section-subtitle">
+        Мы получили вашу заявку и свяжемся с вами для подтверждения деталей.
+      </p>
+
+      <div class="success-details">
+        <p>
+          Если вы бронировали участие в <strong>WakeSurf Safari</strong> или
+          <strong>Wake Challenge</strong>, проверьте, пожалуйста, свою почту и
+          Telegram — там будут инструкции по подготовке, сборам и времени встречи.
+        </p>
+        <p>
+          Вы также можете вернуться на сайт, чтобы посмотреть другие программы,
+          мероприятия и товары MyWave.
+        </p>
+      </div>
+
+      <div class="success-actions">
+        <a href="{{ url_for('main.index') }}" class="btn-primary">
+          Вернуться на главную
+        </a>
+        <a href="{{ url_for('main.services') }}" class="btn-secondary">
+          Посмотреть все услуги
+        </a>
+      </div>
+    </div>
   </div>
-  <footer class="booking-success__footer">
-    <button type="button" class="btn btn-primary" data-action="{{ content.cta.primary.action }}">{{ content.cta.primary.text }}</button>
-    <button type="button" class="btn btn-ghost" data-action="{{ content.cta.secondary.action }}">{{ content.cta.secondary.text }}</button>
-  </footer>
-</div>
+</section>
+{% endblock %}

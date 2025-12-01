@@ -1,6 +1,12 @@
-// Логирование загрузки скрипта
-console.log("[booking.js] Script loaded");
+// Оборачиваем в try-catch для отладки
+console.log("[booking.js] Script loaded (before DOMContentLoaded)");
 window.bookingStatus = { loaded: true, initialized: false, error: null };
+
+// Function to initialize booking system
+async function initializeBooking() {
+  window.bookingStatus.initStarted = true;
+
+try {
 
 // Получение свежего CSRF-токена с сервера
 async function getFreshCsrfToken() {
@@ -8,14 +14,8 @@ async function getFreshCsrfToken() {
   const data = await resp.json();
   return data.csrf_token;
 }
-
-// Function to initialize booking system
-function initializeBooking() {
-  window.bookingStatus.initStarted = true;
-  
-  try {
-    console.log("[booking.js] initializeBooking started");
-    console.log("📦 booking.js начинает инициализацию...");
+  console.log("[booking.js] DOMContentLoaded");
+  console.log("📦 booking.js начинает инициализацию...");
 
   // ==============================
   // 🔧 DOM-элементы
@@ -47,17 +47,12 @@ function initializeBooking() {
   let currentService = 'boat'; // По умолчанию используем лодку
 
   // Логируем инициализацию UI элементов
-  console.log('[booking.js] ✅ ПОИСК UI ЭЛЕМЕНТОВ:');
-  console.log('  - calendarModal:', Boolean(UI.calendarModal), UI.calendarModal);
-  console.log('  - bookingDateInput:', Boolean(UI.bookingDateInput), UI.bookingDateInput);
-  console.log('  - slotButtonsContainer:', Boolean(UI.slotButtonsContainer), UI.slotButtonsContainer);
-  console.log('  - finalConfirmBtn:', Boolean(UI.finalConfirmBtn), UI.finalConfirmBtn);
-  console.log('  - openBookingButtons COUNT:', UI.openBookingButtons?.length || 0);
-  if (UI.openBookingButtons?.length > 0) {
-    UI.openBookingButtons.forEach((btn, i) => {
-      console.log(`    [${i}]`, btn.textContent.trim(), btn.id, btn.className);
-    });
-  }
+  console.log('[booking.js] UI элементы:', {
+    calendarModal: Boolean(UI.calendarModal),
+    bookingDateInput: Boolean(UI.bookingDateInput),
+    openBookingButtons: UI.openBookingButtons?.length || 0,
+    slotButtonsContainer: Boolean(UI.slotButtonsContainer)
+  });
 
   if (!UI.bookingDateInput || !UI.slotButtonsContainer) {
     console.warn("⚠️ Предупреждение: отсутствуют некоторые модальные элементы (это нормально, если они подгружаются позже).");
@@ -70,7 +65,92 @@ function initializeBooking() {
     // NOTE: We do NOT return here - let booking initialization continue
   }
 
+  // ==============================
+  // 🔄 WebSocket для бронирования
+  // ==============================
+  let wsToken = '';
+  let socket = null;
 
+  // Асинхронная инициализация WebSocket (опционально, не критично для UI)
+  async function initWebSocket(forcePolling = false) {
+    try {
+      // ВРЕМЕННО: Отключаем WebSocket чтобы не блокировать UI
+      console.warn('[booking.js] WebSocket инициализация отключена');
+      return;
+      // Получаем свежий CSRF токен
+      const token = await getFreshCsrfToken();
+      wsToken = token;
+
+      // Закрываем существующее соединение если есть
+      if (socket) {
+        try { socket.close(); } catch (e) { /* ignore */ }
+      }
+
+      // Создаем новое соединение с обновленным токеном
+      socket = io({
+        auth: { csrf_token: token },
+        path: '/socket.io',
+        timeout: 20000, // увеличить таймаут соединения
+        transports: forcePolling ? ['polling'] : ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 5
+      });
+
+      // Обработчики событий сокета
+      socket.on('connect', () => {
+        console.log('WebSocket подключен');
+      });
+
+      socket.on('connect_error', async (error) => {
+        try {
+          console.error('Ошибка подключения WebSocket:', error && (error.message || error));
+          const msg = (error && (error.message || '')).toString().toLowerCase();
+          // При ошибке авторизации пробуем получить новый токен и переподключиться
+          if (msg.includes('invalid csrf token')) {
+            await initWebSocket(); // Рекурсивный вызов для переподключения с новым токеном
+            return;
+          }
+          // Если это таймаут webSocket транспорта — попробуем принудительно использовать polling
+          if (msg.includes('timeout')) {
+            console.warn('WebSocket timeout — переключаемся на polling и переподключаемся');
+            await initWebSocket(true);
+            return;
+          }
+        } catch (e) {
+          console.error('Ошибка в обработчике connect_error:', e);
+        }
+      });
+
+      socket.on('disconnect', (reason) => {
+        console.log('WebSocket отключен:', reason);
+        if (reason === 'io server disconnect') {
+          // Сервер разорвал соединение, пробуем переподключиться с новым токеном
+          initWebSocket();
+        }
+      });
+
+      socket.on('booking_update', (data) => {
+        if (data && data.success) {
+          showToast('✅ Бронирование подтверждено');
+          hideAllModals();
+        } else {
+          showToast(`❌ Ошибка: ${data && data.error ? data.error : 'неизвестная'}`);
+        }
+      });
+
+    } catch (err) {
+      console.error('Ошибка при инициализации WebSocket:', err);
+    }
+  }
+
+  // Запускаем инициализацию WebSocket (опционально)
+  try {
+    initWebSocket();
+  } catch (err) {
+    console.warn('[booking.js] WebSocket ошибка (не критично):', err);
+  }
 
   // Инициализация flatpickr для выбора даты
   if (UI.bookingDateInput) {
@@ -236,51 +316,27 @@ function initializeBooking() {
       
       // Получаем свежий CSRF токен для запроса
       const token = await getFreshCsrfToken();
-      const fetchUrl = `/api/calendar/slots/${dateStr}`;
-      console.log(`[booking.js] 🔄 Запрос слотов к URL: ${fetchUrl}`);
-      
-      const response = await fetch(fetchUrl, {
+      const response = await fetch(`/api/calendar/slots/${dateStr}`, {
         headers: {
           'X-CSRFToken': token
         },
         credentials: 'same-origin'
       });
-
-      console.log(`[booking.js] ✅ Ответ получен, статус: ${response.status} ${response.statusText}`);
-
-      // Read raw text so we can gracefully handle non-JSON responses (HTML/error pages)
-      const raw = await response.text();
-      console.log(`[booking.js] 📝 Размер ответа: ${raw.length} символов, первые 200 символов:`, raw.substring(0, 200));
+      const data = await response.json();
       
-      let data = null;
-      try {
-        data = raw ? JSON.parse(raw) : null;
-        console.log(`[booking.js] ✅ JSON распарсен успешно:`, data);
-      } catch (parseErr) {
-        // Not JSON — keep raw text for logging
-        console.warn('[booking.js] ⚠️ Ответ слотов не является JSON:', parseErr);
-      }
-
       if (!response.ok) {
-        // Build an informative error message for logs and UX
-        const serverError = data && (data.error || data.message) ? (data.error || data.message) : raw;
-        console.error(`[booking.js] ❌ ОШИБКА при загрузке слотов:`);
-        console.error(`   - Статус: ${response.status} ${response.statusText}`);
-        console.error(`   - URL: ${fetchUrl}`);
-        console.error(`   - Ошибка сервера: ${serverError}`);
-        console.error(`   - Полный ответ:`, raw);
-
-        let userMessage = 'Извините, произошла ошибка при загрузке слотов. ';
+        const errorMessage = data.error || 'Произошла ошибка при загрузке слотов';
+        console.error('Ошибка при загрузке слотов:', errorMessage);
+        
+  let userMessage = 'Извините, произошла ошибка при загрузке слотов. ';
         if (response.status === 400) {
           userMessage += 'Пожалуйста, проверьте выбранную дату.';
         } else if (response.status === 503 || response.status === 502) {
           userMessage += 'Сервер временно недоступен. Пожалуйста, попробуйте позже.';
-        } else if (response.status === 500) {
-          userMessage += 'Внутренняя ошибка сервера. Мы уже работаем над исправлением.';
         } else {
           userMessage += 'Пожалуйста, попробуйте позже или обратитесь в поддержку.';
         }
-
+        
         clearContainer(UI.slotButtonsContainer);
         UI.slotButtonsContainer.appendChild(createErrorMessageNode(userMessage, dateStr));
         return;
@@ -288,12 +344,7 @@ function initializeBooking() {
       
       clearContainer(UI.slotButtonsContainer);
       
-      console.log(`[booking.js] 📊 Проверка данных слотов:`);
-      console.log(`   - Является массивом: ${Array.isArray(data)}`);
-      console.log(`   - Количество элементов: ${data ? data.length : 0}`);
-      
       if (!Array.isArray(data) || data.length === 0) {
-        console.warn(`[booking.js] ⚠️ Нет доступных слотов для даты ${dateStr}`);
         UI.slotButtonsContainer.appendChild(createNoSlotsNode());
         return;
       }
@@ -335,11 +386,7 @@ function initializeBooking() {
         UI.slotsModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
     } catch (error) {
-      console.error('[booking.js] ❌ ОШИБКА в updateSlotOptions (catch блок):');
-      console.error(`   - Сообщение: ${error.message}`);
-      console.error(`   - Stack: ${error.stack}`);
-      console.error(`   - Полная ошибка:`, error);
-      
+      console.error('Ошибка загрузки слотов:', error);
       clearContainer(UI.slotButtonsContainer);
       const div = document.createElement('div');
       div.className = 'text-red-500';
@@ -401,16 +448,12 @@ function initializeBooking() {
     }
 
     const payload = {
-        // Обязательные поля для бронирования
         date: formattedDate,
         time: formattedTime,
         name: UI.bookingName.value.trim(),
         phone: phone,
-        service_type: currentService || 'boat',
-
-        // Метаданные для аналитики и интеграций
-        source: 'site',              // сайт vs бот vs админ
-        booking_type: 'client'       // базовый тип бронирования
+        service: currentService || 'boat',
+        type: 'client'
     };
 
     // Отладочный вывод
@@ -443,14 +486,9 @@ function initializeBooking() {
       if (!payload.date || !/^\d{4}-\d{2}-\d{2}$/.test(payload.date)) {
         throw new Error("Некорректный формат даты. Ожидается YYYY-MM-DD");
       }
-      // Сравниваем полную дату+время бронирования с текущим моментом
-      // payload.date: YYYY-MM-DD, payload.time: HH:MM
-      const dateParts = payload.date.split('-').map(Number);
-      const timeParts = (payload.time || '00:00').split(':').map(Number);
-      // Создаём объект в локальном часовом поясе: new Date(year, monthIndex, day, hours, minutes)
-      const bookingDateTime = new Date(dateParts[0], (dateParts[1]||1)-1, dateParts[2]||1, timeParts[0]||0, timeParts[1]||0, 0);
-      const now = new Date();
-      if (bookingDateTime <= now) {
+      const bookingDate = new Date(payload.date);
+      const today = new Date();
+      if (bookingDate < today) {
         throw new Error("Дата бронирования не может быть в прошлом");
       }
 
@@ -486,18 +524,18 @@ function initializeBooking() {
       }
 
       // Проверка сервиса
-      if (!payload.service_type) {
-        payload.service_type = 'boat';
+      if (!payload.service) {
+        payload.service = 'boat';
       }
-      if (!['boat', 'gym'].includes(payload.service_type)) {
+      if (!['boat', 'gym'].includes(payload.service)) {
         throw new Error("Некорректный тип услуги");
       }
 
       // Проверка типа бронирования
-      if (!payload.booking_type) {
-        payload.booking_type = 'client';
+      if (!payload.type) {
+        payload.type = 'client';
       }
-      if (!['client', 'admin'].includes(payload.booking_type)) {
+      if (!['client', 'admin'].includes(payload.type)) {
         throw new Error("Некорректный тип бронирования");
       }
 
@@ -520,8 +558,8 @@ function initializeBooking() {
         time: payload.time,
         name: payload.name,
         phone: payload.phone,
-        service_type: payload.service_type,
-        booking_type: payload.booking_type,
+        service_type: payload.service,
+        booking_type: payload.type,
         csrf_token: csrfToken
       };
 
@@ -552,47 +590,18 @@ function initializeBooking() {
 
       console.log("Отправляем данные на сервер (без лишних полей):", finalRequestData);
 
-      console.log("📤 Отправляем POST запрос на /api/calendar/book");
-      console.log("   Заголовки:", {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfData.csrf_token ? 'present' : 'MISSING'
+      const response = await fetch("/api/calendar/book", {
+        method: "POST",
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          // Сервер ожидает заголовок X-CSRFToken (без дефиса)
+          'X-CSRFToken': csrfData.csrf_token
+        },
+        credentials: "same-origin",
+        body: JSON.stringify(finalRequestData)
       });
-      console.log("   Тело запроса:", finalRequestData);
-
-      let response;
-      try {
-        console.log("⏳ Ожидаем ответа от сервера...");
-        response = await fetch("/api/calendar/book", {
-          method: "POST",
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            // Сервер ожидает заголовок X-CSRFToken (без дефиса)
-            'X-CSRFToken': csrfData.csrf_token
-          },
-          credentials: "same-origin",
-          body: JSON.stringify(finalRequestData)
-        });
-        console.log("✅ Ответ получен, статус:", response.status, response.statusText);
-      } catch (fetchError) {
-        console.error("❌ Ошибка при fetch запросе:", fetchError);
-        throw new Error(`Ошибка сети при отправке запроса: ${fetchError.message}`);
-      }
-      
-      console.log("   Content-Type ответа:", response.headers.get('content-type'));
-      
-      let result;
-      try {
-        const responseText = await response.text();
-        console.log("   Тело ответа (raw):", responseText.substring(0, 500));
-        result = JSON.parse(responseText);
-        console.log("   Тело ответа (parsed):", result);
-      } catch (parseError) {
-        console.error("❌ Ошибка парсинга JSON:", parseError);
-        console.error("   Raw response was:", responseText);
-        throw new Error(`Ошибка парсинга ответа сервера: ${parseError.message}`);
-      }
-      
+      const result = await response.json();
       console.log("📩 Ответ сервера:", result);
       // Defensive: ignore any server-provided `success_view_url` to avoid
       // fetching partial HTML from the server (we use a local success modal).
@@ -615,9 +624,6 @@ function initializeBooking() {
       }
       
       if (response.ok) {
-        console.log("✅ УСПЕШНОЕ БРОНИРОВАНИЕ! Статус 200-299");
-        console.log("   Результат:", result);
-        
         // Показываем локальный success-модал вместо перехода на внешнюю страницу
         try {
           // Формируем содержимое модального окна на клиенте
@@ -639,74 +645,16 @@ function initializeBooking() {
               <h3>${msg}</h3>
               <p>Дата: <strong>${payload.date}</strong></p>
               <p>Время: <strong>${payload.time}</strong></p>
-              <p>Услуга: <strong>${payload.service_type}</strong></p>
+              <p>Услуга: <strong>${payload.service}</strong></p>
               <div class="success-ctas">
-                <button class="btn btn-primary" data-action="add-calendar">Добавить в календарь</button>
+                <button class="btn btn-primary" data-action="share">Поделиться</button>
                 <button class="btn btn-secondary" data-action="close">Закрыть</button>
               </div>
             </div>
           `;
 
           // Сохраняем тип сервиса в data-атрибуте
-          container.dataset.serviceType = payload.service_type || 'boat';
-
-          // Хелперы для создания ICS и Google Calendar ссылки
-          function _formatForICS(dt) {
-            // returns YYYYMMDDTHHMMSSZ (UTC)
-            const pad = (n)=>String(n).padStart(2,'0');
-            return dt.getUTCFullYear()+pad(dt.getUTCMonth()+1)+pad(dt.getUTCDate())+'T'+pad(dt.getUTCHours())+pad(dt.getUTCMinutes())+pad(dt.getUTCSeconds())+'Z';
-          }
-          function _createICS(payload) {
-            const start = new Date(payload.date + 'T' + payload.time + ':00');
-            // Duration by service (minutes). Default 60. gym -> 90 minutes
-            const durations = {
-              gym: 90,
-              boat: 60,
-              camp: 120
-            };
-            const durMin = durations[payload.service_type] || 60;
-            const end = new Date(start.getTime() + (durMin * 60 * 1000));
-            const uid = 'mywave-' + Date.now();
-            const dtstamp = _formatForICS(new Date());
-            const dtstart = _formatForICS(start);
-            const dtend = _formatForICS(end);
-            const title = `Запись в MyWave: ${payload.service_type}`;
-            const calendarLocation = 'https://yandex.ru/profile/77794723487?lang=ru';
-            const description = `Запись в MyWave\nУслуга: ${payload.service_type}\nТелефон: ${payload.phone}\nСсылка: ${calendarLocation}`;
-            const ics = [
-              'BEGIN:VCALENDAR',
-              'VERSION:2.0',
-              'PRODID:-//MyWave//EN',
-              'CALSCALE:GREGORIAN',
-              'BEGIN:VEVENT',
-              `UID:${uid}`,
-              `DTSTAMP:${dtstamp}`,
-              `DTSTART:${dtstart}`,
-              `DTEND:${dtend}`,
-              `SUMMARY:${title}`,
-              `DESCRIPTION:${description}`,
-              'END:VEVENT',
-              'END:VCALENDAR'
-            ].join('\r\n');
-            return ics;
-          }
-          function _openGoogleCalendar(payload) {
-              const start = new Date(payload.date + 'T' + payload.time + ':00');
-              // duration minutes match ICS logic
-              const durations = { gym: 90, boat: 60, camp: 120 };
-              const durMin = durations[payload.service_type] || 60;
-              const end = new Date(start.getTime() + (durMin * 60 * 1000));
-              const fmt = (d)=>{
-                const pad=(n)=>String(n).padStart(2,'0');
-                return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+'T'+pad(d.getUTCHours())+pad(d.getUTCMinutes())+'00Z';
-              };
-              const dates = fmt(start)+'/'+fmt(end);
-              const title = encodeURIComponent(`Запись в MyWave: ${payload.service_type}`);
-              const details = encodeURIComponent(`Телефон: ${payload.phone}`);
-              const location = encodeURIComponent('https://yandex.ru/profile/77794723487?lang=ru');
-              const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`;
-              window.open(url, '_blank');
-          }
+          container.dataset.serviceType = payload.service || 'boat';
 
           // Обработчики кнопок внутри модалки
           container.querySelectorAll('[data-action]').forEach(btn => {
@@ -717,31 +665,14 @@ function initializeBooking() {
                 container.classList.add('hidden');
                 container.style.display = 'none';
                 hideAllModals();
-              } else if (action === 'add-calendar') {
-                try {
-                  const payloadForCal = {
-                    date: payload.date,
-                    time: payload.time,
-                    service_type: payload.service_type,
-                    phone: payload.phone
-                  };
-                  // Download ICS
-                  const ics = _createICS(payloadForCal);
-                  const blob = new Blob([ics], {type: 'text/calendar;charset=utf-8'});
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `MyWave-${payload.date}-${payload.time}.ics`;
-                  document.body.appendChild(a);
-                  a.click();
-                  a.remove();
-                  URL.revokeObjectURL(url);
-                  // Open Google Calendar as well
-                  _openGoogleCalendar(payloadForCal);
-                  showToast('Событие добавлено в календарь (скачано .ics и открыт Google Calendar)');
-                } catch (err) {
-                  console.error('Ошибка при добавлении в календарь', err);
-                  showToast('Не удалось добавить событие в календарь');
+              } else if (action === 'share') {
+                const serviceType = container.dataset.serviceType || 'boat';
+                let shareText = 'Я записался на тренировку в MyWave!';
+                if (serviceType === 'gym') shareText = 'Я записался на тренировку в зале MyWave!';
+                if (navigator.share) {
+                  navigator.share({ title: 'MyWave', text: shareText, url: location.href }).catch(() => {});
+                } else if (navigator.clipboard) {
+                  navigator.clipboard.writeText(location.href).then(()=> showToast('Ссылка скопирована в буфер обмена'));
                 }
               }
               // Лог клика
@@ -767,14 +698,29 @@ function initializeBooking() {
               body: JSON.stringify({ event: 'success_view_shown', label: 'booking', phone: window.lastSubmittedPhone || '' })
             }).catch(()=>{});
           });
+
+          // Отправляем подтверждение через WebSocket если он инициализирован и подключен
+          if (socket && socket.connected) {
+            socket.emit('booking_confirmed', {
+              ...payload,
+              csrf_token: wsToken // Добавляем текущий CSRF токен
+            });
+          }
         } catch (err) {
           console.error('Ошибка отображения локального success-модала:', err);
           hideAllModals();
           showToast(`✅ ${result.message || "Запись успешно создана!"}`);
+          if (socket) socket.emit('booking_confirmed', payload);
         }
       } else {
         hideAllModals();
         showToast(`✅ ${result.message || "Запись успешно создана!"}`);
+        if (socket) {
+          socket.emit('booking_confirmed', payload);
+        }
+      }
+      } else {
+        showToast(`❌ ${result.error || result.message || "Не удалось записаться"}`);
       }
     } catch (err) {
       console.error("Ошибка отправки записи:", err);
@@ -805,20 +751,10 @@ function initializeBooking() {
   // ==============================
   // 🎯 Обработчики событий
   // ==============================
-  console.log('[booking.js] ✅ ИНИЦИАЛИЗАЦИЯ ОБРАБОТЧИКОВ КНОПОК');
+  console.log('[booking.js] Инициализация обработчиков кнопок...');
   
   // Инициализация обработчиков для всех кнопок бронирования
-  console.log(`[booking.js] 📊 НАЙДЕНО КНОПОК: ${UI.openBookingButtons.length}`);
-  
-  if (UI.openBookingButtons.length === 0) {
-    console.error('[booking.js] ❌ НЕ НАЙДЕНО КНОПОК БРОНИРОВАНИЯ! Селектор может быть неправильным');
-    console.log('[booking.js] Проверяем наличие элементов в DOM:');
-    console.log('  - #openBookingBtn:', document.getElementById('openBookingBtn'));
-    console.log('  - .book-now:', document.querySelectorAll('.book-now').length);
-    console.log('  - .btn-book:', document.querySelectorAll('.btn-book').length);
-  }
-  
-  // Расширенное логирование всех кнопок бронирования
+  console.log('[booking.js] Starting button loop initialization...');
   UI.openBookingButtons.forEach((btn, idx) => {
     if (!btn) {
       console.warn(`[booking.js] Кнопка с индексом ${idx} не найдена!`);
@@ -831,12 +767,13 @@ function initializeBooking() {
     const href = btn.getAttribute('href');
     const classes = btn.className;
 
-    console.log(`[booking.js] 🔘 Кнопка #${idx}: "${btnText}"`, {
-      id: btn.id,
-      class: btn.className,
-      'data-service': serviceType,
-      'data-modal': modalId,
-      tagName: btn.tagName
+    console.log(`[booking.js] Кнопка #${idx}:`, {
+      text: btnText,
+      modalId: modalId,
+      serviceType: serviceType,
+      href: href,
+      classes: classes,
+      element: btn.outerHTML
     });
 
     // Удаляем существующие обработчики перед добавлением нового
@@ -847,14 +784,6 @@ function initializeBooking() {
 
     // Создаем и сохраняем новый обработчик
     const clickHandler = (e) => {
-      console.log('[booking.js] ✅✅✅ КЛИК ЗАРЕГИСТРИРОВАН НА КНОПКЕ:', btnText);
-      console.log('[booking.js] Event details:', {
-        type: e.type,
-        target: e.target,
-        currentTarget: e.currentTarget,
-        button: e.button
-      });
-      
       // If this button is intended to open a modal (has data-modal or data-service), we'll handle it.
       const shouldHandle = Boolean(modalId) || Boolean(serviceType);
 
@@ -868,7 +797,7 @@ function initializeBooking() {
       e.preventDefault();
       e.stopPropagation();
 
-      console.log(`[booking.js] ✅ ОБРАБОТКА КЛИКА на кнопке:`, {
+      console.log(`[booking.js] Клик по кнопке:`, {
         text: btnText,
         modalId: modalId,
         serviceType: serviceType,
@@ -878,7 +807,7 @@ function initializeBooking() {
       });
 
       if (!shouldHandle) {
-        console.warn('[booking.js] ❌ Предупреждение: отсутствует modalId и serviceType — нет действия для кнопки');
+        console.warn('[booking.js] Предупреждение: отсутствует modalId и serviceType — нет действия для кнопки');
         return;
       }
 
@@ -892,8 +821,10 @@ function initializeBooking() {
       if (serviceType === 'gym') {
         console.log('[booking.js] Настройка календаря для зала');
         if (UI.bookingDateInput?._flatpickr) {
-          UI.bookingDateInput._flatpickr.set('disable', []);
-          console.log('[booking.js] Календарь настроен: все дни доступны (включая выходные)');
+          UI.bookingDateInput._flatpickr.set('disable', [
+            function(date) { return date.getDay() === 0 || date.getDay() === 6; }
+          ]);
+          console.log('[booking.js] Календарь настроен: выходные отключены');
         }
         if (UI.stepIndicator) UI.stepIndicator.textContent = 'Шаг 1/4 - Выбор даты тренировки';
       } else {
@@ -904,28 +835,18 @@ function initializeBooking() {
 
       // Определяем целевое модальное окно: либо по id из data-modal, либо дефолтное календарное модальное окно
       const targetModal = modalId ? document.getElementById(modalId) : UI.calendarModal;
-      console.log('[booking.js] 📍 Поиск модали:', {
-        modalId: modalId,
-        targetModal: targetModal ? targetModal.id : 'NOT FOUND'
-      });
       if (targetModal) {
-        console.log('[booking.js] ✅ Открываем модальное окно:', targetModal.id || 'calendarModal');
+        console.log('[booking.js] Открываем модальное окно:', targetModal.id || 'calendarModal');
         showModal(targetModal);
         goToStep(1);
       } else {
-        console.error('[booking.js] ❌ ОШИБКА: модальное окно не найдено!');
+        console.error('[booking.js] Ошибка: модальное окно не найдено!');
       }
     };
 
     // Сохраняем обработчик и добавляем его
     btn._clickListener = clickHandler;
     btn.addEventListener("click", clickHandler);
-    
-    console.log(`[booking.js] ✅ ОБРАБОТЧИК ДОБАВЛЕН для кнопки: "${btnText}"`);
-    console.log(`[booking.js]    - Индекс: ${idx}`);
-    console.log(`[booking.js]    - Сервис: ${serviceType}`);
-    console.log(`[booking.js]    - Модаль: ${modalId}`);
-    console.log(`[booking.js]    - Элемент: `, btn);
   });
 
   if (UI.confirmDateBtn) {
@@ -1096,37 +1017,15 @@ function initializeBooking() {
 
   // Инициализация при загрузке
   // goToStep(1);
-  
-  } catch (error) {
-    console.error("[booking.js] ❌ ОШИБКА при инициализации:", error);
-    window.bookingStatus.error = error.message || String(error);
-  } finally {
-    console.log("[booking.js] Инициализация завершена. Статус:", window.bookingStatus);
-  }
-}
-
-// Execute initialization when DOM is ready
-console.log('[booking.js] 🚀 СКРИПТ ЗАГРУЖЕН');
-console.log('[booking.js] document.readyState:', document.readyState);
-
-if (document.readyState === 'loading') {
-  console.log("[booking.js] ⏳ DOM ещё загружается, регистрируем DOMContentLoaded");
-  document.addEventListener("DOMContentLoaded", () => {
-    console.log("[booking.js] 🎉 DOMContentLoaded - начинаем инициализацию");
-    initializeBooking();
   });
-} else {
-  console.log("[booking.js] ✅ DOM уже загружен, инициализируем сейчас");
-  initializeBooking();
+} catch (err) {
+  console.error("[booking.js] КРИТИЧЕСКАЯ ОШИБКА:", err);
+  console.error("Стек:", err.stack);
+  window.bookingStatus.error = {
+    message: err.message,
+    stack: err.stack
+  };
 }
-
-// Also register for window.onload as fallback
-window.addEventListener('load', () => {
-  console.log("[booking.js] 📌 window.onload fired");
-  if (!window.bookingStatus.initialized) {
-    initializeBooking();
-  }
-});
 
 function openModal() {
   document.getElementById("modalCalendar").classList.remove("hidden");

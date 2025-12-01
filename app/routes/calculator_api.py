@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app
 from datetime import datetime
 import json
+from app.services.google_sheets_analytics import log_analytics_event
 
 calculator_api = Blueprint("calculator_api", __name__)
 
@@ -34,6 +35,30 @@ def calc_save():
             current_app.logger.warning("No sheet_id configured for calculator results; skipping write")
     except Exception as e:
         current_app.logger.error(f"Failed to save calculator result to sheet: {e}")
+    
+    # Логируем событие в аналитику (best-effort)
+    try:
+        analytics_payload = {
+            "event": "calculator_use",
+            "context": "site_calculator",
+            "user_key": phone or "",
+            "type": "calculator",
+            "rule_id": "",
+            "item_id": "",
+            "meta": {
+                "city": city,
+                "tags": tags if isinstance(tags, list) else [tags],
+                "inputs": inputs,
+                "result": result,
+                "source": "site_web",
+            },
+            "ip": request.remote_addr or "",
+            "user_agent": request.headers.get("User-Agent", "")
+        }
+        log_analytics_event(analytics_payload)
+    except Exception as e:
+        current_app.logger.warning(f"Не удалось записать событие аналитики calculator_use: {e}")
+    
     return jsonify({"ok": True})
 
 

@@ -13,6 +13,13 @@ from app.config import (
 # Настрой логирование
 logger = logging.getLogger(__name__)
 
+def make_range(sheet_name, cell_range):
+    if not sheet_name:
+        return f"{cell_range}"
+    # Escape single quotes inside sheet name by doubling them (Google Sheets syntax)
+    safe = sheet_name.replace("'", "''")
+    return f"'{safe}'!{cell_range}"
+
 def get_sheets_service(credentials_file=None):
     scopes = [
         "https://www.googleapis.com/auth/spreadsheets",
@@ -32,7 +39,8 @@ def get_sheet_data(credentials_file, sheet_id, worksheet_name):
     """
     try:
         service = get_sheets_service(credentials_file)
-        range_name = f"{worksheet_name}!A1:Z1000"
+        range_name = make_range(worksheet_name, "A1:Z1000")
+        logger.debug(f"Requesting range: {range_name} in sheet_id={sheet_id}")
         result = service.spreadsheets().values().get(
             spreadsheetId=sheet_id,
             range=range_name
@@ -59,7 +67,8 @@ def append_to_sheet(credentials_file, sheet_id, worksheet_name, row_data):
         if not isinstance(row_data, list):
             raise ValueError("Данные должны быть в виде списка")
         service = get_sheets_service(credentials_file)
-        range_name = f"{worksheet_name}!A1:Z1000"
+        range_name = make_range(worksheet_name, "A1:Z1000")
+        logger.debug(f"Appending to range: {range_name} in sheet_id={sheet_id}")
         body = {"values": [row_data]}
         service.spreadsheets().values().append(
             spreadsheetId=sheet_id,
@@ -68,7 +77,7 @@ def append_to_sheet(credentials_file, sheet_id, worksheet_name, row_data):
             insertDataOption="INSERT_ROWS",
             body=body
         ).execute()
-        logger.info(f"Данные успешно добавлены в таблицу {worksheet_name}")
+        logger.info(f"Данные успешно добавлены в таблицу {worksheet_name} (range={range_name})")
     except Exception as e:
         logger.error(f"Ошибка записи данных в таблицу: {str(e)}")
         raise
@@ -109,7 +118,7 @@ def read_records(spreadsheet_id=None, worksheet_name=None):
         sheets_service = get_google_services()[1]  # Получаем только sheets сервис
         logger.info("Sheets service получен успешно")
         
-        range_name = f"{(worksheet_name or GOOGLE_SHEET_NAME)}!A1:Z1000"
+        range_name = make_range((worksheet_name or GOOGLE_SHEET_NAME), "A1:Z1000")
         logger.info(f"Запрашиваем диапазон: {range_name}")
         
         # Сначала проверим метаданные таблицы
@@ -152,17 +161,41 @@ def read_records(spreadsheet_id=None, worksheet_name=None):
         raise
 
 def append_record(spreadsheet_id=None, worksheet_name=None, values=None):
-    """Добавляет запись в Google Sheets."""
+    """Добавляет запись в Google Sheets. Создаёт лист при необходимости."""
     if values is None:
         raise ValueError("Значения для записи не указаны")
     try:
         sheets_service = get_google_services()[1]
+        sheet_id = spreadsheet_id or SPREADSHEET_ID
+        sheet_name = worksheet_name or GOOGLE_SHEET_NAME
+
+        # Проверим, существует ли лист; если нет — создадим его
+        try:
+            metadata = sheets_service.spreadsheets().get(spreadsheetId=sheet_id).execute()
+            titles = [s['properties']['title'] for s in metadata.get('sheets', [])]
+        except Exception as e:
+            logger.warning(f"Не удалось получить метаданные таблицы: {e}. Попытка продолжить.")
+            titles = []
+
+        if sheet_name not in titles:
+            try:
+                logger.info(f"Лист '{sheet_name}' не найден в {sheet_id}. Создаю его.")
+                requests = [{
+                    'addSheet': {'properties': {'title': sheet_name}}
+                }]
+                sheets_service.spreadsheets().batchUpdate(spreadsheetId=sheet_id, body={'requests': requests}).execute()
+                logger.info(f"Лист '{sheet_name}' успешно создан")
+            except Exception as e:
+                logger.error(f"Не удалось создать лист '{sheet_name}': {e}. Продолжение попытки записи.")
+
         body = {
             'values': [values] if not isinstance(values[0], list) else values
         }
+        range_name = make_range(sheet_name, "A1")
+        logger.debug(f"Appending record to range: {range_name} (sheet_id={sheet_id})")
         result = sheets_service.spreadsheets().values().append(
-            spreadsheetId=spreadsheet_id or SPREADSHEET_ID,
-            range=f"{(worksheet_name or GOOGLE_SHEET_NAME)}!A1",
+            spreadsheetId=sheet_id,
+            range=range_name,
             valueInputOption='RAW',
             insertDataOption='INSERT_ROWS',
             body=body
@@ -181,9 +214,11 @@ def update_record(spreadsheet_id=None, worksheet_name=None, range_=None, values=
         body = {
             'values': [values] if not isinstance(values[0], list) else values
         }
+        range_name = make_range((worksheet_name or GOOGLE_SHEET_NAME), range_)
+        logger.debug(f"Updating range: {range_name}")
         result = sheets_service.spreadsheets().values().update(
             spreadsheetId=spreadsheet_id or SPREADSHEET_ID,
-            range=f"{(worksheet_name or GOOGLE_SHEET_NAME)}!{range_}",
+            range=range_name,
             valueInputOption='RAW',
             body=body
         ).execute()

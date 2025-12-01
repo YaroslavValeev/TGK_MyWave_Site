@@ -1,26 +1,25 @@
 import os
-from marshmallow.exceptions import ValidationError
-from flask import Blueprint, request, jsonify, current_app, render_template, url_for
-from marshmallow import Schema, fields
+import threading
 from datetime import datetime, timedelta
+
+from flask import Blueprint, request, jsonify, current_app, render_template, redirect, url_for
 from googleapiclient.errors import HttpError
+from marshmallow.exceptions import ValidationError
+
+from app.schemas import BookingSchema
 from app.services.google import get_google_services, add_event_to_calendar
 from app.services.google_sheets_service import append_record, read_records
-from app.schemas import BookingSchema
 from app.modules.calendar_integration import create_workout_if_not_exists
-from app.schemas import BookingSchema
-from app.services.google import get_google_services, add_event_to_calendar
-from app.services.google_sheets_service import append_record
-from flask import Blueprint, request, jsonify, current_app, redirect, render_template
-from marshmallow import Schema, fields
-from datetime import datetime, timedelta
-from googleapiclient.errors import HttpError
-from app.services.google_sheets_service import read_records
-from app.modules.calendar_integration import create_workout_if_not_exists
+from app.services.site_analytics import log_site_booking_event
+from app.services.google_sheets_analytics import log_analytics_event
 
 calendar_bp = Blueprint('calendar', __name__)
 
 MAX_PER_SLOT = 2  # Максимальное количество записей на один слот
+
+# RLock для защиты одновременного доступа к Google Sheets API (eventlet issue)
+# RLock позволяет одному потоку захватить lock несколько раз (переиспользуемый lock)
+_google_sheets_lock = threading.RLock()
 
 def normalize_day_of_week(day):
     """Нормализует название дня недели"""
@@ -88,7 +87,15 @@ def get_available_slots(date_str):
     """
     Возвращает список доступных слотов для указанной даты.
     Фильтрует статическое расписание по дню недели и вычитает уже сделанные брони.
+    
+    Использует lock для защиты одновременного доступа к Google Sheets API (eventlet issue).
     """
+    # Используем lock для защиты от одновременных запросов к Google Sheets API
+    with _google_sheets_lock:
+        return _get_available_slots_internal(date_str)
+
+def _get_available_slots_internal(date_str):
+    """Внутренняя функция для получения слотов (вызывается с lock)"""
     current_app.logger.info(f"\n{'='*50}\nЗАПРОС СЛОТОВ\n{'='*50}")
     current_app.logger.info(f"Запрошенная дата: {date_str}")
     
@@ -423,42 +430,115 @@ def update_workout_capacity(row_idx, new_capacity):
 def book_slot():
     """
     Бронирование слота тренировки.
+
+    Единая точка для:
+    - фронтенда (booking.js),
+    - /booking/book (через тонкий прокси),
+    - будущих интеграций (боты / AI gateway), которые могут вызывать этот endpoint.
     """
+    # Используем lock для защиты от одновременных запросов к Google Sheets API
+    with _google_sheets_lock:
+        return _book_slot_internal()
+
+def _book_slot_internal():
+    """Внутренняя функция бронирования (вызывается с lock)"""
     try:
-        # Проверяем формат входных данных
+        current_app.logger.info("🔵 НАЧАЛО БРОНИРОВАНИЯ - _book_slot_internal()")
+        
+        # 1. Проверяем формат входных данных
+        current_app.logger.info("  1️⃣ Проверяем формат JSON...")
         if not request.is_json:
-            return jsonify({'error': 'Ожидается JSON'}), 400
-            
-        # Проверяем CSRF токен
+            current_app.logger.error("    ❌ Не JSON")
+            return jsonify({
+                'status': 'error',
+                'error': 'Ожидается JSON'
+            }), 400
+        current_app.logger.info("    ✅ JSON OK")
+
+        # 2. Проверяем CSRF токен
+        current_app.logger.info("  2️⃣ Проверяем CSRF токен...")
         from app.services.csrf import check_csrf
         if not check_csrf():
-            current_app.logger.warning("Неверный CSRF токен при попытке бронирования")
-            return jsonify({'error': 'Ошибка безопасности: неверный CSRF токен'}), 403
+            current_app.logger.warning("    ❌ Неверный CSRF токен")
+            return jsonify({
+                'status': 'error',
+                'error': 'Ошибка безопасности: неверный CSRF токен'
+            }), 403
+        current_app.logger.info("    ✅ CSRF OK")
 
-        # Валидация данных через схему
-        data = BookingSchema().load(request.get_json())
-        
-        # Проверяем доступность слота
+        # 3. Валидация данных через схему
+        current_app.logger.info("  3️⃣ Валидирую данные...")
+        raw_payload = request.get_json()
+        data = BookingSchema().load(raw_payload)
+
+        current_app.logger.info(
+            f"  ✅ Данные валидированы: "
+            f"name={data.get('name')} phone={data.get('phone')} "
+            f"date={data.get('date')} time={data.get('time')}"
+        )
+
+        # 4. Проверяем доступность слота
+        current_app.logger.info(f"  4️⃣ Проверяю слот {data['date']} {data['time']}...")
         slots = get_available_slots(data['date'])
-        available_slot = next((slot for slot in slots if slot['time'] == data['time'] and slot['available']), None)
+        available_slot = next(
+            (slot for slot in slots if slot['time'] == data['time'] and slot['available']),
+            None
+        )
         
         if not available_slot:
-            return jsonify({'error': 'Слот недоступен или уже занят'}), 400
+            current_app.logger.warning(f"    ❌ Слот недоступен")
+            return jsonify({
+                'status': 'error',
+                'error': 'Слот недоступен или уже занят'
+            }), 400
+        current_app.logger.info(f"    ✅ Слот доступен")
 
-        # 1. Создание/поиск клиента
-        client_id = find_or_create_client(data['phone'], data['name'])
-        if not client_id:
-            return jsonify({'error': 'Не удалось создать профиль клиента'}), 500
+        # 5. Создание/поиск клиента
+        current_app.logger.info(f"  5️⃣ Создаю/ищу клиента {data['phone']}...")
+        try:
+            client_id = find_or_create_client(data['phone'], data['name'])
+            if not client_id:
+                current_app.logger.error("    ❌ find_or_create_client вернул None")
+                return jsonify({
+                    'status': 'error',
+                    'error': 'Не удалось создать профиль клиента'
+                }), 500
+            current_app.logger.info(f"    ✅ Клиент создан/найден: {client_id}")
+        except Exception as e:
+            current_app.logger.error(f"    ❌ Ошибка создания клиента: {str(e)}", exc_info=True)
+            return jsonify({
+                'status': 'error',
+                'error': 'Ошибка при создании профиля клиента'
+            }), 500
 
-        # 2. Поиск/создание тренировки
-        workout_id, workout_row_idx, current_capacity = find_workout(data['date'], data['time'])
-        if not workout_id:
-            workout_id = create_workout_if_not_exists(data['date'], data['time'])
+        # 6. Поиск/создание тренировки
+        try:
             workout_id, workout_row_idx, current_capacity = find_workout(data['date'], data['time'])
             if not workout_id:
-                return jsonify({'error': 'Не удалось создать тренировку'}), 500
+                current_app.logger.info(f"Тренировка не найдена, создаём новую для {data['date']} {data['time']}")
+                workout_id = create_workout_if_not_exists(data['date'], data['time'])
+                if not workout_id:
+                    current_app.logger.error(f"create_workout_if_not_exists вернул None для {data['date']} {data['time']}")
+                    return jsonify({
+                        'status': 'error',
+                        'error': 'Не удалось создать тренировку (create_workout вернул None)'
+                    }), 500
+                # После создания ищем её снова
+                workout_id, workout_row_idx, current_capacity = find_workout(data['date'], data['time'])
+                if not workout_id:
+                    current_app.logger.error(f"После создания тренировка всё ещё не найдена! ID: {workout_id}")
+                    return jsonify({
+                        'status': 'error',
+                        'error': 'Не удалось найти тренировку после создания'
+                    }), 500
+        except Exception as e:
+            current_app.logger.error(f"Ошибка при работе с тренировкой: {str(e)}", exc_info=True)
+            return jsonify({
+                'status': 'error',
+                'error': f'Ошибка при создании тренировки: {str(e)}'
+            }), 500
 
-        # 3. Запись бронирования
+        # 7. Запись бронирования в Client_Workouts
         created_at = datetime.utcnow().isoformat()
         new_row = [
             '',              # id (авто)
@@ -469,18 +549,21 @@ def book_slot():
             '',              # performance
             '',              # feedback
             'single',        # payment_type
-            'booked',       # status
+            'booked',        # status
             created_at,      # created_at
-            ''              # client_rating
+            ''               # client_rating
         ]
-        
+
         try:
             append_record(current_app.config['SPREADSHEET_ID'], 'Client_Workouts', new_row)
         except Exception as e:
             current_app.logger.error(f"Ошибка записи бронирования: {str(e)}")
-            return jsonify({'error': 'Не удалось сохранить бронирование'}), 500
+            return jsonify({
+                'status': 'error',
+                'error': 'Не удалось сохранить бронирование'
+            }), 500
 
-        # 4. Обновление счетчика мест
+        # 8. Обновление счетчика мест в Workouts
         try:
             if workout_row_idx is not None:
                 update_workout_capacity(workout_row_idx, current_capacity + 1)
@@ -488,9 +571,11 @@ def book_slot():
             current_app.logger.error(f"Ошибка обновления счетчика мест: {str(e)}")
             # Не прерываем процесс, так как бронь уже создана
 
-        # 5. Создание события в Google Calendar
+        # 9. Создание события в Google Calendar (best-effort)
         try:
-            current_app.logger.info(f"GOOGLE_CALENDAR_ID config: {current_app.config.get('GOOGLE_CALENDAR_ID')}")
+            current_app.logger.info(
+                f"GOOGLE_CALENDAR_ID config: {current_app.config.get('GOOGLE_CALENDAR_ID')}"
+            )
             service = get_google_services()
             created = add_event_to_calendar(
                 service,
@@ -504,23 +589,68 @@ def book_slot():
             current_app.logger.error(f"Ошибка создания события в календаре: {str(e)}")
             # Не прерываем процесс, так как это некритичная ошибка
 
-        # Возвращаем ссылку на success-view (partial) для фронтенда
+        # 6. Логирование события бронирования в аналитику (best-effort)
+        try:
+            # Собираем нормализованный payload для аналитики через log_analytics_event
+            analytics_payload = {
+                "event": "booking_created",
+                "context": "site_booking",
+                "user_key": client_id or "",
+                "type": data.get("service_type", ""),
+                "rule_id": "",
+                "item_id": "",
+                "meta": {
+                    "date": data["date"],
+                    "time": data["time"],
+                    "name": data["name"],
+                    "phone": data["phone"],
+                    "source": data.get("source", "site"),
+                    "booking_type": data.get("booking_type", "client"),
+                    "workout_id": workout_id,
+                },
+                "ip": request.remote_addr or "",
+                "user_agent": request.headers.get("User-Agent", "")
+            }
+            log_analytics_event(analytics_payload)
+        except Exception as e:
+            # Аналитика не должна ломать пользовательский сценарий
+            current_app.logger.warning(f"Не удалось записать событие аналитики booking_created: {e}")
+
+        # 10. Ссылка на success-view для фронтенда
         try:
             success_view = url_for('booking.booking_success_view', _external=False)
         except Exception:
             success_view = '/booking/success-view'
-        return jsonify({'message': 'Успешно забронировано', 'success_view_url': success_view}), 201
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Успешно забронировано',
+            'success_view_url': success_view
+        }), 201
 
     except ValidationError as ve:
-        return jsonify({'error': 'Ошибка валидации данных', 'details': ve.messages}), 400
-        
+        return jsonify({
+            'status': 'error',
+            'error': 'Ошибка валидации данных',
+            'details': ve.messages
+        }), 400
+
     except HttpError as he:
         error_msg = str(he)
         current_app.logger.error(f"Ошибка Google API: {error_msg}")
         if "invalid_grant" in error_msg:
-            return jsonify({"error": "Ошибка авторизации сервера. Пожалуйста, попробуйте позже"}), 503
-        return jsonify({"error": "Временная ошибка сервера. Пожалуйста, попробуйте позже"}), 502
-        
+            return jsonify({
+                'status': 'error',
+                'error': 'Ошибка авторизации сервера. Пожалуйста, попробуйте позже'
+            }), 503
+        return jsonify({
+            'status': 'error',
+            'error': 'Временная ошибка сервера. Пожалуйста, попробуйте позже'
+        }), 502
+
     except Exception as e:
         current_app.logger.exception("Неожиданная ошибка при бронировании слота")
-        return jsonify({'error': 'Внутренняя ошибка сервера. Пожалуйста, попробуйте позже'}), 500
+        return jsonify({
+            'status': 'error',
+            'error': 'Внутренняя ошибка сервера. Пожалуйста, попробуйте позже'
+        }), 500

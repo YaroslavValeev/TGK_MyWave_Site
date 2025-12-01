@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request, current_app, render_template
 from app.database.models import ChatMessage, db  # ChatMessage должен быть связан с db из app.database
 from app.services.openai_service import ask
 from app.modules.logger import log_event
+from app.services.google_sheets_analytics import log_analytics_event
 from openai import OpenAIError
 
 chat_bp = Blueprint('chat', __name__, template_folder='../templates', url_prefix='/chat')
@@ -88,6 +89,27 @@ def chat_handler():
         except Exception as db_error:
             current_app.logger.error(f"Ошибка при сохранении в БД: {str(db_error)}")
             # Продолжаем выполнение даже при ошибке БД
+
+        # Логируем событие в аналитику (best-effort)
+        try:
+            analytics_payload = {
+                "event": "chat_message",
+                "context": "site_chat",
+                "user_key": client_id or "",
+                "type": "",
+                "rule_id": "",
+                "item_id": "",
+                "meta": {
+                    "message": message,
+                    "response": reply,
+                    "source": "site_web",
+                },
+                "ip": request.remote_addr or "",
+                "user_agent": request.headers.get("User-Agent", "")
+            }
+            log_analytics_event(analytics_payload)
+        except Exception as e:
+            current_app.logger.warning(f"Не удалось записать событие аналитики chat_message: {e}")
 
         return jsonify({
             'response': reply,
