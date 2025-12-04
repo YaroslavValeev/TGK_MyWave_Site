@@ -257,7 +257,7 @@ def get_available_slots(service, start_date, end_date):
     try:
         # Get events from calendar
         events_result = service[2].events().list(
-            calendarId=current_app.config['GOOGLE_CALENDAR_ID'],
+            calendarId=current_app.config.get('GOOGLE_CALENDAR_ID') or current_app.config.get('CALENDAR_ID'),
             timeMin=start_date.isoformat() + 'Z',
             timeMax=end_date.isoformat() + 'Z',
             singleEvents=True,

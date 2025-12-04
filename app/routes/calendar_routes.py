@@ -2,13 +2,15 @@ import os
 import threading
 from datetime import datetime, timedelta
 
-from flask import Blueprint, request, jsonify, current_app, render_template, redirect, url_for
+from flask import Blueprint, request, jsonify, current_app, render_template, redirect, url_for, session
 from googleapiclient.errors import HttpError
 from marshmallow.exceptions import ValidationError
 
 from app.schemas import BookingSchema
 from app.services.google import get_google_services, add_event_to_calendar
 from app.services.google_sheets_service import append_record, read_records
+import secrets
+from datetime import datetime as _dt
 from app.modules.calendar_integration import create_workout_if_not_exists
 from app.services.site_analytics import log_site_booking_event
 from app.services.google_sheets_analytics import log_analytics_event
@@ -229,6 +231,132 @@ def _get_available_slots_internal(date_str):
     # Сортируем слоты по времени и возвращаем
     return sorted(slots, key=lambda x: x['time'])
 
+
+def _generate_service_token(service_name: str, ttl_minutes: int = 15) -> str:
+    """Создаёт одноразовый токен и сохраняет его в сессии с ограничением по времени."""
+    try:
+        token = secrets.token_urlsafe(24)
+        tokens = session.get('service_tokens', {})
+        tokens[token] = {
+            'service': service_name,
+            'created_at': _dt.utcnow().isoformat(),
+            'ttl_minutes': int(ttl_minutes),
+            'used': False
+        }
+        session['service_tokens'] = tokens
+        current_app.logger.info(f"[service_token] Создан token для service={service_name}, token={token}")
+        return token
+    except Exception as e:
+        current_app.logger.error(f"Не удалось создать service token: {e}")
+        return ''
+
+
+def _validate_and_consume_service_token(token: str, expected_service: str | None = None) -> bool:
+    """Проверяет, соответствует ли token ожидаемому сервису, не просрочен и не был использован.
+    Если валиден — помечает как использованный (consume) и возвращает True.
+    """
+    try:
+        if not token:
+            return False
+        tokens = session.get('service_tokens', {})
+        entry = tokens.get(token)
+        if not entry:
+            current_app.logger.warning(f"[service_token] Токен не найден: {token}")
+            return False
+        if entry.get('used'):
+            current_app.logger.warning(f"[service_token] Токен уже использован: {token}")
+            return False
+        # Проверяем время жизни
+        created = _dt.fromisoformat(entry.get('created_at'))
+        ttl = int(entry.get('ttl_minutes', 15))
+        if _dt.utcnow() > (created + timedelta(minutes=ttl)):
+            current_app.logger.warning(f"[service_token] Токен просрочен: {token}")
+            # удалим просроченный
+            tokens.pop(token, None)
+            session['service_tokens'] = tokens
+            return False
+        if expected_service and entry.get('service') != expected_service:
+            current_app.logger.warning(f"[service_token] Ожидался service={expected_service}, но токен для {entry.get('service')}")
+            return False
+        # Помечаем как использованный
+        entry['used'] = True
+        tokens[token] = entry
+        session['service_tokens'] = tokens
+        current_app.logger.info(f"[service_token] Токен валидирован и помечен как использованный: {token}")
+        return True
+    except Exception as e:
+        current_app.logger.error(f"Ошибка валидации service token: {e}")
+        return False
+
+# === ВСТАВИТЬ СРАЗУ ПОСЛЕ _get_available_slots_internal ===
+def get_boat_slots(date_str: str):
+    """
+    Генерация 30-минутных слотов для услуги 'boat' (катер)
+    с 06:00 до 21:00 включительно, с учётом записей из Client_Workouts.
+
+    Использует MAX_PER_SLOT как вместимость слота.
+    Формат ответа совместим с get_available_slots:
+    [{ "time": "06:30", "available": True, "remaining": 1 }, ...]
+    """
+    current_app.logger.info(f"[boat] Генерация слотов для катера на дату {date_str}")
+
+    spreadsheet_id = current_app.config.get('SPREADSHEET_ID')
+    if not spreadsheet_id:
+        current_app.logger.error("[boat] SPREADSHEET_ID не настроен в конфигурации")
+        raise ValueError("Ошибка конфигурации: ID таблицы не настроен")
+
+    # Читаем все брони и фильтруем по дате
+    try:
+        bookings = read_records(spreadsheet_id, 'Client_Workouts')
+        relevant_bookings = [b for b in bookings if b.get('date') == date_str]
+    except Exception as e:
+        current_app.logger.error(f"[boat] Ошибка чтения листа Client_Workouts: {e}")
+        # Если что-то пошло не так — считаем, что броней нет
+        bookings = []
+        relevant_bookings = []
+
+    # Если в записях есть колонка 'service_type', учитываем только бронь для 'boat'
+    if relevant_bookings and any('service_type' in b for b in relevant_bookings):
+        filtered_bookings = [b for b in relevant_bookings if (b.get('service_type') or '').strip().lower() == 'boat']
+    else:
+        # Фоллбек: если колонки нет или нет записей с service_type, считаем все записи
+        filtered_bookings = relevant_bookings
+
+    # Считаем количество брони на каждый тайм-слот
+    counts_by_time = {}
+    for b in filtered_bookings:
+        t = (b.get('time') or '').strip()
+        if not t:
+            continue
+        counts_by_time[t] = counts_by_time.get(t, 0) + 1
+
+    # Генерируем слоты с 06:00 до 21:00, шаг 30 минут
+    from datetime import datetime as dt, timedelta as td
+
+    start = dt.strptime("06:00", "%H:%M")
+    end = dt.strptime("21:00", "%H:%M")
+
+    slots = []
+    cur = start
+    while cur <= end:
+        time_str = cur.strftime("%H:%M")
+        used = counts_by_time.get(time_str, 0)
+        remaining = max(0, MAX_PER_SLOT - used)
+        slots.append({
+            "time": time_str,
+            "available": remaining > 0,
+            "remaining": remaining
+        })
+        cur += td(minutes=30)
+
+    # Логируем краткую статистику
+    available_count = sum(1 for s in slots if s["available"]) 
+    current_app.logger.info(
+        f"[boat] Сгенерировано {len(slots)} слотов, доступно: {available_count}"
+    )
+
+    return slots
+
 @calendar_bp.route('/schedule')
 def get_schedule():
     """
@@ -284,15 +412,35 @@ def get_slots(date_str):
         if date_obj > max_future_date:
             return jsonify({"error": "Дата слишком далеко в будущем. Максимум 3 месяца вперед"}), 400
 
-        current_app.logger.info(f"Запрос слотов на дату: {date_str}")
-        slots = get_available_slots(date_str)
+        # Читаем тип услуги (boat, gym, и т.п.)
+        service_type = request.args.get('service')
+        current_app.logger.info(
+            f"Запрос слотов на дату: {date_str}, service={service_type}"
+        )
+
+        # Для катера используем отдельный генератор с 30-минутными слотами
+        if service_type == 'boat':
+            slots = get_boat_slots(date_str)
+        else:
+            slots = get_available_slots(date_str)
 
         if not slots:
             current_app.logger.info(f"На дату {date_str} слоты не найдены")
-            return jsonify([]), 200
+            resp = jsonify([])
+            return resp, 200
+
+        # Если запрошен service, создаём одноразовый маркер в сессии и возвращаем его в заголовке
+        resp = jsonify(slots)
+        if service_type:
+            try:
+                token = _generate_service_token(service_type)
+                if token:
+                    resp.headers['X-Service-Token'] = token
+            except Exception as e:
+                current_app.logger.warning(f"Не удалось сгенерировать service token: {e}")
 
         current_app.logger.info(f"Найдено {len(slots)} слотов на {date_str}")
-        return jsonify(slots), 200
+        return resp, 200
 
     except ValidationError as ve:
         error_msg = str(ve)
@@ -469,6 +617,36 @@ def _book_slot_internal():
         # 3. Валидация данных через схему
         current_app.logger.info("  3️⃣ Валидирую данные...")
         raw_payload = request.get_json()
+        # Сохраняем опциональный тип сервиса (если его прислал фронтенд)
+        service_type_from_payload = None
+        try:
+            service_type_from_payload = (raw_payload.get('service_type') or None)
+        except Exception:
+            service_type_from_payload = None
+
+        # Дополнительно: проверим наличие одноразового service token в заголовках
+        service_token = None
+        try:
+            service_token = request.headers.get('X-Service-Token') or (request.get_json() and request.get_json().get('service_token'))
+        except Exception:
+            service_token = None
+
+        # Если пришёл service_token — валидация и потребление токена (one-time)
+        if service_token:
+            token_ok = _validate_and_consume_service_token(service_token, expected_service=None)
+            if not token_ok:
+                return jsonify({'status': 'error', 'error': 'Неверный или просроченный service token'}), 400
+            # Если токен валиден — узнаем сервис из сессии (entry уже помечен как used, но мы можем прочитать service)
+            try:
+                tokens_map = session.get('service_tokens', {})
+                # token may have been marked used; try to read from tokens_map (it still contains entry)
+                svc = tokens_map.get(service_token, {})
+                if svc:
+                    # override payload service type
+                    service_type_from_payload = svc.get('service') or service_type_from_payload
+            except Exception:
+                pass
+
         data = BookingSchema().load(raw_payload)
 
         current_app.logger.info(
@@ -477,9 +655,13 @@ def _book_slot_internal():
             f"date={data.get('date')} time={data.get('time')}"
         )
 
-        # 4. Проверяем доступность слота
-        current_app.logger.info(f"  4️⃣ Проверяю слот {data['date']} {data['time']}...")
-        slots = get_available_slots(data['date'])
+        # 4. Проверяем доступность слота (учитываем опциональный service_type)
+        current_app.logger.info(f"  4️⃣ Проверяю слот {data['date']} {data['time']}... (service={service_type_from_payload})")
+        if service_type_from_payload == 'boat':
+            slots = get_boat_slots(data['date'])
+        else:
+            slots = get_available_slots(data['date'])
+
         available_slot = next(
             (slot for slot in slots if slot['time'] == data['time'] and slot['available']),
             None
@@ -540,22 +722,25 @@ def _book_slot_internal():
 
         # 7. Запись бронирования в Client_Workouts
         created_at = datetime.utcnow().isoformat()
-        new_row = [
-            '',              # id (авто)
-            client_id,       # client_id
-            workout_id,      # workout_id
-            data['date'],    # date
-            data['time'],    # time
-            '',              # performance
-            '',              # feedback
-            'single',        # payment_type
-            'booked',        # status
-            created_at,      # created_at
-            ''               # client_rating
-        ]
+        # Формируем словарь для записи, чтобы корректно заполнить новую колонку service_type (если есть)
+        new_record = {
+            'client_id': client_id,
+            'workout_id': workout_id,
+            'date': data['date'],
+            'time': data['time'],
+            'performance': '',
+            'feedback': '',
+            'payment_type': 'single',
+            'status': 'booked',
+            'created_at': created_at,
+            'client_rating': '',
+            'service_type': service_type_from_payload or ''
+        }
 
         try:
-            append_record(current_app.config['SPREADSHEET_ID'], 'Client_Workouts', new_row)
+            # Используем append_dict_to_sheet, чтобы значения были расположены по текущим заголовкам листа
+            from app.modules.sheets_access import append_dict_to_sheet
+            append_dict_to_sheet('Client_Workouts', new_record)
         except Exception as e:
             current_app.logger.error(f"Ошибка записи бронирования: {str(e)}")
             return jsonify({

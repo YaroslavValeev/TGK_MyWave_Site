@@ -236,7 +236,11 @@ function initializeBooking() {
       
       // Получаем свежий CSRF токен для запроса
       const token = await getFreshCsrfToken();
-      const fetchUrl = `/api/calendar/slots/${dateStr}`;
+      // Определяем тип услуги для запроса слотов
+      const serviceParam = currentService
+        ? `?service=${encodeURIComponent(currentService)}`
+        : '';
+      const fetchUrl = `/api/calendar/slots/${dateStr}${serviceParam}`;
       console.log(`[booking.js] 🔄 Запрос слотов к URL: ${fetchUrl}`);
       
       const response = await fetch(fetchUrl, {
@@ -620,8 +624,23 @@ function initializeBooking() {
         
         // Показываем локальный success-модал вместо перехода на внешнюю страницу
         try {
-          // Формируем содержимое модального окна на клиенте
-          const msg = result.message || 'Запись успешно создана!';
+          // Человеко-понятные названия услуг
+          const serviceLabels = {
+            boat: 'Катер',
+            gym: 'Зал',
+            camp: 'Кэмп'
+          };
+
+          const humanService =
+            serviceLabels[payload.service_type] || payload.service_type || 'Услуга';
+
+          // Специализированный текст для катера
+          const defaultMsg =
+            payload.service_type === 'boat'
+              ? 'Запись на катер успешно создана!'
+              : 'Запись успешно создана!';
+
+          const msg = result.message || defaultMsg;
           const containerId = 'success-modal';
           let container = document.getElementById(containerId);
           if (!container) {
@@ -639,7 +658,7 @@ function initializeBooking() {
               <h3>${msg}</h3>
               <p>Дата: <strong>${payload.date}</strong></p>
               <p>Время: <strong>${payload.time}</strong></p>
-              <p>Услуга: <strong>${payload.service_type}</strong></p>
+              <p>Услуга: <strong>${humanService}</strong></p>
               <div class="success-ctas">
                 <button class="btn btn-primary" data-action="add-calendar">Добавить в календарь</button>
                 <button class="btn btn-secondary" data-action="close">Закрыть</button>
