@@ -449,7 +449,6 @@ def get_slots(date_str):
     except Exception as e:
         current_app.logger.error(f"Непредвиденная ошибка при получении слотов: {str(e)}", exc_info=True)
         return jsonify({"error": "Внутренняя ошибка сервера"}), 500
-        return jsonify({"error": "Произошла ошибка при получении данных. Пожалуйста, попробуйте позже."}), 500
 
 @calendar_bp.route('/api/calendar/slots', methods=['GET'])
 def get_slots_range():
