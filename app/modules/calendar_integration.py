@@ -78,6 +78,26 @@ def create_workout_if_not_exists(date_str, time_str, showcase_id=None, slot_type
     # Проверяем, существует ли уже тренировка на эту дату и время
     for idx, row in enumerate(records, start=2):  # начиная со строки 2
         if row.get("date") == date_str and row.get("time") == time_str:
+            existing_service_type = (row.get("service_type") or "").strip().lower()
+
+            # Если тренировка найдена, но поле service_type пустое — заполняем его значением по умолчанию
+            if not existing_service_type:
+                try:
+                    col_idx = headers.index("service_type")
+                    col_letter = chr(ord('A') + col_idx)
+                    update_record(
+                        worksheet_name="Workouts",
+                        range_=f"{col_letter}{idx}",
+                        values=[normalized_service_type]
+                    )
+                except Exception as e:
+                    logging.error(
+                        "Не удалось обновить service_type для существующей тренировки %s %s: %s",
+                        date_str,
+                        time_str,
+                        e,
+                    )
+
             return row.get("workout_id")
 
     # Создаём новую тренировку
