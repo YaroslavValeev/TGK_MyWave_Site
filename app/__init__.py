@@ -150,6 +150,25 @@ def create_app(config_name="development"):
         "production": "config.ProductionConfig"
     }.get(config_name.lower(), "config.DevelopmentConfig"))
 
+    # Configure logging levels: INFO in production, DEBUG otherwise.
+    import logging as _logging
+    root_logger = _logging.getLogger()
+    try:
+        if config_name.lower() == 'production' or not app.config.get('DEBUG'):
+            root_logger.setLevel(_logging.INFO)
+            # Reduce verbosity of noisy libraries in production
+            _logging.getLogger('httpx').setLevel(_logging.WARNING)
+            _logging.getLogger('sqlalchemy.engine').setLevel(_logging.WARNING)
+            _logging.getLogger('googleapiclient').setLevel(_logging.WARNING)
+            _logging.getLogger('googleapiclient.discovery').setLevel(_logging.WARNING)
+            _logging.getLogger('engineio').setLevel(_logging.INFO)
+            _logging.getLogger('socketio').setLevel(_logging.INFO)
+        else:
+            root_logger.setLevel(_logging.DEBUG)
+    except Exception:
+        # Do not let logging configuration break app startup
+        app.logger.debug('Failed to configure logging levels; continuing with defaults')
+
     # Safety: disable Google services by default for non-production runs to avoid
     # startup failures when local credentials are missing or invalid.
     # To enable Google services locally set the environment variable ENABLE_GOOGLE_SERVICES=1

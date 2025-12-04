@@ -1,6 +1,9 @@
 import logging
+import json
+import os
 from datetime import datetime, timedelta
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from google.oauth2 import service_account
 from flask import current_app
 
@@ -8,10 +11,33 @@ logger = logging.getLogger(__name__)
 
 def _get_calendar_service():
     """Get authenticated Google Calendar service."""
-    creds = service_account.Credentials.from_service_account_file(
-        current_app.config['GOOGLE_SERVICE_ACCOUNT_FILE'],
-        scopes=['https://www.googleapis.com/auth/calendar']
-    )
+    sa_path = current_app.config.get('GOOGLE_SERVICE_ACCOUNT_FILE')
+    scopes = current_app.config.get('CALENDAR_SCOPES', ['https://www.googleapis.com/auth/calendar'])
+
+    # Load credentials
+    try:
+        creds = service_account.Credentials.from_service_account_file(
+            sa_path,
+            scopes=scopes
+        )
+    except Exception as e:
+        logger.exception("Failed to load service account credentials from %s: %s", sa_path, e)
+        raise
+
+    # Attempt to read client_email directly from the JSON file for reliable logging
+    client_email = None
+    try:
+        if sa_path and os.path.exists(sa_path):
+            with open(sa_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                client_email = data.get('client_email')
+        else:
+            logger.warning("Google service account file not found at %s", sa_path)
+    except Exception as e:
+        logger.debug("Could not read service account file (%s) to extract client_email: %s", sa_path, e)
+
+    logger.info("Calendar credentials: client_email=%s scopes=%s", client_email or getattr(creds, 'service_account_email', None), getattr(creds, 'scopes', None))
+
     return build('calendar', 'v3', credentials=creds)
 
 def create_event(date: str, time: str, duration_minutes: int = 60) -> dict:
@@ -26,7 +52,9 @@ def create_event(date: str, time: str, duration_minutes: int = 60) -> dict:
         Created event dict from Google Calendar API
     """
     service = _get_calendar_service()
-    calendar_id = current_app.config['GOOGLE_CALENDAR_ID']
+    # Support both config keys for backwards compatibility
+    calendar_id = current_app.config.get('GOOGLE_CALENDAR_ID') or current_app.config.get('CALENDAR_ID')
+    logger.debug("Using calendar_id=%s for event creation", calendar_id)
 
     # Create start and end times
     start_time = datetime.strptime(f"{date}T{time}", "%Y-%m-%dT%H:%M")
@@ -48,13 +76,27 @@ def create_event(date: str, time: str, duration_minutes: int = 60) -> dict:
 
     try:
         created_event = service.events().insert(
-            calendarId=calendar_id, 
+            calendarId=calendar_id,
             body=event
         ).execute()
-        logger.info(f"Created calendar event: {created_event['id']}")
+        logger.info("Created calendar event: %s", created_event.get('id'))
         return created_event
+    except HttpError as e:
+        # Google API errors (403 requiredAccessLevel etc.) — log details for diagnosis
+        status = None
+        try:
+            status = getattr(e, 'resp', None) and getattr(e.resp, 'status', None)
+        except Exception:
+            status = None
+        content = None
+        try:
+            content = getattr(e, 'content', None) or getattr(e, 'error_details', None) or str(e)
+        except Exception:
+            content = str(e)
+        logger.error("Failed to create calendar event: HttpError status=%s content=%s", status, content)
+        raise
     except Exception as e:
-        logger.error(f"Failed to create calendar event: {e}")
+        logger.exception("Failed to create calendar event: %s", e)
         raise
 
 def get_events(start_date: str, end_date: str = None) -> list:
@@ -68,7 +110,7 @@ def get_events(start_date: str, end_date: str = None) -> list:
         List of calendar events
     """
     service = _get_calendar_service()
-    calendar_id = current_app.config['GOOGLE_CALENDAR_ID']
+    calendar_id = current_app.config.get('GOOGLE_CALENDAR_ID') or current_app.config.get('CALENDAR_ID')
 
     # If no end date, search only on start date
     if not end_date:
@@ -103,7 +145,7 @@ def update_event(event_id: str, **updates) -> dict:
         Updated event dict
     """
     service = _get_calendar_service()
-    calendar_id = current_app.config['GOOGLE_CALENDAR_ID']
+    calendar_id = current_app.config.get('GOOGLE_CALENDAR_ID') or current_app.config.get('CALENDAR_ID')
 
     try:
         # Get existing event
@@ -138,7 +180,7 @@ def delete_event(event_id: str) -> bool:
         True if deletion successful, False otherwise
     """
     service = _get_calendar_service()
-    calendar_id = current_app.config['GOOGLE_CALENDAR_ID']
+    calendar_id = current_app.config.get('GOOGLE_CALENDAR_ID') or current_app.config.get('CALENDAR_ID')
 
     try:
         service.events().delete(
