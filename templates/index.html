@@ -4,23 +4,29 @@
 
 {% block content %}
   <!-- Герой-блок -->
-  <section class="hero-section relative-section">
+  <section id="hero" class="hero-section relative-section mw-hero">
     <img src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}" alt="Вейксерфинг на волне" class="hero-bg hero-bg-cover hero-bg-light" loading="lazy" />
     <img src="{{ url_for('static', filename='images/hero-wakesurf-dark.webp') }}" alt="Вейксерфинг на волне (тёмная тема)" class="hero-bg hero-bg-cover hero-bg-dark" loading="lazy" />
     <div class="hero-content center-padding hero-content-relative">
-  <h1 class="hero-title">MyWave — Тренировки по вейксерфингу</h1>
+      <h1 class="hero-title">MyWave — Тренировки по вейксерфингу</h1>
       <p class="hero-subtitle">Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
-      <button class="btn-primary book-now" id="openBookingBtn">Записаться</button>
+
+      <!-- CTA group -->
+      <div class="hero-actions">
+        <button class="btn-primary book-now" id="openBookingBtn" data-booking="1" data-service-type="gym">
+          Записаться
+        </button>
+      </div>
     </div>
   </section>
 
   <!-- Блок преимуществ -->
-  <section class="features">
+  <section id="features" class="features mw-section mw-surface">
     <h3>Почему мы?</h3>
     <div class="feature-list">
       <div class="feature-item">
         <h4>Профессионализм</h4>
-        <p>Многолетний опыт (23+ лет) и высокая квалификация.</p>
+        <p>Многолетний опыт (24+ лет) и высокая квалификация.</p>
       </div>
       <div class="feature-item">
         <h4>Комфорт и безопасность</h4>
@@ -34,36 +40,48 @@
   </section>
 
   <!-- Услуги -->
-  <section id="services" class="services-section">
+  <section id="services" class="services-section mw-section">
     <h2>Услуги</h2>
     <div class="cards-grid">
-      <div class="service-card">
+      <div class="service-card mw-card">
+        <div class="service-card-media js-service-carousel"
+             data-images="{{ url_for('static', filename='images/training1.jpg') }},{{ url_for('static', filename='images/06.jpg') }}">
+          <button class="service-card-media-btn prev" type="button" aria-label="Предыдущее фото">‹</button>
+          <img class="service-card-media-img" src="{{ url_for('static', filename='images/training1.jpg') }}" alt="Тренировка" loading="lazy" />
+          <button class="service-card-media-btn next" type="button" aria-label="Следующее фото">›</button>
+        </div>
         <h4>Тренировка</h4>
         <p>Тренировка на авторских тренажёрах по уникальной методике вейксерфинга. Развиваем баланс, координацию, биомеханику и нейронные связи, чтобы вы уверенно и эффектно выполняли трюки.</p>
         <p>Цена: 3500 рублей</p>
-        <button class="btn-secondary btn-book">Записаться</button>
+        <button class="btn-secondary btn-book" data-booking="1" data-service-type="gym">Записаться</button>
       </div>
-      <div class="service-card" id="boat-card">
+      <div class="service-card mw-card" id="boat-card">
+        <div class="service-card-media js-service-carousel"
+             data-images="{{ url_for('static', filename='images/07.JPG') }}">
+          <button class="service-card-media-btn prev" type="button" aria-label="Предыдущее фото">‹</button>
+          <img class="service-card-media-img" src="{{ url_for('static', filename='images/07.JPG') }}" alt="Запись на катер" loading="lazy" />
+          <button class="service-card-media-btn next" type="button" aria-label="Следующее фото">›</button>
+        </div>
         <h4>Запись на катер</h4>
         <p>Тренировка за катером с тренером (30 минут)</p>
         <p>Цена: 10 000 рублей</p>
-        <button class="btn-secondary btn-book">Записаться</button>
+        <button class="btn-secondary btn-book" data-booking="1" data-service-type="boat">Записаться</button>
       </div>
     </div>
   </section>
 
   <!-- Товары -->
-  <section id="store" class="store-section">
+  <section id="store" class="store-section mw-section mw-surface">
     <h2>Товары</h2>
     <div class="cards-grid">
-      <div class="product-card">
+      <div class="product-card mw-card">
         <img src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="Баланс-борд" loading="lazy" />
         <h4>Баланс-борд</h4>
         <p>Тренировочный баланс-борд для трюков и фитнеса. Улучшает координацию, подходит для всех уровней подготовки.</p>
         <p>Цена: 7 500 ₽</p>
         <button class="btn-secondary">Купить</button>
       </div>
-      <div class="product-card">
+      <div class="product-card mw-card">
         <img src="{{ url_for('static', filename='images/balans_trick_trening.jpg') }}" alt="Баланс-борд Pro" loading="lazy" />
         <h4>Баланс-борд Big</h4>
         <p>Увеличенная модель для профессионалов.</p>
@@ -74,51 +92,108 @@
   </section>
 
   <!-- Мероприятия -->
-  <section id="events" class="events-section section">
+  <section id="events" class="events-section section mw-section">
     <h2>Мероприятия</h2>
-    {% for month, events in months.items() %}
-      <h3>{{ month }}</h3>
-      {% if events %}
-        <ul class="events-ul">{%- for event in events -%}<li>
-                <strong>{{ event['date_range'] }}:</strong>
-                {{ event['name'] }} ({{ event['level'] }}, {{ event['organizer'] }}, {{ event['location'] }}, {{ event['type'] }})
-                {%- if event['link'] and event['link'] != '-' -%} — <a href="https://{{ event['link'] }}" target="_blank" rel="noopener">{{ event['link'] }}</a>{%- endif -%}
-              </li>{%- endfor -%}</ul>
-      {% else %}
-        <div class="no-events-message">Нет мероприятий в этом месяце.</div>
-      {% endif %}
-    {% endfor %}
+    <div class="events-carousel">
+      <button class="events-nav-btn prev" id="events-prev" type="button" aria-label="Предыдущее мероприятие">‹</button>
+      <div class="events-slider" id="events-slider">
+        <a href="#" class="event-card mw-card">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%2335C0CD' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3EWake Challenge%3C/text%3E%3C/svg%3E" alt="Wake Challenge" loading="lazy" />
+          <h4>Wake Challenge</h4>
+          <p>Ежегодные соревнования по вейксерфингу для спортсменов всех уровней подготовки.</p>
+        </a>
+        <a href="#" class="event-card mw-card">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%2335C0CD' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3EWake Surf Safari%3C/text%3E%3C/svg%3E" alt="Wake Surf Safari" loading="lazy" />
+          <h4>Wake Surf Safari</h4>
+          <p>Экспедиция по лучшим спотам для вейксерфинга с профессиональными тренерами.</p>
+        </a>
+        <a href="#" class="event-card mw-card">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%2335C0CD' width='400' height='250'/%3E%3Ctext fill='white' font-size='20' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3EЧек-лист соревнований%3C/text%3E%3C/svg%3E" alt="Чек-лист соревнований" loading="lazy" />
+          <h4>Чек-лист для создания соревнований</h4>
+          <p>Подробное руководство по организации профессиональных соревнований по вейксерфингу.</p>
+        </a>
+        <a href="#" class="event-card mw-card">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%2335C0CD' width='400' height='250'/%3E%3Ctext fill='white' font-size='20' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3EИндустрия вейка%3C/text%3E%3C/svg%3E" alt="Индустрия вейка" loading="lazy" />
+          <h4>Из чего состоит индустрия вейка</h4>
+          <p>Обзор всех аспектов индустрии вейксерфинга: от оборудования до соревнований.</p>
+        </a>
+        <a href="#" class="event-card mw-card">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%2335C0CD' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3EЛетний лагерь%3C/text%3E%3C/svg%3E" alt="Летний лагерь" loading="lazy" />
+          <h4>Летний лагерь по вейксерфингу</h4>
+          <p>Интенсивная программа обучения для детей и взрослых в летний сезон.</p>
+        </a>
+        <a href="#" class="event-card mw-card">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%2335C0CD' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3EМастер-класс%3C/text%3E%3C/svg%3E" alt="Мастер-класс" loading="lazy" />
+          <h4>Мастер-класс по трюкам</h4>
+          <p>Уникальная возможность изучить продвинутые трюки от чемпионов мира.</p>
+        </a>
+      </div>
+      <button class="events-nav-btn next" id="events-next" type="button" aria-label="Следующее мероприятие">›</button>
+    </div>
   </section>
 
   <!-- Блог -->
-  <section id="blog" class="blog-section">
+  <section id="blog" class="blog-section mw-section mw-surface">
     <h2>Блог</h2>
-    <p>В разработке. Скоро здесь появятся новые статьи!</p>
+    <div class="blog-carousel">
+      <button class="blog-nav-btn prev" id="blog-prev" type="button" aria-label="Предыдущая статья">‹</button>
+      <div class="blog-slider" id="blog-slider">
+        <a href="#" class="blog-card mw-card">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%2335C0CD' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3EОсновы вейксерфинга%3C/text%3E%3C/svg%3E" alt="Основы вейксерфинга" loading="lazy" />
+          <h4>Основы вейксерфинга для начинающих</h4>
+          <p>Полное руководство для тех, кто только начинает свой путь в вейксерфинге: от выбора оборудования до первых трюков.</p>
+        </a>
+        <a href="#" class="blog-card mw-card">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%2335C0CD' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3EТоп-10 трюков%3C/text%3E%3C/svg%3E" alt="Топ-10 трюков" loading="lazy" />
+          <h4>Топ-10 трюков в вейксерфинге</h4>
+          <p>Обзор самых эффектных и популярных трюков, которые должен освоить каждый спортсмен.</p>
+        </a>
+        <a href="#" class="blog-card mw-card">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%2335C0CD' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3EВыбор доски%3C/text%3E%3C/svg%3E" alt="Выбор доски" loading="lazy" />
+          <h4>Как выбрать доску для вейксерфинга</h4>
+          <p>Подробное руководство по выбору доски: размеры, форма, материалы и рекомендации для разных уровней.</p>
+        </a>
+        <a href="#" class="blog-card mw-card">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%2335C0CD' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3EБезопасность%3C/text%3E%3C/svg%3E" alt="Безопасность" loading="lazy" />
+          <h4>Безопасность на воде: правила и рекомендации</h4>
+          <p>Важные правила безопасности, которые должен знать каждый вейксерфер перед выходом на воду.</p>
+        </a>
+        <a href="#" class="blog-card mw-card">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%2335C0CD' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3EТренировки дома%3C/text%3E%3C/svg%3E" alt="Тренировки дома" loading="lazy" />
+          <h4>Тренировки дома: баланс и координация</h4>
+          <p>Эффективные упражнения для развития баланса и координации, которые можно выполнять дома.</p>
+        </a>
+      </div>
+      <button class="blog-nav-btn next" id="blog-next" type="button" aria-label="Следующая статья">›</button>
+    </div>
   </section>
 
-  <section class="reviews-section">
+  <section id="reviews" class="reviews-section mw-section">
     <h2>Отзывы учеников</h2>
-    <div class="reviews-slider">
-      <div class="review">
-        <p>"Очень понравились тренировки! Тренер — супер!"</p>
-        <strong>Эля Веснина</strong>
+    <div class="reviews-carousel">
+      <button class="reviews-nav-btn prev" id="reviews-prev" type="button" aria-label="Предыдущий отзыв">‹</button>
+      <div class="reviews-slider" id="reviews-slider">
+        {% for r in (reviews or []) %}
+          <div class="review mw-card">
+            {% if r.photo_static_path %}
+              <img src="{{ url_for('static', filename=r.photo_static_path) }}" alt="{{ r.name }}" loading="lazy" />
+            {% else %}
+              <div class="review-avatar-fallback" aria-hidden="true">{{ (r.name or 'У')[0] }}</div>
+            {% endif %}
+            <p>"{{ r.text }}"</p>
+            <strong>{{ r.name }}</strong>
+          </div>
+        {% endfor %}
       </div>
-      <div class="review">
-        <p>"Было весело и эффективно, всем советую!"</p>
-        <strong>Юля Елупова</strong>
-      </div>
-      <div class="review">
-        <p>"Прекрасный подход к детям и взрослым!"</p>
-        <strong>Алина Лапина</strong>
-      </div>
+      <button class="reviews-nav-btn next" id="reviews-next" type="button" aria-label="Следующий отзыв">›</button>
     </div>
   </section>
 
   <!-- Контакты -->
-  <section id="contacts" class="contacts-section">
+  <section id="contacts" class="contacts-section mw-section mw-surface">
     <h2>Давайте знакомиться</h2>
     <div class="contact-info">
-      <div class="contact-details">
+      <div class="contact-details mw-card">
         <p class="contact-phone">Телефон: <a href="tel:+79160117179">+7 (916) 011-71-79</a></p>
         <p class="contact-social">
           Telegram: <a href="https://t.me/MyW23" target="_blank" rel="noopener">@MyW23</a>
@@ -131,7 +206,7 @@
           <a href="https://dzen.ru/mywavewake" class="social-link" target="_blank" rel="noopener" title="Яндекс Дзен"><i class="fa fa-yandex"></i></a>
         </div>
       </div>
-      <form id="contact-form" class="contact" autocomplete="on">
+      <form id="contact-form" class="contact mw-card" autocomplete="on">
         <h3>Напишите мне</h3>
         <div class="input-group">
           <label for="username">Имя:</label>
@@ -146,7 +221,13 @@
     </div>
   </section>
 
-  <a href="/chat" class="btn-secondary chat-margin">Чат с тренером</a>
-
   {% include 'partials/booking_modals.html' %}
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/services-carousel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/events-carousel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/blog-carousel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/reviews-carousel.js') }}"></script>
 {% endblock %}

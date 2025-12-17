@@ -42,6 +42,13 @@ def _normalize_date(date_str: str | None) -> str | None:
             delta = (idx - cur) % 7
             delta = delta if delta != 0 else 7
             return (today + timedelta(days=delta)).strftime(DATE_FMT)
+    # ДД.ММ.ГГГГ
+    try:
+        dt = datetime.strptime(s, "%d.%m.%Y")
+        return dt.strftime(DATE_FMT)
+    except Exception:
+        pass
+    
     # YYYY-MM-DD
     try:
         return datetime.strptime(s, DATE_FMT).strftime(DATE_FMT)

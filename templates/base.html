@@ -97,8 +97,8 @@
         color: var(--color-text); 
       }
       .site-header { 
-        background: var(--color-header); 
-        color: var(--color-white); 
+        background: #3d3d3d; 
+        color: #ffffff; 
       }
   </style>
   {% endblock %}
@@ -115,11 +115,10 @@
       </div>
       <nav class="site-nav" id="site-nav">
         <ul>
-          <li><a href="#hero">Главная</a></li>
-          <li><a href="#services">Услуги</a></li>
-          <li><a href="#events">Мероприятия</a></li>
-          <li><a href="#blog">Блог</a></li>
-          <li><a href="#contacts">Контакты</a></li><li><a href="{{ url_for('content_calendar.calendar_page') }}">Контент-календарь</a></li>
+          <li><a class="js-nav-link" href="#services">Услуги</a></li>
+          <li><a class="js-nav-link" href="#events">Проекты</a></li>
+          <li><a class="js-nav-link" href="#store">Товары</a></li>
+          <li><a class="js-nav-link" href="#contacts">Контакты</a></li>
         </ul>
       </nav>
       <button id="dark-mode-toggle" class="theme-toggle" aria-label="Переключить тему">🌙</button>
@@ -132,8 +131,8 @@
     <i class="fas fa-chevron-down"></i>
   </div>
 
-  <div id="progress-bar" class="progress-bar">
-    <div id="progress-fill"></div>
+  <div id="progress-bar" class="progress-bar mw-scroll-progress" aria-hidden="true">
+    <div id="progress-fill" class="mw-scroll-progress__fill"></div>
   </div>
 
   <!-- Контент -->
@@ -195,6 +194,7 @@
     new SocketStatus(socket);
   </script>
   {% block scripts %}{% endblock %}
+  <script defer src="{{ url_for('static', filename='js/nav-spy.js') }}"></script>
   <script src="{{ url_for('static', filename='js/inline.js') }}"></script>
 
   <!-- booking.js должен быть после блока content и всех модалок -->

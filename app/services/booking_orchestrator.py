@@ -6,8 +6,28 @@ from typing import Any, Dict, Tuple
 
 from flask import session
 
-from app.services.openai_service import respond_structured
 from app.services.tools import get_available_slots, get_capacity, book_slot
+
+
+def format_date_for_display(date_str: str) -> str:
+    """
+    Форматирует дату из YYYY-MM-DD в ДД.ММ.ГГГГ для отображения пользователю.
+    Если дата в формате 'сегодня', 'завтра', 'послезавтра', возвращает как есть.
+    """
+    if not date_str:
+        return ""
+    
+    # Если это относительная дата, возвращаем как есть
+    if date_str.lower() in ("сегодня", "завтра", "послезавтра"):
+        return date_str
+    
+    # Пытаемся распарсить YYYY-MM-DD
+    try:
+        dt = datetime.strptime(date_str, "%Y-%m-%d")
+        return dt.strftime("%d.%m.%Y")
+    except (ValueError, TypeError):
+        # Если не удалось распарсить, возвращаем как есть
+        return date_str
 
 
 TOOLS_MANIFEST = [
@@ -59,7 +79,8 @@ TOOLS_MANIFEST = [
 
 
 TIME_RE = re.compile(r"^\s*(?:в\s*)?(\d{1,2}):(\d{2})\s*$", re.IGNORECASE)
-DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# Поддерживаем оба формата: YYYY-MM-DD и ДД.ММ.ГГГГ
+DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2}|\d{1,2}\.\d{1,2}\.\d{4})$")
 PHONE_RE = re.compile(r"(?:(?:\+7|8)\s*\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2})")
 
 
@@ -92,10 +113,16 @@ def _heuristics(user_text: str, state: Dict[str, Any]) -> Dict[str, Any]:
     if text == "послезавтра":
         out["intent"] = "provide_date"
         out["entities"]["date"] = text
-    # ISO date
+    # ISO date (YYYY-MM-DD) или ДД.ММ.ГГГГ
     if DATE_RE.match(text):
         out["intent"] = "provide_date"
-        out["entities"]["date"] = text
+        # Нормализуем дату в YYYY-MM-DD для внутренней логики
+        from app.services.tools import _normalize_date
+        normalized = _normalize_date(text)
+        if normalized:
+            out["entities"]["date"] = normalized
+        else:
+            out["entities"]["date"] = text
     # Time
     m = TIME_RE.match(text)
     if m:
@@ -115,7 +142,7 @@ def _heuristics(user_text: str, state: Dict[str, Any]) -> Dict[str, Any]:
         if len(raw) == 11:
             out.setdefault("entities", {})["phone"] = "+" + raw
 
-    # Name (very light): "меня зовут Иван", "я Иван"
+    # Name (very light): "меня зовут Иван", "я Иван", либо одиночное слово с заглавной, если ждём имя
     nm = re.search(r"меня\s+зовут\s+([А-ЯЁA-Z][а-яёa-z\-]+(?:\s+[А-ЯЁA-Z][а-яёa-z\-]+)?)", text, re.IGNORECASE)
     if nm:
         out.setdefault("entities", {})["name"] = nm.group(1).strip()
@@ -123,6 +150,10 @@ def _heuristics(user_text: str, state: Dict[str, Any]) -> Dict[str, Any]:
         nm2 = re.match(r"^\s*я\s+([А-ЯЁA-Z][а-яёa-z\-]+)\s*$", text, re.IGNORECASE)
         if nm2:
             out.setdefault("entities", {})["name"] = nm2.group(1).strip()
+        else:
+            # Если мы на шаге ask_name и введено одно слово с заглавной — считаем именем
+            if (state.get("step") == "ask_name") and re.match(r"^[А-ЯЁA-Z][а-яёa-z\-]{1,29}$", text, re.IGNORECASE):
+                out.setdefault("entities", {})["name"] = text.strip()
 
     # Next step decision
     date_known = out["entities"].get("date") or state.get("date")
@@ -150,10 +181,9 @@ def orchestrate(user_text: str, state: Dict[str, Any] | None = None) -> Tuple[st
     """
     state = dict(state or {})
 
-    # 1) Ask the model for structured interpretation (with tools context)
-    model_result = respond_structured(user_text, state=state, tools=TOOLS_MANIFEST)
-    if model_result.get("error"):
-        model_result = _heuristics(user_text, state)
+    # 1) Rule-based interpretation (stable even when OpenAI is down / key invalid).
+    # Booking should not depend on external AI availability.
+    model_result = _heuristics(user_text, state)
 
     # 2) If the model returned tool_calls (function calling), execute them sequentially
     reply_chunks: list[str] = []
@@ -198,8 +228,9 @@ def orchestrate(user_text: str, state: Dict[str, Any] | None = None) -> Tuple[st
         try:
             cap = get_capacity(updated["date"], updated["time"])
             if cap["free"] > 0:
+                formatted_date = format_date_for_display(updated["date"])
                 reply_chunks.append(
-                    f"Подтвердите запись на {updated['date']} в {updated['time']} (свободно {cap['free']} из {cap['max']})."
+                    f"Подтвердите запись на {formatted_date} в {updated['time']} (свободно {cap['free']} из {cap['max']})."
                 )
                 updated["step"] = "confirm"
             else:
@@ -235,7 +266,7 @@ def orchestrate(user_text: str, state: Dict[str, Any] | None = None) -> Tuple[st
     if not reply_chunks:
         step = updated.get("step") or "ask_date"
         if step == "ask_date":
-            reply_chunks.append("Выберите дату (сегодня/завтра или YYYY-MM-DD).")
+            reply_chunks.append("Выберите дату (сегодня/завтра или ДД.ММ.ГГГГ).")
         elif step == "ask_time":
             # If date known, offer slots
             try:

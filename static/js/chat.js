@@ -101,7 +101,21 @@ const Utils = {
     },
     // Получение CSRF-токена
     getCSRFToken: () => {
-        const token = document.querySelector('input[name="csrf_token"]')?.value;
+        // Prefer the XSRF cookie (set by /api/csrf-token) so that websocket + fetch share the same token.
+        try {
+            const cookies = String(document.cookie || '').split(';');
+            for (const c of cookies) {
+                const [k, ...rest] = c.trim().split('=');
+                if (k === 'XSRF-TOKEN') {
+                    const v = decodeURIComponent(rest.join('='));
+                    if (v) return v;
+                }
+            }
+        } catch (e) { /* ignore */ }
+
+        const token =
+            document.querySelector('meta[name="csrf-token"]')?.content
+            || document.querySelector('input[name="csrf_token"]')?.value;
         if (!token) {
             console.error('CSRF token not found');
             throw new Error('CSRF token not found');
@@ -109,10 +123,12 @@ const Utils = {
         return token;
     },
     // Получение заголовков для запросов
-    getHeaders: () => {
+    getHeaders: (csrfToken) => {
+        const token = csrfToken || Utils.getCSRFToken();
         return {
             'Content-Type': 'application/json',
-            'X-CSRFToken': Utils.getCSRFToken()
+            'X-CSRFToken': token,
+            'X-CSRF-Token': token
         };
     }
 };
@@ -129,37 +145,112 @@ document.addEventListener("DOMContentLoaded", () => {
         chatMessages: document.getElementById("chat-messages")
     };
 
-    // WebSocket подключение
-    const socket = io({ 
-        transports: ["websocket", "polling"],
-        auth: {
-            csrf_token: Utils.getCSRFToken()
-        }
-    });
+    // Keep the last booking state returned by /api/booking so we can route subsequent
+    // booking-step messages (phone/name/etc) to the correct endpoint.
+    let lastBookingState = null;
 
-    socket.on("connect", () => {
-        console.log("✅ WebSocket подключён");
-        // Отправляем приветственное сообщение при первом открытии чата
-        appendMessage("О чём я могу тебя спросить?", "bot");
-    });
-
-    socket.on("connect_error", (error) => {
-        console.error("WebSocket ошибка подключения:", error);
-        if (error.message.includes("CSRF")) {
-            appendMessage("Ошибка валидации безопасности. Пожалуйста, обновите страницу.", "bot");
-        } else {
-            appendMessage("Ошибка подключения к серверу. Пожалуйста, попробуйте позже.", "bot");
+    function getCookieValue(name) {
+        const cookies = String(document.cookie || '').split(';');
+        for (const c of cookies) {
+            const [k, ...rest] = c.trim().split('=');
+            if (k === name) return decodeURIComponent(rest.join('='));
         }
-    });
+        return '';
+    }
 
-    socket.on("message", (data) => {
-        if (data && data.response) {
-            appendMessage(data.response, "bot");
-        } else if (data && data.error) {
-            console.error("Ошибка сообщения:", data.error);
-            appendMessage("Ошибка: " + data.error, "bot");
+    async function getCsrfTokenForSocket() {
+        const cookieToken = getCookieValue('XSRF-TOKEN');
+        if (cookieToken) return cookieToken;
+
+        try {
+            const resp = await fetch('/api/csrf-token', { credentials: 'same-origin' });
+            const data = await resp.json();
+            if (data && data.csrf_token) return data.csrf_token;
+        } catch (e) {
+            // ignore
         }
-    });
+
+        return Utils.getCSRFToken();
+    }
+
+    async function getFreshCsrfTokenForRequests() {
+        try {
+            const resp = await fetch('/api/csrf-token', { credentials: 'same-origin' });
+            const data = await resp.json();
+            if (data && data.csrf_token) return data.csrf_token;
+        } catch (e) {
+            // ignore
+        }
+
+        return Utils.getCSRFToken();
+    }
+
+    async function sendRequestWithCsrfRetry(url, payload) {
+        let csrfToken = await getFreshCsrfTokenForRequests();
+        const makeRequest = async () => {
+            try {
+                return await fetch(url, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: Utils.getHeaders(csrfToken),
+                    body: JSON.stringify(payload)
+                });
+            } catch (networkError) {
+                // Перехватываем сетевые ошибки (Failed to fetch, TypeError и т.д.)
+                console.error('Сетевая ошибка при запросе:', networkError);
+                throw new Error('Не удалось подключиться к серверу. Проверьте подключение к интернету и попробуйте ещё раз.');
+            }
+        };
+
+        let response;
+        try {
+            response = await makeRequest();
+        } catch (error) {
+            // Пробрасываем ошибку дальше с понятным сообщением
+            throw error;
+        }
+        if (response.status !== 400 && response.status !== 403) return response;
+
+        // Retry once with a freshly generated token (session + cookie are refreshed by /api/csrf-token).
+        csrfToken = await getFreshCsrfTokenForRequests();
+        response = await makeRequest();
+        return response;
+    }
+
+    // WebSocket подключение (use XSRF-TOKEN cookie when available to satisfy server-side handshake)
+    (async () => {
+        const socketCsrfToken = await getCsrfTokenForSocket();
+        const socket = io({
+            transports: ["websocket", "polling"],
+            auth: {
+                csrf_token: socketCsrfToken
+            }
+        });
+
+        socket.on("connect", () => {
+            console.log("✅ WebSocket подключён");
+            // Отправляем приветственное сообщение при первом открытии чата
+            appendMessage("О чём я могу тебя спросить?", "bot");
+        });
+
+        socket.on("connect_error", (error) => {
+            console.error("WebSocket ошибка подключения:", error);
+            if (error.message.includes("CSRF")) {
+                appendMessage("Ошибка валидации безопасности. Пожалуйста, обновите страницу.", "bot");
+            }
+            // Socket is used for realtime updates only; do not show a generic "server down"
+            // bubble that confuses users when fetch-based chat/booking still works.
+        });
+
+        socket.on("message", (data) => {
+            if (data && data.response) {
+                appendMessage(data.response, "bot");
+            } else if (data && data.error) {
+                console.error("Ошибка сообщения:", data.error);
+                appendMessage("Ошибка: " + data.error, "bot");
+            }
+        });
+    })();
 
     // Функции для работы с сообщениями
     function decodeEntities(s) {
@@ -185,6 +276,66 @@ document.addEventListener("DOMContentLoaded", () => {
         UI.chatMessages.scrollTop = UI.chatMessages.scrollHeight;
     }
 
+    // Функция показа/скрытия индикатора загрузки
+    let loadingIndicator = null;
+    function showLoadingIndicator() {
+        if (loadingIndicator) return; // Уже показывается
+        
+        loadingIndicator = document.createElement("div");
+        loadingIndicator.className = "message bot loading-indicator";
+        loadingIndicator.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+        UI.chatMessages.appendChild(loadingIndicator);
+        UI.chatMessages.scrollTop = UI.chatMessages.scrollHeight;
+    }
+
+    function hideLoadingIndicator() {
+        if (loadingIndicator) {
+            loadingIndicator.remove();
+            loadingIndicator = null;
+        }
+    }
+
+    // Функция форматирования даты для отправки в чат
+    function formatDateForChat(dateStr) {
+        if (!dateStr) return '';
+        // Если дата в формате YYYY-MM-DD, конвертируем в ДД.ММ.ГГГГ
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+            const parts = dateStr.split('-');
+            return `${parts[2]}.${parts[1]}.${parts[0]}`;
+        }
+        return dateStr;
+    }
+
+    // Функция открытия календаря из чата
+    function openDatePickerFromChat() {
+        // Проверяем, доступна ли модалка календаря
+        const modal = document.getElementById('bookingDateModal');
+        if (!modal) {
+            appendMessage('Календарь временно недоступен. Введите дату вручную (например, 25.12.2025).', 'bot');
+            return;
+        }
+
+        // Устанавливаем флаг, что модалка открыта из чата
+        modal.setAttribute('data-from-chat', 'true');
+        
+        // Сохраняем функции чата в глобальной области для доступа из booking.js
+        window.ChatFunctions = {
+            appendMessage: appendMessage,
+            sendMessageToServer: sendMessageToServer,
+            formatDateForChat: formatDateForChat
+        };
+
+        // Открываем модалку через BookingUI
+        if (window.BookingUI && typeof window.BookingUI.open === 'function') {
+            window.BookingUI.open('gym');
+        } else {
+            // Fallback: открываем модалку напрямую
+            modal.classList.remove('hidden');
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+    }
+
     // Render booking suggestion chips or mini-forms below the chat
     function renderSuggestions(suggestions, state) {
         try {
@@ -192,6 +343,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!cont) return;
             cont.innerHTML = '';
             const step = state && state.step;
+            if (state && typeof state === 'object') {
+                lastBookingState = state;
+            }
             if (step === 'ask_phone') {
                 const wrap = document.createElement('div');
                 const input = document.createElement('input');
@@ -234,6 +388,39 @@ document.addEventListener("DOMContentLoaded", () => {
                 wrap.appendChild(input); wrap.appendChild(btn); cont.appendChild(wrap);
                 return;
             }
+            // Для шага ask_date добавляем кнопку "Выбрать дату" + стандартные suggestions
+            if (step === 'ask_date') {
+                // Добавляем кнопки для быстрого выбора (сегодня, завтра, послезавтра)
+                if (Array.isArray(suggestions) && suggestions.length) {
+                    suggestions.forEach((label) => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'suggestion-chip';
+                        btn.textContent = label;
+                        btn.addEventListener('click', () => {
+                            appendMessage(label, 'user');
+                            sendMessageToServer(label);
+                        });
+                        cont.appendChild(btn);
+                    });
+                }
+                // Добавляем кнопку "Выбрать дату" для открытия календаря
+                const datePickerBtn = document.createElement('button');
+                datePickerBtn.type = 'button';
+                datePickerBtn.className = 'suggestion-chip';
+                datePickerBtn.style.background = '#35C0CD';
+                datePickerBtn.style.color = '#ffffff';
+                datePickerBtn.style.fontWeight = '600';
+                datePickerBtn.textContent = '📅 Выбрать дату';
+                datePickerBtn.addEventListener('click', () => {
+                    // Открываем модалку календаря из чата
+                    openDatePickerFromChat();
+                });
+                cont.appendChild(datePickerBtn);
+                return;
+            }
+            
+            // Для остальных шагов - стандартная обработка
             if (!Array.isArray(suggestions) || !suggestions.length) return;
             suggestions.forEach((label) => {
                 const btn = document.createElement('button');
@@ -259,38 +446,66 @@ document.addEventListener("DOMContentLoaded", () => {
         return false;
     }
 
+    function isPhoneLike(text) {
+        if (!text) return false;
+        const norm = String(text).trim().replace(/[^\d+]/g, '');
+        return /^((\+7|8)\d{10})$/.test(norm);
+    }
+
+    function shouldRouteToBookingByState() {
+        const step = lastBookingState && lastBookingState.step;
+        if (!step) return false;
+        // While booking flow is active, keep routing user input to /api/booking.
+        return step !== 'done' && step !== 'other';
+    }
+
     // Функция отправки сообщения на сервер
     async function sendMessageToServer(message) {
         updateContext('user', message);
+        showLoadingIndicator(); // Показываем индикатор загрузки
+        updateChatState('loading');
         try {
             console.log('Отправка сообщения:', message);
             const endpoint = (function(){
                 const t = String(message).toLowerCase().trim();
-                if (/^\s*\d{1,2}:\d{2}\s*$/.test(t)) return '/api/booking';
+                // Проверяем состояние бронирования в первую очередь
+                if (shouldRouteToBookingByState()) return '/api/booking';
+                // Форматы времени (например, "15:00", "в 15:00")
+                if (/^\s*(?:в\s*)?\d{1,2}:\d{2}\s*$/.test(t)) return '/api/booking';
+                // Формат даты (YYYY-MM-DD)
                 if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return '/api/booking';
-                if (/(сегодня|завтра|послезавтра|запис|трениров|слот|время)/i.test(t)) return '/api/booking';
+                // Телефон
+                if (isPhoneLike(t)) return '/api/booking';
+                // Ключевые слова для бронирования (расширенный список)
+                if (/(?:хочу\s*)?(?:запис|бронь|заняти|трениров|слот|время|дата|катер|зал)|сегодня|завтра|послезавтра|после\s*завтра|ближайш/i.test(t)) return '/api/booking';
                 return '/chat/api';
             })();
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: Utils.getHeaders(),
-                body: JSON.stringify({
-                    message: message,
-                    user: "Гость",
-                    // Передаём последние 10 реплик диалога для контекста
-                    history: Array.isArray(chatContext) ? chatContext.slice(-10).map(m => ({
-                        role: m.role === 'bot' ? 'assistant' : (m.role || 'user'),
-                        content: m.content || m.text || m.message || ''
-                    })) : []
-                })
+            const response = await sendRequestWithCsrfRetry(endpoint, {
+                message: message,
+                user: "Гость",
+                // Передаём последние 10 реплик диалога для контекста
+                history: Array.isArray(chatContext) ? chatContext.slice(-10).map(m => ({
+                    role: m.role === 'bot' ? 'assistant' : (m.role || 'user'),
+                    content: m.content || m.text || m.message || ''
+                })) : []
             });
 
             console.log('Статус ответа:', response.status);
             
             if (!response.ok) {
-                if (response.status === 403) {
-                    console.error('CSRF validation failed');
-                    throw new Error('Ошибка валидации CSRF-токена. Пожалуйста, обновите страницу.');
+                if (response.status === 403 || response.status === 400) {
+                    try {
+                        const errPayload = await response.json();
+                        if (errPayload && String(errPayload.error || '').toLowerCase().includes('csrf')) {
+                            console.error('CSRF validation failed');
+                            throw new Error('Ошибка валидации CSRF-токена. Пожалуйста, обновите страницу.');
+                        }
+                        throw new Error(errPayload?.error || 'Некорректный запрос');
+                    } catch (e) {
+                        // fallback
+                        console.error('CSRF validation failed');
+                        throw new Error('Ошибка запроса. Пожалуйста, попробуйте ещё раз.');
+                    }
                 }
                 console.error('Ошибка ответа:', response.status, response.statusText);
                 throw new Error('Ошибка сети');
@@ -298,7 +513,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await response.json();
             console.log('Полученные данные:', data);
+
+            if (data && data.state && typeof data.state === 'object') {
+                lastBookingState = data.state;
+            }
             
+            hideLoadingIndicator(); // Скрываем индикатор загрузки
             if (data.response) {
                 console.log('Получен ответ от сервера:', data.response);
                 appendMessage(data.response, "bot");
@@ -310,6 +530,7 @@ document.addEventListener("DOMContentLoaded", () => {
             try { if (data && (data.suggestions || data.state)) { renderSuggestions(data.suggestions, data.state); } else { renderSuggestions([], null); } } catch (e) {}
             updateChatState('success');
         } catch (error) {
+            hideLoadingIndicator(); // Скрываем индикатор при ошибке
             updateChatState('error');
             console.error('Ошибка при отправке:', error);
             appendMessage(error.message || "Извините, произошла ошибка при обработке вашего сообщения", "bot");
@@ -336,6 +557,17 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Отправляем сообщение на сервер
         await sendMessageToServer(message);
+    });
+
+    // Обработчик клавиши Enter для отправки сообщения
+    UI.chatInput?.addEventListener("keydown", (e) => {
+        // Если нажата Enter (без Shift)
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault(); // Предотвращаем перенос строки
+            // Отправляем форму (сработает обработчик submit)
+            UI.chatForm?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+        }
+        // Shift+Enter - перенос строки (стандартное поведение)
     });
 
     // Закрытие чата по клику вне его области
@@ -472,27 +704,38 @@ function initChat() {
     initChatForm();
 }
 
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', initChat);
+// Инициализация при загрузке страницы (теперь через window.Chat.init() внизу файла)
+// document.addEventListener('DOMContentLoaded', initChat); // убрано, инициализация через window.Chat.init()
 
-// ===== Минимальные заглушки для модулей =====
-window.Chat = window.Chat || {
-    init: function() {
-        console.log("[Chat] Модуль инициализирован (заглушка)");
-    }
+// ===== Public wrappers used by templates (chat.html / base templates) =====
+window.Chat = window.Chat || {};
+window.Chat.init = window.Chat.init || function () {
+  if (typeof initChat === "function") initChat();
 };
 
-window.Booking = window.Booking || {
-    init: function() {
-        console.log("[Booking] Модуль инициализирован (заглушка)");
-    }
+window.Booking = window.Booking || {};
+window.Booking.init = window.Booking.init || function () {
+  if (window.BookingUI && typeof window.BookingUI.init === "function") {
+    window.BookingUI.init();
+  }
 };
 
-window.StoreFilter = window.StoreFilter || {
-    init: function() {
-        console.log("[StoreFilter] Модуль инициализирован (заглушка)");
-    }
+// Кнопка "Записаться" в chat.html (onclick="bookTraining()")
+window.bookTraining = window.bookTraining || function (serviceType = "gym") {
+  if (window.BookingUI && typeof window.BookingUI.open === "function") {
+    window.BookingUI.open(serviceType);
+    return;
+  }
+  // fallback: если модалок нет — просто подскажем через input
+  const input = document.getElementById("user-input") || document.getElementById("message-input");
+  if (input) {
+    input.value = "Хочу записаться на тренировку";
+    input.focus();
+  }
 };
+
+window.StoreFilter = window.StoreFilter || {};
+window.StoreFilter.init = window.StoreFilter.init || function () {};
 
 // Исправленный пример fetch для чата
 function sendMessage(text) {
@@ -699,22 +942,23 @@ document.addEventListener("DOMContentLoaded", () => {
 window.showSchedule = function() { alert('Расписание пока недоступно'); }
 window.showFAQ = function() { alert('FAQ пока недоступен'); }
 window.updateClientData = function() { alert('Функция в разработке'); }
-window.bookTraining = function() { alert('Функция в разработке'); }
+window.bookTraining = function() {
+  // Открываем тот же модальный сценарий, что и кнопки на сайте
+  if (window.Booking && typeof window.Booking.open === "function") {
+    // Кнопка в чате = запись в зал
+    window.Booking.open({ serviceType: "gym" });
+    return;
+  }
+
+  // fallback (если модалок нет на странице)
+  const anchor = document.querySelector("#book") || document.querySelector("[data-booking-open]") || document.querySelector(".book-btn");
+  if (anchor) anchor.scrollIntoView({ behavior: "smooth", block: "start" });
+};
 window.uploadMedia = function() { alert('Загрузка файлов пока не реализована'); }
 
 function validateBotResponse(response) {
     const required = ['Прямой ответ:', 'Пошаговая инструкция:'];
     return required.every(section => response.includes(section));
-}
-
-// В обработчике ответа от сервера:
-if (data.response) {
-    if (validateBotResponse(data.response)) {
-        appendMessage('bot', data.response);
-    } else {
-        console.warn('Ответ не соответствует формату');
-        appendMessage('bot', 'Извините, попробуйте переформулировать вопрос');
-    }
 }
 
 function formatBotResponse(text) {
@@ -767,15 +1011,27 @@ let knowledgeBase = {
 
 async function loadKnowledgeBase() {
     try {
+        async function safeFetchJson(url) {
+            const resp = await fetch(url);
+            if (!resp.ok) return null;
+            try { return await resp.json(); } catch (e) { return null; }
+        }
+
         const [trainingData, tricksData] = await Promise.all([
-            fetch('/api/knowledge/training').then(r => r.json()),
-            fetch('/api/knowledge/tricks').then(r => r.json())
+            safeFetchJson('/api/knowledge/training'),
+            safeFetchJson('/api/knowledge/tricks')
         ]);
         
         knowledgeBase.training = trainingData;
         knowledgeBase.tricks = tricksData;
         
-        generateSuggestedQuestions();
+        const suggestionsFn =
+            (typeof window !== 'undefined' && (window.generateSuggestedQuestions || window.generateSuggestedquestions))
+                ? (window.generateSuggestedQuestions || window.generateSuggestedquestions)
+                : null;
+        if (typeof suggestionsFn === 'function') {
+            suggestionsFn();
+        }
     } catch (error) {
         console.error('Failed to load knowledge base:', error);
     }

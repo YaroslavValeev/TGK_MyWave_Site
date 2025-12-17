@@ -1,599 +1,613 @@
-document.addEventListener("DOMContentLoaded", () => {
-// Получение свежего CSRF-токена с сервера
-async function getFreshCsrfToken() {
-  const resp = await fetch('/api/csrf-token', { credentials: 'same-origin' });
-  const data = await resp.json();
-  return data.csrf_token;
-}
-  console.log("[booking.js] DOMContentLoaded");
-  const modalCalendar = document.getElementById('modalCalendar');
-  const bookingDateInput = document.getElementById('bookingDateInput');
-  const slotButtonsContainer = document.getElementById('slotButtonsContainer');
-  if (!modalCalendar) console.warn('[booking.js] modalCalendar не найден в DOM!');
-  if (!bookingDateInput) console.warn('[booking.js] bookingDateInput не найден в DOM!');
-  if (!slotButtonsContainer) console.warn('[booking.js] slotButtonsContainer не найден в DOM!');
-  if (!document.getElementById('modalCalendar')) return;
-  console.log("📦 booking.js загружен и готов");
+/* static/js/booking.js
+   Единственный фронтенд-источник правды для модалок бронирования.
+   Триггеры:
+   - #openBookingBtn (главная кнопка)
+   - [data-booking="1"] (любой элемент)
+   - .btn-book, .book-now (legacy)
+*/
 
-  // ==============================
-  // 🔧 DOM-элементы
-  // ==============================
-  const UI = {
-    bookingDateInput: document.getElementById("bookingDateInput"),
-    dateIcon: document.getElementById("dateIcon"),
-    slotButtonsContainer: document.getElementById("slotButtonsContainer"),
-    confirmDateBtn: document.getElementById("confirmDateBtn"),
-    confirmSlotBtn: document.getElementById("confirmSlotBtn"),
-    confirmContactBtn: document.getElementById("confirmContactBtn"),
-    finalConfirmBtn: document.getElementById("finalConfirmBtn"),
-    bookingName: document.getElementById("bookingName"),
-    bookingPhone: document.getElementById("bookingPhone"),
-    confirmDetails: document.getElementById("confirmDetails"),
-    homeLink: document.getElementById("home-link"),
-    slotSelectHidden: document.getElementById("slotSelect"),
-    calendarModal: document.getElementById("modalCalendar"),
-    slotsModal: document.getElementById("modalSlots"),
-    contactModal: document.getElementById("modalContact"),
-    confirmModal: document.getElementById("modalConfirm"),
-    modalCloseButtons: document.querySelectorAll(".close-modal"),
-    openBookingButtons: document.querySelectorAll("#openBookingBtn, .book-now, .btn-book"),
-    toast: document.getElementById("toast"),
-    stepIndicator: document.getElementById("step-indicator")
+(function () {
+  const BookingUI = {};
+  const state = {
+    serviceType: "gym", // gym | boat
+    date: null,         // YYYY-MM-DD
+    time: null,         // HH:MM
+    fp: null,           // flatpickr instance (optional)
+    inited: false,
   };
 
-  let currentStep = 1;
+  function $(id) { return document.getElementById(id); }
 
-  if (!UI.bookingDateInput || !UI.slotButtonsContainer) {
-    console.warn("⚠️ booking.js не может инициализироваться — отсутствуют ключевые элементы.");
-    return;
+  function normalizeServiceType(v) {
+    const s = String(v || "").trim().toLowerCase();
+    if (["boat", "катер", "wakeboat"].includes(s)) return "boat";
+    return "gym";
   }
 
-  // Инициализация flatpickr для выбора даты
-  if (UI.bookingDateInput) {
-    flatpickr(UI.bookingDateInput, {
-      locale: "ru",
-      minDate: "today",
-      dateFormat: "Y-m-d",
-      disableMobile: true,
-      onChange: function(selectedDates) {
-        if (selectedDates.length > 0) {
-          const dateObj = selectedDates[0];
-          const dateStr = dateObj.getFullYear() + '-' + String(dateObj.getMonth()+1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0');
-          console.log("Selected (local):", dateStr);
-          updateSlotOptions(dateStr);
-          showModal(UI.slotsModal);
-        }
-      }
-    });
+  function isBoatSeason(dateObj) {
+    // Разрешено: 1 мая — 29 сентября (в пределах выбранного года)
+    const y = dateObj.getFullYear();
+    const start = new Date(y, 4, 1, 0, 0, 0);      // May=4
+    const end = new Date(y, 8, 29, 23, 59, 59);    // Sep=8
+    return dateObj >= start && dateObj <= end;
   }
 
-  // Обработчик для иконки календаря
-  if (UI.dateIcon) {
-    UI.dateIcon.addEventListener("click", () => {
-      if (UI.bookingDateInput._flatpickr) {
-        UI.bookingDateInput._flatpickr.open();
-      }
-    });
-  }
-
-  // Закрытие модального окна по клику вне его
-  document.addEventListener("click", (e) => {
-    if (e.target.classList.contains("modal")) {
-      hideAllModals();
+  // Форматирование даты для отображения: YYYY-MM-DD -> DD.MM.YYYY
+  function formatDateForDisplay(dateStr) {
+    if (!dateStr) return "";
+    const parts = dateStr.split("-");
+    if (parts.length === 3) {
+      return `${parts[2]}.${parts[1]}.${parts[0]}`;
     }
-  });
+    return dateStr;
+  }
 
-  // ==============================
-  // 🔄 WebSocket для бронирования
-  // ==============================
-  // Получаем CSRF-токен из meta-тега
-  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-  const socket = io({
-    auth: { csrf_token: csrfToken }
-  });
-
-  socket.on('booking_update', (data) => {
-    if (data.success) {
-      showToast('✅ Бронирование подтверждено');
-      hideAllModals();
-    } else {
-      showToast(`❌ Ошибка: ${data.error}`);
+  // Форматирование времени для отображения: HH:MM -> HH:MM (уже в правильном формате, но убедимся)
+  function formatTimeForDisplay(timeStr) {
+    if (!timeStr) return "00:00";
+    // Если время уже в формате HH:MM, возвращаем как есть
+    if (/^\d{2}:\d{2}$/.test(timeStr)) {
+      return timeStr;
     }
-  });
-
-  // ==============================
-  // 🔧 Служебные функции
-  // ==============================
-  // Utility to clear a container safely
-  function clearContainer(container) {
-    while (container && container.firstChild) container.removeChild(container.firstChild);
+    // Если формат другой, пытаемся извлечь время
+    const match = timeStr.match(/(\d{2}):(\d{2})/);
+    if (match) {
+      return `${match[1]}:${match[2]}`;
+    }
+    return "00:00";
   }
 
-  function createLoadingSlots() {
-    const wrap = document.createElement('div');
-    wrap.className = 'loading-slots';
-    const spinner = document.createElement('div');
-    spinner.className = 'spinner';
-    const text = document.createElement('div');
-    text.className = 'text-gray-500';
-    text.textContent = 'Загрузка доступных слотов...';
-    wrap.appendChild(spinner);
-    wrap.appendChild(text);
-    return wrap;
+  function setServiceType(serviceType) {
+    state.serviceType = normalizeServiceType(serviceType);
+
+    const badge = $("bookingServiceBadge");
+    if (badge) badge.textContent = state.serviceType === "boat" ? "Катер" : "Зал";
+
+    const hidden = $("bookingServiceType");
+    if (hidden) hidden.value = state.serviceType;
   }
 
-  function createErrorMessageNode(userMessage, dateStr) {
-    const container = document.createElement('div');
-    container.className = 'error-message';
-
-    const icon = document.createElement('div');
-    icon.className = 'error-icon';
-    icon.textContent = '❌';
-
-    const text = document.createElement('div');
-    text.className = 'error-text';
-    text.textContent = userMessage;
-
-    const retry = document.createElement('button');
-    retry.className = 'retry-button';
-    retry.type = 'button';
-    retry.textContent = 'Попробовать снова';
-    retry.addEventListener('click', () => updateSlotOptions(dateStr));
-
-    container.appendChild(icon);
-    container.appendChild(text);
-    container.appendChild(retry);
-    return container;
-  }
-
-  function createNoSlotsNode() {
-    const wrap = document.createElement('div');
-    wrap.className = 'no-slots-message';
-    const info = document.createElement('div');
-    info.className = 'info-icon';
-    info.textContent = 'ℹ️';
-    const text = document.createElement('div');
-    text.className = 'text-gray-500';
-    text.appendChild(document.createTextNode('На выбранную дату нет доступных слотов.'));
-    text.appendChild(document.createElement('br'));
-    text.appendChild(document.createTextNode('Пожалуйста, выберите другую дату.'));
-    wrap.appendChild(info);
-    wrap.appendChild(text);
-    return wrap;
-  }
-  let hideAllModals = () => {
-    [UI.calendarModal, UI.slotsModal, UI.contactModal, UI.confirmModal].forEach((m) => {
-      if (m) {
-        m.classList.remove("show");
-        m.style.display = "none";
-      }
-    });
-    document.body.style.overflow = "auto";
-  };
-
-  let showModal = (modal) => {
+  function openModal(id) {
+    const modal = $(id);
     if (!modal) return;
-    hideAllModals();
     modal.classList.remove("hidden");
     modal.classList.add("show");
-    modal.style.setProperty('display', 'flex', 'important');
-    document.body.style.overflow = "hidden";
-    // Сбрасываем скролл модального окна
-    const modalContent = modal.querySelector('.modal-content');
-    if (modalContent) {
-      modalContent.scrollTop = 0;
+    modal.setAttribute("aria-hidden", "false");
+  }
+
+  function closeModal(id) {
+    const modal = $(id);
+    if (!modal) return;
+    modal.classList.remove("show");
+    modal.classList.add("hidden");
+    modal.setAttribute("aria-hidden", "true");
+  }
+
+  function closeAllBookingModals() {
+    ["bookingDateModal", "bookingTimeModal", "bookingContactModal", "bookingSuccessModal"]
+      .forEach(closeModal);
+  }
+
+  function showToast(message) {
+    const toast = $("bookingToast");
+    if (!toast) {
+      // fallback (без изменений стилей проекта)
+      alert(message);
+      return;
     }
-    // Логгирование для отладки
-    console.log(`[booking.js] modalCalendar классы:`, modal.className);
-    console.log(`[booking.js] modalCalendar display:`, getComputedStyle(modal).display);
-  };
-
-  const showToast = (message) => {
-    const toast = document.createElement("div");
-    toast.className = "toast-success";
     toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-  };
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 10000); // 10 секунд
+  }
 
-  const validatePhone = (phone) => {
-    return /^\+?\d{10,15}$/.test(phone);
-  };
+  function resetUI() {
+    state.date = null;
+    state.time = null;
 
-  // ==============================
-  // 📅 Получение слотов
-  // ==============================
-  async function updateSlotOptions(dateStr) {
-    if (!dateStr) {
-      clearContainer(UI.slotButtonsContainer);
-      const div = document.createElement('div');
-      div.className = 'text-gray-500';
-      div.textContent = 'Пожалуйста, выберите дату';
-      UI.slotButtonsContainer.appendChild(div);
+    const dateInput = $("bookingDatePickr");
+    if (dateInput) dateInput.value = "";
+
+    const chosen = $("selectedDateDisplay");
+    if (chosen) chosen.textContent = "Дата не выбрана";
+
+    const slots = $("slotButtonsContainer");
+    if (slots) slots.innerHTML = "";
+
+    const selectedSlotInput = $("selectedSlot");
+    if (selectedSlotInput) selectedSlotInput.value = "";
+
+    const confirmTimeBtn = $("confirmTimeBtn");
+    if (confirmTimeBtn) confirmTimeBtn.disabled = true;
+
+    const contactForm = $("bookingContactForm");
+    if (contactForm) contactForm.reset();
+  }
+
+  function initDatePicker() {
+    const el = $("bookingDatePickr");
+    if (!el) return;
+
+    // flatpickr (если подключён)
+    if (window.flatpickr) {
+      if (state.fp) {
+        try { state.fp.destroy(); } catch (e) {}
+        state.fp = null;
+      }
+
+      // Настройка русской локализации и формата отображения
+      state.fp = window.flatpickr(el, {
+        dateFormat: "Y-m-d", // Внутренний формат для логики (не меняем)
+        altInput: true, // Показывать пользователю в другом формате
+        altFormat: "d.m.Y", // Формат отображения: DD.MM.YYYY
+        locale: "ru", // Русская локализация
+        firstDayOfWeek: 1, // Неделя начинается с понедельника
+        minDate: "today",
+        disable: state.serviceType === "boat"
+          ? [(d) => !isBoatSeason(d)]
+          : [],
+        onChange: function (selectedDates, dateStr) {
+          if (!dateStr) return;
+          onDateSelected(dateStr);
+        }
+      });
+
       return;
     }
 
-    try {
-      clearContainer(UI.slotButtonsContainer);
-      UI.slotButtonsContainer.appendChild(createLoadingSlots());
-      
-      const response = await fetch(`/api/calendar/slots/${dateStr}`);
-      const data = await response.json();
-      
-      if (!response.ok) {
-        const errorMessage = data.error || 'Произошла ошибка при загрузке слотов';
-        console.error('Ошибка при загрузке слотов:', errorMessage);
-        
-  let userMessage = 'Извините, произошла ошибка при загрузке слотов. ';
-        if (response.status === 400) {
-          userMessage += 'Пожалуйста, проверьте выбранную дату.';
-        } else if (response.status === 503 || response.status === 502) {
-          userMessage += 'Сервер временно недоступен. Пожалуйста, попробуйте позже.';
-        } else {
-          userMessage += 'Пожалуйста, попробуйте позже или обратитесь в поддержку.';
-        }
-        
-        clearContainer(UI.slotButtonsContainer);
-        UI.slotButtonsContainer.appendChild(createErrorMessageNode(userMessage, dateStr));
+    // fallback без flatpickr
+    el.setAttribute("type", "date");
+    el.setAttribute("min", new Date().toISOString().slice(0, 10));
+    el.onchange = () => {
+      const v = el.value;
+      if (!v) return;
+      const d = new Date(v + "T00:00:00");
+      if (state.serviceType === "boat" && !isBoatSeason(d)) {
+        el.value = "";
+        showToast("Катер доступен только с 1 мая по 29 сентября.");
         return;
       }
-      
-      clearContainer(UI.slotButtonsContainer);
-      
-      if (!Array.isArray(data) || data.length === 0) {
-        UI.slotButtonsContainer.appendChild(createNoSlotsNode());
-        return;
-      }
-      
-      let hasAvailableSlots = false;
-      
-      data.forEach(slot => {
-        if (slot.available && slot.remaining > 0) {
-          hasAvailableSlots = true;
-        }
-        
-        const button = document.createElement('button');
-        button.className = `slot-btn ${slot.available ? 'available' : 'booked'}`;
-        button.textContent = `${slot.time} ${slot.available ? `(Свободно: ${slot.remaining})` : '(Занято)'}`;
-        button.disabled = !slot.available;
-        
-        if (slot.available) {
-          button.addEventListener('click', () => {
-            document.getElementById('selectedSlot').value = slot.time;
-            goToStep(3); // Переходим к шагу 3 после выбора слота
-          });
-        }
-        
-        UI.slotButtonsContainer.appendChild(button);
-      });
-      
-      if (!hasAvailableSlots) {
-        clearContainer(UI.slotButtonsContainer);
-        const div = document.createElement('div');
-        div.className = 'text-gray-500';
-        div.textContent = 'Нет свободных слотов на эту дату';
-        UI.slotButtonsContainer.appendChild(div);
-        return;
-      }
-      
-      // Показываем модальное окно со слотами только если есть доступные слоты
-      showModal(UI.slotsModal);
-      setTimeout(() => {
-        UI.slotsModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
-    } catch (error) {
-      console.error('Ошибка загрузки слотов:', error);
-      clearContainer(UI.slotButtonsContainer);
-      const div = document.createElement('div');
-      div.className = 'text-red-500';
-      div.textContent = `Ошибка: ${error.message}`;
-      UI.slotButtonsContainer.appendChild(div);
-      showToast('❌ Ошибка загрузки слотов');
-    }
+      onDateSelected(v);
+    };
   }
 
-  // ==============================
-  // ✅ Отправка заявки
-  // ==============================
-  async function submitBooking() {
-    const selectedSlotInput = document.getElementById("selectedSlot");
-    if (!selectedSlotInput) {
-        console.error("❌ Элемент selectedSlot не найден в DOM.");
-        return;
+  async function fetchSlots(dateStr) {
+    const slotsContainer = $("slotButtonsContainer");
+    if (slotsContainer) {
+      slotsContainer.innerHTML = '<div class="loading-indicator">Загрузка слотов...</div>';
     }
+
+    const url = `/api/calendar/slots/${encodeURIComponent(dateStr)}?service_type=${encodeURIComponent(state.serviceType)}`;
+
+    let res;
+    let timeoutId = null;
+    try {
+      // Добавляем таймаут 8 секунд для запроса
+      const controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), 8000);
+      
+      res = await fetch(url, { 
+        method: "GET",
+        signal: controller.signal
+      });
+      
+      if (timeoutId) clearTimeout(timeoutId);
+    } catch (e) {
+      if (timeoutId) clearTimeout(timeoutId);
+      renderSlots([]);
+      // Различаем типы ошибок
+      if (e.name === 'AbortError') {
+        showToast("Превышено время ожидания ответа сервера. Пожалуйста, попробуйте позже.");
+      } else if (e.message && e.message.includes('Failed to fetch')) {
+        showToast("Не удалось подключиться к серверу. Проверьте подключение к интернету.");
+      } else {
+        showToast("Не удалось подключиться к серверу для получения слотов.");
+      }
+      return;
+    }
+
+    let data = null;
+    try { data = await res.json(); } catch (e) {}
+
+    if (!res.ok) {
+      renderSlots([]);
+      const errorMsg = (data && (data.error || data.message)) || "Не удалось получить слоты.";
+      // Специальная обработка для 503 (сервис недоступен)
+      if (res.status === 503) {
+        showToast("Сервис временно недоступен. Пожалуйста, попробуйте позже или свяжитесь с нами по телефону.");
+      } else {
+        showToast(errorMsg);
+      }
+      return;
+    }
+
+    const slots = Array.isArray(data) ? data : (data && data.slots ? data.slots : []);
+    renderSlots(slots);
+  }
+
+  function renderSlots(slots) {
+    const slotsContainer = $("slotButtonsContainer");
+    const selectedSlotInput = $("selectedSlot");
+    const confirmTimeBtn = $("confirmTimeBtn");
+
+    if (!slotsContainer) return;
+
+    slotsContainer.innerHTML = "";
+
+    if (!slots || slots.length === 0) {
+      slotsContainer.innerHTML = '<p class="no-slots-message">Нет доступных слотов на выбранную дату.</p>';
+      if (confirmTimeBtn) confirmTimeBtn.disabled = true;
+      if (selectedSlotInput) selectedSlotInput.value = "";
+      state.time = null;
+      return;
+    }
+
+    slots.forEach((slot) => {
+      // Поддерживаем оба формата: строки (для катера) и объекты (для зала)
+      const timeStr = typeof slot === "string" ? slot : (slot.time || slot);
+      const isAvailable = typeof slot === "object" ? (slot.available !== false) : true;
+      const remaining = typeof slot === "object" ? (slot.remaining || 0) : 1;
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "slot-btn";
+      
+      if (isAvailable) {
+        btn.classList.add("available");
+      } else {
+        btn.disabled = true;
+        btn.classList.add("disabled");
+      }
+      
+      if (typeof slot === "object" && remaining > 0) {
+        btn.textContent = `${timeStr} (Свободно: ${remaining})`;
+      } else {
+        btn.textContent = timeStr;
+      }
+
+      if (isAvailable) {
+        btn.addEventListener("click", () => {
+          // снять выделение
+          slotsContainer.querySelectorAll(".slot-btn").forEach(b => b.classList.remove("selected"));
+          btn.classList.add("selected");
+
+          state.time = timeStr;
+          if (selectedSlotInput) selectedSlotInput.value = timeStr;
+          if (confirmTimeBtn) confirmTimeBtn.disabled = false;
+        });
+      }
+
+      slotsContainer.appendChild(btn);
+    });
+
+    if (confirmTimeBtn) confirmTimeBtn.disabled = true;
+    if (selectedSlotInput) selectedSlotInput.value = "";
+    state.time = null;
+  }
+
+  function onDateSelected(dateStr) {
+    state.date = dateStr;
+
+    const chosen = $("selectedDateDisplay");
+    if (chosen) {
+      const formattedDate = formatDateForDisplay(dateStr);
+      chosen.textContent = `Вы выбрали: ${formattedDate}`;
+    }
+
+    // Проверяем, открыта ли модалка из чата
+    const modal = $("bookingDateModal");
+    const fromChat = modal && modal.getAttribute('data-from-chat') === 'true';
+    
+    if (fromChat) {
+      // Если открыто из чата, отправляем дату в чат и закрываем модалку
+      const formattedDate = formatDateForDisplay(dateStr);
+      // Используем функции чата из глобальной области
+      if (window.ChatFunctions && window.ChatFunctions.appendMessage && window.ChatFunctions.sendMessageToServer) {
+        window.ChatFunctions.appendMessage(formattedDate, 'user');
+        window.ChatFunctions.sendMessageToServer(formattedDate);
+      } else {
+        // Fallback: используем прямой доступ к элементам чата
+        const chatMessages = document.getElementById('chat-messages');
+        if (chatMessages) {
+          const message = document.createElement('div');
+          message.className = 'message user';
+          const content = document.createElement('div');
+          content.className = 'message-content';
+          content.textContent = formattedDate;
+          message.appendChild(content);
+          chatMessages.appendChild(message);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        // Отправляем сообщение через форму чата
+        const chatInput = document.getElementById('chat-input');
+        if (chatInput) {
+          chatInput.value = formattedDate;
+          const form = chatInput.closest('form');
+          if (form) {
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            form.dispatchEvent(submitEvent);
+          }
+        }
+      }
+      closeModal("bookingDateModal");
+      modal.removeAttribute('data-from-chat');
+      // Очищаем глобальные функции
+      if (window.ChatFunctions) {
+        delete window.ChatFunctions;
+      }
+      return;
+    }
+
+    // Обычный флоу: закрываем модалку даты и открываем модалку времени
+    closeModal("bookingDateModal");
+    openModal("bookingTimeModal");
+
+    fetchSlots(dateStr);
+  }
+
+  function onConfirmTime() {
+    if (!state.date) {
+      showToast("Сначала выберите дату.");
+      return;
+    }
+    if (!state.time) {
+      showToast("Сначала выберите слот времени.");
+      return;
+    }
+    closeModal("bookingTimeModal");
+    openModal("bookingContactModal");
+
+    const nameEl = $("bookingName");
+    if (nameEl) nameEl.focus();
+  }
+
+  async function submitBooking(evt) {
+    evt.preventDefault();
+
+    const name = ($("bookingName")?.value || "").trim();
+    const phone = ($("bookingPhone")?.value || "").trim();
+
+    if (!state.date || !state.time) {
+      showToast("Не выбраны дата/время.");
+      return;
+    }
+    if (!name || !phone) {
+      showToast("Заполните имя и телефон/Telegram.");
+      return;
+    }
+
+    // UI-валидация катера (дублируем, на всякий случай)
+    if (state.serviceType === "boat") {
+      const d = new Date(state.date + "T00:00:00");
+      if (!isBoatSeason(d)) {
+        showToast("Катер доступен только с 1 мая по 29 сентября.");
+        return;
+      }
+    }
+
     const payload = {
-      date: UI.bookingDateInput.value,
-      time: selectedSlotInput.value,
-      name: UI.bookingName.value.trim(),
-      phone: UI.bookingPhone.value.trim(),
+      date: state.date,
+      time: state.time,
+      name,
+      phone,
+      service_type: state.serviceType
     };
 
-    // Добавляем логирование
-    console.log("📝 Отправляемые данные:", payload);
-    if (!payload.date) console.warn("❌ Дата не указана");
-    if (!payload.time) console.warn("❌ Время не указано");
-    if (!payload.name) console.warn("❌ Имя не указано");
-    if (!payload.phone) console.warn("❌ Телефон не указан");
+    const headers = { "Content-Type": "application/json" };
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    const csrf = csrfMeta?.content;
+    if (csrf) headers["X-CSRFToken"] = csrf;
 
-    if (!validatePhone(payload.phone)) {
-      showToast('❌ Введите корректный номер телефона');
-      return;
-    }
+    let res;
+    let data = null;
 
     try {
-      const csrfToken = await getFreshCsrfToken();
-      console.log("CSRF для бронирования:", csrfToken);
-      const headers = {
-        "Content-Type": "application/json",
-        "X-CSRFToken": csrfToken
-      };
-      console.log("Заголовки fetch:", headers);
-      const response = await fetch("/api/calendar/book", {
+      res = await fetch("/api/calendar/book", {
         method: "POST",
         headers,
-        credentials: "same-origin",
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
-      const result = await response.json();
-      console.log("📩 Ответ сервера:", result);
-      if (response.ok) {
-        hideAllModals();
-        showToast(`✅ ${result.message || "Запись успешно создана!"}`);
-        socket.emit('booking_confirmed', payload);
-      } else {
-        showToast(`❌ ${result.error || result.message || "Не удалось записаться"}`);
-      }
-    } catch (err) {
-      console.error("Ошибка отправки записи:", err);
-      showToast("❌ Ошибка при отправке. Повторите позже.");
-    }
-  }
-
-  // ==============================
-  // 🎯 Обработчики событий
-  // ==============================
-  UI.openBookingButtons.forEach((btn, idx) => {
-    if (!btn) {
-      console.warn(`[booking.js] Кнопка 'Записаться' с индексом ${idx} не найдена!`);
+      try { data = await res.json(); } catch (e) {}
+    } catch (e) {
+      showToast("Сеть недоступна. Не удалось отправить бронь.");
       return;
     }
-    console.log(`[booking.js] Назначаю обработчик на кнопку 'Записаться' с текстом: '${btn.textContent.trim()}'`);
-    btn.addEventListener("click", () => {
-      console.log(`[booking.js] Клик по кнопке 'Записаться' с текстом: '${btn.textContent.trim()}'`);
-      showModal(UI.calendarModal);
-      goToStep(1);
-    });
-  });
 
-  if (UI.confirmDateBtn) {
-    UI.confirmDateBtn.addEventListener("click", () => {
-      const date = UI.bookingDateInput.value;
-      if (!date) {
-        showToast('❌ Выберите дату');
+    if (!res.ok) {
+      showToast((data && (data.error || data.message)) || "Ошибка бронирования.");
+      return;
+    }
+
+    closeModal("bookingContactModal");
+
+    const msg = $("successMessage");
+    if (msg) {
+      const serviceLabel = state.serviceType === "boat" ? "катер" : "зал";
+      const formattedDate = formatDateForDisplay(state.date);
+      const formattedTime = formatTimeForDisplay(state.time);
+      
+      // Формируем сообщение с дополнительной информацией
+      let messageHTML = `<strong>✅ Ваша запись подтверждена!</strong><br><br>`;
+      messageHTML += `<strong>Услуга:</strong> ${serviceLabel === "катер" ? "Катер" : "Зал"}<br>`;
+      messageHTML += `<strong>Дата и время:</strong> ${formattedDate} ${formattedTime}<br><br>`;
+      
+      // Добавляем информацию о зале, если это зал
+      if (serviceLabel === "зал") {
+        messageHTML += `📍 <strong>Адрес:</strong> 3-й Хорошевский проезд<br><br>`;
+      }
+      
+      messageHTML += `💪 Будьте в спортивной форме и хорошем настроении!<br><br>`;
+      messageHTML += `Для уточнения деталей свяжись с нами или напиши в чат или посмотри FAQ.`;
+      
+      msg.innerHTML = messageHTML;
+    }
+
+    openModal("bookingSuccessModal");
+  }
+
+  function bindModalControls() {
+    $("confirmDateBtn")?.addEventListener("click", () => {
+      // Проверяем, открыта ли модалка из чата
+      const modal = $("bookingDateModal");
+      const fromChat = modal && modal.getAttribute('data-from-chat') === 'true';
+      
+      // При использовании altInput, оригинальный input содержит значение в формате dateFormat (Y-m-d)
+      let v = $("bookingDatePickr")?.value;
+      // Если используется flatpickr с altInput, получаем значение из instance
+      if (state.fp && state.fp.selectedDates && state.fp.selectedDates.length > 0) {
+        const selectedDate = state.fp.selectedDates[0];
+        // Форматируем в Y-m-d для внутренней логики
+        const year = selectedDate.getFullYear();
+        const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+        const day = String(selectedDate.getDate()).padStart(2, '0');
+        v = `${year}-${month}-${day}`;
+      }
+      if (!v) {
+        showToast("Выберите дату.");
         return;
       }
-      updateSlotOptions(date);
-    });
-  }
-
-  if (UI.confirmContactBtn) {
-    UI.confirmContactBtn.addEventListener("click", () => {
-      if (!UI.bookingName.value.trim() || !UI.bookingPhone.value.trim()) {
-        showToast('❌ Заполните все поля');
-        return;
-      }
-      if (!validatePhone(UI.bookingPhone.value.trim())) {
-        showToast('❌ Введите корректный номер телефона');
-        return;
-      }
-      showModal(UI.confirmModal);
-      // Переход к шагу подтверждения + скролл
-      setTimeout(() => {
-        UI.confirmModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
-    });
-  }
-
-  if (UI.finalConfirmBtn) {
-    UI.finalConfirmBtn.addEventListener("click", () => {
-      submitBooking();
-    });
-  }
-
-  // Закрытие модальных окон
-  UI.modalCloseButtons.forEach((btn) => {
-    btn.addEventListener("click", hideAllModals);
-  });
-
-  // Закрытие по Escape
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      hideAllModals();
-    }
-  });
-
-  // Скрываем все модальные окна при загрузке
-  hideAllModals();
-
-  // ==============================
-  // ✅ Готово к использованию
-  // ==============================
-  console.log("📅 booking.js инициализирован");
-
-  // === UX улучшения для модалок ===
-  // Карта автофокуса для модалей
-  const focusMap = {
-    modalCalendar: "#bookingDateInput",
-    modalContact: "#bookingName"
-  };
-
-  // Автофокус при открытии модалки
-  function focusModalField(modal) {
-    const focusSelector = focusMap[modal.id];
-    if (focusSelector) {
-      const field = modal.querySelector(focusSelector);
-      if (field) field.focus();
-    }
-  }
-
-  // Добавляем анимацию появления/скрытия
-  function animateModal(modal, show = true) {
-    if (show) {
-      modal.classList.remove("hidden");
-      setTimeout(() => {
-        modal.classList.add("show");
-        focusModalField(modal);
-      }, 10);
-    } else {
-      modal.classList.remove("show");
-      setTimeout(() => {
-        modal.classList.add("hidden");
-      }, 300);
-    }
-  }
-
-  // Переопределяем showModal/hideAllModals для анимаций
-  const _showModal = showModal;
-  showModal = (modal) => {
-    if (!modal) return;
-    hideAllModals();
-    animateModal(modal, true);
-  };
-  hideAllModals = () => {
-    [UI.calendarModal, UI.slotsModal, UI.contactModal, UI.confirmModal].forEach((m) => {
-      if (m) animateModal(m, false);
-    });
-  };
-
-  // Закрытие по Escape
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") hideAllModals();
-  });
-
-  // Закрытие по клику вне модального окна
-  document.querySelectorAll(".modal").forEach((modal) => {
-    modal.addEventListener("mousedown", (e) => {
-      if (e.target === modal) hideAllModals();
-    });
-  });
-
-  // Enter = "Далее" (ищем первую .btn-primary в видимой модалке)
-  document.addEventListener("keydown", function(e) {
-    if (e.key === "Enter") {
-      const visibleModal = document.querySelector(".modal.show:not(.hidden)");
-      if (visibleModal) {
-        const btn = visibleModal.querySelector("button.btn-primary, button[type='submit']");
-        if (btn && !btn.disabled) {
-          e.preventDefault();
-          btn.click();
-        }
-      }
-    }
-  });
-
-  // Функция перехода между шагами с анимацией и фокусом
-  function goToStep(step) {
-    currentStep = step;
-    
-    // Обновляем индикатор шага
-    if (UI.stepIndicator) {
-      UI.stepIndicator.textContent = `Шаг ${step}/4`;
-    }
-
-    // Обновляем прогресс-бар
-    const progressFill = document.getElementById("progress-fill");
-    if (progressFill) {
-      progressFill.style.width = `${(step / 4) * 100}%`;
-    }
-
-    // Специфичные действия для каждого шага
-    switch(step) {
-      case 1:
-        showModal(UI.calendarModal);
-        if (UI.bookingDateInput) UI.bookingDateInput.focus();
-        break;
-      case 2:
-        showModal(UI.slotsModal);
-        if (UI.slotButtonsContainer) {
-          UI.slotButtonsContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        break;
-      case 3:
-        showModal(UI.contactModal);
-        if (UI.bookingName) UI.bookingName.focus();
-        break;
-      case 4:
-        showModal(UI.confirmModal);
-        if (UI.stepIndicator) UI.stepIndicator.textContent = `Шаг 4/4`;
-        // обновить прогресс-бар
-        const progressFill = document.getElementById("progress-fill");
-        if (progressFill) progressFill.style.width = `${(4 / 4) * 100}%`;
-        break;
-    }
-  }
-
-  // Инициализация при загрузке
-  // goToStep(1);
-});
-
-function openModal() {
-  document.getElementById("modalCalendar").classList.remove("hidden");
-}
-
-// Пример: после выбора даты и времени
-function setBookingDateTime(selectedDate, selectedTime) {
-  const dateInput = document.getElementById('bookingDate');
-  const timeInput = document.getElementById('bookingTime');
-  if (dateInput) dateInput.value = selectedDate;
-  if (timeInput) timeInput.value = selectedTime;
-  console.log("Selected:", selectedDate, selectedTime);
-}
-
-function renderSlots(slots) {
-    const container = document.getElementById("slotButtonsContainer");
-    if (!container) {
-        console.error("❌ slotButtonsContainer не найден в DOM");
-        return;
-    }
-    
-  clearContainer(container);
-
-  if (!Array.isArray(slots) || slots.length === 0) {
-    const p = document.createElement('p');
-    p.className = 'text-center text-gray-500';
-    p.textContent = 'Нет доступных слотов на эту дату';
-    container.appendChild(p);
-    return;
-  }
-    
-  slots.forEach(slot => {
-    const button = document.createElement('button');
-    const buttonClass = slot.available ? 'btn-primary-lg' : 'btn-secondary-sm disabled';
-    button.className = `slot-btn ${buttonClass}`;
-    if (!slot.available) button.setAttribute('disabled', 'disabled');
-    button.dataset.time = slot.time;
-    button.textContent = `${slot.time} ${slot.available ? `(${slot.remaining} мест)` : '(занято)'}`;
-    container.appendChild(button);
-  });
-    
-    // Добавляем обработчики для новых кнопок
-    container.querySelectorAll('.slot-btn:not(.disabled)').forEach(button => {
-        button.addEventListener('click', () => {
-            // Снимаем выделение со всех кнопок
-            container.querySelectorAll('.slot-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            // Выделяем выбранную кнопку
-            button.classList.add('active');
-            // Сохраняем выбранное время
-            const selectedTime = button.dataset.time;
-            if (selectedTime) {
-                document.getElementById('selectedSlot').value = selectedTime;
-                goToStep(3); // Переходим к шагу 3 после выбора слота
+      
+      // Если открыто из чата, отправляем дату в чат
+      if (fromChat) {
+        // Форматируем дату для чата (ДД.ММ.ГГГГ)
+        const formattedDate = formatDateForDisplay(v);
+        // Ищем функции чата в глобальной области
+        const chatMessages = document.getElementById('chat-messages');
+        if (chatMessages) {
+          // Добавляем сообщение пользователя
+          const message = document.createElement('div');
+          message.className = 'message user';
+          const content = document.createElement('div');
+          content.className = 'message-content';
+          content.textContent = formattedDate;
+          message.appendChild(content);
+          chatMessages.appendChild(message);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+          
+          // Отправляем сообщение на сервер
+          // Ищем функцию sendMessageToServer в замыкании чата
+          // Используем событие для отправки
+          const chatInput = document.getElementById('chat-input');
+          if (chatInput) {
+            // Временно устанавливаем значение и отправляем
+            const originalValue = chatInput.value;
+            chatInput.value = formattedDate;
+            const form = chatInput.closest('form');
+            if (form) {
+              const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+              form.dispatchEvent(submitEvent);
             }
-        });
+            chatInput.value = originalValue;
+          }
+        }
+        // Закрываем модалку
+        closeModal("bookingDateModal");
+        modal.removeAttribute('data-from-chat');
+        return;
+      }
+      
+      // Обычный флоу
+      onDateSelected(v);
     });
 
-    // Переходим к шагу 2 после отрисовки слотов
-    goToStep(2);
-}
+    $("confirmTimeBtn")?.addEventListener("click", onConfirmTime);
+
+    $("backToTimeBtn")?.addEventListener("click", () => {
+      closeModal("bookingTimeModal");
+      openModal("bookingDateModal");
+    });
+
+    const backToTimeBtn2 = document.getElementById("backToTimeBtn2");
+    if (backToTimeBtn2) {
+      backToTimeBtn2.addEventListener("click", () => {
+        closeModal("bookingContactModal");
+        openModal("bookingTimeModal");
+      });
+    }
+
+    $("bookingContactForm")?.addEventListener("submit", submitBooking);
+
+    $("closeSuccessModal")?.addEventListener("click", () => {
+      closeAllBookingModals();
+      resetUI();
+    });
+
+    document.querySelectorAll("[data-modal-close]")?.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        closeAllBookingModals();
+        resetUI();
+      });
+    });
+
+    // Закрытие по ESC
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeAllBookingModals();
+        resetUI();
+      }
+    });
+
+    // Закрытие по клику на фон модалки
+    document.querySelectorAll(".modal")?.forEach((m) => {
+      m.addEventListener("click", (e) => {
+        if (e.target === m) {
+          closeAllBookingModals();
+          resetUI();
+        }
+      });
+    });
+  }
+
+  function guessServiceTypeFromButton(btn) {
+    const fromData = btn?.dataset?.serviceType;
+    if (fromData) return normalizeServiceType(fromData);
+
+    // fallback: если кнопка внутри #boat-card — это катер
+    if (btn && btn.closest && btn.closest("#boat-card")) return "boat";
+
+    return "gym";
+  }
+
+  function bindTriggers() {
+    document.addEventListener("click", (e) => {
+      // Проверяем клик по кнопке или её дочерним элементам
+      const btn = e.target.closest('[data-booking="1"], #openBookingBtn, .book-now, .btn-book');
+      if (!btn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      const st = guessServiceTypeFromButton(btn);
+      BookingUI.open(st);
+    });
+  }
+
+  BookingUI.init = function () {
+    if (state.inited) return;
+    state.inited = true;
+
+    // модалки могут быть не на всех страницах — init должен быть "тихим"
+    bindTriggers();
+    bindModalControls();
+  };
+
+  BookingUI.open = function (serviceType = "gym") {
+    setServiceType(serviceType);
+    resetUI();
+    initDatePicker();
+    const modal = $("bookingDateModal");
+    if (!modal) {
+      showToast("Ошибка: модальное окно не найдено. Обновите страницу.");
+      return;
+    }
+    openModal("bookingDateModal");
+  };
+
+  // Экспорт
+  window.BookingUI = BookingUI;
+
+  // Авто-init
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", BookingUI.init);
+  } else {
+    BookingUI.init();
+  }
+})();
