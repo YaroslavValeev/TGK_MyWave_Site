@@ -6,6 +6,8 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_restx import Api
 from prometheus_flask_exporter import PrometheusMetrics
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 socketio = SocketIO(
     cors_allowed_origins=[
@@ -22,6 +24,11 @@ socketio = SocketIO(
 csrf = CSRFProtect()
 migrate = Migrate()
 api = Api(doc='/swagger/')
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
 
 def init_websocket(app):
     # Добавляем проверку CSRF токена при подключении WebSocket
@@ -46,12 +53,41 @@ def init_websocket(app):
         if not csrf_token and hasattr(request, 'auth') and request.auth:
             csrf_token = request.auth.get('csrf_token')
         try:
-            validate_csrf(csrf_token)
-        except CSRFValidationError:
+            # Prefer cookie token if present (set by /api/csrf-token or after_request), because it is guaranteed
+            # to be present in the same-origin socket handshake cookies.
+            cookie_token = request.cookies.get('XSRF-TOKEN')
+
+            # Fast-path: if client explicitly sends the same token as the cookie, accept.
+            # This avoids session-backed CSRF validation issues during websocket handshake.
+            if cookie_token and csrf_token and cookie_token == csrf_token:
+                app.logger.info("WebSocket connection accepted (cookie token matched auth token)")
+                return True
+
+            for candidate in (cookie_token, csrf_token):
+                if not candidate:
+                    continue
+                try:
+                    validate_csrf(candidate)
+                    app.logger.info("WebSocket connection accepted (validate_csrf OK)")
+                    return True
+                except CSRFValidationError:
+                    continue
+
+            # In debug/dev we prefer UX over strict WS CSRF validation (HTTP endpoints remain protected).
+            # Note: app.debug can be True even if app.config['DEBUG'] isn't set (e.g. socketio.run(debug=True)).
+            if app.debug or app.config.get('DEBUG'):
+                app.logger.warning("WebSocket CSRF validation failed; allowing connection in DEBUG mode")
+                return True
+
             app.logger.error("WebSocket connection rejected: Invalid CSRF token")
             return False
-        app.logger.info(f"WebSocket connection accepted with valid CSRF token")
-        return True
+        except Exception as exc:
+            # Don't crash the websocket handshake due to validation errors.
+            if app.debug or app.config.get('DEBUG'):
+                app.logger.warning("WebSocket CSRF check error (allowed in DEBUG): %s", exc, exc_info=True)
+                return True
+            app.logger.error("WebSocket CSRF check error: %s", exc, exc_info=True)
+            return False
     
     socketio.init_app(app)
     return socketio
@@ -64,6 +100,7 @@ def init_extensions(app, db=None):
         supports_credentials=True
     )
     api.init_app(app)
+    limiter.init_app(app)
     try:
         # In some test environments PROMETHEUS_MULTIPROC_DIR is not set and
         # PrometheusMetrics may raise ValueError; ignore metrics in that case.

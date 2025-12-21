@@ -1,5 +1,6 @@
 import os
-from flask import Flask, render_template, send_from_directory, jsonify
+import importlib
+from flask import Flask, render_template, send_from_directory, jsonify, request
 from flask_socketio import SocketIO, emit
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -25,6 +26,11 @@ from app.routes.reviews import reviews_bp
 from app.services.responses_api import responses_bp
 from app.routes.telegram.routes import telegram_bp
 from app.routes.content_calendar import bp as content_bp, get_events_by_month
+from app.services.reviews_service import get_homepage_reviews
+from app.routes.projects.wakesurf_challenge import wakesurf_challenge_bp
+from app.routes.projects_safari import projects_safari_bp
+from app.routes.api_safari import api_safari_bp
+from app.routes.wake_industry import wake_industry_bp
 
 # Создаем экземпляры расширений
 migrate = Migrate()
@@ -99,7 +105,14 @@ def create_app(config_name="development"):
     def home():
         # Временно отключаем получение событий календаря
         months = {'Июнь': [], 'Июль': [], 'Август': [], 'Сентябрь': [], 'Октябрь': []}
-        return render_template('index.html', months=months)
+        reviews = get_homepage_reviews()
+        latest_blog = None
+        try:
+            from app.services.blog.store import get_latest_post
+            latest_blog = get_latest_post(prefer_sheets=True)
+        except Exception as e:
+            app.logger.error("home: не удалось загрузить последний пост блога: %s", e)
+        return render_template('index.html', months=months, reviews=reviews, latest_blog=latest_blog)
 
     @app.route('/favicon.ico')
     def favicon():
@@ -178,6 +191,32 @@ def create_app(config_name="development"):
     app.register_blueprint(telegram_bp)
     app.register_blueprint(content_bp)
     app.register_blueprint(booking_api_bp)
+    
+    # WakeSurf Challenge 2025 (feature flag controlled)
+    if app.config.get("WSC2025_ENABLED", True):
+        app.register_blueprint(wakesurf_challenge_bp)
+        app.logger.info("WakeSurf Challenge 2025 blueprint registered")
+    else:
+        app.logger.info("WakeSurf Challenge 2025 disabled via WSC2025_ENABLED flag")
+    
+    # Wake Surf Safari 2026
+    app.register_blueprint(projects_safari_bp)
+    app.register_blueprint(api_safari_bp)
+    app.logger.info("Wake Surf Safari 2026 blueprint registered")
+    
+    # Wake Industry (чек-лист для соревнований)
+    app.register_blueprint(wake_industry_bp)
+    app.logger.info("Wake Industry blueprint registered")
+
+    # Optional AI layer blueprints (loaded dynamically to avoid hard failures in minimal deployments)
+    try:
+        app.register_blueprint(importlib.import_module("app.routes.rag_api").rag_bp)
+        app.register_blueprint(importlib.import_module("app.routes.ai_concierge_safari").safari_concierge_bp)
+        app.register_blueprint(importlib.import_module("app.routes.ai_concierge_challenge").challenge_concierge_bp)
+        app.register_blueprint(importlib.import_module("app.routes.voice_api").voice_bp)
+    except Exception:
+        # Non-fatal: continue without AI layer routes
+        pass
     api.add_namespace(api_ns, path='/api')
 
     # Целенаправленно исключаем CSRF только для обработчика бронирования календаря
@@ -192,8 +231,48 @@ def create_app(config_name="development"):
     except Exception as e:
         app.logger.debug(f'Error applying CSRF exemption for calendar.book_slot: {e}')
 
+    # Чат-виджет использует JSON POST к /api/booking (через fetch). Чтобы не ловить 400 из-за
+    # несовпадения CSRF токена/сессии при динамическом обновлении токенов, исключаем этот endpoint.
+    try:
+        view = app.view_functions.get('booking_api.booking_entry')
+        if view:
+            csrf.exempt(view)
+            app.logger.info('CSRF exempt applied to booking_api.booking_entry')
+        else:
+            app.logger.debug('booking_api.booking_entry view not found for CSRF exemption')
+    except Exception as e:
+        app.logger.debug(f'Error applying CSRF exemption for booking_api.booking_entry: {e}')
+
+    # AI layer APIs are designed for JSON/file POSTs (server-to-server or fetch) and do not use
+    # form submissions. Exempt them from CSRF to keep the API usable without browser state.
+    for _endpoint in (
+        'rag.rag_search',
+        'safari_concierge.safari_chat',
+        'challenge_concierge.challenge_chat',
+        'voice.transcribe_and_reply',
+    ):
+        try:
+            view = app.view_functions.get(_endpoint)
+            if view:
+                csrf.exempt(view)
+                app.logger.info(f'CSRF exempt applied to {_endpoint}')
+        except Exception:
+            pass
+
     @app.after_request
     def add_security_headers(response):
+        # Ensure XSRF-TOKEN cookie exists so websocket clients can present a CSRF token
+        # even when session-backed CSRF validation is not available for the handshake.
+        if not request.cookies.get('XSRF-TOKEN'):
+            try:
+                token = generate_csrf()
+                secure = app.config.get('SESSION_COOKIE_SECURE', False)
+                samesite = app.config.get('SESSION_COOKIE_SAMESITE', 'Lax')
+                response.set_cookie('XSRF-TOKEN', token, secure=secure, samesite=samesite, path='/')
+            except Exception:
+                # Non-fatal: continue without the cookie
+                pass
+
         csp = app.config.get('CSP_POLICY', {})
         csp_header = "; ".join([
             f"{k} {' '.join(v) if isinstance(v, list) else v}" for k, v in csp.items()
@@ -205,34 +284,53 @@ def create_app(config_name="development"):
     def health_check():
         return jsonify(status="ok", version=app.config.get('VERSION')), 200
 
-    # Initialize Google Services
-    with app.app_context():
-        try:
-            if not app.config.get('SPREADSHEET_ID'):
-                app.logger.warning("SPREADSHEET_ID не задан в конфигурации")
-                
-            from app.services.google import get_google_services
-            services = get_google_services()
-            app.logger.info("Google services successfully initialized")
-            
-            # Verify access to the spreadsheet (best-effort). In dev we prefer app to start
-            # even if Google Sheets is temporarily unavailable. Log the error and continue.
-            if app.config.get('SPREADSHEET_ID'):
-                sheets_service = services[1]
-                try:
-                    sheets_service.spreadsheets().get(
-                        spreadsheetId=app.config['SPREADSHEET_ID']
-                    ).execute()
-                    app.logger.info("Successfully validated access to Google Sheets")
-                except Exception as e:
-                    app.logger.error(f"Error accessing Google Sheet (continuing without fail): {e}")
-                    if 'invalid_grant' in str(e):
-                        app.logger.error("Invalid JWT Signature. Check your service_account.json file")
-                    # do not raise — continue running the app in degraded mode
+    # Initialize Google Services (optional; can be skipped via SKIP_GOOGLE_INIT=1)
+    skip_google_init = os.getenv("SKIP_GOOGLE_INIT", "False").lower() in ("1", "true", "yes")
+    if not skip_google_init:
+        with app.app_context():
+            try:
+                if not app.config.get('SPREADSHEET_ID'):
+                    app.logger.warning("SPREADSHEET_ID не задан в конфигурации")
                     
-        except Exception as e:
-            app.logger.error(f"Failed to initialize Google services: {e}")
-            if 'invalid_grant' in str(e):
-                app.logger.error("Google Service Account authorization failed. Please check your service_account.json file")
+                from app.services.google import get_google_services
+                services = get_google_services()
+                app.logger.info("Google services successfully initialized")
+                
+                # Verify access to the spreadsheet (best-effort). In dev we prefer app to start
+                # even if Google Sheets is temporarily unavailable. Log the error and continue.
+                if app.config.get('SPREADSHEET_ID'):
+                    sheets_service = services[1]
+                    try:
+                        sheets_service.spreadsheets().get(
+                            spreadsheetId=app.config['SPREADSHEET_ID']
+                        ).execute()
+                        app.logger.info("Successfully validated access to Google Sheets")
+                    except Exception as e:
+                        app.logger.error(f"Error accessing Google Sheet (continuing without fail): {e}")
+                        if 'invalid_grant' in str(e):
+                            app.logger.error("Invalid JWT Signature. Check your service_account.json file")
+                        # do not raise — continue running the app in degraded mode
+                        
+            except Exception as e:
+                app.logger.error(f"Failed to initialize Google services: {e}")
+                if 'invalid_grant' in str(e):
+                    app.logger.error("Google Service Account authorization failed. Please check your service_account.json file")
+    else:
+        app.logger.info("SKIP_GOOGLE_INIT is set — skipping Google services initialization")
+
+    # Регистрация CLI команд
+    try:
+        from app.cli.migrate_blog import migrate_blog_command
+        app.cli.add_command(migrate_blog_command)
+        app.logger.info("CLI command 'migrate-blog' registered")
+    except Exception as e:
+        app.logger.warning(f"Could not register migrate-blog CLI: {e}")
+    
+    try:
+        from app.cli.blog_sync import blog_sync_command
+        app.cli.add_command(blog_sync_command)
+        app.logger.info("CLI command 'blog-sync' registered")
+    except Exception as e:
+        app.logger.warning(f"Could not register blog-sync CLI: {e}")
 
     return app

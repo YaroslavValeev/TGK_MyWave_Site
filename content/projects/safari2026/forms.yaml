@@ -1,0 +1,102 @@
+participant:
+  title: Регистрация участника Safari
+  fields:
+  - name: full_name
+    label: ФИО
+    type: text
+    required: true
+  - name: email
+    label: Email
+    type: email
+    required: true
+  - name: phone
+    label: Телефон
+    type: tel
+    required: true
+  - name: participation_type
+    label: Формат участия
+    type: select
+    options:
+    - Полный маршрут (9 дней)
+    - Частично (1 день)
+    - Частично (3 дня)
+    - Частично (5 дней)
+    - Частично (7 дней)
+    - Онлайн-участие
+    - Гостевой формат
+    required: true
+  - name: experience
+    label: Опыт вейксерфинга
+    type: text
+    placeholder: Опишите ваш уровень катания
+    required: false
+  - name: message
+    label: Дополнительная информация
+    type: textarea
+    required: false
+partner:
+  title: Заявка партнёра Safari
+  fields:
+  - name: organization
+    label: Компания / Бренд
+    type: text
+    required: true
+  - name: contact_person
+    label: Имя контактного лица
+    type: text
+    required: true
+  - name: email
+    label: Email
+    type: email
+    required: true
+  - name: phone
+    label: Телефон
+    type: tel
+    required: false
+  - name: package
+    label: Интересующий пакет
+    type: select
+    options:
+    - Amatour (Бронза)
+    - Outlaw (Серебро)
+    - ProRider (Золото)
+    - Индивидуальное сотрудничество
+    required: false
+  - name: message
+    label: Комментарий
+    type: textarea
+    required: false
+media:
+  title: Загрузка медиа
+  fields:
+  - name: name
+    label: Ваше имя
+    type: text
+    required: true
+  - name: email
+    label: Email для связи
+    type: email
+    required: false
+  - name: file
+    label: Медиафайл
+    type: file
+    required: true
+  - name: description
+    label: Описание
+    type: textarea
+    required: false
+feedback:
+  title: Обратная связь
+  fields:
+  - name: name
+    label: Ваше имя
+    type: text
+    required: false
+  - name: email
+    label: Ваш Email
+    type: email
+    required: false
+  - name: feedback
+    label: Ваш отзыв
+    type: textarea
+    required: true

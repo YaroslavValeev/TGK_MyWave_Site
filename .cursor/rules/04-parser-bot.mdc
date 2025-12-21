@@ -1,0 +1,32 @@
+---
+description: "Parser Bot rules: DTO, published_at ISO 8601, dedup by raw_id/checksum, idempotent delivery."
+---
+
+# Parser Bot Rules (MANDATORY)
+
+## Event DTO
+- Every item MUST have:
+  - source
+  - raw_id (stable per source)
+  - checksum (content-based, deterministic)
+  - published_at (ISO 8601)
+- DO NOT generate random IDs for dedup.
+
+## Dedup
+- Dedup MUST be applied before publishing.
+- Use raw_id and/or checksum as the source of truth (as defined by the project).
+- Retries MUST NOT republish duplicates.
+
+## Delivery Idempotency
+- Publishing must be safe to retry:
+  - detect previously delivered items
+  - skip duplicates deterministically
+- If delivery fails mid-way, the next run must resume safely without duplicates.
+
+## Time Rules
+- published_at MUST be ISO 8601.
+- Normalize timezone consistently.
+
+## Patch Discipline
+- Keep pipeline changes minimal:
+  - collector OR processor OR publisher changes should be localized unless explicitly requested.

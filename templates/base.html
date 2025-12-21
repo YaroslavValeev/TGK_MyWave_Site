@@ -17,6 +17,8 @@
   <meta name="twitter:description" content="{{ meta_description|default('MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.') }}">
   <meta name="twitter:image" content="{{ og_image|default(url_for('static', filename='images/og-image.jpg', _external=True)) }}">
 
+  {% block extra_head %}{% endblock %}
+
   <title>{% block title %}{{ title|default('MyWave') }}{% endblock %}</title>
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
@@ -31,6 +33,11 @@
   <!-- Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}" />
+  
+  <!-- WSC2025 Styles (conditional, CSP-safe) -->
+  {% if request.path.startswith('/projects/wakesurf-challenge-2025') %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='projects/wsc2025/styles.css') }}">
+  {% endif %}
 
   <!-- Flatpickr -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -131,8 +138,13 @@
     <i class="fas fa-chevron-down"></i>
   </div>
 
+  <!-- Sticky progress line -->
+  <div class="mw-progress" aria-hidden="true">
+    <div class="mw-progress__fill" id="progress-fill"></div>
+  </div>
+
   <div id="progress-bar" class="progress-bar mw-scroll-progress" aria-hidden="true">
-    <div id="progress-fill" class="mw-scroll-progress__fill"></div>
+    <div id="progress-fill-old" class="mw-scroll-progress__fill"></div>
   </div>
 
   <!-- Контент -->
@@ -194,6 +206,10 @@
     new SocketStatus(socket);
   </script>
   {% block scripts %}{% endblock %}
+  <!-- WSC2025 Scripts (conditional, CSP-safe) -->
+  {% if request.path.startswith('/projects/wakesurf-challenge-2025') %}
+  <script defer src="{{ url_for('static', filename='projects/wsc2025/forms.js') }}"></script>
+  {% endif %}
   <script defer src="{{ url_for('static', filename='js/nav-spy.js') }}"></script>
   <script src="{{ url_for('static', filename='js/inline.js') }}"></script>
 

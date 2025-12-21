@@ -64,11 +64,44 @@ def get_response_with_knowledge(prompt, context=None):
         
         # Определяем ключевые слова для поиска релевантных знаний
         keywords = {
+            # Тренировки
             'тренировк': 'training',
-            'трюк': 'tricks',
             'польз': 'training',
             'зал': 'training',
-            'техник': 'tricks'
+            'вейк': 'training',
+            
+            # Трюки
+            'трюк': 'tricks',
+            'техник': 'tricks',
+            'олли': 'tricks',
+            '360': 'tricks',
+            'разворот': 'tricks',
+            
+            # Проекты
+            'проект': 'projects',
+            'сафари': 'projects',
+            'safari': 'projects',
+            'challenge': 'projects',
+            'чемпионат': 'projects',
+            'соревнован': 'projects',
+            'wsc': 'projects',
+            'wakesurf challenge': 'projects',
+            'wake industry': 'projects',
+            'iwwf': 'projects',
+            'турнир': 'projects',
+            'событи': 'projects',
+            
+            # Магазин
+            'магазин': 'shop',
+            'товар': 'shop',
+            'купить': 'shop',
+            'цена': 'shop',
+            'продукт': 'shop',
+            'доска': 'shop',
+            'борд': 'shop',
+            'баланс': 'shop',
+            'тренажёр': 'shop',
+            'оборудован': 'shop',
         }
         
         # Проверяем prompt на ключевые слова
@@ -82,33 +115,44 @@ def get_response_with_knowledge(prompt, context=None):
         # Добавляем релевантные знания в контекст
         if relevant_types:
             for knowledge_type in relevant_types:
-                response = get_knowledge(knowledge_type)
-                if response and not isinstance(response, dict):
-                    knowledge.extend(response[:3])  # Берем только первые 3 релевантных отрывка
+                try:
+                    response = get_knowledge(knowledge_type)
+                    if response and not isinstance(response, dict):
+                        knowledge.extend(response[:3])  # Берем только первые 3 релевантных отрывка
+                except Exception:
+                    pass  # Игнорируем ошибки получения знаний
         
         # Формируем расширенный контекст
-        enhanced_context = []
+        history = []
+        
+        # Добавляем системный промпт с базой знаний
+        system_prompt = (
+            "Ты — эксперт по вейксерфингу из школы MyWave. "
+            "Отвечай кратко, по делу и дружелюбно. "
+            "Если можешь помочь с записью на тренировку — предложи."
+        )
         if knowledge:
-            enhanced_context.append({
-                "role": "system",
-                "content": "Используй эти знания для ответа: " + "\n".join(knowledge)
-            })
+            system_prompt += "\n\nИспользуй эти знания для ответа:\n" + "\n".join(str(k) for k in knowledge)
+        
+        history.append({"role": "system", "content": system_prompt})
         
         if context:
-            enhanced_context.extend(context)
-            
-        # Получаем ответ от OpenAI с расширенным контекстом
-        response = current_app.openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=enhanced_context + [{"role": "user", "content": prompt}],
-            temperature=0.7
-        )
+            history.extend(context)
         
-        return response.choices[0].message['content']
+        # Используем правильный OpenAI клиент через openai_service
+        from app.services.openai_service import ask
+        reply = ask(prompt, source="knowledge_base", history=history)
+        
+        return reply
         
     except Exception as e:
         current_app.logger.error(f"Error generating response: {str(e)}")
-        return "Извините, произошла ошибка. Попробуйте переформулировать вопрос."
+        # Fallback: пробуем обычный ask без контекста
+        try:
+            from app.services.openai_service import ask
+            return ask(prompt, source="fallback")
+        except Exception:
+            return None  # Вернём None, чтобы chat.py использовал свой fallback
 
 
 # Expose save_chat_message at module level so tests can patch it directly

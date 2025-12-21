@@ -1,6 +1,10 @@
 import logging
+import ssl
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+import httplib2
+from google_auth_httplib2 import AuthorizedHttp
 from datetime import datetime
 import os
 from app.services.google import get_google_services
@@ -22,7 +26,9 @@ def get_sheets_service(credentials_file=None):
         credentials_file or GOOGLE_SERVICE_ACCOUNT_FILE, 
         scopes=scopes
     )
-    service = build("sheets", "v4", credentials=credentials)
+    # Увеличиваем таймаут для SSL handshake и сетевых операций
+    authed_http = AuthorizedHttp(credentials, http=httplib2.Http(timeout=30))
+    service = build("sheets", "v4", http=authed_http, cache_discovery=False)
     return service
 
 def get_sheet_data(credentials_file, sheet_id, worksheet_name):
@@ -32,7 +38,9 @@ def get_sheet_data(credentials_file, sheet_id, worksheet_name):
     """
     try:
         service = get_sheets_service(credentials_file)
-        range_name = f"{worksheet_name}!A1:Z1000"
+        # NB: В operational-табах (raw_feed) может быть много колонок (далеко за Z).
+        # Расширяем диапазон, но оставляем ограничение по строкам для предсказуемости.
+        range_name = f"{worksheet_name}!A1:ZZ1000"
         result = service.spreadsheets().values().get(
             spreadsheetId=sheet_id,
             range=range_name
@@ -105,7 +113,9 @@ def read_records(spreadsheet_id=None, worksheet_name=None):
         sheets_service = get_google_services()[1]  # Получаем только sheets сервис
         result = sheets_service.spreadsheets().values().get(
             spreadsheetId=spreadsheet_id or SPREADSHEET_ID,
-            range=f"{(worksheet_name or GOOGLE_SHEET_NAME)}!A1:Z1000"
+            # NB: В operational-табах (raw_feed) может быть много колонок (далеко за Z).
+            # Расширяем диапазон, но оставляем ограничение по строкам для предсказуемости.
+            range=f"{(worksheet_name or GOOGLE_SHEET_NAME)}!A1:ZZ1000"
         ).execute()
         values = result.get('values', [])
         if not values:
@@ -119,8 +129,21 @@ def read_records(spreadsheet_id=None, worksheet_name=None):
                     record[headers[i]] = value
             records.append(record)
         return records
+    except (ssl.SSLEOFError, ssl.SSLError, OSError) as ssl_err:
+        error_msg = str(ssl_err)
+        logger.error(f"SSL/сетевая ошибка при чтении из Google Sheets: {error_msg}")
+        # Преобразуем SSL ошибки в TimeoutError для единообразной обработки
+        raise TimeoutError(f"Сетевая ошибка при подключении к Google Sheets: {error_msg}") from ssl_err
+    except HttpError as he:
+        error_msg = str(he)
+        logger.error(f"Ошибка API Google Sheets: {error_msg}")
+        raise
     except Exception as e:
-        logger.error(f"Ошибка чтения из Google Sheets: {e}")
+        error_msg = str(e)
+        logger.error(f"Ошибка чтения из Google Sheets: {error_msg}")
+        # Проверяем, не является ли это SSL таймаутом в сообщении об ошибке
+        if "timeout" in error_msg.lower() or "handshake" in error_msg.lower() or "ssl" in error_msg.lower() or "eof" in error_msg.lower():
+            raise TimeoutError(f"Таймаут при подключении к Google Sheets: {error_msg}") from e
         raise
 
 def append_record(spreadsheet_id=None, worksheet_name=None, values=None):
@@ -140,8 +163,19 @@ def append_record(spreadsheet_id=None, worksheet_name=None, values=None):
             body=body
         ).execute()
         return result
+    except (ssl.SSLEOFError, ssl.SSLError, OSError) as ssl_err:
+        error_msg = str(ssl_err)
+        logger.error(f"SSL/сетевая ошибка при добавлении записи в Google Sheets: {error_msg}")
+        raise TimeoutError(f"Сетевая ошибка при подключении к Google Sheets: {error_msg}") from ssl_err
+    except HttpError as he:
+        error_msg = str(he)
+        logger.error(f"Ошибка API Google Sheets при добавлении записи: {error_msg}")
+        raise
     except Exception as e:
-        logger.error(f"Ошибка добавления записи в Google Sheets: {e}")
+        error_msg = str(e)
+        logger.error(f"Ошибка добавления записи в Google Sheets: {error_msg}")
+        if "timeout" in error_msg.lower() or "handshake" in error_msg.lower() or "ssl" in error_msg.lower() or "eof" in error_msg.lower():
+            raise TimeoutError(f"Таймаут при подключении к Google Sheets: {error_msg}") from e
         raise
 
 def update_record(spreadsheet_id=None, worksheet_name=None, range_=None, values=None):
@@ -160,6 +194,17 @@ def update_record(spreadsheet_id=None, worksheet_name=None, range_=None, values=
             body=body
         ).execute()
         return result
+    except (ssl.SSLEOFError, ssl.SSLError, OSError) as ssl_err:
+        error_msg = str(ssl_err)
+        logger.error(f"SSL/сетевая ошибка при обновлении записи в Google Sheets: {error_msg}")
+        raise TimeoutError(f"Сетевая ошибка при подключении к Google Sheets: {error_msg}") from ssl_err
+    except HttpError as he:
+        error_msg = str(he)
+        logger.error(f"Ошибка API Google Sheets при обновлении записи: {error_msg}")
+        raise
     except Exception as e:
-        logger.error(f"Ошибка обновления записи в Google Sheets: {e}")
+        error_msg = str(e)
+        logger.error(f"Ошибка обновления записи в Google Sheets: {error_msg}")
+        if "timeout" in error_msg.lower() or "handshake" in error_msg.lower() or "ssl" in error_msg.lower() or "eof" in error_msg.lower():
+            raise TimeoutError(f"Таймаут при подключении к Google Sheets: {error_msg}") from e
         raise

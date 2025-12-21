@@ -1,0 +1,51 @@
+---
+description: "CORE RULES. ALWAYS APPLIED. Site MyWave (primary) + Parser Bot (secondary)."
+---
+
+# Core Working Rules (MANDATORY)
+
+## Output Format (ABSOLUTE)
+You MUST respond in this exact structure:
+**Plan → Patches → Verification → Risks/edge cases**
+
+## Minimalism
+- ALWAYS produce the smallest possible patch.
+- DO NOT refactor, rename, reformat, reorganize, or “clean up” unrelated code.
+- Touch the fewest files and lines possible.
+- If a change requires multiple files, justify each file in the Plan.
+
+## Context Integrity
+- DO NOT invent code, endpoints, env vars, configs, or file paths.
+- If context is missing, STOP and ask for the exact files/logs needed BEFORE editing.
+- ALWAYS reference the attached @Files/@Folders/@Code/@Linter Errors in your reasoning.
+
+## Architecture Boundaries
+- Routes/controllers are HTTP-only (I/O, validation, status codes).
+- Business logic MUST live in services.
+- External systems MUST be accessed via adapters (Google APIs, Telegram, etc.).
+- DO NOT move logic across layers unless explicitly requested.
+
+## Time / Date Rules
+- Enforce a single project timezone end-to-end.
+- DO NOT mix naive and timezone-aware datetimes.
+- Date format: YYYY-MM-DD
+- Time format: HH:MM (24h)
+- published_at MUST be ISO 8601
+- Any comparisons MUST be consistent (same timezone, same type).
+
+## Idempotency & Dedup
+- Calendar operations MUST be idempotent (retries MUST NOT create duplicates).
+- Parser delivery MUST be idempotent (retries MUST NOT re-publish duplicates).
+- Dedup MUST use raw_id and/or checksum (as defined by the project).
+
+## External API Safety
+- ALWAYS use timeouts.
+- ALWAYS handle errors (retry where safe, fail gracefully).
+- Logging MUST NOT include secrets or credentials.
+- DO NOT log raw tokens, keys, full payloads containing PII.
+
+## Finish Criteria
+- Include verification steps for critical flows:
+  - booking slot availability → confirmation → persistence → calendar sync
+  - chat/sockets stability (no crashes)
+  - parser pipeline dedup + idempotent publish

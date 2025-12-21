@@ -81,6 +81,50 @@ def get_knowledge(type):
                     return jsonify(tricks)
         except Exception as e:
             current_app.logger.error(f"Error reading tricks file: {str(e)}")
+    
+    elif type == 'projects':
+        """Загружает информацию о проектах (Safari, Challenge, Wake Industry)"""
+        projects_info = []
+        projects_path = os.path.join(base_path, 'projects')
+        
+        if os.path.exists(projects_path):
+            for filename in os.listdir(projects_path):
+                if filename.endswith('.txt'):
+                    full_path = os.path.join(projects_path, filename)
+                    try:
+                        with open(full_path, 'r', encoding='utf-8') as f:
+                            content = f.read()
+                            # Разбиваем на параграфы
+                            paragraphs = [p.strip() for p in content.split('\n\n') if p.strip()]
+                            projects_info.extend(paragraphs)
+                    except Exception as e:
+                        current_app.logger.error(f"Error reading {filename}: {e}")
+        else:
+            current_app.logger.warning(f"Projects directory not found: {projects_path}")
+        
+        return jsonify(projects_info)
+    
+    elif type == 'shop':
+        """Загружает информацию о товарах магазина"""
+        shop_info = []
+        shop_path = os.path.join(base_path, 'shop')
+        
+        if os.path.exists(shop_path):
+            for filename in os.listdir(shop_path):
+                if filename.endswith('.txt'):
+                    full_path = os.path.join(shop_path, filename)
+                    try:
+                        with open(full_path, 'r', encoding='utf-8') as f:
+                            content = f.read()
+                            # Разбиваем на параграфы
+                            paragraphs = [p.strip() for p in content.split('\n\n') if p.strip()]
+                            shop_info.extend(paragraphs)
+                    except Exception as e:
+                        current_app.logger.error(f"Error reading {filename}: {e}")
+        else:
+            current_app.logger.warning(f"Shop directory not found: {shop_path}")
+        
+        return jsonify(shop_info)
             
     return jsonify({'error': 'Invalid knowledge type or file not found'})
 

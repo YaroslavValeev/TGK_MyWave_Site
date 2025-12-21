@@ -1,0 +1,34 @@
+---
+description: "Frontend JS rules: booking/chat UI stability, date/time formats, minimal diffs."
+---
+
+# Frontend JavaScript Rules (MANDATORY)
+
+## Minimal UI Patch
+- Smallest possible diff: minimal DOM changes, minimal CSS changes.
+- DO NOT redesign components unless asked.
+
+## Date/Time
+- Date MUST remain YYYY-MM-DD.
+- Time MUST remain HH:MM.
+- DO NOT rely on locale parsing for dates (no Date('15.12.2025') style).
+- Always parse/format explicitly.
+
+## Networking
+- Handle fetch errors gracefully (timeouts if implemented, retry only if safe).
+- DO NOT break existing API contracts (request/response shapes).
+- If contract must change, keep backwards compatibility unless explicitly requested.
+
+## Chat/Sockets
+- Avoid double-initialization (no duplicate socket instances).
+- Reconnect must not spam.
+- Keep event handlers idempotent (avoid registering twice).
+
+## CSP Compatibility
+- Avoid inline scripts and inline event handlers if CSP is strict.
+- Keep script imports and initialization consistent with project CSP policy.
+
+## Finish Criteria
+- Provide verification steps:
+  - booking modal open → date select → slots render → confirm path
+  - chat open → send/receive → no console errors

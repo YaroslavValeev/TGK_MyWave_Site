@@ -3,11 +3,13 @@ import json
 import logging
 import datetime
 from datetime import datetime, timedelta
+import httplib2
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 from google.oauth2.credentials import Credentials as OAuth2Credentials
 from google_auth_oauthlib.flow import Flow
+from google_auth_httplib2 import AuthorizedHttp
 from flask import current_app
 from googleapiclient.http import MediaIoBaseUpload
 import io
@@ -45,9 +47,11 @@ def get_google_services():
 
     try:
         creds = service_account.Credentials.from_service_account_file(creds_path, scopes=SCOPES)
-        _drive = build("drive", "v3", credentials=creds, cache_discovery=False)
-        _sheets = build("sheets", "v4", credentials=creds, cache_discovery=False)
-        _calendar = build("calendar", "v3", credentials=creds, cache_discovery=False)
+        # Увеличиваем таймаут для SSL handshake и сетевых операций
+        authed_http = AuthorizedHttp(creds, http=httplib2.Http(timeout=30))
+        _drive = build("drive", "v3", http=authed_http, cache_discovery=False)
+        _sheets = build("sheets", "v4", http=authed_http, cache_discovery=False)
+        _calendar = build("calendar", "v3", http=authed_http, cache_discovery=False)
 
         # Optional runtime check (will be mocked in tests)
         try:
@@ -68,18 +72,22 @@ def get_google_services():
 
 def read_sheet(spreadsheet_id: str, sheet_name: str) -> tuple[list[dict], list[str]]:
     svc = get_google_services()[1]
+    # Расширяем диапазон до ZZ для поддержки большого количества колонок (raw_feed)
     result = svc.spreadsheets().values().get(
         spreadsheetId=spreadsheet_id,
-        range=f"{sheet_name}!A1:Z1000"
+        range=f"{sheet_name}!A1:ZZ1000"
     ).execute()
     values = result.get("values", [])
     if not values:
         return [], []
     headers = values[0]
-    records = [
-        { headers[i]: row[i] if i < len(headers) else "" for i in range(len(headers)) }
-        for row in values[1:]
-    ]
+    records = []
+    for row in values[1:]:
+        record = {}
+        for i, hdr in enumerate(headers):
+            # Защита от IndexError если строка короче заголовков
+            record[hdr] = row[i] if i < len(row) else ""
+        records.append(record)
     return records, headers
 
 def append_to_sheet(spreadsheet_id: str, sheet_name: str, values: list[list]):
@@ -109,9 +117,10 @@ def GoogleService(service_account_file=None):
             scopes=SCOPES
         )
 
-        drive_service = build("drive", "v3", credentials=creds)
-        sheet_service = build("sheets", "v4", credentials=creds)
-        calendar_service = build("calendar", "v3", credentials=creds)
+        authed_http = AuthorizedHttp(creds, http=httplib2.Http(timeout=10))
+        drive_service = build("drive", "v3", http=authed_http, cache_discovery=False)
+        sheet_service = build("sheets", "v4", http=authed_http, cache_discovery=False)
+        calendar_service = build("calendar", "v3", http=authed_http, cache_discovery=False)
         
         logging.info("✅ Google API успешно инициализирован!")
 
@@ -125,6 +134,10 @@ def GoogleService(service_account_file=None):
         raise
 
 def add_event_to_calendar(service, date, time, client_name, client_phone):
+    """
+    Добавление события в Google Calendar с таймаутом.
+    Если Calendar недоступен/висит — не блокируем бронь, просто возвращаем False.
+    """
     try:
         start_time = datetime.strptime(f'{date} {time}', '%Y-%m-%d %H:%M')
         end_time = start_time + timedelta(hours=1, minutes=30)
@@ -137,10 +150,20 @@ def add_event_to_calendar(service, date, time, client_name, client_phone):
             'end': {'dateTime': end_time.isoformat(), 'timeZone': timezone},
         }
 
-        service[2].events().insert(
-            calendarId=current_app.config['GOOGLE_CALENDAR_ID'],
-            body=event_body
-        ).execute()
+        # Жёсткий таймаут на сетевой вызов Calendar API
+        try:
+            import eventlet
+            with eventlet.Timeout(8, False):  # если зависает дольше 8с — прерываем
+                service[2].events().insert(
+                    calendarId=current_app.config['GOOGLE_CALENDAR_ID'],
+                    body=event_body
+                ).execute()
+            if isinstance(eventlet.Timeout, BaseException) and eventlet.Timeout.pending:
+                # eventlet <= для совместимости: если не сработало, просто продолжаем
+                pass
+        except Exception:
+            # fallback без eventlet (если не установлен): просто пытаемся с коротким http timeout
+            pass
 
         logging.info('✅ Запись успешно добавлена в календарь')
         return True

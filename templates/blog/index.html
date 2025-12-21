@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Блог MyWave{% endblock %}
+{% block meta_description %}Новости и статьи MyWave{% endblock %}
+
+{% block content %}
+<section class="mw-section mw-surface">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h1>Блог</h1>
+      {% if tag %}
+        <p style="opacity: .8; margin: 0 0 16px 0;">Фильтр по тегу: <strong>#{{ tag }}</strong></p>
+      {% endif %}
+
+      {% if posts %}
+        <div class="cards-grid">
+          {% for p in posts %}
+            <article class="mw-card blog-card">
+              <a href="{{ url_for('blog.blog_post', slug=p.slug) }}" style="text-decoration: none; color: inherit;">
+                <h3 style="margin: 0 0 8px 0; font-size: 18px; line-height: 1.25;">{{ p.title }}</h3>
+                {% if p.excerpt %}
+                  <p style="margin: 0 0 10px 0; opacity: .85;">{{ p.excerpt }}</p>
+                {% endif %}
+                <div style="display:flex; gap:10px; flex-wrap:wrap; font-size: 13px; opacity:.75;">
+                  {% if p.source_name %}<span>Источник: {{ p.source_name }}</span>{% endif %}
+                  {% if p.published_at %}
+                    {% if p.published_at.strftime %}
+                      <span>{{ p.published_at.strftime("%d.%m.%Y") }}</span>
+                    {% else %}
+                      <span>{{ p.published_at[:10] if p.published_at|length > 10 else p.published_at }}</span>
+                    {% endif %}
+                  {% endif %}
+                </div>
+              </a>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="opacity:.8;">Пока нет опубликованных материалов.</p>
+      {% endif %}
+
+      {% if total > per_page %}
+      <div style="display:flex; gap:10px; justify-content:center; padding: 18px 0;">
+        {% if has_prev %}
+          <a class="btn-secondary" href="{{ url_for('blog.blog_index', page=page-1, per_page=per_page) }}{% if tag %}&tag={{ tag }}{% endif %}">← Назад</a>
+        {% endif %}
+        <span style="opacity:.75;">Стр. {{ page }} (всего: {{ total }})</span>
+        {% if has_next %}
+          <a class="btn-secondary" href="{{ url_for('blog.blog_index', page=page+1, per_page=per_page) }}{% if tag %}&tag={{ tag }}{% endif %}">Вперёд →</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

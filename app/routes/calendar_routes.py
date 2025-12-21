@@ -3,11 +3,13 @@ from flask import Blueprint, request, jsonify, current_app, render_template, red
 from marshmallow import Schema, fields
 from datetime import datetime, timedelta
 from googleapiclient.errors import HttpError
+import ssl
 from app.services.google import get_google_services, add_event_to_calendar
 from app.services.google_sheets_service import append_record, read_records
 from app.schemas import BookingSchema
 from app.modules.calendar_integration import create_workout_if_not_exists
 from app.extensions import csrf
+import inspect
 
 calendar_bp = Blueprint('calendar', __name__)
 
@@ -36,6 +38,25 @@ def normalize_day_of_week(day):
     day = str(day).strip().lower()
     # Если день недели на русском, конвертируем в английский
     return ru_to_en.get(day, day)
+
+def normalize_service_type(v: str) -> str:
+    s = (v or "").strip().lower()
+    if s in ("boat", "катер", "wakeboat"):
+        return "boat"
+    return "gym"
+
+def is_boat_season(dt: datetime) -> bool:
+    y = dt.year
+    start = datetime(y, 5, 1, 0, 0, 0)
+    end = datetime(y, 9, 29, 23, 59, 59)
+    return start <= dt <= end
+
+def parse_date(date_str: str) -> datetime:
+    """Парсит строку даты в datetime объект"""
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d')
+    except ValueError:
+        raise ValueError(f"Неверный формат даты: {date_str}")
 
 def validate_schedule_record(record, idx):
     """Проверяет корректность записи расписания"""
@@ -74,11 +95,79 @@ def validate_schedule_record(record, idx):
         current_app.logger.error(f"Ошибка валидации записи {idx + 1}: {str(e)}")
         return False, None
 
-def get_available_slots(date_str):
+def get_slot_bookings_count(date_str, time_str, service_type: str = None):
+    """Подсчитывает количество броней на конкретный слот с учётом service_type"""
+    try:
+        bookings = read_records(current_app.config['SPREADSHEET_ID'], 'Client_Workouts')
+        count = 0
+        for booking in bookings:
+            if booking.get('date') != date_str or booking.get('time') != time_str:
+                continue
+
+            if service_type:
+                st = (booking.get("service_type") or "").strip().lower()
+                # если в таблице есть service_type — фильтруем строго.
+                # если пусто — считаем это "gym", чтобы зал не блокировал катер.
+                if st:
+                    if st != service_type:
+                        continue
+                else:
+                    if service_type == "boat":
+                        continue
+
+            count += 1
+        return count
+    except (TimeoutError, OSError) as te:
+        # Таймауты и сетевые ошибки - не критично, возвращаем 0 (считаем, что слот свободен)
+        error_msg = str(te)
+        if "timeout" in error_msg.lower() or "handshake" in error_msg.lower():
+            current_app.logger.warning(f"Timeout при подсчёте броней для {date_str} {time_str}: {error_msg}")
+        else:
+            current_app.logger.warning(f"Сетевая ошибка при подсчёте броней: {error_msg}")
+        return 0
+    except Exception as e:
+        error_msg = str(e)
+        # Проверяем, не является ли это таймаутом в строке ошибки
+        if "timeout" in error_msg.lower() or "timed out" in error_msg.lower():
+            current_app.logger.warning(f"Timeout при подсчёте броней для {date_str} {time_str}: {error_msg}")
+            return 0
+        current_app.logger.error(f"Error counting bookings: {error_msg}")
+        return 0
+
+def get_available_slots(date_str, service_type: str = "gym", schedule_sheet='Schedule'):
     """
     Возвращает список доступных слотов для указанной даты.
     Фильтрует статическое расписание по дню недели и вычитает уже сделанные брони.
     """
+    service_type = normalize_service_type(service_type)
+    dt = parse_date(date_str)
+
+    if service_type == "boat":
+        if not is_boat_season(dt):
+            return []
+        # 06:00 ... 20:30 (по 30 минут), чтобы закончить в 21:00
+        slots = []
+        hour = 6
+        minute = 0
+        while True:
+            t = f"{hour:02d}:{minute:02d}"
+            # capacity=1
+            booked = get_slot_bookings_count(date_str, t, service_type="boat")
+            if booked < 1:
+                slots.append(t)
+
+            # +30 минут
+            minute += 30
+            if minute >= 60:
+                minute -= 60
+                hour += 1
+
+            # последний старт 20:30
+            if hour > 20 or (hour == 20 and minute > 30):
+                break
+
+        return slots
+
     # 1) Проверяем наличие необходимых конфигураций
     if not current_app.config.get('SPREADSHEET_ID'):
         current_app.logger.error("SPREADSHEET_ID не настроен в конфигурации")
@@ -86,7 +175,7 @@ def get_available_slots(date_str):
 
     # 2) Преобразуем строку в дату и определяем день недели
     try:
-        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+        date_obj = dt.date()
         day_of_week = date_obj.strftime('%A').lower()
     except ValueError as e:
         current_app.logger.error(f"Ошибка парсинга даты {date_str}: {str(e)}")
@@ -122,8 +211,19 @@ def get_available_slots(date_str):
     except HttpError as he:
         current_app.logger.error(f"Ошибка API Google Sheets: {str(he)}")
         raise he
+    except TimeoutError as te:
+        current_app.logger.error(f"Таймаут при чтении расписания: {str(te)}")
+        raise te
+    except (ssl.SSLEOFError, ssl.SSLError, OSError) as ssl_err:
+        error_msg = str(ssl_err)
+        current_app.logger.error(f"SSL/сетевая ошибка при чтении расписания: {error_msg}")
+        raise TimeoutError(f"Сетевая ошибка: {error_msg}") from ssl_err
     except Exception as e:
-        current_app.logger.error(f"Ошибка чтения или валидации расписания: {str(e)}")
+        error_msg = str(e)
+        current_app.logger.error(f"Ошибка чтения или валидации расписания: {error_msg}")
+        # Если это таймаут SSL, пробрасываем как TimeoutError
+        if "timeout" in error_msg.lower() or "handshake" in error_msg.lower() or "ssl" in error_msg.lower() or "eof" in error_msg.lower():
+            raise TimeoutError(error_msg) from e
         raise
 
     # 4) Считываем брони
@@ -146,8 +246,8 @@ def get_available_slots(date_str):
 
         time_str = rec['time']
         capacity = int(rec['max_capacity'])
-        used = sum(1 for b in relevant_bookings if b.get('time') == time_str)
-        remaining = max(0, capacity - used)
+        booked_count = get_slot_bookings_count(date_str, time_str, service_type="gym")
+        remaining = max(0, capacity - booked_count)
 
         slots.append({
             'time': time_str,
@@ -198,23 +298,24 @@ def get_schedule():
 @calendar_bp.route('/api/calendar/slots/<date_str>')
 def get_slots(date_str):
     try:
-        # Проверяем формат даты
-        try:
-            date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
-        except ValueError:
-            return jsonify({"error": "Неверный формат даты. Используйте YYYY-MM-DD"}), 400
+        service_type = normalize_service_type(request.args.get("service_type", "gym"))
+        dt = parse_date(date_str)
+
+        if service_type == "boat" and not is_boat_season(dt):
+            return jsonify({"error": "Катер доступен только с 1 мая по 29 сентября."}), 400
 
         # Проверяем, что дата не в прошлом
-        if date_obj < datetime.now().date():
+        if dt.date() < datetime.now().date():
             return jsonify({"error": "Нельзя выбрать дату в прошлом"}), 400
 
-        # Проверяем, что дата не слишком далеко в будущем (например, +3 месяца)
-        max_future_date = datetime.now().date() + timedelta(days=90)
-        if date_obj > max_future_date:
-            return jsonify({"error": "Дата слишком далеко в будущем. Максимум 3 месяца вперед"}), 400
+        # Для обычных тренировок ограничим 90 днями, для катера — сезонным окном
+        if service_type != "boat":
+            max_future_date = datetime.now().date() + timedelta(days=90)
+            if dt.date() > max_future_date:
+                return jsonify({"error": "Дата слишком далеко в будущем. Максимум 3 месяца вперед"}), 400
 
-        current_app.logger.info(f"Запрос слотов на дату: {date_str}")
-        slots = get_available_slots(date_str)
+        current_app.logger.info(f"Запрос слотов на дату: {date_str}, service_type: {service_type}")
+        slots = get_available_slots(date_str, service_type=service_type)
 
         if not slots:
             current_app.logger.info(f"На дату {date_str} слоты не найдены")
@@ -240,8 +341,24 @@ def get_slots(date_str):
             return jsonify({"error": "Ошибка авторизации сервера. Пожалуйста, попробуйте позже."}), 503
         return jsonify({"error": "Временная ошибка сервера. Пожалуйста, попробуйте позже."}), 502
 
+    except TimeoutError as te:
+        current_app.logger.error(f"Таймаут при получении слотов: {str(te)}")
+        return jsonify({"error": "Сервис временно недоступен. Пожалуйста, попробуйте позже."}), 503
+    except (ssl.SSLEOFError, ssl.SSLError, OSError) as ssl_err:
+        error_msg = str(ssl_err)
+        current_app.logger.error(f"SSL/сетевая ошибка при получении слотов: {error_msg}")
+        # SSL ошибки - это временные сетевые проблемы
+        return jsonify({"error": "Сервис временно недоступен из-за проблем с сетью. Пожалуйста, попробуйте позже."}), 503
     except Exception as e:
-        current_app.logger.error(f"Непредвиденная ошибка: {str(e)}", exc_info=True)
+        error_msg = str(e)
+        # Проверяем, не является ли это SSL ошибкой в сообщении
+        if "ssl" in error_msg.lower() or "eof" in error_msg.lower() or "handshake" in error_msg.lower():
+            current_app.logger.error(f"SSL/сетевая ошибка (в сообщении): {error_msg}")
+            return jsonify({"error": "Сервис временно недоступен из-за проблем с сетью. Пожалуйста, попробуйте позже."}), 503
+        current_app.logger.error(f"Непредвиденная ошибка: {error_msg}", exc_info=True)
+        # Если это ошибка Google API (таймаут или недоступность), возвращаем 503
+        if "timeout" in error_msg.lower() or "handshake" in error_msg.lower():
+            return jsonify({"error": "Сервис временно недоступен. Пожалуйста, попробуйте позже."}), 503
         return jsonify({"error": "Произошла ошибка при получении данных. Пожалуйста, попробуйте позже."}), 500
 
 @calendar_bp.route('/api/calendar/slots', methods=['GET'])
@@ -359,12 +476,25 @@ def book_slot():
     current_app.logger.info(f"📥 Получен запрос на бронирование (raw): {raw_data}")
 
     try:
+        raw = raw_data.copy() if raw_data else {}
+        service_type = normalize_service_type(raw.get("service_type", "gym"))
+        raw.pop("service_type", None)  # чтобы BookingSchema не ругался на неизвестное поле
+
         # Валидация данных через схему
-        data = BookingSchema().load(raw_data)
+        data = BookingSchema().load(raw)
+        data["service_type"] = service_type
+
+        if service_type == "boat" and not is_boat_season(parse_date(data["date"])):
+            return jsonify({'error': 'Катер доступен только с 1 мая по 29 сентября.'}), 400
         
         # Проверяем доступность слота
-        slots = get_available_slots(data['date'])
-        available_slot = next((slot for slot in slots if slot['time'] == data['time'] and slot['available']), None)
+        available_slots = get_available_slots(data['date'], service_type=service_type)
+        
+        # Для катера slots - это список строк времени, для зала - список словарей
+        if service_type == "boat":
+            available_slot = data['time'] in available_slots
+        else:
+            available_slot = next((slot for slot in available_slots if slot.get('time') == data['time'] and slot.get('available')), None)
         
         if not available_slot:
             return jsonify({'error': 'Слот недоступен или уже занят'}), 400
@@ -395,11 +525,21 @@ def book_slot():
             'single',        # payment_type
             'booked',       # status
             created_at,      # created_at
-            ''              # client_rating
+            '',              # client_rating
+            service_type     # service_type (если колонка есть)
         ]
         
         try:
-            append_record(current_app.config['SPREADSHEET_ID'], 'Client_Workouts', new_row)
+            # Пробуем вызвать book_slot_in_sheet, если функция существует
+            kwargs = {}
+            try:
+                from app.modules.sheets import book_slot_in_sheet
+                if "service_type" in inspect.signature(book_slot_in_sheet).parameters:
+                    kwargs["service_type"] = service_type
+                book_slot_in_sheet(data['date'], data['time'], data['name'], data['phone'], **kwargs)
+            except (ImportError, AttributeError, TypeError):
+                # Если функции нет или она не принимает service_type - используем стандартный append
+                append_record(current_app.config['SPREADSHEET_ID'], 'Client_Workouts', new_row)
         except Exception as e:
             current_app.logger.error(f"Ошибка записи бронирования: {str(e)}")
             return jsonify({'error': 'Не удалось сохранить бронирование'}), 500
@@ -408,8 +548,19 @@ def book_slot():
         try:
             if workout_row_idx is not None:
                 update_workout_capacity(workout_row_idx, current_capacity + 1)
+        except (TimeoutError, OSError) as te:
+            error_msg = str(te)
+            if "timeout" in error_msg.lower() or "handshake" in error_msg.lower():
+                current_app.logger.warning(f"Timeout при обновлении счётчика мест (не критично): {error_msg}")
+            else:
+                current_app.logger.warning(f"Сетевая ошибка при обновлении счётчика мест (не критично): {error_msg}")
+            # Не прерываем процесс, так как бронь уже создана
         except Exception as e:
-            current_app.logger.error(f"Ошибка обновления счетчика мест: {str(e)}")
+            error_msg = str(e)
+            if "timeout" in error_msg.lower() or "timed out" in error_msg.lower():
+                current_app.logger.warning(f"Timeout при обновлении счётчика мест (не критично): {error_msg}")
+            else:
+                current_app.logger.error(f"Ошибка обновления счетчика мест: {error_msg}")
             # Не прерываем процесс, так как бронь уже создана
         # 5. Создание события в Google Calendar (если настроен calendar_id)
         try:

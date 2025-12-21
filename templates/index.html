@@ -91,23 +91,45 @@
     </div>
   </section>
 
+  {% if latest_blog %}
+  <section id="latest-blog" class="mw-section mw-surface">
+    <h2>Последняя новость</h2>
+    <div class="mw-card">
+      {% if latest_blog.published_at %}
+        <p style="opacity:.75; font-size: 13px; margin: 0 0 8px 0;">
+          {% if latest_blog.published_at.strftime %}
+            {{ latest_blog.published_at.strftime("%d.%m.%Y") }}
+          {% else %}
+            {{ latest_blog.published_at[:10] if latest_blog.published_at|length > 10 else latest_blog.published_at }}
+          {% endif %}
+        </p>
+      {% endif %}
+      <h3>{{ latest_blog.title }}</h3>
+      {% if latest_blog.excerpt %}
+        <p>{{ latest_blog.excerpt }}</p>
+      {% endif %}
+      <a class="btn-secondary" href="{{ url_for('blog.blog_post', slug=latest_blog.slug) }}">Читать</a>
+    </div>
+  </section>
+  {% endif %}
+
   <!-- Мероприятия -->
   <section id="events" class="events-section section mw-section">
     <h2>Мероприятия</h2>
     <div class="events-carousel">
       <button class="events-nav-btn prev" id="events-prev" type="button" aria-label="Предыдущее мероприятие">‹</button>
       <div class="events-slider" id="events-slider">
-        <a href="#" class="event-card mw-card">
-          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%2335C0CD' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3EWake Challenge%3C/text%3E%3C/svg%3E" alt="Wake Challenge" loading="lazy" />
+        <a href="{{ url_for('wakesurf_challenge.project_page') }}" class="event-card mw-card">
+          <img src="{{ url_for('static', filename='images/challenge/challenge1.png') }}" alt="Wake Challenge" loading="lazy" />
           <h4>Wake Challenge</h4>
-          <p>Ежегодные соревнования по вейксерфингу для спортсменов всех уровней подготовки.</p>
+          <p>Спортивно-образовательная программа для тренеров и райдеров. Регистрация открыта!</p>
         </a>
-        <a href="#" class="event-card mw-card">
+        <a href="{{ url_for('projects_safari.safari_page') }}" class="event-card mw-card">
           <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%2335C0CD' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3EWake Surf Safari%3C/text%3E%3C/svg%3E" alt="Wake Surf Safari" loading="lazy" />
-          <h4>Wake Surf Safari</h4>
-          <p>Экспедиция по лучшим спотам для вейксерфинга с профессиональными тренерами.</p>
+          <h4>Wake Surf Safari 2026</h4>
+          <p>Экспедиционный вейксерф-тур по Волге: волны, маршрут, комьюнити, медиа.</p>
         </a>
-        <a href="#" class="event-card mw-card">
+        <a href="{{ url_for('wake_industry.wake_industry_page') }}" class="event-card mw-card">
           <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%2335C0CD' width='400' height='250'/%3E%3Ctext fill='white' font-size='20' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3EЧек-лист соревнований%3C/text%3E%3C/svg%3E" alt="Чек-лист соревнований" loading="lazy" />
           <h4>Чек-лист для создания соревнований</h4>
           <p>Подробное руководство по организации профессиональных соревнований по вейксерфингу.</p>

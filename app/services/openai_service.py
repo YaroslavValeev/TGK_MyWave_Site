@@ -1,10 +1,13 @@
 import logging
+import os
 from openai import OpenAI
 from flask import current_app, session
 from app.services.rules import ChatMode
 from app.services.google_sheets_service import append_record
 from datetime import datetime
 import time
+import io
+from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +18,80 @@ DEFAULT_MODEL = "gpt-4"
 FALLBACK_MODEL = "gpt-3.5-turbo"
 
 
+def _get_openai_timeout_seconds() -> float:
+    """
+    Timeout for OpenAI requests.
+
+    NOTE: keep it configurable without logging secrets.
+    """
+    try:
+        value = current_app.config.get("OPENAI_TIMEOUT_SECONDS")
+        if value is None:
+            value = os.getenv("OPENAI_TIMEOUT_SECONDS", "30")
+        return float(value)
+    except Exception:
+        return 30.0
+
+
+def _init_client() -> OpenAI:
+    global client
+    if client is not None:
+        return client
+
+    api_key = current_app.config.get("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("OPENAI_API_KEY is not set in Flask config")
+
+    timeout_seconds = _get_openai_timeout_seconds()
+
+    # OpenAI SDK supports `timeout` and `max_retries` in recent versions.
+    # Keep compatibility by falling back to the minimal constructor if needed.
+    try:
+        client = OpenAI(api_key=api_key, timeout=timeout_seconds, max_retries=2)
+    except TypeError:
+        client = OpenAI(api_key=api_key)
+
+    return client
+
+
+def _select_chat_model(mode: ChatMode) -> str:
+    """
+    Pick a model for the chat widget.
+    
+    Priority:
+    1. FINE_TUNED_MODEL — дообученная модель (приоритет для чата)
+    2. GPTS_MODEL — основная модель
+    3. FALLBACK_MODEL — запасная модель
+    4. gpt-4o-mini — дефолт
+    """
+    DEFAULT_MODEL = "gpt-4o-mini"
+    
+    # Получаем модели из конфига/окружения
+    fine_tuned = current_app.config.get("FINE_TUNED_MODEL") or os.getenv("FINE_TUNED_MODEL")
+    preferred = current_app.config.get("GPTS_MODEL") or os.getenv("GPTS_MODEL")
+    fallback = current_app.config.get("FALLBACK_MODEL") or os.getenv("FALLBACK_MODEL")
+
+    # Защита: если значение похоже на API ключ (sk-...), игнорируем его
+    def is_valid_model(m):
+        if not m:
+            return False
+        if m.startswith("sk-"):
+            logger.warning(f"[OpenAI] Модель '{m[:20]}...' похожа на API ключ! Игнорируем.")
+            return False
+        return True
+    
+    # Приоритет: fine-tuned → preferred → fallback → default
+    if is_valid_model(fine_tuned):
+        logger.info(f"[OpenAI] Используем FINE_TUNED_MODEL: {fine_tuned[:30]}...")
+        return fine_tuned
+    if is_valid_model(preferred):
+        return preferred
+    if is_valid_model(fallback):
+        return fallback
+    
+    return DEFAULT_MODEL
+
+
 def get_response(prompt: str, model: str | None = None, temperature: float = 0.7, max_tokens: int = 1000):
     """
     Compatibility wrapper expected by unit tests. Tries to call the chat
@@ -23,6 +100,7 @@ def get_response(prompt: str, model: str | None = None, temperature: float = 0.7
     if not isinstance(prompt, str) or not prompt.strip():
         raise ValueError("Prompt must be a non-empty string")
 
+    _init_client()
     chosen_model = model or DEFAULT_MODEL
     # If client is a MagicMock in tests it will have the necessary attributes.
     try:
@@ -91,12 +169,7 @@ def ask_with_assistant(prompt, client_id=None):
     Общение с OpenAI Assistant API (база знаний).
     Хранит thread_id в flask session по client_id.
     """
-    global client
-    if client is None:
-        api_key = current_app.config.get('OPENAI_API_KEY')
-        if not api_key:
-            raise RuntimeError("OPENAI_API_KEY is not set in Flask config")
-        client = OpenAI(api_key=api_key)
+    _init_client()
 
     assistant_id = current_app.config.get('ASSISTANT_ID')
     if not assistant_id:
@@ -152,22 +225,22 @@ def ask(
     if not isinstance(prompt, str) or not prompt.strip():
         raise ValueError("Prompt must be a non-empty string")
     try:
-        # Если есть ассистент — используем его
+        # Если передан history с контекстом — используем chat completions напрямую
+        # (Assistant API не поддерживает кастомный системный промпт на лету)
+        use_assistant = False
         assistant_id = current_app.config.get('ASSISTANT_ID')
-        if assistant_id:
+        if assistant_id and not history:
+            # Используем ассистента только если нет кастомного history
+            use_assistant = True
+        
+        if use_assistant:
+            logger.info(f"[OpenAI] Используем Assistant API (ASSISTANT_ID={assistant_id[:8]}...)")
             return ask_with_assistant(prompt, client_id=client_id)
-        # Fallback: обычная модель
-        global client
-        if client is None:
-            api_key = current_app.config.get('OPENAI_API_KEY')
-            if not api_key:
-                raise RuntimeError("OPENAI_API_KEY is not set in Flask config")
-            client = OpenAI(api_key=api_key)
-
-        if mode == ChatMode.CHAT_API:
-            model = current_app.config.get('GPTS_MODEL')
-        else:
-            model = "gpt-4"  # Жёстко указываем стандартную модель
+        
+        # Chat completions с поддержкой history
+        _init_client()
+        model = _select_chat_model(mode)
+        logger.info(f"[OpenAI] Используем Chat Completions (model={model}, history_len={len(history) if history else 0})")
 
         system_prompt = current_app.config.get('CHAT_SYSTEM_PROMPT', "You are a helpful assistant.")
         messages = []
@@ -221,12 +294,7 @@ get_response = ask
 
 def create_assistant(name, instructions, model="gpt-4-turbo"):
     try:
-        global client
-        if client is None:
-            api_key = current_app.config.get('OPENAI_API_KEY')
-            if not api_key:
-                raise RuntimeError("OPENAI_API_KEY is not set in Flask config")
-            client = OpenAI(api_key=api_key)
+        _init_client()
         assistant = client.beta.assistants.create(
             name=name,
             instructions=instructions,
@@ -244,13 +312,7 @@ import json
 
 
 def _ensure_client():
-    global client
-    if client is None:
-        api_key = current_app.config.get('OPENAI_API_KEY')
-        if not api_key:
-            raise RuntimeError("OPENAI_API_KEY is not set in Flask config")
-        client = OpenAI(api_key=api_key)
-    return client
+    return _init_client()
 
 
 def respond_structured(prompt: str, state: dict | None = None, tools: list | None = None) -> dict:
@@ -330,3 +392,41 @@ def respond_structured(prompt: str, state: dict | None = None, tools: list | Non
     except Exception as e:
         logger.error(f"respond_structured error: {e}")
         return {"error": str(e)}
+
+
+def get_embedding_vector(text: str) -> List[float]:
+    """
+    Получает embedding-вектор для текста через OpenAI.
+    Использует существующий OpenAI client (см. _init_client).
+    """
+    if not isinstance(text, str) or not text.strip():
+        raise ValueError("text must be a non-empty string")
+
+    _init_client()
+    model = current_app.config.get("RAG_EMBEDDING_MODEL", "text-embedding-3-small")
+    resp = client.embeddings.create(model=model, input=text)
+    return list(resp.data[0].embedding)
+
+
+def transcribe_audio(file_storage) -> str:
+    """
+    Принимает werkzeug FileStorage с аудио и возвращает текст.
+    Включается через ENABLE_VOICE.
+    """
+    _init_client()
+
+    audio_bytes = file_storage.read()
+    try:
+        file_storage.seek(0)
+    except Exception:
+        pass
+
+    bio = io.BytesIO(audio_bytes)
+    # openai python expects a file-like object with a name
+    bio.name = getattr(file_storage, "filename", None) or "audio.wav"
+
+    resp = client.audio.transcriptions.create(
+        model="gpt-4o-transcribe",
+        file=bio,
+    )
+    return (getattr(resp, "text", None) or "").strip()
