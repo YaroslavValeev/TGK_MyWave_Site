@@ -127,7 +127,10 @@ def _get_row_number_from_record(record: Dict, index_in_records: int) -> Optional
 def _get_public_blog_base_url() -> str:
     """
     Базовый URL для canonical_url.
-    Если в конфиге задан SERVER_NAME, используем его. Иначе fallback на основной домен проекта.
+    Если в конфиге задан SERVER_NAME, используем его. Иначе fallback на canonical домен проекта.
+    
+    Canonical домен: mywavetreaning.ru (регистрация до 12.02.2027)
+    Альтернативные домены должны редиректить на canonical.
     """
     try:
         server_name = (current_app.config.get("SERVER_NAME") or "").strip() if current_app else ""
@@ -135,7 +138,7 @@ def _get_public_blog_base_url() -> str:
         server_name = ""
     if server_name:
         return f"https://{server_name}".rstrip("/")
-    return "https://mywavetraining.ru"
+    return "https://mywavetreaning.ru"
 
 
 def _make_canonical_url(slug: str) -> Optional[str]:
@@ -714,6 +717,16 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
     
     stats = {"published": 0, "failed": 0, "locked": 0, "skipped": 0}
     
+    # P0: счётчики для мониторинга кодов ошибок
+    p0_error_counts = {
+        WP_SCHEMA_MISMATCH: 0,
+        WP_ROW_NUMBER_MISSING: 0,
+        WP_ROW_NUMBER_INVALID: 0,
+        WP_ROW_NUMBER_AMBIGUOUS: 0,
+    }
+    schema_mismatch_missing_cols = {}  # {col_name: count} для топ причин
+    successful_acks = 0
+    
     # Проверяем наличие publish-колонок перед публикацией
     try:
         from app.services.blog.sheets_columns import check_publish_columns
@@ -761,6 +774,9 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
         schema_ok, missing_cols = _validate_writeback_schema(headers)
         if not schema_ok:
             logger.warning(f"[blog-publish] Несовпадение схемы Sheets (publish_ready_posts): missing={missing_cols}")
+            # Собираем статистику по отсутствующим колонкам
+            for col in missing_cols:
+                schema_mismatch_missing_cols[col] = schema_mismatch_missing_cols.get(col, 0) + 1
         
         now = datetime.utcnow()
         
@@ -832,6 +848,9 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
                 ok, n, code = _validate_row_number(row.get("row_number"))
                 code = code or WP_ROW_NUMBER_INVALID
                 logger.warning(f"[blog-publish] row_number отсутствует/невалиден для id={sheet_id}: {code}")
+                # P0: собираем статистику по кодам ошибок
+                if code in p0_error_counts:
+                    p0_error_counts[code] += 1
                 # P0: пробуем записать publish_error по уникальному совпадению ID
                 record_publish_error_by_id(sheet_id, code, logger=logger)
                 continue
@@ -839,6 +858,7 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
             # Если схема невалидна — не публикуем, но фиксируем WP_SCHEMA_MISMATCH
             if not schema_ok:
                 stats["failed"] += 1
+                p0_error_counts[WP_SCHEMA_MISMATCH] += 1
                 record_publish_error(row_number, WP_SCHEMA_MISMATCH, increment_attempts=False, logger=logger)
                 continue
             
@@ -967,6 +987,7 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
                 slug = post.slug if post else None
                 if ack_publish(row_number, sheet_id, published_at, slug=slug, logger=logger):
                     stats["published"] += 1
+                    successful_acks += 1
                     logger.info(f"[blog-publish] Пост {sheet_id} опубликован (строка {row_number})")
                 else:
                     # Если ack не удался, но БД обновлена - всё равно считаем успехом
@@ -991,6 +1012,30 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
             f"[blog-publish] Статистика: опубликовано={stats['published']}, "
             f"ошибок={stats['failed']}, заблокировано={stats['locked']}, пропущено={stats['skipped']}"
         )
+        
+        # P0: Логирование мониторинга кодов ошибок
+        total_p0_errors = sum(p0_error_counts.values())
+        if total_p0_errors > 0:
+            error_details = ", ".join([f"{code}: {count}" for code, count in p0_error_counts.items() if count > 0])
+            logger.warning(
+                f"[blog-publish] P0-коды ошибок за сессию (всего {total_p0_errors}): {error_details}"
+            )
+        
+        # P0: Топ причин WP_SCHEMA_MISMATCH
+        if schema_mismatch_missing_cols:
+            top_missing = sorted(schema_mismatch_missing_cols.items(), key=lambda x: -x[1])[:5]
+            missing_list = ", ".join([f"{col}: {count}" for col, count in top_missing])
+            logger.warning(
+                f"[blog-publish] Топ отсутствующих колонок (WP_SCHEMA_MISMATCH): {missing_list}"
+            )
+        
+        # P0: Доля успешных ack
+        total_attempts = stats["published"] + stats["failed"]
+        if total_attempts > 0:
+            ack_success_rate = (successful_acks / total_attempts) * 100
+            logger.info(
+                f"[blog-publish] Доля успешных ack: {successful_acks}/{total_attempts} ({ack_success_rate:.1f}%)"
+            )
         
         # Детальная диагностика - ВСЕГДА выводим
         logger.info(

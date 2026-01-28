@@ -1,0 +1,96 @@
+---
+description: Контекст и стандарты для сайта‑публикатора
+alwaysApply: true
+---
+
+# Роль и контекст
+
+- Сайт — основной объект разработки; Parser Bot — внешний поставщик данных.
+- Поток данных: таблица/Parser Bot → сайт → запись результата обратно.
+
+# Source of Truth (таблица)
+
+- **Единый источник истины по колонкам/статусам/контракту публикаций**: `https://docs.google.com/spreadsheets/d/1RJpw2mAMej3a-VC6yKAsKkVQvzGStcjUC7LijNNyn50/edit?pli=1&gid=1039755742#gid=1039755742`
+- Если содержимое недоступно без авторизации, фиксируй схему по предоставленным:
+  - заголовкам колонок (1-я строка),
+  - описанию вкладки/`gid`,
+  - примерам 1–3 строк (без токенов/PII).
+
+## Схема колонок (по заголовкам вкладки `gid=1039755742`)
+
+Ниже — **canonical-названия колонок** (используй их как контракт при маппинге/валидации/записи результатов):
+
+- `id`
+- `source_type`, `source_name`, `source_url`
+- `created_at`, `updated_at`, `published_at`, `original_published_at`, `scheduled_at`
+- `ingest_status`, `ingest_error`, `ingest_attempts`, `ingest_last_try_at`
+- `process_status`, `processed_at`, `process_error`
+- `raw_id`, `source_item_id`
+- `raw_title`, `raw_content`, `raw_html`, `raw_media`, `raw_tags`, `lang`, `checksum`
+- `parse_error`, `debug_info`
+- `expert_opinion`, `need_opinion`, `questions`, `user_answers`
+- `final_posts`, `final_ready`, `final_version`, `canonical_url`, `cover_image_url`, `slug`, `content_format`
+- `summary`, `excerpt`, `content_md`, `seo_title`, `meta_description`, `og_title`, `og_description`, `schema_json`
+- `status`, `row_number`, `published_posts`, `review_queue`, `error_log`
+- `news_id`, `user_id`, `answer_type`, `answer_text`
+- `approved_by`, `approved_at`
+- `publish_attempts`, `publish_last_try_at`, `publish_error`
+- `publish_lock_by`, `publish_lock_until`
+- `media_json`
+- `marketing_pack`
+- `telegram_published`
+
+Примечания:
+- **Порядок/наличие** колонок может отличаться между вкладками — сверяйся с заголовками именно этой вкладки.
+- В логах/ошибках всегда используй корреляцию по `row_number` и/или `raw_id` (если есть), и **не логируй** содержимое длинных полей (`raw_content`, `final_posts`, `answer_text`) целиком.
+
+# Контракты/Инфраструктура
+
+## Домены и canonical URL (прод)
+
+**Canonical домен проекта:** `mywavetreaning.ru`
+
+**Регистрация домена продлена до:** 12.02.2027
+
+**Публичный base_url для блога:** `https://mywavetreaning.ru`
+
+**Путь публикаций фиксированный:** `/blog/{slug}`
+
+**canonical_url для записей:** `{base_url}/blog/{slug}`
+
+**Требование:** Если где-то используется альтернативный домен (например, `mywavetraining.ru`), он должен вести на canonical (редирект/каноникал-теги), чтобы не разъезжались URL в таблице и SEO.
+
+**Реализация:**
+- `_get_public_blog_base_url()` в `app/services/blog/publish.py` использует `SERVER_NAME` из конфига или fallback `https://mywavetreaning.ru`
+- `_make_canonical_url(slug)` формирует полный URL: `{base_url}/blog/{slug}`
+- После успешной публикации `canonical_url` записывается в `raw_feed` через `ack_publish()`
+
+**Важно:** Все canonical URL должны использовать только `mywavetreaning.ru`. Альтернативные варианты написания домена должны редиректить на canonical для консистентности SEO и данных в таблице.
+
+# Принципы изменений
+
+- Минимальные и совместимые правки, без регрессий.
+- Слои: API/хендлеры → доменная логика → интеграции → инфраструктура.
+- Надёжность: таймауты, ретраи, идемпотентность, защита от частичных обновлений.
+- Логи: структурированные, без секретов и PII, корреляция по `job_id/row_id/article_id`.
+
+# Требования к ответу
+
+1) Резюме запроса.  
+2) План изменений (Design Plan).  
+3) Реализация в коде (Cursor‑ready).  
+4) Тесты и проверка.  
+5) Миграция и деплой.  
+6) Риски и допущения.
+
+# Данные от Parser Bot/менеджера
+
+- Извлекай изменения полей/статусов/правил и затронутые части кода.
+- При нехватке данных делай допущения и явно их перечисляй.
+- Задавай не более 1–3 уточнений, только если иначе нельзя безопасно продолжать.
+
+# Мини‑пример логирования
+
+```
+logger.info("publish_result", extra={"row_id": row_id, "status": status, "job_id": job_id})
+```
