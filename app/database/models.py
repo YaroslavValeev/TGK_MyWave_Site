@@ -135,12 +135,40 @@ class Contact(db.Model):
 # --- Блог и чат ---
 class BlogPost(db.Model):
     __tablename__ = 'blog_post'
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    teaser = db.Column(db.String(500), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    slug = db.Column(db.String(100), unique=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    # Основной ID из Sheets (строка, не Integer)
+    id = db.Column(db.String(128), primary_key=True)
+    
+    # source / идентификация
+    source_type = db.Column(db.String(64), nullable=True)
+    source_name = db.Column(db.String(128), nullable=True)
+    source_url = db.Column(db.Text, nullable=True)
+    
+    # контент
+    title = db.Column(db.String(256), nullable=False)
+    slug = db.Column(db.String(320), unique=True, nullable=False, index=True)
+    excerpt = db.Column(db.Text, nullable=True)  # lead/teaser
+    
+    content_md = db.Column(db.Text, nullable=True)  # markdown исходник
+    content_html = db.Column(db.Text, nullable=True)  # уже санитайзенный HTML
+    # Обратная совместимость: content для старых записей
+    content = db.Column(db.Text, nullable=True)
+    teaser = db.Column(db.String(500), nullable=True)  # для обратной совместимости
+    
+    cover_image_url = db.Column(db.Text, nullable=True)
+    tags_json = db.Column(db.Text, nullable=True)  # JSON string array
+    
+    lang = db.Column(db.String(16), nullable=True)
+    
+    checksum = db.Column(db.String(128), nullable=True, index=True)
+    status = db.Column(db.String(64), nullable=True, index=True)
+    
+    sheet_row_number = db.Column(db.Integer, nullable=True)
+    
+    published_at = db.Column(db.DateTime, nullable=True, index=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    
     chat_messages = db.relationship('ChatMessage', backref='blog_post', lazy=True)
     image_id = db.Column(db.Integer, db.ForeignKey('image.id'))  # Обложка поста
     image = db.relationship('Image', backref='blog_posts', lazy=True)

@@ -1,0 +1,30 @@
+---
+description: "Google APIs rules: Sheets/Calendar/Drive safety, timeouts, retries, idempotency."
+---
+
+# Google APIs Rules (MANDATORY)
+
+## General
+- All Google API calls must go through adapters.
+- ALWAYS set timeouts (transport/client-level).
+- ALWAYS handle transient failures (retry where safe).
+- NEVER log credentials, tokens, or full sensitive payloads.
+
+## Sheets
+- Treat Sheets as an external system: validate inputs, handle partial failures.
+- Avoid writing duplicate rows on retries: use a stable dedup key if applicable.
+- Log only high-level outcomes (rows_written, sheet_name, elapsed_ms).
+
+## Calendar
+- MUST be idempotent: retries must not create duplicate events.
+- Prefer update-if-exists using a deterministic identity strategy.
+- Store a stable event mapping where the project already supports it.
+- Any event creation must include stable metadata needed for later lookup.
+
+## Drive
+- Uploads must be idempotent when retried (avoid duplicate files if project has a strategy).
+- Avoid exposing private folder IDs in logs.
+
+## Safe Logging
+- Mask IDs, never print raw tokens.
+- If debugging requires payload: redact fields containing PII/secrets.

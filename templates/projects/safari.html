@@ -1,0 +1,480 @@
+{% extends "base.html" %}
+
+{% block title %}{{ meta.title }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="canonical" href="{{ meta.og.url or request.url }}">
+
+  <meta name="description" content="{{ meta.description }}">
+
+  <meta property="og:type" content="{{ meta.og.type or 'website' }}">
+  <meta property="og:title" content="{{ meta.og.title or meta.title }}">
+  <meta property="og:description" content="{{ meta.og.description or meta.description }}">
+  <meta property="og:image" content="{{ meta.og.image }}">
+  <meta property="og:url" content="{{ meta.og.url or request.url }}">
+
+  <meta name="twitter:card" content="{{ meta.twitter.card or 'summary_large_image' }}">
+  <meta name="twitter:title" content="{{ meta.twitter.title or meta.title }}">
+  <meta name="twitter:description" content="{{ meta.twitter.description or meta.description }}">
+  <meta name="twitter:image" content="{{ meta.twitter.image or meta.og.image }}">
+
+  <script type="application/ld+json">{{ schema_event | tojson | safe }}</script>
+{% endblock %}
+
+{% block content %}
+
+<section class="mw-section mw-hero safari-hero" id="top">
+  <div class="mw-container">
+    <div class="safari-hero__badge">Premium Experience • 10.07.2026 — 18.07.2026</div>
+    <h1 class="safari-hero__title">Wake Surf Safari 2026</h1>
+    <p class="safari-hero__subtitle">
+      Экспедиционный вейксерф-тур по Волге: волны, маршрут, комьюнити, медиа. Без соревнований — только прогресс и свобода.
+    </p>
+
+    <div class="safari-hero__actions">
+      <a class="btn-primary" href="#join">Стать участником</a>
+      <a class="btn-secondary btn-ghost" href="#partner-form">Стать партнёром</a>
+    </div>
+  </div>
+</section>
+
+<!-- Sticky subnav -->
+<div class="mw-subnav" id="mw-subnav">
+  <div class="mw-container mw-subnav__inner">
+    <nav class="mw-subnav__links" aria-label="Навигация по странице">
+      {% for item in menu %}
+        {% if item.href and item.href.startswith('#') and not item.get('cta') %}
+          <a class="mw-subnav__link js-scrollspy-link" href="{{ item.href }}">{{ item.title }}</a>
+        {% elif item.get('cta') and item.title == 'Стать участником' %}
+          <a class="mw-subnav__link js-scrollspy-link" href="#join">{{ item.title }}</a>
+        {% elif item.get('cta') and item.title == 'Стать партнёром' %}
+          <a class="mw-subnav__link js-scrollspy-link" href="#partner-form">{{ item.title }}</a>
+        {% endif %}
+      {% endfor %}
+    </nav>
+
+    <div class="mw-subnav__cta">
+      <a class="btn-primary mw-subnav__btn" href="#join">Записаться</a>
+    </div>
+  </div>
+</div>
+
+<!-- Контент из index.md -->
+<section class="mw-section" id="content">
+  <div class="mw-container">
+    <div class="mw-card safari-md">
+      {{ html | safe }}
+    </div>
+  </div>
+</section>
+
+<!-- Партнёрские пакеты -->
+<section class="mw-section mw-surface" id="for-partners">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Партнёрские пакеты</h2>
+
+      <div class="cards-grid">
+        {% for p in partner_packages.packages %}
+          <div class="mw-card safari-package">
+            <div class="safari-package__top">
+              <h3>{{ p.name }}</h3>
+              <div class="safari-package__price">{{ "{:,}".format(p.price).replace(",", " ") }} {{ p.currency or '₽' }}</div>
+            </div>
+            <ul class="safari-package__ul">
+              {% for b in p.benefits %}
+                <li>{{ b }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+      </div>
+
+      <p class="safari-contacts">
+        Контакты: <a href="mailto:{{ partner_packages.contact.email }}">{{ partner_packages.contact.email }}</a> ·
+        <a href="tel:+79160117179">{{ partner_packages.contact.phone }}</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Форма для партнёров -->
+<section class="mw-section" id="partner-form">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Стать партнёром</h2>
+      <p>Заполните форму, и мы свяжемся с вами для обсуждения условий партнёрства.</p>
+
+      <form class="mw-form js-safari-partner" method="post" action="/api/safari/partner">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="mw-grid-2">
+          <div class="mw-field">
+            <label>Название компании *</label>
+            <input name="company_name" required maxlength="100">
+          </div>
+          <div class="mw-field">
+            <label>Контактное лицо *</label>
+            <input name="contact_name" required maxlength="100">
+          </div>
+          <div class="mw-field">
+            <label>Email *</label>
+            <input type="email" name="email" required>
+          </div>
+          <div class="mw-field">
+            <label>Телефон *</label>
+            <input type="tel" name="phone" required placeholder="+7 (916) 011-71-79">
+          </div>
+          <div class="mw-field">
+            <label>Интересующий пакет</label>
+            <select name="package_interest">
+              <option value="">Выберите пакет</option>
+              {% for p in partner_packages.packages %}
+                <option value="{{ p.name }}">{{ p.name }} ({{ p.tier }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mw-field">
+            <label>Отрасль бизнеса</label>
+            <select name="company_industry">
+              <option value="">Выберите отрасль</option>
+              <option value="sports">Спорт и фитнес</option>
+              <option value="outdoor">Активный отдых</option>
+              <option value="fashion">Мода и стиль</option>
+              <option value="tech">Технологии</option>
+              <option value="food">Еда и напитки</option>
+              <option value="travel">Туризм</option>
+              <option value="media">Медиа и реклама</option>
+              <option value="other">Другое</option>
+            </select>
+          </div>
+          <div class="mw-field">
+            <label>Размер компании</label>
+            <select name="company_size">
+              <option value="">Выберите размер</option>
+              <option value="startup">Стартап (1-10 человек)</option>
+              <option value="small">Малый бизнес (11-50 человек)</option>
+              <option value="medium">Средний бизнес (51-200 человек)</option>
+              <option value="large">Крупный бизнес (200+ человек)</option>
+            </select>
+          </div>
+          <div class="mw-field">
+            <label>Бюджет на партнёрство</label>
+            <select name="budget_range">
+              <option value="">Выберите диапазон</option>
+              <option value="100-300k">100-300 тыс. ₽</option>
+              <option value="300-500k">300-500 тыс. ₽</option>
+              <option value="500k-1m">500 тыс. - 1 млн. ₽</option>
+              <option value="1m+">1 млн. ₽ и более</option>
+            </select>
+          </div>
+          <div class="mw-field">
+            <label>Опыт спонсорства</label>
+            <select name="previous_sponsorship">
+              <option value="">Выберите вариант</option>
+              <option value="yes">Да, есть опыт</option>
+              <option value="no">Нет, первый раз</option>
+            </select>
+          </div>
+          <div class="mw-field">
+            <label>Сроки принятия решения</label>
+            <select name="decision_timeline">
+              <option value="">Выберите срок</option>
+              <option value="immediate">Немедленно</option>
+              <option value="1week">В течение недели</option>
+              <option value="1month">В течение месяца</option>
+              <option value="2-3months">2-3 месяца</option>
+              <option value="longer">Более 3 месяцев</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mw-field">
+          <label>Ожидания от партнёрства</label>
+          <textarea name="expectations" rows="3" maxlength="500" placeholder="Что вы ожидаете от сотрудничества?"></textarea>
+        </div>
+
+        <div class="mw-field">
+          <label>Комментарий</label>
+          <textarea name="comment" rows="4" maxlength="500" placeholder="Дополнительная информация"></textarea>
+        </div>
+
+        <button class="btn-primary" type="submit">Отправить заявку</button>
+        
+        <div class="mw-form-message" id="safari-partner-message"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Форма регистрации участника -->
+<section class="mw-section" id="join">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Стать участником</h2>
+      <p>Форма (MVP): оставьте контакты, мы свяжемся и уточним формат участия.</p>
+
+      <form class="mw-form js-safari-participant" method="post" action="/api/safari/participant">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="mw-grid-2">
+          <div class="mw-field">
+            <label>ФИО *</label>
+            <input name="full_name" required maxlength="100">
+          </div>
+          <div class="mw-field">
+            <label>Email *</label>
+            <input type="email" name="email" required>
+          </div>
+          <div class="mw-field">
+            <label>Телефон *</label>
+            <input type="tel" name="phone" required placeholder="+7 (916) 011-71-79">
+          </div>
+          <div class="mw-field">
+            <label>Возраст</label>
+            <input type="number" name="age" min="16" max="80" placeholder="Лет">
+          </div>
+          <div class="mw-field">
+            <label>Город проживания</label>
+            <input name="city" maxlength="100" placeholder="Москва">
+          </div>
+          <div class="mw-field">
+            <label>Формат участия</label>
+            <select name="participation_type">
+              <option value="">Выберите формат</option>
+              <option value="full">Полный маршрут (9 дней)</option>
+              <option value="1day">Частично (1 день)</option>
+              <option value="3days">Частично (3 дня)</option>
+              <option value="5days">Частично (5 дней)</option>
+              <option value="7days">Частично (7 дней)</option>
+              <option value="online">Онлайн-участие</option>
+            </select>
+          </div>
+          <div class="mw-field">
+            <label>Уровень катания</label>
+            <select name="skill_level">
+              <option value="">Выберите уровень</option>
+              <option value="beginner">Новичок</option>
+              <option value="intermediate">Средний</option>
+              <option value="advanced">Продвинутый</option>
+              <option value="pro">Профессионал</option>
+            </select>
+          </div>
+          <div class="mw-field">
+            <label>Опыт в вейксерфинге (лет)</label>
+            <input type="number" name="experience_years" min="0" max="50" placeholder="0">
+          </div>
+          <div class="mw-field">
+            <label>Откуда узнали о проекте?</label>
+            <select name="source_info">
+              <option value="">Выберите источник</option>
+              <option value="instagram">Instagram</option>
+              <option value="telegram">Telegram</option>
+              <option value="youtube">YouTube</option>
+              <option value="facebook">Facebook</option>
+              <option value="vk">ВКонтакте</option>
+              <option value="friend">От друзей/знакомых</option>
+              <option value="website">Сайт MyWave</option>
+              <option value="search">Поиск в интернете</option>
+              <option value="other">Другое</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mw-grid-2">
+          <div class="mw-field">
+            <label>Instagram (опционально)</label>
+            <input name="social_instagram" maxlength="200" placeholder="@username">
+          </div>
+          <div class="mw-field">
+            <label>Telegram (опционально)</label>
+            <input name="social_telegram" maxlength="200" placeholder="@username">
+          </div>
+        </div>
+
+        <div class="mw-field">
+          <label>Комментарий</label>
+          <textarea name="comment" rows="4" maxlength="500" placeholder="Дополнительная информация, вопросы, пожелания"></textarea>
+        </div>
+
+        <div class="mw-field">
+          <label style="display: flex; align-items: start; gap: 8px; cursor: pointer;">
+            <input type="checkbox" name="consent_data" required>
+            <span>Я согласен(а) на обработку персональных данных *</span>
+          </label>
+        </div>
+        <div class="mw-field">
+          <label style="display: flex; align-items: start; gap: 8px; cursor: pointer;">
+            <input type="checkbox" name="consent_media" required>
+            <span>Я согласен(а) на использование моих фото/видео в медиаматериалах проекта *</span>
+          </label>
+        </div>
+
+        <button class="btn-primary" type="submit">Отправить заявку</button>
+        
+        <div class="mw-form-message" id="safari-participant-message"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Форма для медиа -->
+<section class="mw-section" id="media-form">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Медиа-партнёрам</h2>
+      <p>Если вы блогер, журналист или медиа-издание, заполните форму для сотрудничества.</p>
+
+      <form class="mw-form js-safari-media" method="post" action="/api/safari/media">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="mw-grid-2">
+          <div class="mw-field">
+            <label>Название медиа/канала *</label>
+            <input name="media_name" required maxlength="100">
+          </div>
+          <div class="mw-field">
+            <label>Контактное лицо *</label>
+            <input name="contact_name" required maxlength="100">
+          </div>
+          <div class="mw-field">
+            <label>Email *</label>
+            <input type="email" name="email" required>
+          </div>
+          <div class="mw-field">
+            <label>Телефон *</label>
+            <input type="tel" name="phone" required>
+          </div>
+          <div class="mw-field">
+            <label>Тип медиа</label>
+            <select name="media_type">
+              <option value="">Выберите тип</option>
+              <option value="blog">Блог</option>
+              <option value="youtube">YouTube</option>
+              <option value="instagram">Instagram</option>
+              <option value="tiktok">TikTok</option>
+              <option value="media">СМИ</option>
+              <option value="other">Другое</option>
+            </select>
+          </div>
+          <div class="mw-field">
+            <label>Подписчики YouTube</label>
+            <input name="platform_youtube" type="number" min="0" placeholder="0">
+          </div>
+          <div class="mw-field">
+            <label>Подписчики Instagram</label>
+            <input name="platform_instagram" type="number" min="0" placeholder="0">
+          </div>
+          <div class="mw-field">
+            <label>Подписчики TikTok</label>
+            <input name="platform_tiktok" type="number" min="0" placeholder="0">
+          </div>
+          <div class="mw-field">
+            <label>Другие платформы (подписчики)</label>
+            <input name="platform_other" type="number" min="0" placeholder="0">
+          </div>
+          <div class="mw-field">
+            <label>Общая аудитория</label>
+            <input name="audience_total" placeholder="Например: 150K">
+          </div>
+          <div class="mw-field">
+            <label>Средний охват поста</label>
+            <input name="audience_avg_reach" placeholder="Например: 20K">
+          </div>
+          <div class="mw-field">
+            <label>Тип контента</label>
+            <select name="content_type">
+              <option value="">Выберите тип</option>
+              <option value="video">Видео</option>
+              <option value="photo">Фото</option>
+              <option value="stories">Stories/Reels</option>
+              <option value="articles">Статьи</option>
+              <option value="mixed">Смешанный</option>
+            </select>
+          </div>
+          <div class="mw-field">
+            <label>География аудитории</label>
+            <input name="audience_geo" maxlength="200" placeholder="Например: Россия, Москва, СПб">
+          </div>
+        </div>
+
+        <div class="mw-field">
+          <label>Ссылка на портфолио/канал</label>
+          <input type="url" name="portfolio_url" placeholder="https://...">
+        </div>
+
+        <div class="mw-field">
+          <label>Формат сотрудничества</label>
+          <select name="collaboration_type">
+            <option value="">Выберите формат</option>
+            <option value="coverage">Освещение проекта</option>
+            <option value="participation">Участие в экспедиции</option>
+            <option value="content">Создание контента</option>
+            <option value="partnership">Долгосрочное партнёрство</option>
+          </select>
+        </div>
+
+        <div class="mw-field">
+          <label>Комментарий</label>
+          <textarea name="comment" rows="4" maxlength="500"></textarea>
+        </div>
+
+        <button class="btn-primary" type="submit">Отправить заявку</button>
+        
+        <div class="mw-form-message" id="safari-media-message"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Форма фидбека -->
+<section class="mw-section" id="feedback-form">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Обратная связь</h2>
+      <p>Есть вопросы или предложения? Напишите нам!</p>
+
+      <form class="mw-form js-safari-feedback" method="post" action="/api/safari/feedback">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="mw-grid-2">
+          <div class="mw-field">
+            <label>Ваше имя *</label>
+            <input name="name" required maxlength="100">
+          </div>
+          <div class="mw-field">
+            <label>Email *</label>
+            <input type="email" name="email" required>
+          </div>
+          <div class="mw-field">
+            <label>Тип обращения</label>
+            <select name="feedback_type">
+              <option value="question">Вопрос</option>
+              <option value="suggestion">Предложение</option>
+              <option value="complaint">Жалоба</option>
+              <option value="other">Другое</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mw-field">
+          <label>Сообщение *</label>
+          <textarea name="message" rows="6" required maxlength="1000" placeholder="Ваше сообщение..."></textarea>
+        </div>
+
+        <button class="btn-primary" type="submit">Отправить</button>
+        
+        <div class="mw-form-message" id="safari-feedback-message"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script defer src="{{ url_for('static', filename='js/scrollspy_progress.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/safari-forms.js') }}"></script>
+{% endblock %}
+

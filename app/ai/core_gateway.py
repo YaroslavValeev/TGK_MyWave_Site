@@ -1,321 +1,67 @@
-"""Core AI Gateway - a lightweight, testable integration layer for OpenAI.
-
-This module provides a small, dependency-free facade that can be used in
-development (mocked) and production (real OpenAI client). It supports:
-- registration of callable tools (by name)
-- dispatching simple tool calls
-- sending chat-like messages to the configured client
-
-Design choices (intentional):
-- keep runtime dependencies minimal so unit tests don't need OpenAI SDK
-- expose a MockOpenAIClient to allow local development and CI tests
-- keep function-calling plumbing simple and explicit (a real implementation
-  can replace the client with one that calls OpenAI Responses / Agents SDK)
-"""
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Optional
-import json
-import os
 import logging
-import time
-import uuid
+
+from flask import Flask
+
+from app.ai.mcp_registry import mcp_registry, load_mcp_tools_from_config
+from app.ai.register_tools import register_all_tools
+from app.services.openai_service import ask
+from app.services.rules import ChatMode
+
+logger = logging.getLogger(__name__)
+
+
+ToolFn = Callable[[Dict[str, Any]], Any]
 
 
 @dataclass
-class ToolDefinition:
-    name: str
-    description: str
-    schema: Optional[Dict[str, Any]] = None
+class AIGateway:
+    """
+    Minimal AI gateway skeleton:
+    - holds a tool registry
+    - provides a single handle_message entrypoint
 
-
-class OpenAIClientInterface:
-    """Minimal interface for an OpenAI-like client.
-
-    A production client should implement `send_chat` and optionally
-    `parse_function_response` if using function calling.
+    Tool execution loop / function-calling can be added later; for now this is a stable façade.
     """
 
-    def send_chat(
-        self,
-        system: str,
-        user_message: str,
-        user_id: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
-        raise NotImplementedError()
+    app: Flask
+    tools: Dict[str, ToolFn]
 
+    def register_tool(self, name: str, fn: ToolFn) -> None:
+        if not name or not callable(fn):
+            raise ValueError("Invalid tool registration")
+        self.tools[name] = fn
 
-class MockOpenAIClient(OpenAIClientInterface):
-    """Simple mock client for local testing.
-
-    Behavior:
-    - If the user message matches the pattern `__call_tool__:tool_name:payload`,
-      returns a structured response indicating a tool call request.
-    - Otherwise returns a trivial assistant reply.
-    """
-
-    def send_chat(
-        self,
-        system: str,
-        user_message: str,
-        user_id: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
-        # Detect fake function-calling trigger
-        if user_message.startswith("__call_tool__:"):
-            try:
-                _, tool_name, payload = user_message.split(':', 2)
-            except ValueError:
-                tool_name = 'unknown'
-                payload = '{}'
-
-            # Simulate the model requesting a tool call by returning a special structure
-            return {
-                'type': 'tool_call',
-                'tool_name': tool_name,
-                'tool_payload': json.loads(payload or '{}')
-            }
-
-        # Default assistant response
-        return {'type': 'assistant', 'text': f"(mock reply) I received: {user_message}"}
-
-
-class CoreAIGateway:
-    """Registers tools and routes messages through the OpenAI client.
-
-    Usage pattern:
-    - instantiate with a client (mock or real)
-    - register tool callbacks via `register_tool(name, callable)`
-    - call `handle_message(user_message, user_id)` to get a response
-    """
-
-    def __init__(
-        self,
-        client: OpenAIClientInterface,
-        system_prompt: Optional[str] = None,
-        tool_validator: Optional[Callable[[str, Dict[str, Any] | None], Any]] = None,
-    ):
-        self.client = client
-        self.system_prompt = system_prompt or "You are a helpful assistant."
-        # store mapping: tool_name -> {'def': ToolDefinition, 'fn': callable}
-        self.tools: Dict[str, Dict[str, Any]] = {}
-        self.tool_validator = tool_validator
-
-    def register_tool(self, tool: ToolDefinition, fn: Callable[[Dict[str, Any]], Any]) -> None:
-        if tool.name in self.tools:
-            raise ValueError(f"tool already registered: {tool.name}")
-        self.tools[tool.name] = {'def': tool, 'fn': fn}
-
-    def call_tool(self, tool_name: str, payload: Dict[str, Any]) -> Any:
-        entry = self.tools.get(tool_name)
-        if entry is None:
-            raise KeyError(f"unknown tool: {tool_name}")
-
-        tool_def: ToolDefinition = entry.get('def')
-        fn: Callable[[Dict[str, Any]], Any] = entry.get('fn')
-
-        # Tracing / logging: generate a tool_call_id
-        tool_call_id = str(uuid.uuid4())
-        logger = logging.getLogger(__name__)
-        logger.info("tool_call.start", extra={"tool": tool_name, "tool_call_id": tool_call_id})
-
-        # expose last tool call id on the gateway instance for callers that need it
+    def handle_message(self, user_id: str, message: str, context: Optional[dict] = None) -> Dict[str, Any]:
+        # Keep it deterministic and safe: no logging of raw message/user PII
         try:
-            self._last_tool_call_id = tool_call_id
-        except Exception:
-            pass
-
-        # Validate payload against tool schema if provided
-        if tool_def and tool_def.schema:
-            try:
-                # Use centralized validation function
-                from app.ai.tools_schema import validate_tool_input
-                validate_tool_input(tool_name, payload or {})
-            except Exception as e:
-                # Increment validation failure metric
-                try:
-                    from app.ai.metrics import TOOL_VALIDATION_FAILURE_COUNTER
-                    TOOL_VALIDATION_FAILURE_COUNTER.inc()
-                except Exception:
-                    pass
-                # Normalize jsonschema ValidationError and re-raise for callers to handle
-                logger.warning("tool_call.validation_failed", extra={"tool": tool_name, "tool_call_id": tool_call_id, "reason": str(e)})
-                raise e
-
-        # Retries/backoff configuration via env
-        try:
-            retry_count = int(os.environ.get('TOOL_RETRY_COUNT', '2'))
-        except Exception:
-            retry_count = 2
-        try:
-            backoff_base = float(os.environ.get('TOOL_RETRY_BACKOFF_SEC', '0.5'))
-        except Exception:
-            backoff_base = 0.5
-
-        # Exceptions that should NOT be retried
-        non_retryable = ()
-        try:
-            from jsonschema.exceptions import ValidationError as _ValidationError2
-            non_retryable = (_ValidationError2, ValueError, KeyError)
-        except Exception:
-            non_retryable = (ValueError, KeyError)
-
-        attempt = 0
-        start_ts = time.time()
-        last_exc = None
-        while attempt <= retry_count:
-            try:
-                attempt += 1
-                logger.debug("tool_call.attempt", extra={"tool": tool_name, "tool_call_id": tool_call_id, "attempt": attempt})
-                result = fn(payload)
-                elapsed = time.time() - start_ts
-                logger.info("tool_call.success", extra={"tool": tool_name, "tool_call_id": tool_call_id, "attempts": attempt, "elapsed": elapsed})
-                # ensure last id remains accessible
-                try:
-                    self._last_tool_call_id = tool_call_id
-                except Exception:
-                    pass
-                return result
-            except Exception as exc:
-                last_exc = exc
-                # If non-retryable exception, re-raise immediately
-                if isinstance(exc, non_retryable):
-                    logger.error("tool_call.failed_non_retryable", extra={"tool": tool_name, "tool_call_id": tool_call_id, "attempt": attempt, "error": str(exc)})
-                    raise
-
-                # If we've exhausted retries, raise
-                if attempt > retry_count:
-                    elapsed = time.time() - start_ts
-                    logger.error("tool_call.failed", extra={"tool": tool_name, "tool_call_id": tool_call_id, "attempts": attempt, "elapsed": elapsed, "error": str(exc)})
-                    raise
-
-                # Otherwise sleep backing off and retry
-                sleep_for = backoff_base * (2 ** (attempt - 1))
-                logger.warning("tool_call.retrying", extra={"tool": tool_name, "tool_call_id": tool_call_id, "attempt": attempt, "sleep": sleep_for, "error": str(exc)})
-                time.sleep(sleep_for)
-
-        # If we exit loop, raise last exception
-        raise last_exc
-
-    def handle_message(
-        self,
-        user_message: str,
-        user_id: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
-        """Send message to client and handle possible tool-call responses.
-
-        Returns a dict with keys depending on response type:
-        - assistant: {'type': 'assistant', 'text': '...'}
-        - tool_result: {'type': 'tool_result', 'tool': name, 'result': ...}
-        """
-        resp = self.client.send_chat(
-            self.system_prompt,
-            user_message,
-            user_id=user_id,
-            context=context,
-        )
-
-        if not isinstance(resp, dict):
-            return {'type': 'assistant', 'text': str(resp)}
-
-        if resp.get('type') == 'tool_call':
-            tool_name = resp.get('tool_name')
-            payload = resp.get('tool_payload') or {}
-            try:
-                # count tool calls for metrics if available
-                try:
-                    from app.ai.metrics import TOOL_CALL_COUNTER
-                    TOOL_CALL_COUNTER.inc()
-                except Exception:
-                    pass
-
-                if self.tool_validator:
-                    try:
-                        self.tool_validator(tool_name, payload)
-                    except Exception as exc:
-                        logger = logging.getLogger(__name__)
-                        logger.warning(
-                            "tool_call.gateway_validation_failed",
-                            extra={"tool": tool_name, "error": str(exc)},
-                        )
-                        try:
-                            from app.ai.metrics import TOOL_VALIDATION_FAILURE_COUNTER
-
-                            TOOL_VALIDATION_FAILURE_COUNTER.inc()
-                        except Exception:
-                            pass
-                        return {'type': 'error', 'error': 'invalid_payload'}
-
-                result = self.call_tool(tool_name, payload)
-            except Exception as exc:
-                # Check if it's a validation error
-                try:
-                    from jsonschema.exceptions import ValidationError
-                    if isinstance(exc, ValidationError):
-                        return {'type': 'error', 'error': 'invalid_payload', 'tool': tool_name, 'message': str(exc)}
-                except Exception:
-                    pass
-                return {'type': 'tool_error', 'tool': tool_name, 'error': str(exc)}
-            return {'type': 'tool_result', 'tool': tool_name, 'result': result}
-
-        # Default passthrough
-        return resp
+            text = ask(message, mode=ChatMode.RESPONSES_API, client_id=user_id, source=(context or {}).get("agent", "web"))
+            return {"type": "text", "text": text}
+        except Exception as e:
+            logger.error("[AI gateway] handle_message error: %s", e)
+            return {"type": "error", "error": "ai_unavailable"}
 
 
-# Helper to create a default gateway depending on env var
-def create_default_gateway() -> CoreAIGateway:
-    mode = os.environ.get('MYWAVE_AI_MODE', 'mock')
-    if mode == 'real':
-        # Production: use a real client backed by app.services.openai_service.respond_structured
-        class RealOpenAIClient(OpenAIClientInterface):
-            def send_chat(
-                self,
-                system: str,
-                user_message: str,
-                user_id: Optional[str] = None,
-                context: Optional[Dict[str, Any]] = None,
-            ) -> Dict[str, Any]:
-                # Import lazily to avoid circular imports at module load time
-                try:
-                    from app.services.openai_service import respond_structured
-                except Exception as e:
-                    raise RuntimeError(f'RealOpenAIClient failed to import dependencies: {e}')
+def create_default_gateway(app: Flask) -> AIGateway:
+    gateway = AIGateway(app=app, tools={})
 
-                # Call the structured responder
-                try:
-                    enriched_message = user_message
-                    if context:
-                        ctx_str = json.dumps(context, ensure_ascii=False)
-                        enriched_message = f"[context]{ctx_str}[/context]\n{user_message}"
-                    data = respond_structured(enriched_message)
-                except Exception as e:
-                    return {'type': 'assistant', 'text': f'error: {e}'}
-
-                # If the model requested tool calls, map to gateway tool_call shape
-                if isinstance(data, dict) and 'tool_calls' in data and isinstance(data['tool_calls'], list) and data['tool_calls']:
-                    first = data['tool_calls'][0]
-                    name = first.get('name')
-                    args = first.get('arguments') or {}
-                    return {'type': 'tool_call', 'tool_name': name, 'tool_payload': args}
-
-                # Otherwise return assistant structured content
-                return {'type': 'assistant', 'text': str(data), 'structured': data}
-
-        client = RealOpenAIClient()
-    else:
-        client = MockOpenAIClient()
-
-    system = os.environ.get('MYWAVE_AI_SYSTEM_PROMPT', 'You are a helpful assistant for MyWave.')
-
+    # Register built-in tools (if present)
     try:
-        from app.ai.tools_schema import validate_tool_input as _validate_tool_input
-    except Exception:
-        _validate_tool_input = None
+        register_all_tools(gateway)
+    except Exception as e:
+        logger.error("[AI gateway] failed to register tools: %s", e)
 
-    return CoreAIGateway(client=client, system_prompt=system, tool_validator=_validate_tool_input)
+    # === MCP tools wiring (optional) ===
+    try:
+        if app.config.get("ENABLE_MCP"):
+            _ = load_mcp_tools_from_config()
+            logger.info("[MCP] Enabled with tools: %s", mcp_registry.all_names())
+    except Exception as e:
+        logger.error("[MCP] Failed to init MCP layer: %s", e)
+
+    return gateway
 
 
-__all__ = ['CoreAIGateway', 'MockOpenAIClient', 'ToolDefinition', 'create_default_gateway']

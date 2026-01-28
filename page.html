@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="content-language" content="ru" />
+  <meta name="csrf-token" content="IjczYzA5ZWQ0ZWIwOWY5Nzc2NWM1YTkyMDA5NzJhZTExNDQ4ZDA1MTci.aT5xWg._6hZ9-x2iKC9pvhf8U_LWLz-Ons" />
+  
+  <!-- SEO -->
+  <meta name="description" content="MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.">
+  <meta property="og:title" content="MyWave">
+  <meta property="og:description" content="MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.">
+  <meta property="og:image" content="http://127.0.0.1:5000/static/images/og-image.jpg">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MyWave">
+  <meta name="twitter:description" content="MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.">
+  <meta name="twitter:image" content="http://127.0.0.1:5000/static/images/og-image.jpg">
+
+  <title>MyWave — Тренировки по вейксерфингу</title>
+  <link rel="icon" href="/static/favicon.ico">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet" />
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/branding.css" />
+
+  <!-- Flatpickr -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-343773438"></script>
+  <script nonce="">
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-343773438');
+  </script>
+
+  <!-- Yandex.Metrika counter -->
+  <script nonce="" type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){ (m[i].a=m[i].a||[]).push(arguments); };
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {
+            if (document.scripts[j].src === r) { return; }
+        }
+        k = e.createElement(t), a = e.getElementsByTagName(t)[0],
+        k.async = 1, k.src = r, a.parentNode.insertBefore(k,a)
+    })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+    
+    ym(99772473, "init", {
+        clickmap:true,
+        trackLinks:true,
+        accurateTrackBounce:true,
+        webvisor:true
+    });
+  </script>
+  <noscript>
+    <div>
+      <img src="https://mc.yandex.ru/watch/99772473" style="position:absolute; left:-9999px;" alt="Счётчик Яндекс.Метрики" />
+    </div>
+  </noscript>
+
+  <!-- Structured data: Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "MyWave",
+    "url": "http://127.0.0.1:5000/",
+    "logo": "http://127.0.0.1:5000/static/images/logo.png",
+    "contactPoint": [{
+      "@type": "ContactPoint",
+      "telephone": "+7 916 011-71-79",
+      "contactType": "customer service",
+      "areaServed": "RU"
+    }]
+  }
+  </script>
+
+  <link rel="preload" href="/static/fonts/pangolin.woff2" as="font" type="font/woff2" crossorigin>
+  
+  <style>
+      body { 
+        font-family: 'Pangolin', sans-serif; 
+        background: var(--color-bg); 
+        color: var(--color-text); 
+      }
+      .site-header { 
+        background: var(--color-header); 
+        color: var(--color-text); 
+      }
+  </style>
+  
+
+  
+</head>
+
+<body>
+  <!-- Шапка -->
+  <header class="site-header" id="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <a href="/">MyWave</a>
+      </div>
+      <nav class="site-nav" id="site-nav">
+        <ul>
+          <li><a href="#hero">Главная</a></li>
+          <li><a href="#services">Услуги</a></li>
+          <li><a href="#events">Мероприятия</a></li>
+          <li><a href="#blog">Блог</a></li>
+          <li><a href="#contacts">Контакты</a></li><li><a href="/content/calendar">Контент-календарь</a></li>
+        </ul>
+      </nav>
+      <button id="dark-mode-toggle" class="theme-toggle" aria-label="Переключить тему">🌙</button>
+      <button class="burger-menu" id="burger-menu" aria-label="Открыть меню">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+  <div id="header-pull-tab" class="header-pull-tab" aria-label="Показать меню">
+    <i class="fas fa-chevron-down"></i>
+  </div>
+
+  <div id="progress-bar" class="progress-bar">
+    <div id="progress-fill"></div>
+  </div>
+
+  <!-- Контент -->
+  <main>
+    <div id="socket-status-indicator" class="socket-status-indicator">Оффлайн</div>
+    
+  <!-- Герой-блок -->
+  <section class="hero-section relative-section">
+    <img src="/static/images/hero-wakesurf.webp" alt="Вейксерфинг на волне" class="hero-bg hero-bg-cover hero-bg-light" loading="lazy" />
+    <img src="/static/images/hero-wakesurf-dark.webp" alt="Вейксерфинг на волне (тёмная тема)" class="hero-bg hero-bg-cover hero-bg-dark" loading="lazy" />
+    <div class="hero-content center-padding hero-content-relative">
+  <h1 class="hero-title">MyWave — Тренировки по вейксерфингу</h1>
+      <p class="hero-subtitle">Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
+      <button class="btn-primary book-now" id="openBookingBtn">Записаться</button>
+    </div>
+  </section>
+
+  <!-- Блок преимуществ -->
+  <section class="features">
+    <h3>Почему мы?</h3>
+    <div class="feature-list">
+      <div class="feature-item">
+        <h4>Профессионализм</h4>
+        <p>Многолетний опыт (23+ лет) и высокая квалификация.</p>
+      </div>
+      <div class="feature-item">
+        <h4>Комфорт и безопасность</h4>
+        <p>Онлайн-запись, гибкий график занятий.</p>
+      </div>
+      <div class="feature-item">
+        <h4>Результат</h4>
+        <p>Индивидуальный подход к каждому ученику.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Услуги -->
+  <section id="services" class="services-section">
+    <h2>Услуги</h2>
+    <div class="cards-grid">
+      <div class="service-card">
+        <div class="service-card-media js-service-carousel"
+             data-images="/static/images/training1.jpg,/static/images/06.jpg">
+          <button class="service-card-media-btn prev" type="button" aria-label="Предыдущее фото">‹</button>
+          <img class="service-card-media-img" src="/static/images/training1.jpg" alt="Тренировка" loading="lazy" />
+          <button class="service-card-media-btn next" type="button" aria-label="Следующее фото">›</button>
+        </div>
+        <h4>Тренировка</h4>
+        <p>Тренировка на авторских тренажёрах по уникальной методике вейксерфинга. Развиваем баланс, координацию, биомеханику и нейронные связи, чтобы вы уверенно и эффектно выполняли трюки.</p>
+        <p>Цена: 3500 рублей</p>
+        <button class="btn-secondary btn-book">Записаться</button>
+      </div>
+      <div class="service-card" id="boat-card">
+        <div class="service-card-media js-service-carousel"
+             data-images="/static/images/07.JPG">
+          <button class="service-card-media-btn prev" type="button" aria-label="Предыдущее фото">‹</button>
+          <img class="service-card-media-img" src="/static/images/07.JPG" alt="Запись на катер" loading="lazy" />
+          <button class="service-card-media-btn next" type="button" aria-label="Следующее фото">›</button>
+        </div>
+        <h4>Запись на катер</h4>
+        <p>Тренировка за катером с тренером (30 минут)</p>
+        <p>Цена: 10 000 рублей</p>
+        <button class="btn-secondary btn-book">Записаться</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Товары -->
+  <section id="store" class="store-section">
+    <h2>Товары</h2>
+    <div class="cards-grid">
+      <div class="product-card">
+        <img src="/static/images/balans_trick_trening1.jpg" alt="Баланс-борд" loading="lazy" />
+        <h4>Баланс-борд</h4>
+        <p>Тренировочный баланс-борд для трюков и фитнеса. Улучшает координацию, подходит для всех уровней подготовки.</p>
+        <p>Цена: 7 500 ₽</p>
+        <button class="btn-secondary">Купить</button>
+      </div>
+      <div class="product-card">
+        <img src="/static/images/balans_trick_trening.jpg" alt="Баланс-борд Pro" loading="lazy" />
+        <h4>Баланс-борд Big</h4>
+        <p>Увеличенная модель для профессионалов.</p>
+        <p>Цена: 9 900 ₽</p>
+        <button class="btn-secondary">Купить</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Мероприятия -->
+  <section id="events" class="events-section section">
+    <h2>Мероприятия</h2>
+    <div class="events-controls">
+      <button id="toggle-empty-months" class="btn-link-sm" type="button" aria-expanded="false">
+        Показать месяцы без мероприятий
+      </button>
+    </div>
+
+    <div class="events-months">
+      
+        <details class="events-month is-empty" >
+          <summary class="events-month-summary">Июнь</summary>
+
+          
+            <div class="no-events-message">Нет мероприятий в этом месяце.</div>
+          
+        </details>
+      
+        <details class="events-month is-empty" >
+          <summary class="events-month-summary">Июль</summary>
+
+          
+            <div class="no-events-message">Нет мероприятий в этом месяце.</div>
+          
+        </details>
+      
+        <details class="events-month is-empty" >
+          <summary class="events-month-summary">Август</summary>
+
+          
+            <div class="no-events-message">Нет мероприятий в этом месяце.</div>
+          
+        </details>
+      
+        <details class="events-month is-empty" >
+          <summary class="events-month-summary">Сентябрь</summary>
+
+          
+            <div class="no-events-message">Нет мероприятий в этом месяце.</div>
+          
+        </details>
+      
+        <details class="events-month is-empty" >
+          <summary class="events-month-summary">Октябрь</summary>
+
+          
+            <div class="no-events-message">Нет мероприятий в этом месяце.</div>
+          
+        </details>
+      
+    </div>
+  </section>
+
+  <!-- Блог -->
+  <section id="blog" class="blog-section">
+    <h2>Блог</h2>
+    <p>В разработке. Скоро здесь появятся новые статьи!</p>
+  </section>
+
+  <section class="reviews-section">
+    <h2>Отзывы учеников</h2>
+    <div class="reviews-carousel">
+      <button class="reviews-nav-btn prev" id="reviews-prev" type="button" aria-label="Предыдущий отзыв">‹</button>
+      <div class="reviews-slider" id="reviews-slider">
+        
+          <div class="review">
+            
+              <img src="/static/images/students/Elya_Vesnina.jpg" alt="Эля Веснина" loading="lazy" />
+            
+            <p>"Очень понравились тренировки! Тренер — супер!"</p>
+            <strong>Эля Веснина</strong>
+          </div>
+        
+          <div class="review">
+            
+              <img src="/static/images/students/Elupova.jpg" alt="Юля Елупова" loading="lazy" />
+            
+            <p>"Было весело и эффективно, всем советую!"</p>
+            <strong>Юля Елупова</strong>
+          </div>
+        
+          <div class="review">
+            
+              <img src="/static/images/students/Alya_Lapina.jpg" alt="Алина Лапина" loading="lazy" />
+            
+            <p>"Прекрасный подход к детям и взрослым!"</p>
+            <strong>Алина Лапина</strong>
+          </div>
+        
+      </div>
+      <button class="reviews-nav-btn next" id="reviews-next" type="button" aria-label="Следующий отзыв">›</button>
+    </div>
+  </section>
+
+  <!-- Контакты -->
+  <section id="contacts" class="contacts-section">
+    <h2>Давайте знакомиться</h2>
+    <div class="contact-info">
+      <div class="contact-details">
+        <p class="contact-phone">Телефон: <a href="tel:+79160117179">+7 (916) 011-71-79</a></p>
+        <p class="contact-social">
+          Telegram: <a href="https://t.me/MyW23" target="_blank" rel="noopener">@MyW23</a>
+        </p>
+        <div class="social-links">
+          <a href="https://wa.me/79160117179" class="social-link" target="_blank" rel="noopener" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+          <a href="https://www.facebook.com/yaroslav.valeev" class="social-link" target="_blank" rel="noopener" title="Facebook"><i class="fab fa-facebook"></i></a>
+          <a href="https://vk.com/y.valeev" class="social-link" target="_blank" rel="noopener" title="VK"><i class="fab fa-vk"></i></a>
+          <a href="https://www.instagram.com/y.valeev/" class="social-link" target="_blank" rel="noopener" title="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="https://dzen.ru/mywavewake" class="social-link" target="_blank" rel="noopener" title="Яндекс Дзен"><i class="fa fa-yandex"></i></a>
+        </div>
+      </div>
+      <form id="contact-form" class="contact" autocomplete="on">
+        <h3>Напишите мне</h3>
+        <div class="input-group">
+          <label for="username">Имя:</label>
+          <input type="text" id="username" name="username" required autocomplete="name" />
+        </div>
+        <div class="input-group">
+          <label for="usercontact">Телефон или Telegram:</label>
+          <input type="text" id="usercontact" name="usercontact" required autocomplete="tel" />
+        </div>
+        <button type="submit" class="btn-primary">Отправить</button>
+      </form>
+    </div>
+  </section>
+
+  <a href="/chat" class="btn-secondary chat-margin">Чат с тренером</a>
+
+  <div id="modalCalendar" class="modal hidden">
+  <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Выберите дату</h2>
+      <p class="progress-info">Шаг 1 / 3</p>
+      <div class="date-input-container">
+          <input type="text" id="bookingDateInput" placeholder="Выберите дату" readonly>
+          <i id="dateIcon" class="fas fa-calendar-alt"></i>
+      </div>
+      <button id="confirmDateBtn" class="btn btn-primary">Далее</button>
+  </div>
+</div>
+<div id="modalSlots" class="modal hidden">
+  <div class="modal-content">
+    <h3>Выберите время</h3>
+    <p class="progress-info">Шаг 2 / 3</p>
+    <div id="slotButtonsContainer"></div>
+    <input type="hidden" id="selectedSlot" />
+    <button id="confirmSlotBtn">Далее</button>
+    <button class="close-modal">Назад</button>
+  </div>
+</div>
+<div id="modalContact" class="modal hidden">
+  <div class="modal-content">
+    <h3>Ваши данные</h3>
+    <p class="progress-info">Шаг 3 / 3</p>
+    <input type="text" id="bookingName" placeholder="Имя" />
+    <input type="text" id="bookingPhone" placeholder="Телефон" />
+    <button id="confirmContactBtn">Далее</button>
+    <button class="close-modal">Назад</button>
+  </div>
+</div>
+<div id="modalConfirm" class="modal hidden">
+  <div class="modal-content">
+    <button class="close-modal" onclick="hideAllModals()">&times;</button>
+    <h2>Подтверждение записи</h2>
+    <div id="confirmDetails"></div>
+    <p class="pay-hint">
+      💳 Оплата производится на месте после тренировки. 
+      Мы пока не принимаем онлайн-оплату.
+    </p>
+    <div class="modal-actions">
+      <button id="finalConfirmBtn" class="btn btn-primary-lg">Подтвердить запись</button>
+    </div>
+  </div>
+</div>
+<input type="hidden" id="bookingDate">
+<input type="hidden" id="bookingTime"> 
+
+  </main>
+
+  <!-- Плавающий чат -->
+  <div class="floating-chat" id="floating-chat">
+    <button class="chat-toggle" id="chat-toggle" aria-label="Открыть чат">
+      <i class="fas fa-comments"></i>
+    </button>
+    
+    <div class="chat-widget hidden" id="chat-widget">
+      <div class="chat-header">
+        <h4>Чат с экспертом по вейку</h4>
+        <button class="close-chat" id="close-chat" aria-label="Закрыть чат">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-suggestions" id="chat-suggestions"></div>
+      
+      <form class="chat-form" id="chat-form">
+        <input type="hidden" name="csrf_token" value="IjczYzA5ZWQ0ZWIwOWY5Nzc2NWM1YTkyMDA5NzJhZTExNDQ4ZDA1MTci.aT5xWg._6hZ9-x2iKC9pvhf8U_LWLz-Ons">
+        <div class="chat-input-wrapper">
+          <input type="text" 
+                 id="chat-input" 
+                 class="chat-input" 
+                 placeholder="Напишите сообщение..." 
+                 aria-label="Сообщение">
+          <button type="submit" class="send-button" aria-label="Отправить">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Индикатор загрузки -->
+  <div id="loading-indicator" class="loading-indicator hidden" aria-hidden="true">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Подключение socket.io-client через CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/static/js/chat.js"></script>
+  <script src="/static/js/storeFilter.js"></script>
+  <script src="/static/js/socket.io.js"></script>
+  <script type="module">
+    import { SocketStatus } from '/static/js/socket-status.js';
+    const socket = io({
+      auth: {
+        csrf_token: document.querySelector('meta[name="csrf-token"]')?.content
+      }
+    });
+    new SocketStatus(socket);
+  </script>
+  
+  
+  <script src="/static/js/services-carousel.js"></script>
+  <script src="/static/js/events-collapse.js"></script>
+  <script src="/static/js/reviews-carousel.js"></script>
+
+  <script src="/static/js/inline.js"></script>
+
+  <!-- booking.js должен быть после блока content и всех модалок -->
+  <script src="/static/js/booking.js"></script>
+
+  <div id="toast" class="toast hidden" aria-live="polite" aria-label="Уведомление"></div>
+
+  <footer class="site-footer">
+    <p>© 2025 MyWave. Все права защищены.</p>
+    <p>Разработка: MyWave Team</p>
+  </footer>
+
+  <script>
+    const themeBtn = document.getElementById('dark-mode-toggle');
+    const boatCard = document.getElementById('boat-card');
+
+    if (themeBtn) {
+      // Авто-применение при загрузке
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme','dark');
+        themeBtn.textContent = '☀️';
+      }
+
+      themeBtn.addEventListener('click', () => {
+        const isDark = document.documentElement.hasAttribute('data-theme');
+        if (isDark) {
+          document.documentElement.removeAttribute('data-theme');
+          localStorage.removeItem('theme');
+          themeBtn.textContent = '🌙';
+        } else {
+          document.documentElement.setAttribute('data-theme','dark');
+          localStorage.setItem('theme','dark');
+          themeBtn.textContent = '☀️';
+        }
+
+        // Подсветка карточки катера
+        if (boatCard) {
+          boatCard.classList.add('highlight-boat');
+          setTimeout(() => boatCard.classList.remove('highlight-boat'), 800);
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}{{ meta.title }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="canonical" href="{{ meta.url }}">
+  <meta name="description" content="{{ meta.description }}">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ meta.title }}">
+  <meta property="og:description" content="{{ meta.description }}">
+  <meta property="og:image" content="{{ meta.image }}">
+  <meta property="og:site_name" content="{{ meta.site_name or 'MyWave' }}">
+  <meta property="og:locale" content="{{ meta.locale or 'ru_RU' }}">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ meta.title }}">
+  <meta name="twitter:description" content="{{ meta.description }}">
+  <meta name="twitter:image" content="{{ meta.image }}">
+
+  <script type="application/ld+json">{{ schema_event | tojson | safe }}</script>
+{% endblock %}
+
+{% block content %}
+
+  <!-- HERO -->
+  <section id="hero" class="mw-section mw-hero wsc-hero">
+    <div class="wsc-hero__inner">
+      <div class="wsc-hero__badge">Официальный проект</div>
+      <h1 class="wsc-hero__title">WakeSurf Challenge 2025</h1>
+
+      <p class="wsc-hero__subtitle">
+        Тренировки + вебинары + прозрачное судейство 40/30/30 + медиа-витрина KPI.
+      </p>
+
+      <div class="hero-badges">
+        <span class="hero-badge">Веса: 40/30/30</span>
+        <span class="hero-badge">Outliers: z-score ≥ {{ judging.outliers.threshold }}</span>
+        <span class="hero-badge">Контакты: {{ sponsor.contacts.email }}</span>
+      </div>
+
+      <div class="hero-actions">
+        <a class="btn-primary" href="#docs">Скачать документы</a>
+        <a class="btn-secondary btn-ghost" href="#partners">Партнёрам</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sticky subnav from menu.json -->
+  <div class="wsc-subnav">
+    <div class="wsc-subnav__inner">
+      <div class="wsc-subnav__links">
+        {% for a in menu.anchors %}
+          <a class="wsc-subnav__link js-wsc-link" href="#{{ a.id }}">{{ a.label }}</a>
+        {% endfor %}
+      </div>
+      <div class="wsc-subnav__cta">
+        <a class="btn-primary wsc-subnav__btn" href="#docs">Скачать</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCS (3 buttons) -->
+  <section id="docs" class="mw-section mw-surface">
+    <div class="mw-card wsc-docs">
+      <h2>Документы и пакеты</h2>
+      <p>Выберите ваш пакет — участник / тренер / спонсор.</p>
+
+      <div class="wsc-card-downloads">
+        {% for d in menu.downloads %}
+          <a class="btn-primary" href="{{ d.href }}" download>{{ d.label }}</a>
+        {% endfor %}
+      </div>
+
+      <div class="wsc-docs__mini">
+        <a href="/static/docs/final_day_program.pdf" target="_blank" rel="noopener">Программа финального дня (PDF)</a>
+        <span class="wsc-dot">•</span>
+        <a href="/static/docs/webinar_calendar.pdf" target="_blank" rel="noopener">Календарь вебинаров (PDF)</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTENT (from index.md, разбито по секциям) -->
+  {% if sections_html %}
+    {% for anchor in menu.anchors %}
+      {% set section_id = anchor.id %}
+      {% set section_content = sections_html.get(section_id, '') %}
+      {% if section_content %}
+        <section id="{{ section_id }}" class="mw-section {% if loop.index % 2 == 0 %}mw-surface{% endif %}">
+          <div class="mw-card wsc-md">
+            {{ section_content | safe }}
+          </div>
+        </section>
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    <!-- Fallback: весь контент одним блоком -->
+    <section id="about" class="mw-section">
+      <div class="mw-card wsc-md">
+        {{ project_html | safe }}
+      </div>
+    </section>
+  {% endif %}
+
+  <!-- Партнёрам -->
+  <section id="partners" class="mw-section mw-surface">
+    <div class="mw-card">
+      <h2>Партнёрам</h2>
+      <div class="cards-grid">
+        {% for p in sponsor.packages %}
+          <div class="mw-card">
+            <h3>{{ p.tier }}</h3>
+            <p><strong>{{ "{:,}".format(p.price) }} {{ sponsor.currency }}</strong></p>
+            <ul>
+              {% for it in p.deliverables %}
+                <li>{{ it }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+      </div>
+
+      <p style="margin-top:14px;">
+        Контакты: <a href="mailto:{{ sponsor.contacts.email }}">{{ sponsor.contacts.email }}</a> ·
+        <a href="tel:+79160117179">{{ sponsor.contacts.phone }}</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- Контакты -->
+  <section id="contacts" class="mw-section">
+    <div class="mw-card">
+      <h2>Контакты</h2>
+      <p>Email: <a href="mailto:{{ sponsor.contacts.email }}">{{ sponsor.contacts.email }}</a></p>
+      <p>Телефон: <a href="tel:+79160117179">{{ sponsor.contacts.phone }}</a></p>
+    </div>
+  </section>
+
+  <!-- Формы регистрации (из старого шаблона) -->
+  <section id="register" class="mw-section mw-surface">
+    <div class="mw-card">
+      <h2>Регистрация</h2>
+      <div class="wsc2025-registration-tabs">
+        <button class="wsc2025-tab-btn active" data-tab="participant">Стать участником</button>
+        <button class="wsc2025-tab-btn" data-tab="coach">Стать тренером</button>
+        <button class="wsc2025-tab-btn" data-tab="sponsor">Стать спонсором</button>
+      </div>
+      
+      <!-- Форма регистрации участника -->
+      <div id="participant-form" class="wsc2025-form-container active">
+        <form id="participant-registration-form" class="wsc2025-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          
+          <div class="wsc2025-form-group">
+            <label for="participant-full_name">ФИО *</label>
+            <input type="text" id="participant-full_name" name="full_name" required 
+                   placeholder="Иванов Иван Иванович" maxlength="100">
+            <span class="wsc2025-form-error" id="participant-full_name-error"></span>
+          </div>
+          
+          <div class="wsc2025-form-group">
+            <label for="participant-birth_year">Год рождения *</label>
+            <input type="number" id="participant-birth_year" name="birth_year" required 
+                   placeholder="1990" min="1930" max="2016">
+            <span class="wsc2025-form-error" id="participant-birth_year-error"></span>
+          </div>
+          
+          <div class="wsc2025-form-row">
+            <div class="wsc2025-form-group">
+              <label for="participant-phone">Телефон *</label>
+              <input type="tel" id="participant-phone" name="phone" required 
+                     placeholder="+7 (916) 011-71-79">
+              <span class="wsc2025-form-error" id="participant-phone-error"></span>
+            </div>
+            
+            <div class="wsc2025-form-group">
+              <label for="participant-email">Email *</label>
+              <input type="email" id="participant-email" name="email" required 
+                     placeholder="example@mail.com">
+              <span class="wsc2025-form-error" id="participant-email-error"></span>
+            </div>
+          </div>
+          
+          <div class="wsc2025-form-row">
+            <div class="wsc2025-form-group">
+              <label for="participant-level">Уровень *</label>
+              <select id="participant-level" name="level" required>
+                <option value="">Выберите уровень</option>
+                <option value="Новичок">Новичок</option>
+                <option value="Средний">Средний</option>
+                <option value="Продвинутый">Продвинутый</option>
+              </select>
+              <span class="wsc2025-form-error" id="participant-level-error"></span>
+            </div>
+            
+            <div class="wsc2025-form-group">
+              <label for="participant-city">Город *</label>
+              <input type="text" id="participant-city" name="city" required 
+                     placeholder="Москва" value="Москва" maxlength="50">
+              <span class="wsc2025-form-error" id="participant-city-error"></span>
+            </div>
+          </div>
+          
+          <div class="wsc2025-form-group">
+            <label for="participant-goals">Цели участия</label>
+            <textarea id="participant-goals" name="goals" rows="4" 
+                      placeholder="Опишите ваши цели участия в проекте" maxlength="500"></textarea>
+            <span class="wsc2025-form-hint">До 500 символов</span>
+          </div>
+          
+          <div class="wsc2025-form-group">
+            <label class="wsc2025-checkbox-label">
+              <input type="checkbox" name="consent_participation" required>
+              <span>Согласен(на) с условиями участия *</span>
+            </label>
+            <span class="wsc2025-form-error" id="participant-consent_participation-error"></span>
+          </div>
+          
+          <div class="wsc2025-form-group">
+            <label class="wsc2025-checkbox-label">
+              <input type="checkbox" name="consent_media" required>
+              <span>Разрешаю использование фото/видео в медиаматериалах проекта *</span>
+            </label>
+            <span class="wsc2025-form-error" id="participant-consent_media-error"></span>
+          </div>
+          
+          <button type="submit" class="btn-primary wsc2025-form-submit">
+            <span class="wsc2025-form-submit-text">Зарегистрироваться</span>
+            <span class="wsc2025-form-submit-loader" style="display: none;">Отправка...</span>
+          </button>
+          
+          <div class="wsc2025-form-message" id="participant-form-message"></div>
+        </form>
+      </div>
+      
+      <!-- Форма регистрации тренера -->
+      <div id="coach-form" class="wsc2025-form-container" style="display: none;">
+        <form id="coach-registration-form" class="wsc2025-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          
+          <div class="wsc2025-form-group">
+            <label for="coach-full_name">ФИО *</label>
+            <input type="text" id="coach-full_name" name="full_name" required 
+                   placeholder="Иванов Иван Иванович" maxlength="100">
+            <span class="wsc2025-form-error" id="coach-full_name-error"></span>
+          </div>
+          
+          <div class="wsc2025-form-row">
+            <div class="wsc2025-form-group">
+              <label for="coach-phone">Телефон *</label>
+              <input type="tel" id="coach-phone" name="phone" required 
+                     placeholder="+7 (916) 011-71-79">
+              <span class="wsc2025-form-error" id="coach-phone-error"></span>
+            </div>
+            
+            <div class="wsc2025-form-group">
+              <label for="coach-email">Email *</label>
+              <input type="email" id="coach-email" name="email" required 
+                     placeholder="example@mail.com">
+              <span class="wsc2025-form-error" id="coach-email-error"></span>
+            </div>
+          </div>
+          
+          <div class="wsc2025-form-group">
+            <label for="coach-club">Клуб/школа</label>
+            <input type="text" id="coach-club" name="club" 
+                   placeholder="Название клуба или школы (необязательно)" maxlength="100">
+          </div>
+          
+          <div class="wsc2025-form-group">
+            <label for="coach-experience_years">Опыт (лет) *</label>
+            <input type="number" id="coach-experience_years" name="experience_years" required 
+                   placeholder="5" min="0" max="40">
+            <span class="wsc2025-form-error" id="coach-experience_years-error"></span>
+          </div>
+          
+          <div class="wsc2025-form-group">
+            <label for="coach-portfolio_url">Ссылка на видео/портфолио</label>
+            <input type="url" id="coach-portfolio_url" name="portfolio_url" 
+                   placeholder="https://youtube.com/..." maxlength="500">
+          </div>
+          
+          <div class="wsc2025-form-group">
+            <label class="wsc2025-checkbox-label">
+              <input type="checkbox" name="consent_participation" required>
+              <span>Согласен(на) с условиями участия *</span>
+            </label>
+            <span class="wsc2025-form-error" id="coach-consent_participation-error"></span>
+          </div>
+          
+          <div class="wsc2025-form-group">
+            <label class="wsc2025-checkbox-label">
+              <input type="checkbox" name="consent_media" required>
+              <span>Разрешаю использование фото/видео в медиаматериалах проекта *</span>
+            </label>
+            <span class="wsc2025-form-error" id="coach-consent_media-error"></span>
+          </div>
+          
+          <button type="submit" class="btn-primary wsc2025-form-submit">
+            <span class="wsc2025-form-submit-text">Подать заявку</span>
+            <span class="wsc2025-form-submit-loader" style="display: none;">Отправка...</span>
+          </button>
+          
+          <div class="wsc2025-form-message" id="coach-form-message"></div>
+        </form>
+      </div>
+      
+      <!-- Информация для спонсоров -->
+      <div id="sponsor-form" class="wsc2025-form-container" style="display: none;">
+        <div class="wsc2025-sponsor-info">
+          <p>Для регистрации в качестве спонсора свяжитесь с организаторами:</p>
+          <p><strong>Email:</strong> <a href="mailto:{{ sponsor.contacts.email }}">{{ sponsor.contacts.email }}</a></p>
+          <p><strong>Телефон:</strong> <a href="tel:+79160117179">{{ sponsor.contacts.phone }}</a></p>
+          <p>Мы подготовим для вас медиакит и обсудим условия партнёрства.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script defer src="{{ url_for('static', filename='js/wsc-subnav.js') }}"></script>
+{% endblock %}
+

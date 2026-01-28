@@ -23,17 +23,31 @@ def retry(attempts=3, delay=2):
         return wrapper
     return decorator
 
-def send_telegram_notification(name, phone, slot):
+def send_telegram_notification(name, phone, slot_or_message):
     """
-    Отправляет уведомление о новой записи в Telegram
+    Отправляет уведомление в Telegram.
+    
+    Args:
+        name: Имя
+        phone: Телефон
+        slot_or_message: Время слота или произвольное сообщение
     """
     try:
-        message = (
-            f"📌 Новая запись на тренировку!\n\n"
-            f"👤 Имя: {name}\n"
-            f"📱 Телефон: {phone}\n"
-            f"🕒 Время: {slot}"
-        )
+        # Если slot_or_message содержит переносы строк, это полное сообщение
+        if '\n' in str(slot_or_message):
+            message = str(slot_or_message)
+        else:
+            # Старый формат для совместимости
+            message = (
+                f"📌 Новая запись на тренировку!\n\n"
+                f"👤 Имя: {name}\n"
+                f"📱 Телефон: {phone}\n"
+                f"🕒 Время: {slot_or_message}"
+            )
+        
+        if not Config.TELEGRAM_BOT_TOKEN or not Config.TELEGRAM_CHAT_ID:
+            logger.warning("Telegram токен или chat_id не настроены")
+            return False
         
         response = requests.get(
             f"https://api.telegram.org/bot{Config.TELEGRAM_BOT_TOKEN}/sendMessage",

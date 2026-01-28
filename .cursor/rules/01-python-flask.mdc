@@ -1,0 +1,39 @@
+---
+description: "Python/Flask rules: boundaries, errors, logging, and minimal safe patches."
+---
+
+# Python + Flask Rules (MANDATORY)
+
+## Layering
+- Routes/controllers: request parsing, validation, calling services, responses.
+- Services: business rules, orchestration, deterministic decisions.
+- Adapters: Google APIs, Telegram, external HTTP calls.
+- DO NOT put Google API calls directly inside routes.
+
+## Error Handling
+- ALWAYS catch and normalize external API errors inside adapters/services.
+- Return actionable errors to routes without leaking secrets.
+- DO NOT swallow exceptions silently.
+
+## Logging (Safe)
+- Log: request_id, high-level status, elapsed_ms, short identifiers.
+- DO NOT log: tokens, credentials, raw PII, full request bodies.
+- If you must log identifiers: mask them (e.g., last 4 chars only) or hash.
+
+## Time / Date
+- Enforce timezone-aware datetimes in backend.
+- Convert at boundaries (input parsing and output formatting).
+- Serialize dates as YYYY-MM-DD and times as HH:MM.
+
+## Idempotency (Calendar)
+- Ensure deterministic event identity (stable key or stored mapping).
+- Retries MUST NOT create duplicates.
+- Update-if-exists must be the default behavior, not create-always.
+
+## Database
+- DO NOT change schema/migrations unless explicitly requested.
+- If needed, keep schema changes minimal and reversible.
+
+## Patch Discipline
+- Prefer 1–2 functions changed over “wide” refactors.
+- Keep changes readable and testable.

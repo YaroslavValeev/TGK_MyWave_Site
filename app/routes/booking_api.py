@@ -19,9 +19,18 @@ def booking_entry():
     state = data.get('state') or session.get('booking_state', {})
 
     current_app.logger.info(f"[booking] message='{message}' state_in={state}")
-    reply_text, updated_state = orchestrate(message, state)
-    current_app.logger.info(f"[booking] reply='{reply_text}' state_out={updated_state}")
-    session['booking_state'] = updated_state
+    try:
+        reply_text, updated_state = orchestrate(message, state)
+        current_app.logger.info(f"[booking] reply='{reply_text}' state_out={updated_state}")
+        session['booking_state'] = updated_state
+    except Exception as exc:
+        current_app.logger.error("[booking] orchestrate failed: %s", exc, exc_info=True)
+        # Keep API contract stable for the frontend/chat widget: return a response string with 200.
+        return jsonify(
+            response="Сервис записи временно недоступен. Попробуйте чуть позже.",
+            state=state,
+            suggestions=[],
+        ), 200
 
     # Build suggestions based on step
     suggestions = []

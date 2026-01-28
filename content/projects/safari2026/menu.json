@@ -1,0 +1,52 @@
+[
+  {
+    "title": "Миссия",
+    "href": "#mission"
+  },
+  {
+    "title": "Как это работает",
+    "href": "#how-it-works"
+  },
+  {
+    "title": "Для кого",
+    "href": "#for-whom"
+  },
+  {
+    "title": "Как принять участие",
+    "href": "#how-to-join"
+  },
+  {
+    "title": "Программа дня",
+    "href": "#day-program"
+  },
+  {
+    "title": "Медиа и контент",
+    "href": "#media-content"
+  },
+  {
+    "title": "Комьюнити",
+    "href": "#community"
+  },
+  {
+    "title": "Партнёрам",
+    "href": "#for-partners"
+  },
+  {
+    "title": "FAQ",
+    "href": "#faq"
+  },
+  {
+    "title": "Контакты",
+    "href": "#contacts"
+  },
+  {
+    "title": "Стать участником",
+    "href": "#",
+    "cta": true
+  },
+  {
+    "title": "Стать партнёром",
+    "href": "#",
+    "cta": true
+  }
+]

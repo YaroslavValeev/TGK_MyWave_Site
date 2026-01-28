@@ -144,9 +144,10 @@ html, body {
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 1000;
-  background: var(--color-header);
-  color: var(--color-white);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  background: #6d6b6b;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  color: #ffffff;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
   transition: transform 0.4s cubic-bezier(.4,2,.6,1), opacity 0.3s;
   will-change: transform, opacity;
 }
@@ -169,7 +170,7 @@ html, body {
 .logo a {
   font-family: 'Pangolin', sans-serif;
   font-size: 2.2em;
-  color: #00BCD4;
+  color: #35C0CD;
   text-decoration: none;
   font-weight: 700;
   letter-spacing: -1px;
@@ -189,23 +190,22 @@ html, body {
 .site-nav a {
   font-family: 'Inter', sans-serif;
   font-size: 1.1em;
-  color: var(--color-white);
+  color: #d5d8dd !important;
   text-decoration: none;
   padding: 0.5em 0.8em;
   border-radius: 8px;
   transition: background 0.2s, color 0.2s;
 }
 .site-nav a:hover, .site-nav a.active {
-  background: rgba(0,188,212,0.12);
-  color: #00BCD4;
+  background: rgba(53,192,205,0.2);
+  color: #35C0CD;
 }
 [data-theme="dark"] .site-nav a {
   color: #fff !important;
-  background: rgba(0,0,0,0.08);
 }
 [data-theme="dark"] .site-nav a:hover, [data-theme="dark"] .site-nav a.active {
-  background: #00BCD4;
-  color: #181a1b !important;
+  background: rgba(53,192,205,0.2);
+  color: #35C0CD;
 }
 .theme-toggle {
   background: none;
@@ -213,7 +213,7 @@ html, body {
   font-size: 1.5em;
   margin-left: 1.5em;
   cursor: pointer;
-  color: var(--color-white);
+  color: #ffffff;
   transition: color 0.2s;
 }
 .theme-toggle:focus {
@@ -231,7 +231,7 @@ html, body {
 .burger-menu span {
   width: 28px;
   height: 3px;
-  background: var(--color-white);
+  background: #ffffff;
   border-radius: 2px;
   transition: all 0.3s;
 }
@@ -264,7 +264,7 @@ html, body {
   transform: translateX(-50%);
   z-index: 1100;
   background: var(--color-header);
-  color: var(--color-white);
+  color: var(--color-text);
   border-radius: 0 0 16px 16px;
   width: 48px; height: 28px;
   display: flex;
@@ -314,10 +314,14 @@ h1, h2, h3, h4, p {
   max-width: 800px;
   width: 100%;
   z-index: 2;
-  margin-top: -140px; /* Отрицательное значение для подъема контента выше */
+  margin-top: -180px; /* Поднято выше на ~1 см (было -140px) */
   background: none;
   position: relative;
   padding: 20px;
+  padding-top: 1px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .hero-title {
@@ -327,6 +331,8 @@ h1, h2, h3, h4, p {
   font-family: 'Inter', sans-serif;
   letter-spacing: -1px;
   color: #333;
+  text-align: center;
+  width: 100%;
 }
 
 .hero-subtitle {
@@ -335,9 +341,9 @@ h1, h2, h3, h4, p {
   line-height: 1.3;
   font-weight: 500;
   color: #333;
+  text-align: center;
+  width: 100%;
   max-width: 600px; /* Ограничиваем ширину текста */
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .hero-content .btn-primary {
@@ -415,6 +421,16 @@ h1, h2, h3, h4, p {
   border-radius: 4px;
 }
 
+/* Центрирование заголовков */
+.services-section h2,
+.store-section h2,
+.events-section h2,
+.blog-section h2,
+.reviews-section h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
 /* Обновленные карточки */
 .service-card,
 .product-card,
@@ -431,6 +447,71 @@ h1, h2, h3, h4, p {
 .event-card:hover {
   transform: translateY(-5px); /* эффект подъёма */
   box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* усиленная тень */
+}
+
+/* Media (carousel) for service cards */
+.service-card-media {
+  position: relative;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  background: #f3f3f3;
+}
+.service-card-media-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+.service-card-media-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 22px;
+  line-height: 34px;
+  text-align: center;
+}
+.service-card-media-btn.prev { left: 10px; }
+.service-card-media-btn.next { right: 10px; }
+.service-card-media-btn:hover { background: rgba(0, 0, 0, 0.6); }
+
+/* Events month collapse UI */
+.events-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 8px;
+}
+.events-months {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.events-month {
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 12px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.6);
+}
+.events-month-summary {
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  color: #333;
+  outline: none;
+}
+.events-month[open] .events-month-summary {
+  color: #00BCD4;
+}
+.events-month.is-empty {
+  display: none;
 }
 
 /* Кнопки (минималистичные) */
@@ -1627,6 +1708,7 @@ chatWindow {
   border-radius: 50%;
   background: #00BCD4;
   border: none;
+  outline: none;
   color: white;
   font-size: 24px;
   cursor: pointer;
@@ -1635,11 +1717,19 @@ chatWindow {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
+  margin: 0;
 }
 
 .chat-toggle:hover {
   transform: scale(1.1);
   background: #0097A7;
+  outline: none;
+}
+
+.chat-toggle:focus {
+  outline: 2px solid #00BCD4;
+  outline-offset: 2px;
 }
 
 .chat-widget {
@@ -1767,6 +1857,52 @@ chatWindow {
   border-bottom-left-radius: 5px;
 }
 
+/* Индикатор загрузки в чате */
+.loading-indicator {
+  align-self: flex-start;
+  background: #f0f0f0;
+  border-bottom-left-radius: 5px;
+  padding: 12px 16px;
+  margin: 8px 0;
+}
+
+.loading-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #35C0CD;
+  animation: loading-bounce 1.4s infinite ease-in-out both;
+}
+
+.loading-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 0s;
+}
+
+@keyframes loading-bounce {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
 /* Suggestions chips under chat */
 .chat-suggestions {
   display: flex;
@@ -1841,13 +1977,20 @@ chatWindow {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: #35C0CD;
+  background: rgba(128, 128, 128, 0.85);
   color: white;
   padding: 12px 24px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   z-index: 1000;
   transition: opacity 0.3s ease;
+  font-weight: 300;
+  opacity: 0;
+  pointer-events: none;
+}
+.toast.show {
+  opacity: 1;
+  pointer-events: auto;
 }
 .toast.hidden {
   opacity: 0;
@@ -1874,27 +2017,7 @@ chatWindow {
   margin: 15px 0;
 }
 
-.slot-btn {
-  background-color: #00BCD4;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 15px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
-}
-
-.slot-btn:hover {
-  background-color: #0097A7;
-  transform: translateY(-2px);
-}
-
-.slot-btn.active {
-  background-color: #0097A7;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
+/* Старые стили .slot-btn удалены - используются обновлённые стили ниже (строка ~2175) */
 
 /* Скрываем кнопку подтверждения слота, так как используем автопереход */
 #confirmSlotBtn {
@@ -1912,17 +2035,23 @@ chatWindow {
   bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: #00bcd4;
+  background-color: rgba(128, 128, 128, 0.85);
   color: white;
   padding: 12px 24px;
   border-radius: 8px;
-  font-weight: bold;
+  font-weight: 300;
   z-index: 1000;
-  opacity: 0.95;
+  opacity: 0;
   transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.toast.show {
+  opacity: 1;
+  pointer-events: auto;
 }
 .toast.hidden {
-  display: none;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .slot-btn.btn-primary-lg {
@@ -2122,31 +2251,67 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
     color: #007bff;
 }
 
-/* Стили для слотов времени */
+/* Стили для слотов времени (обновлённые - исправлен конфликт цветов) */
 .slot-btn {
     width: 100%;
     padding: 12px;
     margin: 8px 0;
-    border: 1px solid #ddd;
+    border: 2px solid #00BCD4;
     border-radius: 8px;
-    background: white;
+    background-color: #ffffff;
+    color: #333333;
     cursor: pointer;
     transition: all 0.2s ease;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: center;
 }
 
-.slot-btn.available:hover {
-    background: #f8f9fa;
-    border-color: #007bff;
+.slot-btn:hover {
+    background-color: #00BCD4;
+    color: #ffffff;
+    border-color: #0097A7;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 188, 212, 0.3);
+}
+
+.slot-btn.selected {
+    background-color: #0097A7;
+    color: #ffffff;
+    border-color: #00838F;
+    box-shadow: 0 2px 8px rgba(0, 151, 167, 0.4);
+}
+
+.slot-btn:disabled,
+.slot-btn.disabled {
+    background-color: #f5f5f5;
+    color: #999999;
+    border-color: #ddd;
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .slot-btn.available {
-    color: #28a745;
+    color: #35C0CD;
+    border-color: #35C0CD;
 }
 
-.slot-btn.booked {
-    color: #dc3545;
-    opacity: 0.7;
-    cursor: not-allowed;
+.slot-btn.available:hover {
+    background-color: #35C0CD;
+    color: #ffffff;
+}
+
+/* Сообщение об отсутствии слотов */
+.no-slots-message {
+    text-align: center;
+    padding: 20px;
+    color: #666666;
+    font-size: 16px;
+    margin: 20px 0;
+}
+
+#slotButtonsContainer {
+    min-height: 100px;
 }
 
 /* Стили для кнопок навигации */
@@ -2246,19 +2411,60 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
   margin: 12px 0;
 }
 
-.reviews-slider {
+.reviews-slider,
+.events-slider,
+.blog-slider {
   display: flex;
   overflow-x: auto;
   gap: 16px;
   padding: 16px;
   scroll-snap-type: x mandatory;
 }
+.reviews-carousel,
+.events-carousel,
+.blog-carousel {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.reviews-nav-btn,
+.events-nav-btn,
+.blog-nav-btn {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.12);
+  color: #333;
+  font-size: 22px;
+  line-height: 36px;
+  text-align: center;
+}
+.reviews-nav-btn:hover,
+.events-nav-btn:hover,
+.blog-nav-btn:hover {
+  background: rgba(0, 0, 0, 0.18);
+}
+.review-avatar-fallback {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 188, 212, 0.15);
+  color: #007d8c;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
 .review {
-  flex: 0 0 300px;
+  flex: 0 0 380px;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  padding: 16px;
+  padding: 20px;
   scroll-snap-align: start;
 }
 .review img {
@@ -2267,6 +2473,49 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
   border-radius: 50%;
   object-fit: cover;
   margin-bottom: 8px;
+}
+
+/* Стили для карточек мероприятий и блога */
+.event-card,
+.blog-card {
+  flex: 0 0 380px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 0;
+  scroll-snap-align: start;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.event-card:hover,
+.blog-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.event-card img,
+.blog-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+.event-card h4,
+.blog-card h4 {
+  padding: 16px 16px 8px;
+  margin: 0;
+  font-size: 1.2em;
+  color: #333;
+}
+.event-card p,
+.blog-card p {
+  padding: 0 16px 16px;
+  margin: 0;
+  color: #666;
+  line-height: 1.5;
 }
 
 #step-indicator {
@@ -2358,7 +2607,7 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
   --color-warning: #ffc107;
   --color-bg: #f0f0f0;
   --color-text: #333;
-  --color-header: #666666;
+  --color-header: #f2f2f2;
   --color-white: #fff;
 }
 
@@ -2428,7 +2677,7 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
   right: 10px;
   z-index: 10000;
   background: var(--color-header);
-  color: var(--color-white);
+  color: var(--color-text);
   border: none;
   border-radius: 8px;
   padding: 8px 16px;
@@ -2439,14 +2688,15 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
 
 .socket-status-indicator {
   position: fixed;
-  bottom: 10px;
+  bottom: 80px; /* Смещаем выше, чтобы не мешал кнопке чата */
   right: 10px;
   padding: 8px 16px;
   border-radius: 8px;
   color: #fff;
   font-weight: bold;
-  z-index: 9999;
+  z-index: 999; /* Ниже кнопки чата (z-index: 1000) */
   background: #dc3545;
+  display: none; /* Скрываем индикатор статуса - он мешает и не нужен пользователю */
 }
 
 .relative-section {
