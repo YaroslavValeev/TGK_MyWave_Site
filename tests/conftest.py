@@ -3,6 +3,14 @@ from app import create_app
 import unittest.mock as umock
 
 
+# Эти файлы находятся в tools/ и не являются частью pytest-сюита сайта.
+# Некоторые из них требуют опциональные зависимости (например, mcp) и ломают коллекцию.
+collect_ignore = [
+    "tools/mcp_inprocess_test.py",
+    "tools/test_server_stub.py",
+]
+
+
 @pytest.fixture(scope='session')
 def app():
     app = create_app('testing')

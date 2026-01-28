@@ -48,7 +48,10 @@ def get_google_services():
     try:
         creds = service_account.Credentials.from_service_account_file(creds_path, scopes=SCOPES)
         # Увеличиваем таймаут для SSL handshake и сетевых операций
-        authed_http = AuthorizedHttp(creds, http=httplib2.Http(timeout=30))
+        # Увеличено с 30 до 60 секунд для более стабильной работы при проблемах с сетью
+        http_client = httplib2.Http(timeout=60)
+        http_client.force_exception_to_status_code = True
+        authed_http = AuthorizedHttp(creds, http=http_client)
         _drive = build("drive", "v3", http=authed_http, cache_discovery=False)
         _sheets = build("sheets", "v4", http=authed_http, cache_discovery=False)
         _calendar = build("calendar", "v3", http=authed_http, cache_discovery=False)
@@ -80,13 +83,71 @@ def read_sheet(spreadsheet_id: str, sheet_name: str) -> tuple[list[dict], list[s
     values = result.get("values", [])
     if not values:
         return [], []
-    headers = values[0]
+
+    # В некоторых реальных листах заголовки могут быть не в первой строке (например, если сверху есть данные/служебные строки).
+    # Поэтому ищем строку заголовков эвристикой: должна содержать ключевые колонки (id + status).
+    def _norm(s: str) -> str:
+        return str(s or "").strip().lower()
+
+    # Эвристика: выбираем строку с максимальным количеством совпадений ожидаемых заголовков.
+    # Это устойчивее, чем "первое совпадение", если в данных встречаются слова "id"/"status".
+    expected = {"id", "status", "published_posts", "publish_error", "source_type"}
+    header_row_idx = 0
+    best_score = -1
+    # Важно: анализируем только первые ~80 колонок, чтобы не схватить "служебные" блоки справа
+    # (например, CONTRACT/меню), которые могут содержать слова 'id'/'status' и давать ложные совпадения.
+    for i, row in enumerate(values[:400]):  # ограничимся первыми 400 строками
+        row_norm = {_norm(c) for c in row[:80] if _norm(c)}
+        score = len(expected.intersection(row_norm))
+        if score > best_score:
+            best_score = score
+            header_row_idx = i
+
+    # Если заголовки не распознаны (слишком мало совпадений) — fallback на первую строку.
+    if best_score < 2:
+        header_row_idx = 0
+
+    headers = values[header_row_idx]
     records = []
-    for row in values[1:]:
+    # Подготовим карту индексов сразу (нужно и для логирования дублей)
+    header_indices = {}
+    for i, hdr in enumerate(headers):
+        header_indices.setdefault(hdr, []).append(i)
+
+    # Логируем дубликаты заголовков (предупреждение, но не блокируем работу)
+    duplicate_headers = {h: idxs for h, idxs in header_indices.items() if len(idxs) > 1}
+    if duplicate_headers:
+        # Пример: {'final_posts': [21, 40], 'ingest_error': [17, 44]}
+        logging.warning(
+            "[google.read_sheet] Дубликаты заголовков обнаружены: %s",
+            {h: idxs for h, idxs in duplicate_headers.items()}
+        )
+
+    for offset, row in enumerate(values[header_row_idx + 1 :]):
         record = {}
-        for i, hdr in enumerate(headers):
-            # Защита от IndexError если строка короче заголовков
-            record[hdr] = row[i] if i < len(row) else ""
+        for hdr, indices in header_indices.items():
+            # Если заголовок уникален - просто берём значение
+            if len(indices) == 1:
+                i = indices[0]
+                record[hdr] = row[i] if i < len(row) else ""
+            else:
+                # Если дубликат - берём первое непустое значение
+                # И сохраняем все значения в список (для отладки)
+                values_list = []
+                for i in indices:
+                    val = row[i] if i < len(row) else ""
+                    if val:
+                        values_list.append(val)
+                
+                # Берём первое непустое значение
+                record[hdr] = values_list[0] if values_list else ""
+                
+                # Для критичных полей (final_posts) сохраняем все варианты
+                if hdr == "final_posts" and len(values_list) > 1:
+                    # Сохраняем все непустые значения в отдельное поле для отладки
+                    record["_final_posts_all"] = values_list
+        # Сохраняем реальный номер строки листа (1-based) для внутренней диагностики.
+        record["_sheet_row_number"] = header_row_idx + 2 + offset
         records.append(record)
     return records, headers
 
