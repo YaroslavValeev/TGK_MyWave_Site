@@ -1,48 +1,51 @@
-<div id="modalCalendar" class="modal hidden">
+<div id="bookingDateModal" class="modal hidden">
   <div class="modal-content">
-      <span class="close-modal">&times;</span>
+      <span class="close-modal" data-modal-close>&times;</span>
       <h2>Выберите дату</h2>
+      <p class="booking-service-hint">Услуга: <strong id="bookingServiceBadge">Зал</strong></p>
       <p class="progress-info">Шаг 1 / 3</p>
       <div class="date-input-container">
-          <input type="text" id="bookingDateInput" placeholder="Выберите дату" readonly>
+          <input type="text" id="bookingDatePickr" placeholder="Выберите дату" readonly>
           <i id="dateIcon" class="fas fa-calendar-alt"></i>
       </div>
+      <p id="selectedDateDisplay">Дата не выбрана</p>
       <button id="confirmDateBtn" class="btn btn-primary">Далее</button>
   </div>
 </div>
-<div id="modalSlots" class="modal hidden">
+<div id="bookingTimeModal" class="modal hidden">
   <div class="modal-content">
     <h3>Выберите время</h3>
     <p class="progress-info">Шаг 2 / 3</p>
     <div id="slotButtonsContainer"></div>
     <input type="hidden" id="selectedSlot" />
-    <button id="confirmSlotBtn">Далее</button>
-    <button class="close-modal">Назад</button>
+    <button id="confirmTimeBtn" disabled>Далее</button>
+    <button id="backToTimeBtn" class="close-modal">Назад</button>
   </div>
 </div>
-<div id="modalContact" class="modal hidden">
+<div id="bookingContactModal" class="modal hidden">
   <div class="modal-content">
     <h3>Ваши данные</h3>
     <p class="progress-info">Шаг 3 / 3</p>
-    <input type="text" id="bookingName" placeholder="Имя" />
-    <input type="text" id="bookingPhone" placeholder="Телефон" />
-    <button id="confirmContactBtn">Далее</button>
-    <button class="close-modal">Назад</button>
+    <form id="bookingContactForm">
+      <input type="text" id="bookingName" placeholder="Имя" required />
+      <input type="text" id="bookingPhone" placeholder="Телефон" required />
+      <input type="hidden" id="bookingServiceType" name="service_type" value="gym">
+      <button type="submit">Отправить</button>
+    </form>
+    <button id="backToTimeBtn2" class="close-modal">Назад</button>
   </div>
 </div>
-<div id="modalConfirm" class="modal hidden">
+<div id="bookingSuccessModal" class="modal hidden">
   <div class="modal-content">
-    <button class="close-modal" onclick="hideAllModals()">&times;</button>
+    <button class="close-modal" id="closeSuccessModal" data-modal-close>&times;</button>
     <h2>Подтверждение записи</h2>
-    <div id="confirmDetails"></div>
+    <p id="successMessage"></p>
     <p class="pay-hint">
       💳 Оплата производится на месте после тренировки. 
       Мы пока не принимаем онлайн-оплату.
     </p>
-    <div class="modal-actions">
-      <button id="finalConfirmBtn" class="btn btn-primary-lg">Подтвердить запись</button>
-    </div>
   </div>
 </div>
+<div id="bookingToast" class="toast"></div>
 <input type="hidden" id="bookingDate">
 <input type="hidden" id="bookingTime">

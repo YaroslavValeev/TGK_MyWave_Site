@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} | Блог MyWave{% endblock %}
+{% block meta_description %}{{ post.excerpt or post.title }}{% endblock %}
+{% block extra_head %}
+  <link rel="canonical" href="{{ request.url }}">
+  <meta property="og:title" content="{{ post.title }}">
+  <meta property="og:description" content="{{ post.excerpt or post.title }}">
+  {% if post.cover_image_url %}
+    <meta property="og:image" content="{{ post.cover_image_url }}">
+  {% endif %}
+  <meta property="og:type" content="article">
+  {% if post.published_at %}
+    <meta property="article:published_time" content="{{ post.published_at.isoformat() }}">
+  {% endif %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "{{ post.title|e }}",
+    "datePublished": "{% if post.published_at %}{% if post.published_at.isoformat %}{{ post.published_at.isoformat() }}{% else %}{{ post.published_at }}{% endif %}{% endif %}",
+    "description": "{{ (post.excerpt or '')|e }}",
+    "url": "{{ request.url }}"
+  }
+  </script>
+{% endblock %}
+
+{% block content %}
+<section class="mw-section">
+  <div class="mw-container">
+    <div class="mw-card">
+      <a href="{{ url_for('blog.blog_index') }}" style="opacity:.8;">← назад в блог</a>
+
+      <h1 style="margin: 10px 0 8px 0; line-height: 1.15;">{{ post.title }}</h1>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; font-size: 13px; opacity:.75; margin-bottom: 16px;">
+        {% if post.source_name %}<span>Источник: {{ post.source_name }}</span>{% endif %}
+        {% if post.published_at %}
+          {% if post.published_at.strftime %}
+            <span>{{ post.published_at.strftime("%d.%m.%Y") }}</span>
+          {% else %}
+            <span>{{ post.published_at[:10] if post.published_at|length > 10 else post.published_at }}</span>
+          {% endif %}
+        {% endif %}
+      </div>
+
+      {% if tags and tags|length > 0 %}
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 14px;">
+          {% for t in tags %}
+            <a href="{{ url_for('blog.blog_index', tag=t|lower) }}" style="font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(0,0,0,.1); text-decoration:none;">
+              #{{ t }}
+            </a>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if post.cover_image_url %}
+        <img src="{{ post.cover_image_url }}" alt="" style="width:100%; border-radius: 14px; margin: 8px 0 18px 0;">
+      {% endif %}
+
+      <article style="line-height: 1.65; font-size: 16px;">
+        {{ (post.content_html or post.content)|safe }}
+      </article>
+
+      {% if post.source_url %}
+        <hr style="margin: 22px 0;">
+        <p style="opacity:.85; font-size: 13px;">
+          Источник: <a href="{{ post.source_url }}" target="_blank" rel="noopener noreferrer">{{ post.source_url }}</a>
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

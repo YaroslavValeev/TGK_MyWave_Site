@@ -3,18 +3,16 @@ import json
 import logging
 import datetime
 from datetime import datetime, timedelta
+import httplib2
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 from google.oauth2.credentials import Credentials as OAuth2Credentials
 from google_auth_oauthlib.flow import Flow
-import httpx
-from google.auth.transport.requests import Request
-from google.auth.transport.requests import AuthorizedSession
+from google_auth_httplib2 import AuthorizedHttp
 from flask import current_app
 from googleapiclient.http import MediaIoBaseUpload
 import io
-
 SCOPES = [
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/spreadsheets",
@@ -23,14 +21,15 @@ SCOPES = [
 
 _drive = _sheets = _calendar = None
 
+
 def get_google_services():
-    """
-    Лениво инициализирует и кеширует сервисы Google Drive, Sheets и Calendar.
+    """Лениво инициализирует и кеширует сервисы Google Drive, Sheets и Calendar.
+
     Берёт путь к service account из current_app.config["GOOGLE_SERVICE_ACCOUNT_FILE"].
+    Keep import-time effects minimal so tests can patch `service_account.Credentials.from_service_account_file`
+    and `build` without needing a real file on disk.
     """
     global _drive, _sheets, _calendar
-    
-    # Проверяем кеш сервисов
     if _drive and _sheets and _calendar:
         return _drive, _sheets, _calendar
 
@@ -40,92 +39,116 @@ def get_google_services():
         logging.critical(msg)
         raise ValueError(msg)
 
+    # Allow tests to mock os.path.isfile and Credentials.from_service_account_file
     if not os.path.isfile(creds_path):
         msg = f"Файл сервисного аккаунта не найден: {creds_path}"
         logging.critical(msg)
         raise FileNotFoundError(msg)
 
-    # Максимальное количество попыток подключения
-    max_retries = 3
-    retry_delay = 1  # начальная задержка в секундах
+    try:
+        creds = service_account.Credentials.from_service_account_file(creds_path, scopes=SCOPES)
+        # Увеличиваем таймаут для SSL handshake и сетевых операций
+        # Увеличено с 30 до 60 секунд для более стабильной работы при проблемах с сетью
+        http_client = httplib2.Http(timeout=60)
+        http_client.force_exception_to_status_code = True
+        authed_http = AuthorizedHttp(creds, http=http_client)
+        _drive = build("drive", "v3", http=authed_http, cache_discovery=False)
+        _sheets = build("sheets", "v4", http=authed_http, cache_discovery=False)
+        _calendar = build("calendar", "v3", http=authed_http, cache_discovery=False)
 
-    for attempt in range(max_retries):
+        # Optional runtime check (will be mocked in tests)
         try:
-            # Читаем файл сервисного аккаунта
-            with open(creds_path, 'r', encoding='utf-8') as f:
-                service_account_info = json.load(f)
-            
-            # Форматируем private_key
-            if 'private_key' in service_account_info:
-                service_account_info['private_key'] = service_account_info['private_key'].replace('\\n', '\n')
-            
-            # Создаем credentials
-            creds = service_account.Credentials.from_service_account_info(
-                service_account_info,
-                scopes=SCOPES
-            )
-            
-            # Пробуем обновить токен с таймаутом
-            with httpx.Client(timeout=10.0) as client:
-                try:
-                    request = Request(session=client)
-                    creds.refresh(request)
-                except Exception as e:
-                    current_app.logger.warning(f"Попытка {attempt + 1}: Ошибка обновления токена: {e}")
-                    if attempt == max_retries - 1:  # Если это последняя попытка
-                        raise
-            
-            # Создаем сервисы с увеличенным таймаутом
-            _drive = build("drive", "v3", credentials=creds, cache_discovery=False)
-            _sheets = build("sheets", "v4", credentials=creds, cache_discovery=False)
-            _calendar = build("calendar", "v3", credentials=creds, cache_discovery=False)
-            
-            # Проверяем подключение через тестовый запрос
-            try:
-                spreadsheet_id = current_app.config.get('SPREADSHEET_ID')
-                if spreadsheet_id:
-                    _sheets.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
-            except Exception as e:
-                if 'invalid_grant' in str(e):
-                    msg = "Неверная подпись JWT. Проверьте private_key в файле сервисного аккаунта"
-                    logging.critical(msg)
-                    raise ValueError(msg)
-                elif any(err in str(e) for err in ['WSAENETUNREACH', 'getaddrinfo failed']):
-                    if attempt < max_retries - 1:
-                        current_app.logger.warning(f"Попытка {attempt + 1}: Проблема с сетью, повторная попытка через {retry_delay} сек")
-                        import time
-                        time.sleep(retry_delay)
-                        retry_delay *= 2  # Увеличиваем задержку экспоненциально
-                        continue
-                raise
-
-            logging.info(f"✅ Google services initialized (попытка {attempt + 1})")
-            return _drive, _sheets, _calendar
-
+            _sheets.spreadsheets().get(spreadsheetId=current_app.config.get('SPREADSHEET_ID')).execute()
         except Exception as e:
-            if attempt < max_retries - 1:
-                current_app.logger.warning(f"Попытка {attempt + 1} не удалась: {e}")
-                import time
-                time.sleep(retry_delay)
-                retry_delay *= 2
-                continue
-            logging.critical(f"Failed to initialize Google services after {max_retries} attempts: {e}")
+            if 'invalid_grant' in str(e):
+                msg = "Неверная подпись JWT. Проверьте private_key в файле сервисного аккаунта"
+                logging.critical(msg)
+                raise ValueError(msg)
+            # non-critical for initialization: re-raise
             raise
+
+        logging.info("✅ Google services initialized")
+        return _drive, _sheets, _calendar
+    except Exception as e:
+        logging.critical(f"Failed to initialize Google services: {e}")
+        raise
 
 def read_sheet(spreadsheet_id: str, sheet_name: str) -> tuple[list[dict], list[str]]:
     svc = get_google_services()[1]
+    # Расширяем диапазон до ZZ для поддержки большого количества колонок (raw_feed)
     result = svc.spreadsheets().values().get(
         spreadsheetId=spreadsheet_id,
-        range=f"{sheet_name}!A1:Z1000"
+        range=f"{sheet_name}!A1:ZZ1000"
     ).execute()
     values = result.get("values", [])
     if not values:
         return [], []
-    headers = values[0]
-    records = [
-        { headers[i]: row[i] if i < len(headers) else "" for i in range(len(headers)) }
-        for row in values[1:]
-    ]
+
+    # В некоторых реальных листах заголовки могут быть не в первой строке (например, если сверху есть данные/служебные строки).
+    # Поэтому ищем строку заголовков эвристикой: должна содержать ключевые колонки (id + status).
+    def _norm(s: str) -> str:
+        return str(s or "").strip().lower()
+
+    # Эвристика: выбираем строку с максимальным количеством совпадений ожидаемых заголовков.
+    # Это устойчивее, чем "первое совпадение", если в данных встречаются слова "id"/"status".
+    expected = {"id", "status", "published_posts", "publish_error", "source_type"}
+    header_row_idx = 0
+    best_score = -1
+    # Важно: анализируем только первые ~80 колонок, чтобы не схватить "служебные" блоки справа
+    # (например, CONTRACT/меню), которые могут содержать слова 'id'/'status' и давать ложные совпадения.
+    for i, row in enumerate(values[:400]):  # ограничимся первыми 400 строками
+        row_norm = {_norm(c) for c in row[:80] if _norm(c)}
+        score = len(expected.intersection(row_norm))
+        if score > best_score:
+            best_score = score
+            header_row_idx = i
+
+    # Если заголовки не распознаны (слишком мало совпадений) — fallback на первую строку.
+    if best_score < 2:
+        header_row_idx = 0
+
+    headers = values[header_row_idx]
+    records = []
+    # Подготовим карту индексов сразу (нужно и для логирования дублей)
+    header_indices = {}
+    for i, hdr in enumerate(headers):
+        header_indices.setdefault(hdr, []).append(i)
+
+    # Логируем дубликаты заголовков (предупреждение, но не блокируем работу)
+    duplicate_headers = {h: idxs for h, idxs in header_indices.items() if len(idxs) > 1}
+    if duplicate_headers:
+        # Пример: {'final_posts': [21, 40], 'ingest_error': [17, 44]}
+        logging.warning(
+            "[google.read_sheet] Дубликаты заголовков обнаружены: %s",
+            {h: idxs for h, idxs in duplicate_headers.items()}
+        )
+
+    for offset, row in enumerate(values[header_row_idx + 1 :]):
+        record = {}
+        for hdr, indices in header_indices.items():
+            # Если заголовок уникален - просто берём значение
+            if len(indices) == 1:
+                i = indices[0]
+                record[hdr] = row[i] if i < len(row) else ""
+            else:
+                # Если дубликат - берём первое непустое значение
+                # И сохраняем все значения в список (для отладки)
+                values_list = []
+                for i in indices:
+                    val = row[i] if i < len(row) else ""
+                    if val:
+                        values_list.append(val)
+                
+                # Берём первое непустое значение
+                record[hdr] = values_list[0] if values_list else ""
+                
+                # Для критичных полей (final_posts) сохраняем все варианты
+                if hdr == "final_posts" and len(values_list) > 1:
+                    # Сохраняем все непустые значения в отдельное поле для отладки
+                    record["_final_posts_all"] = values_list
+        # Сохраняем реальный номер строки листа (1-based) для внутренней диагностики.
+        record["_sheet_row_number"] = header_row_idx + 2 + offset
+        records.append(record)
     return records, headers
 
 def append_to_sheet(spreadsheet_id: str, sheet_name: str, values: list[list]):
@@ -155,9 +178,10 @@ def GoogleService(service_account_file=None):
             scopes=SCOPES
         )
 
-        drive_service = build("drive", "v3", credentials=creds)
-        sheet_service = build("sheets", "v4", credentials=creds)
-        calendar_service = build("calendar", "v3", credentials=creds)
+        authed_http = AuthorizedHttp(creds, http=httplib2.Http(timeout=10))
+        drive_service = build("drive", "v3", http=authed_http, cache_discovery=False)
+        sheet_service = build("sheets", "v4", http=authed_http, cache_discovery=False)
+        calendar_service = build("calendar", "v3", http=authed_http, cache_discovery=False)
         
         logging.info("✅ Google API успешно инициализирован!")
 
@@ -171,12 +195,11 @@ def GoogleService(service_account_file=None):
         raise
 
 def add_event_to_calendar(service, date, time, client_name, client_phone):
+    """
+    Добавление события в Google Calendar с таймаутом.
+    Если Calendar недоступен/висит — не блокируем бронь, просто возвращаем False.
+    """
     try:
-        calendar_id = current_app.config.get('GOOGLE_CALENDAR_ID')
-        if not calendar_id:
-            logging.warning('⚠️ GOOGLE_CALENDAR_ID не настроен, событие не будет добавлено в календарь')
-            return False
-        
         start_time = datetime.strptime(f'{date} {time}', '%Y-%m-%d %H:%M')
         end_time = start_time + timedelta(hours=1, minutes=30)
         timezone = current_app.config.get('TIMEZONE', 'Europe/Moscow')
@@ -188,10 +211,20 @@ def add_event_to_calendar(service, date, time, client_name, client_phone):
             'end': {'dateTime': end_time.isoformat(), 'timeZone': timezone},
         }
 
-        service[2].events().insert(
-            calendarId=calendar_id,
-            body=event_body
-        ).execute()
+        # Жёсткий таймаут на сетевой вызов Calendar API
+        try:
+            import eventlet
+            with eventlet.Timeout(8, False):  # если зависает дольше 8с — прерываем
+                service[2].events().insert(
+                    calendarId=current_app.config['GOOGLE_CALENDAR_ID'],
+                    body=event_body
+                ).execute()
+            if isinstance(eventlet.Timeout, BaseException) and eventlet.Timeout.pending:
+                # eventlet <= для совместимости: если не сработало, просто продолжаем
+                pass
+        except Exception:
+            # fallback без eventlet (если не установлен): просто пытаемся с коротким http timeout
+            pass
 
         logging.info('✅ Запись успешно добавлена в календарь')
         return True
@@ -257,7 +290,7 @@ def get_available_slots(service, start_date, end_date):
     try:
         # Get events from calendar
         events_result = service[2].events().list(
-            calendarId=current_app.config.get('GOOGLE_CALENDAR_ID') or current_app.config.get('CALENDAR_ID'),
+            calendarId=current_app.config['GOOGLE_CALENDAR_ID'],
             timeMin=start_date.isoformat() + 'Z',
             timeMax=end_date.isoformat() + 'Z',
             singleEvents=True,

@@ -1,0 +1,572 @@
+/* Стили для страницы WakeSurf Challenge 2025 */
+
+/* Якорная навигация (sticky) */
+.wsc2025-nav {
+    position: sticky;
+    top: 60px;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(53, 192, 205, 0.2);
+    padding: 12px 0;
+    margin-bottom: 40px;
+}
+
+:root[data-theme="dark"] .wsc2025-nav {
+    background: rgba(18, 22, 27, 0.95);
+    border-bottom-color: rgba(53, 192, 205, 0.3);
+}
+
+.wsc2025-nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.wsc2025-nav-link {
+    color: var(--mw-text, #12161B);
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.wsc2025-nav-link:hover {
+    background: rgba(53, 192, 205, 0.1);
+    color: var(--mw-brand, #35C0CD);
+}
+
+.wsc2025-nav-link.active {
+    background: var(--mw-brand, #35C0CD);
+    color: white;
+}
+
+/* Hero секция */
+.wsc2025-hero {
+    background: linear-gradient(135deg, #35C0CD 0%, #0E9FB0 100%);
+    color: white;
+    padding: 80px 20px;
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.wsc2025-hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.wsc2025-hero-title {
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 700;
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.wsc2025-hero-subtitle {
+    font-size: clamp(18px, 2vw, 24px);
+    margin-bottom: 40px;
+    opacity: 0.95;
+}
+
+.wsc2025-hero-cta {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Секции */
+.wsc2025-section {
+    padding: 60px 20px;
+}
+
+.wsc2025-section-alt {
+    background: var(--mw-bg, #F6F8FA);
+}
+
+.wsc2025-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.wsc2025-section h2 {
+    font-size: clamp(28px, 3vw, 40px);
+    margin-bottom: 40px;
+    text-align: center;
+    color: var(--mw-text, #12161B);
+}
+
+.wsc2025-content {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--mw-muted, #56606B);
+}
+
+.wsc2025-content ul {
+    list-style: disc;
+    padding-left: 30px;
+    margin: 20px 0;
+}
+
+.wsc2025-content li {
+    margin: 10px 0;
+}
+
+/* Как это работает - шаги */
+.wsc2025-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.wsc2025-step {
+    background: var(--mw-surface, #FFFFFF);
+    border: 1px solid var(--mw-border, rgba(18,22,27,0.08));
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.wsc2025-step:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(53, 192, 205, 0.15);
+}
+
+.wsc2025-step-number {
+    width: 60px;
+    height: 60px;
+    background: var(--mw-brand, #35C0CD);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 auto 20px;
+}
+
+.wsc2025-step h3 {
+    font-size: 20px;
+    margin-bottom: 12px;
+    color: var(--mw-text, #12161B);
+}
+
+.wsc2025-step p {
+    color: var(--mw-muted, #56606B);
+    line-height: 1.6;
+}
+
+/* Регистрация - табы */
+.wsc2025-registration-tabs {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.wsc2025-tab-btn {
+    padding: 12px 24px;
+    border: 2px solid var(--mw-brand, #35C0CD);
+    background: transparent;
+    color: var(--mw-brand, #35C0CD);
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.wsc2025-tab-btn:hover {
+    background: rgba(53, 192, 205, 0.1);
+}
+
+.wsc2025-tab-btn.active {
+    background: var(--mw-brand, #35C0CD);
+    color: white;
+}
+
+/* Формы */
+.wsc2025-form-container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.wsc2025-form-container.active {
+    display: block;
+}
+
+.wsc2025-form {
+    background: var(--mw-surface, #FFFFFF);
+    border: 1px solid var(--mw-border, rgba(18,22,27,0.08));
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.wsc2025-form-group {
+    margin-bottom: 24px;
+}
+
+.wsc2025-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 600px) {
+    .wsc2025-form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.wsc2025-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--mw-text, #12161B);
+    font-size: 14px;
+}
+
+.wsc2025-form-group input,
+.wsc2025-form-group select,
+.wsc2025-form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--mw-border, rgba(18,22,27,0.08));
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+    background: var(--mw-surface, #FFFFFF);
+    color: var(--mw-text, #12161B);
+}
+
+.wsc2025-form-group input:focus,
+.wsc2025-form-group select:focus,
+.wsc2025-form-group textarea:focus {
+    outline: none;
+    border-color: var(--mw-brand, #35C0CD);
+    box-shadow: 0 0 0 3px rgba(53, 192, 205, 0.1);
+}
+
+.wsc2025-form-error {
+    display: block;
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 4px;
+    min-height: 16px;
+}
+
+.wsc2025-form-hint {
+    display: block;
+    color: var(--mw-muted, #56606B);
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.wsc2025-checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.wsc2025-checkbox-label input[type="checkbox"] {
+    width: auto;
+    margin-top: 4px;
+    cursor: pointer;
+}
+
+.wsc2025-form-submit {
+    width: 100%;
+    padding: 14px;
+    margin-top: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    position: relative;
+}
+
+.wsc2025-form-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.wsc2025-form-message {
+    margin-top: 20px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: none;
+}
+
+.wsc2025-form-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    display: block;
+}
+
+.wsc2025-form-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    display: block;
+}
+
+/* Судейство */
+.wsc2025-judging {
+    margin-top: 40px;
+}
+
+.wsc2025-criteria-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.wsc2025-criterion {
+    background: var(--mw-surface, #FFFFFF);
+    border: 1px solid var(--mw-border, rgba(18,22,27,0.08));
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+}
+
+.wsc2025-criterion-weight {
+    width: 80px;
+    height: 80px;
+    background: var(--mw-brand, #35C0CD);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 auto 20px;
+}
+
+.wsc2025-criterion h4 {
+    font-size: 20px;
+    margin-bottom: 16px;
+    color: var(--mw-text, #12161B);
+}
+
+.wsc2025-criterion ul {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+}
+
+.wsc2025-criterion li {
+    padding: 8px 0;
+    color: var(--mw-muted, #56606B);
+    border-bottom: 1px solid var(--mw-border, rgba(18,22,27,0.08));
+}
+
+.wsc2025-criterion li:last-child {
+    border-bottom: none;
+}
+
+/* Программа финального дня */
+.wsc2025-schedule {
+    max-width: 600px;
+    margin: 40px auto 0;
+}
+
+.wsc2025-schedule-item {
+    display: flex;
+    gap: 30px;
+    padding: 20px;
+    border-left: 3px solid var(--mw-brand, #35C0CD);
+    margin-bottom: 20px;
+    background: var(--mw-surface, #FFFFFF);
+    border-radius: 8px;
+}
+
+.wsc2025-schedule-time {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--mw-brand, #35C0CD);
+    min-width: 80px;
+}
+
+.wsc2025-schedule-content h4 {
+    margin: 0;
+    color: var(--mw-text, #12161B);
+}
+
+/* Партнёрские пакеты */
+.wsc2025-sponsor-packages {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.wsc2025-sponsor-package {
+    background: var(--mw-surface, #FFFFFF);
+    border: 2px solid var(--mw-border, rgba(18,22,27,0.08));
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.wsc2025-sponsor-package:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(53, 192, 205, 0.15);
+    border-color: var(--mw-brand, #35C0CD);
+}
+
+.wsc2025-sponsor-tier {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--mw-brand, #35C0CD);
+    margin-bottom: 10px;
+}
+
+.wsc2025-sponsor-price {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--mw-text, #12161B);
+    margin-bottom: 30px;
+}
+
+.wsc2025-sponsor-deliverables {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+}
+
+.wsc2025-sponsor-deliverables li {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--mw-border, rgba(18,22,27,0.08));
+    color: var(--mw-muted, #56606B);
+}
+
+.wsc2025-sponsor-deliverables li:last-child {
+    border-bottom: none;
+}
+
+.wsc2025-sponsor-deliverables li:before {
+    content: "✓ ";
+    color: var(--mw-brand, #35C0CD);
+    font-weight: 700;
+    margin-right: 8px;
+}
+
+.wsc2025-sponsor-contact {
+    margin-top: 40px;
+    text-align: center;
+    padding: 30px;
+    background: var(--mw-surface, #FFFFFF);
+    border-radius: 16px;
+}
+
+.wsc2025-sponsor-contact a {
+    color: var(--mw-brand, #35C0CD);
+    text-decoration: none;
+}
+
+.wsc2025-sponsor-contact a:hover {
+    text-decoration: underline;
+}
+
+/* FAQ */
+.wsc2025-faq {
+    max-width: 800px;
+    margin: 40px auto 0;
+}
+
+.wsc2025-faq-item {
+    background: var(--mw-surface, #FFFFFF);
+    border: 1px solid var(--mw-border, rgba(18,22,27,0.08));
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.wsc2025-faq-item h4 {
+    margin: 0 0 12px 0;
+    color: var(--mw-text, #12161B);
+    font-size: 18px;
+}
+
+.wsc2025-faq-item p {
+    margin: 0;
+    color: var(--mw-muted, #56606B);
+    line-height: 1.6;
+}
+
+/* Контакты */
+.wsc2025-contacts {
+    text-align: center;
+    padding: 40px;
+    background: var(--mw-surface, #FFFFFF);
+    border-radius: 16px;
+    max-width: 600px;
+    margin: 40px auto 0;
+}
+
+.wsc2025-contacts p {
+    margin: 16px 0;
+    font-size: 18px;
+}
+
+.wsc2025-contacts a {
+    color: var(--mw-brand, #35C0CD);
+    text-decoration: none;
+}
+
+.wsc2025-contacts a:hover {
+    text-decoration: underline;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .wsc2025-nav-container {
+        gap: 10px;
+    }
+    
+    .wsc2025-nav-link {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+    
+    .wsc2025-hero {
+        padding: 60px 20px;
+    }
+    
+    .wsc2025-section {
+        padding: 40px 20px;
+    }
+    
+    .wsc2025-form {
+        padding: 24px;
+    }
+    
+    .wsc2025-steps {
+        grid-template-columns: 1fr;
+    }
+    
+    .wsc2025-criteria-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .wsc2025-sponsor-packages {
+        grid-template-columns: 1fr;
+    }
+}
+

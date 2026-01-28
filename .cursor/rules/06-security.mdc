@@ -1,0 +1,24 @@
+---
+description: "Security rules: secrets, logging, PII, .cursorignore compliance."
+---
+
+# Security (MANDATORY)
+
+## Secrets
+- Secrets MUST come from ENV only.
+- DO NOT add secrets to code, logs, docs, test fixtures, or commits.
+- Ensure .cursorignore and .gitignore cover secrets and credential files.
+
+## Logs / Telemetry
+- NEVER log:
+  - API keys, tokens, credentials
+  - full PII (phone/email/name)
+- If needed for debugging: redact or hash.
+
+## External Calls
+- Always set timeouts.
+- Validate inputs at boundaries.
+- Fail gracefully without leaking internal details.
+
+## Cursor Safety
+- If a file might contain secrets, keep it excluded via .cursorignore.

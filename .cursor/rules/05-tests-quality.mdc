@@ -1,0 +1,25 @@
+---
+description: "Tests & Quality rules: regression safety, verification checklist, minimal additions."
+---
+
+# Tests & Quality (MANDATORY)
+
+## Philosophy
+- Prefer minimal tests that catch the bug/regression.
+- If automated tests are not feasible, provide a manual verification checklist with expected outcomes.
+
+## Required Manual Smoke (Critical Flows)
+- Home page loads without errors.
+- Booking flow:
+  - date select → slot availability correct → confirmation succeeds
+  - no duplicate booking on refresh/retry
+- Calendar sync:
+  - create/update without duplicates
+- Chat:
+  - opens, sends/receives, no console errors, no reconnect spam
+- Parser Bot:
+  - dedup works, retries do not duplicate publishing
+
+## Output Requirements
+- ALWAYS include Verification with exact steps and expected outcomes.
+- ALWAYS list Risks/edge cases: timezone, retries, partial failures.

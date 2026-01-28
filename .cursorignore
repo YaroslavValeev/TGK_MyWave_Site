@@ -1,0 +1,41 @@
+# Secrets / env
+.env
+.env.*
+!.env.example
+**/credentials*.json
+**/*service-account*.json
+**/*client_secret*.json
+**/*token*.json
+**/*secret*.json
+**/private_key*
+**/*.pem
+**/*.p12
+
+# Python
+**/__pycache__/
+**/*.pyc
+.venv/
+venv/
+.envrc
+
+# Node / frontend build
+node_modules/
+dist/
+build/
+.cache/
+.next/
+.vite/
+
+# Logs / exports
+**/*.log
+logs/
+tmp/
+**/*.sqlite
+**/*.db
+**/*.zip
+**/*.tar
+**/*.gz
+
+# IDE
+.idea/
+.DS_Store

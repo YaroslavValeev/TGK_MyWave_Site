@@ -1,0 +1,32 @@
+# Secrets / credentials
+.env
+.env.*
+**/credentials*.json
+**/client_secret*.json
+**/*service_account*.json
+**/*.pem
+**/*.key
+**/*secret*
+**/*token*
+
+# Python venv & caches
+**/.venv/
+**/venv/
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+
+# Node / frontend build
+**/node_modules/
+**/dist/
+**/build/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+
+# Logs / runtime artifacts
+**/*.log
+**/logs/

@@ -1,0 +1,131 @@
+{
+  "@context": "https://schema.org",
+  "@type": "TouristTrip",
+  "name": "Wake Surf Safari 2026",
+  "description": "Экспедиционный 9-дневный маршрут по реке Волге для любителей вейксерфинга: путешествие от Москвы до Волгограда (10–18 июля 2026) с ежедневными катанием, обучением и созданием уникального контента.",
+  "touristType": [
+    "Adventure tourism",
+    "Water sports",
+    "Wake surfing"
+  ],
+  "startDate": "2026-07-10",
+  "endDate": "2026-07-18",
+  "organizer": {
+    "@type": "Organization",
+    "name": "MyWave",
+    "url": "https://mywave.ru",
+    "email": "mailto:Y.Valeev@gmail.com",
+    "telephone": "+7-916-011-7179"
+  },
+  "offers": [
+    {
+      "@type": "Offer",
+      "name": "Полный маршрут (9 дней)",
+      "description": "Участие во всей экспедиции 10–18 июля 2026",
+      "price": "180000",
+      "priceCurrency": "RUB",
+      "availability": "https://schema.org/InStock"
+    },
+    {
+      "@type": "Offer",
+      "name": "Частичное участие (7 дней)",
+      "description": "Участие на 7 дней маршрута",
+      "price": "150000",
+      "priceCurrency": "RUB",
+      "availability": "https://schema.org/InStock"
+    },
+    {
+      "@type": "Offer",
+      "name": "Частичное участие (5 дней)",
+      "description": "Участие на 5 дней маршрута",
+      "price": "120000",
+      "priceCurrency": "RUB",
+      "availability": "https://schema.org/InStock"
+    },
+    {
+      "@type": "Offer",
+      "name": "Частичное участие (3 дня)",
+      "description": "Участие на 3 дня маршрута",
+      "price": "90000",
+      "priceCurrency": "RUB",
+      "availability": "https://schema.org/InStock"
+    },
+    {
+      "@type": "Offer",
+      "name": "Частичное участие (1 день)",
+      "description": "Участие на 1 день маршрута",
+      "price": "30000",
+      "priceCurrency": "RUB",
+      "availability": "https://schema.org/InStock"
+    },
+    {
+      "@type": "Offer",
+      "name": "Онлайн-участие",
+      "description": "Удалённое виртуальное участие (онлайн-трансляции и материалы)",
+      "price": "0",
+      "priceCurrency": "RUB",
+      "availability": "https://schema.org/InStock"
+    },
+    {
+      "@type": "Offer",
+      "name": "Гостевой формат",
+      "description": "Присутствие на одном из дней Safari в качестве гостя",
+      "price": "0",
+      "priceCurrency": "RUB",
+      "availability": "https://schema.org/InStock"
+    }
+  ],
+  "itinerary": {
+    "@type": "ItemList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "item": {
+          "@type": "City",
+          "name": "Москва"
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "item": {
+          "@type": "City",
+          "name": "Нижний Новгород"
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "item": {
+          "@type": "City",
+          "name": "Казань"
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "item": {
+          "@type": "City",
+          "name": "Самара"
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 5,
+        "item": {
+          "@type": "City",
+          "name": "Саратов"
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 6,
+        "item": {
+          "@type": "City",
+          "name": "Волгоград"
+        }
+      }
+    ]
+  }
+}
