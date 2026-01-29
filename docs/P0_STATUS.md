@@ -7,16 +7,22 @@
 
 ## ✅ Задача 1: Релиз P0 в main
 
-**Статус:** ✅ **ВЫПОЛНЕНО**
+**Статус:** ✅ **ВЫПОЛНЕНО И ПОДТВЕРЖДЕНО**
 
 - [x] Мерж PR #7 в main (commit `10dcfef7`)
 - [x] P0-логика проверена и сохранена
 - [x] Все изменения запушены в `main`
+- [x] Подтверждено разработчиком сайта (2026-01-28):
+  - SERVER_NAME не установлен → fallback `https://mywavetreaning.ru` допустим для P0
+  - Скрипты проверки валидны (trailing slash — не блокер P0)
+  - Документация обновлена корректно
+  - **Сайт ничего больше не блокирует**
 
 **Коммиты:**
 - `10dcfef7` - Merge P0: Safe Sheets writeback, canonical_url, monitoring
 - `da723c79` - docs: add redirects setup and control run instructions for P0
-- `...` - scripts: add P0 control run and canonical URL check scripts
+- `b449d98c` - scripts: add P0 control run and canonical URL check scripts
+- `27690159` - docs: add P0 status tracking document
 
 ---
 
@@ -97,10 +103,12 @@ python scripts/p0_control_run.py
 
 | Задача | Статус | Ответственный | Ссылка |
 |--------|--------|---------------|--------|
-| 1. Релиз P0 в main | ✅ Выполнено | Site Dev | commit `10dcfef7` |
-| 2. Редиректы + SERVER_NAME | ⏳ Требуется выполнение | Infra/Redirects | `docs/P0_REDIRECTS_SETUP.md` |
-| 3. Деплой на прод | ⏳ Требуется выполнение | Deploy | `docs/P0_DEPLOY_QUICK.md` |
-| 4. Контрольный прогон | ⏳ Требуется выполнение | QA/Control Run | `docs/P0_CONTROL_RUN.md` |
+| 1. Релиз P0 в main | ✅ **DONE** (подтверждено) | Site Dev | commit `10dcfef7` |
+| 2. Редиректы + SERVER_NAME | ⏳ Ожидание Infra/QA | Infra/Redirects | `docs/P0_REDIRECTS_SETUP.md` |
+| 3. Деплой на прод | ⏳ Ожидание Infra/QA | Deploy | `docs/P0_DEPLOY_QUICK.md` |
+| 4. Контрольный прогон | ⏳ Ожидание Infra/QA | QA/Control Run | `docs/P0_CONTROL_RUN.md` |
+
+**Статус сайта:** ✅ **Готово. Ничего не блокирует. Ожидание Infra/QA.**
 
 ---
 
@@ -115,4 +123,18 @@ python scripts/p0_control_run.py
 
 ---
 
-**Следующий шаг:** Выполнить задачи 2-4 на проде согласно инструкциям.
+## ✅ Подтверждение разработчика сайта (2026-01-28)
+
+**Статус:** Всё, что нужно со стороны сайта, сделано правильно.
+
+**Подтверждено:**
+- ✅ SERVER_NAME не установлен → fallback `https://mywavetreaning.ru` допустим для P0
+- ✅ Скрипты проверки canonical_url и контрольного прогона валидны (trailing slash — не блокер P0)
+- ✅ Документация и Decision Log обновлены корректно
+- ✅ **Сайт ничего больше не блокирует**
+
+**Следующее действие сайта (только после Infra/QA):**
+- Принять результаты прод-контрольного прогона (из `DECISION_LOG_R2_P0.md`)
+- Подтвердить: canonical_url + writeback работают на проде
+
+**👉 Сайт ничего больше не блокирует. Ждём Parser Bot + Infra.**
