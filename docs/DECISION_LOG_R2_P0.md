@@ -277,3 +277,20 @@ tail -n 500 /var/log/mywave/app.log | grep -A 10 "blog-publish.*Статисти
 **Решение зафиксировано:** 2026-01-28  
 **Мерж в main:** 2026-01-28 (commit `10dcfef7`)  
 **Ответственный:** Site MyWave Development Team
+
+---
+
+## Закрытие P0 (2026-01-28)
+
+**Сообщение от Parser Bot (принято сайтом):**
+
+P0 закрыт на стороне Parser Bot:
+
+- ✅ Push выполнен: коммиты P0 (150a241, cb86c76) в origin/main, merge f01ca10
+- ✅ Интеграционный тест пройден: row_number = реальная строка (строка 200)
+- ✅ Контракт зафиксирован: slug (Bot), canonical_url (сайт)
+
+**Ссылка на проверочную строку:**  
+https://docs.google.com/spreadsheets/d/1RJpw2mAMej3a-VC6yKAsKkVQvzGStcjUC7LijNNyn50/edit?gid=1039755742#gid=1039755742&range=A200
+
+**Подтверждение сайта:** Сообщение принято. P0 считается закрытым.
