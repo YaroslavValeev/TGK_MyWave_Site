@@ -69,8 +69,42 @@
 
 ---
 
+---
+
+## Релиз и QA на проде (заполнить после деплоя)
+
+### Коммиты в main
+
+| Коммит | Описание |
+|--------|----------|
+| `b1678281` | Domain fix (mywavetreaning.ru) + approve-gate |
+| `e075912c` | P1.0 writeback review_queue=FALSE + final_version, CONTRACT read-only, docs |
+
+**PR/мерж (если был):** _______________  
+**Хэш(и) в main после мержа:** _______________
+
+### Деплой
+
+**Окружение:** _______________ (production / staging)  
+**Дата:** _______________  
+**Подтверждение:** canonical_url в проде всегда `https://mywavetreaning.ru/blog/{slug}`, fallback без mywavetraining.ru
+
+### QA smoke (2 кейса)
+
+**Таблица raw_feed:** https://docs.google.com/spreadsheets/d/1RJpw2mAMej3a-VC6yKAsKkVQvzGStcjUC7LijNNyn50/edit?gid=1039755742
+
+| Кейс | Ожидание | Ссылка на строку | Результат |
+|------|----------|-------------------|-----------|
+| **A (WAITING_REVIEW)** | review_queue=TRUE, approved_* пустые → не публикуется, publish_error пусто, publish_attempts не растёт | _______________ | _______________ |
+| **B (PUBLISHED)** | approve заполнен → публикуется → review_queue=FALSE, final_version=published:{slug} | _______________ | _______________ |
+
+Краткий лог/скрин по кейсам (или ссылка): _______________
+
+---
+
 ## Ссылки
 
 - P0: `docs/DECISION_LOG_R2_P0.md`
 - План P1: `docs/P1_PLAN_AND_STATUS.md`
 - Статус P1: `docs/P1_STATUS.md`
+- Чеклист релиза P1: `docs/P1_RELEASE_CHECKLIST.md`
