@@ -75,14 +75,15 @@
 
 ### Коммиты в main
 
-| Коммит | Описание |
-|--------|----------|
-| `b1678281` | Domain fix (mywavetreaning.ru) + approve-gate |
-| `e075912c` | P1.0 writeback review_queue=FALSE + final_version, CONTRACT read-only, docs |
-| `6f51f53b` | docs: P1 release checklist и плейсхолдеры QA/deploy |
+| Коммит (в main после rebase) | Описание |
+|------------------------------|----------|
+| `f37a4cb3` | Domain fix (mywavetreaning.ru) + approve-gate |
+| `baf36ca3` | P1.0 writeback review_queue=FALSE + final_version, CONTRACT read-only, docs |
+| `dbb05d35` | docs: P1 release checklist и плейсхолдеры QA/deploy |
+| `b2ed8683` | docs: P1 Decision Log answer template + sync/push instructions |
 
-**PR/мерж (если был):** _______________  
-**Хэш(и) в main после мержа/пуша:** _______________
+**PR/мерж:** не использовался (push main после rebase).  
+**Хэш main (актуальный):** `b2ed8683`
 
 ### Деплой
 
@@ -103,9 +104,9 @@
 
 ---
 
-## Ответ для Ярослава (заполнить после push + deploy + QA)
+## Ответ для Ярослава (заполнить после deploy + QA)
 
-**Хэш main:** _______________  
+**Хэш main:** `b2ed8683` (push выполнен; P1.0 коммиты: f37a4cb3, baf36ca3, dbb05d35, b2ed8683)  
 **Кейс A — ссылка на строку:** _______________  
 **Кейс A — статус:** _______________ (OK / не OK)  
 **Кейс B — ссылка на строку:** _______________  
