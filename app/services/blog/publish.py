@@ -760,6 +760,7 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
         "ready_to_publish_count": 0,
         "already_published": 0,
         "scheduled_future": 0,
+        "waiting_review": 0,  # P1.0: в review_queue без approve
         "not_publishable": 0,
         "no_row_number": 0
     }
@@ -822,6 +823,22 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
                 debug_stats["scheduled_future"] += 1
                 stats["skipped"] += 1
                 logger.debug(f"[blog-publish] Запись {sheet_id} запланирована на будущее: {scheduled_at}")
+                continue
+            
+            # P1.0: Review workflow — approve-gate. Если в очереди на ревью и нет approve — не публикуем.
+            # publish_error не ставим, attempts не увеличиваем, статус записи не портим.
+            review_queue_val = str(row.get("review_queue") or "").strip().upper()
+            in_review_queue = review_queue_val in ("TRUE", "1", "YES", "ДА")
+            approved_by = str(row.get("approved_by") or "").strip()
+            approved_at = str(row.get("approved_at") or "").strip()
+            has_approve = bool(approved_by or approved_at)
+            if in_review_queue and not has_approve:
+                debug_stats["waiting_review"] += 1
+                stats["skipped"] += 1
+                logger.info(
+                    f"[blog-publish] Запись {sheet_id} в review_queue без approve — пропуск (WAITING_REVIEW). "
+                    "Публикация не выполняется до ручного approve."
+                )
                 continue
             
             # Проверяем публикуемость (должна быть True для READY_TO_PUBLISH)
@@ -1064,6 +1081,7 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
                 f"найдено={debug_stats['ready_to_publish_count']}, "
                 f"уже опубликовано={debug_stats['already_published']}, "
                 f"запланировано на будущее={debug_stats['scheduled_future']}, "
+                f"ожидают approve (P1)={debug_stats['waiting_review']}, "
                 f"не прошли проверку публикуемости={debug_stats['not_publishable']}, "
                 f"нет row_number={debug_stats['no_row_number']}"
             )
