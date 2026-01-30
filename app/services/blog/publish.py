@@ -268,6 +268,21 @@ def update_sheet_cells(spreadsheet_id: str, sheet_name: str, updates: List[Dict[
         return False
 
 
+def _read_contract_if_present(spreadsheet_id: str, logger=None) -> Optional[Tuple[List[Dict], List[str]]]:
+    """
+    P1.0: Опционально читает лист CONTRACT (создаёт Bot) для диагностики/логов.
+    Сайт НЕ изменяет CONTRACT. Если листа нет — возвращает None, не ломает работу.
+    """
+    if logger is None:
+        logger = get_logger(__name__)
+    try:
+        records, headers = read_sheet(spreadsheet_id, "CONTRACT")
+        return (records, headers)
+    except Exception as e:
+        logger.debug(f"[blog-publish] Лист CONTRACT отсутствует или недоступен: {e}")
+        return None
+
+
 def acquire_publish_lock(row_number: int, lock_ttl_minutes: Optional[int] = None, logger=None) -> bool:
     """
     Пытается получить lock для публикации строки.
@@ -555,9 +570,9 @@ def ack_publish(row_number: int, sheet_id: str, published_at: datetime, slug: Op
             })
 
         # canonical_url (site-owned)
+        sheet_slug = str(record.get(headers[slug_col]) or "").strip() if slug_col is not None else ""
+        effective_slug = sheet_slug or str(slug or "").strip()
         if canonical_url_col is not None:
-            sheet_slug = str(record.get(headers[slug_col]) or "").strip() if slug_col is not None else ""
-            effective_slug = sheet_slug or str(slug or "").strip()
             canonical_url = _make_canonical_url(effective_slug)
             if canonical_url:
                 col_letter = _column_index_to_letter(canonical_url_col)
@@ -565,6 +580,24 @@ def ack_publish(row_number: int, sheet_id: str, published_at: datetime, slug: Op
                     "range": f"{col_letter}{row_number}",
                     "values": [[canonical_url]]
                 })
+        
+        # P1.0: review_queue = FALSE (снять с очереди после публикации). approved_* не трогаем.
+        review_queue_col = _find_column_index(headers, "review_queue")
+        if review_queue_col is not None:
+            col_letter = _column_index_to_letter(review_queue_col)
+            updates.append({
+                "range": f"{col_letter}{row_number}",
+                "values": [["FALSE"]]
+            })
+        
+        # P1.0: final_version (SITE-owned) — минимально безопасно: "published:{slug}"
+        final_version_col = _find_column_index(headers, "final_version")
+        if final_version_col is not None and effective_slug:
+            col_letter = _column_index_to_letter(final_version_col)
+            updates.append({
+                "range": f"{col_letter}{row_number}",
+                "values": [[f"published:{effective_slug}"]]
+            })
         
         if not updates:
             logger.warning(f"[blog-publish] Не найдены колонки для ack")
@@ -766,7 +799,22 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
     }
     
     try:
-        # Читаем все записи из Sheets
+        # P1.0: опционально читаем CONTRACT (read-only, для диагностики)
+        try:
+            spreadsheet_id, _ = resolve_parser_source()
+            contract_data = _read_contract_if_present(spreadsheet_id, logger=logger)
+            if contract_data:
+                contract_records, contract_headers = contract_data
+                logger.info(
+                    f"[blog-publish] Лист CONTRACT присутствует: {len(contract_headers)} колонок, "
+                    f"{len(contract_records)} строк (read-only, не изменяем)"
+                )
+            else:
+                logger.debug("[blog-publish] Лист CONTRACT отсутствует — работаем по headers raw_feed")
+        except Exception as e:
+            logger.debug(f"[blog-publish] Проверка CONTRACT не критична: {e}")
+        
+        # Читаем все записи из Sheets (raw_feed)
         records, headers = fetch_parser_news_rows()
         debug_stats["total_records"] = len(records)
         logger.info(f"[blog-publish] Проверка {len(records)} записей на готовность к публикации")
