@@ -5,3 +5,4 @@ marshmallow
 Pillow
 Flask-Caching
 Flask-CORS
+flask-restx
