@@ -24,7 +24,7 @@ def test_concierge_valid_flow(monkeypatch, client):
             return {"type": "assistant", "text": f"hi {user_id}", "context": context}
 
     dummy = DummyGateway()
-    monkeypatch.setattr(ai_concierge_api, "gateway", dummy)
+    monkeypatch.setattr(ai_concierge_api, "get_gateway", lambda: dummy)
 
     payload = {
         "message": "Need help",

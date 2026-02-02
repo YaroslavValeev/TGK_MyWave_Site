@@ -10,9 +10,14 @@ from app.ai.security import get_limiter
 
 ai_concierge_bp = Blueprint("ai_concierge", __name__)
 
-# Create a gateway instance once so we can stub/monkeypatch it in tests easily
-# and so production requests reuse the same CoreAIGateway wiring.
-gateway = create_default_gateway()
+_gateway = None
+
+
+def get_gateway():
+    global _gateway
+    if _gateway is None:
+        _gateway = create_default_gateway(current_app)
+    return _gateway
 
 
 def _clean_str(value):
@@ -57,7 +62,7 @@ def concierge_message():
         )
 
     try:
-        resp = gateway.handle_message(message, user_id=user_id, context=context)
+        resp = get_gateway().handle_message(message, user_id=user_id, context=context)
     except Exception as exc:
         current_app.logger.exception("Concierge gateway failure")
         return jsonify({"error": "gateway_error", "details": str(exc)}), 502

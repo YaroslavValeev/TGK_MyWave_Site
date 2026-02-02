@@ -73,3 +73,4 @@ configs/service_account.json
 knowledge_base/*
 !knowledge_base/**/
 !knowledge_base/**/*.py
+logs/

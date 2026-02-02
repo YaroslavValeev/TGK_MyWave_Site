@@ -117,9 +117,9 @@ def health_check():
             try:
                 from app.ai.core_gateway import create_default_gateway
 
-                gw = create_default_gateway()
+                gw = create_default_gateway(current_app)
                 # perform a lightweight mock ping - non-destructive
-                resp = gw.handle_message("__health_ping__")
+                resp = gw.handle_message("health", "__health_ping__")
                 checks["ai_gateway"] = {"ok": True, "response_type": resp.get("type")}
             except Exception as e:
                 checks["ai_gateway"] = {"ok": False, "error": str(e)}

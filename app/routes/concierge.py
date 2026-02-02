@@ -61,7 +61,7 @@ def concierge_message():
         current_app.logger.exception("Rate limiter check failed; allowing request")
 
     try:
-        gw = create_default_gateway()
+        gw = create_default_gateway(current_app)
         # Pass context if available (can be used to customize system prompt or behavior)
         # For now, context is logged but not directly used in gateway
         if context:

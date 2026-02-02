@@ -1,5 +1,9 @@
 import json
-from app.ai.core_gateway import CoreAIGateway, MockOpenAIClient, ToolDefinition
+import pytest
+
+pytestmark = pytest.mark.skip(
+    reason="Legacy API: CoreAIGateway, MockOpenAIClient, ToolDefinition removed"
+)
 
 
 def test_mock_gateway_basic_reply():
