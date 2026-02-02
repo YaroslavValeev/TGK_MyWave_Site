@@ -1,0 +1,7 @@
+# Зависимости, нужные для CI (тесты + недостающие в requirements.txt).
+# Сюда добавлять пакеты, из-за которых в CI падает ModuleNotFoundError.
+pytest>=7.0.0
+marshmallow
+Pillow
+Flask-Caching
+Flask-CORS
