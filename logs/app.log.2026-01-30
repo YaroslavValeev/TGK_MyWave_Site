@@ -1,0 +1,39 @@
+[2026-01-30 11:43:52,253] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
+[2026-01-30 11:43:54,206] INFO in parser_news_sheet: [parser_news_sheet] Прочитано 231 строк, заголовков: 136
+[2026-01-30 11:43:54,623] ERROR in store: [blog-store] Ошибка чтения Sheets: can't compare offset-naive and offset-aware datetimes
+[2026-01-30 11:43:54,749] INFO in store: [blog-store] Sheets пуст/ошибка, используем БД как резерв
+[2026-01-30 11:43:55,183] INFO in store: [blog-store] Загружено 315 постов из БД (резерв)
+[2026-01-30 11:50:33,955] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
+[2026-01-30 11:50:36,171] INFO in parser_news_sheet: [parser_news_sheet] Прочитано 37 строк, заголовков: 89
+[2026-01-30 11:50:36,355] INFO in store: [blog-store] Загружено 2 постов из Sheets
+[2026-01-30 11:51:29,680] WARNING in wakesurf_challenge: Файл не найден: E:\Проекты MyWave\Site_MyWave\content\projects\wsc2025\index.md, используем значения по умолчанию
+[2026-01-30 11:51:29,852] WARNING in wakesurf_challenge: Файл не найден: E:\Проекты MyWave\Site_MyWave\content\projects\wsc2025\schema-event.jsonld, используем значения по умолчанию
+[2026-01-30 11:52:23,881] ERROR in wakesurf_challenge: Ошибка при регистрации участника: Install 'email_validator' for email validation support.
+Traceback (most recent call last):
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\wtforms\validators.py", line 401, in __call__
+    import email_validator
+ModuleNotFoundError: No module named 'email_validator'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\Проекты MyWave\Site_MyWave\app\routes\projects\wakesurf_challenge.py", line 229, in register_participant
+    if not form.validate():
+           ^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\wtforms\form.py", line 330, in validate
+    return super().validate(extra)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\wtforms\form.py", line 147, in validate
+    if not field.validate(self, extra):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\wtforms\fields\core.py", line 234, in validate
+    stop_validation = self._run_validation_chain(form, chain)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\wtforms\fields\core.py", line 254, in _run_validation_chain
+    validator(form, self)
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\wtforms\validators.py", line 403, in __call__
+    raise Exception(
+Exception: Install 'email_validator' for email validation support.
+[2026-01-30 13:29:54,115] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
+[2026-01-30 13:29:54,871] ERROR in store: [blog-store] Ошибка чтения Sheets: EOF occurred in violation of protocol (_ssl.c:2427)
+[2026-01-30 13:29:54,877] WARNING in store: [blog-store] Используем устаревший кэш из Sheets

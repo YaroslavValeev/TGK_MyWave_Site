@@ -130,7 +130,33 @@ def create_app(config_name="development"):
     def home():
         # Временно отключаем получение событий календаря
         months = {'Июнь': [], 'Июль': [], 'Август': [], 'Сентябрь': [], 'Октябрь': []}
-        return render_template('index.html', months=months)
+        # Проекты для секции на главной
+        try:
+            from app.services.showcases import get_project_cards
+            projects_preview = get_project_cards()[:3]
+        except Exception:
+            projects_preview = []
+        # Последний пост для блока «Последние новости»
+        latest_blog_post = None
+        try:
+            from app.services.blog.store import get_latest_post
+            latest_blog_post = get_latest_post(prefer_sheets=True)
+        except Exception:
+            pass
+        # Товары для витрины на главной (6 карточек)
+        products_preview = []
+        try:
+            from app.routes.shop import get_products_preview
+            products_preview = get_products_preview(6)
+        except Exception:
+            pass
+        return render_template(
+            'index.html',
+            months=months,
+            projects_preview=projects_preview,
+            latest_blog_post=latest_blog_post,
+            products_preview=products_preview,
+        )
 
     @app.route('/favicon.ico')
     def favicon():
@@ -449,6 +475,10 @@ def create_app(config_name="development"):
         projects = get_project_cards()
         jsonld = get_projects_graph()
         return render_template('projects.html', projects=projects, showcase_graph=jsonld)
+
+    @app.route('/training-program', methods=['GET'])
+    def training_program_page():
+        return render_template('training_program.html')
 
     @app.route('/events', methods=['GET'])
     def events_page():

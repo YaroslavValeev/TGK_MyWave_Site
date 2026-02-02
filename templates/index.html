@@ -4,13 +4,13 @@
 
 {% block content %}
   <!-- Герой-блок -->
-  <section class="hero-section relative-section">
+  <section id="hero" class="hero-section relative-section">
     <img src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}" alt="Вейксерфинг на волне" class="hero-bg hero-bg-cover hero-bg-light" loading="lazy" />
     <img src="{{ url_for('static', filename='images/hero-wakesurf-dark.webp') }}" alt="Вейксерфинг на волне (тёмная тема)" class="hero-bg hero-bg-cover hero-bg-dark" loading="lazy" />
     <div class="hero-content center-padding hero-content-relative">
       <h1 class="hero-title">MyWave</h1>
       <p class="hero-subtitle">Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
-      <button class="btn-primary book-now" id="openBookingBtn" data-service="gym">Записаться</button>
+      <button class="btn-primary book-now" id="openBookingBtn" data-service="gym" data-modal="booking">Записаться</button>
     </div>
   </section>
 
@@ -43,53 +43,90 @@
           <h4>Тренировка</h4>
           <p>Тренировка на авторских тренажёрах по уникальной методике вейксерфинга. Развиваем баланс, координацию, биомеханику и нейронные связи, чтобы вы уверенно и эффектно выполняли трюки.</p>
           <p>Цена: 3500 рублей</p>
-          <button class="btn-secondary btn-book" data-service="gym">Подробнее / Записаться</button>
+          <button class="btn-secondary btn-book" data-service="gym" data-modal="booking">Подробнее / Записаться</button>
         </div>
 
         <div class="service-card" id="boat-card">
           <h4>Запись на катер</h4>
           <p>Тренировка за катером с тренером (30 минут)</p>
           <p>Цена: 10 000 рублей</p>
-          <button class="btn-secondary btn-book" data-service="boat">Подробнее / Записаться</button>
+          <button class="btn-secondary btn-book" data-service="boat" data-modal="booking">Подробнее / Записаться</button>
         </div>
 
         <div class="service-card">
           <h4>Wake Discovery</h4>
           <p>Короткая ознакомительная сессия для новичков с инструктором. Можно открыть калькулятор для расчёта тура.</p>
           <p>Цена: 2500 рублей</p>
-          <button class="btn-secondary btn-book" data-service="boat">Подробнее / Калькулятор</button>
+          <button class="btn-secondary btn-book" data-service="boat" data-modal="booking">Подробнее / Калькулятор</button>
         </div>
 
         <div class="service-card">
           <h4>Wake Camp</h4>
-          <p>Интенсивный лагерь для постоянной работы над техникой и физичечской подготовкой.</p>
-          <p>Цена: от 15 000 рублей</p>
-          <button class="btn-secondary btn-book" data-service="boat">Подробнее / Записаться</button>
+          <p>Интенсивный лагерь для постоянной работы над техникой и физической подготовкой.</p>
+          <p>Цена: от 15 000 рублей (по запросу)</p>
+          <button type="button" class="btn-secondary btn-lead" data-lead="camp" aria-label="Запросить программу">Запросить программу</button>
+        </div>
+
+        <div class="service-card">
+          <h4>Тренер на выезде</h4>
+          <p>Выезд инструктора на ваш водоём или базу. Индивидуальные и групповые тренировки.</p>
+          <p>Цена: по запросу</p>
+          <button type="button" class="btn-secondary btn-lead" data-lead="coach-trip" aria-label="Запросить выезд">Запросить выезд</button>
+        </div>
+
+        <div class="service-card">
+          <h4>Консалтинг</h4>
+          <p>Консультации по организации соревнований, подбору оборудования и методике обучения.</p>
+          <p>Цена: по запросу</p>
+          <button type="button" class="btn-secondary btn-lead" data-lead="consulting" aria-label="Обсудить запуск">Обсудить запуск</button>
         </div>
       </div>
       <button class="carousel-next" aria-label="Следующие услуги">▶</button>
     </div>
   </section>
 
-  <!-- Товары -->
+  <!-- Товары (6 обязательных карточек из каталога) -->
   <section id="store" class="store-section">
     <h2>Товары</h2>
     <div class="cards-grid">
+      {% for p in products_preview %}
       <div class="product-card">
-        <img src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="Баланс-борд" loading="lazy" />
-        <h4>Баланс-борд</h4>
-        <p>Тренировочный баланс-борд для трюков и фитнеса. Улучшает координацию, подходит для всех уровней подготовки.</p>
-        <p>Цена: 7 500 ₽</p>
-        <button class="btn-secondary">Купить</button>
+        <img src="{{ url_for('static', filename=p.image) }}" alt="{{ p.title }}" loading="lazy" />
+        <h4>{{ p.title }}</h4>
+        <p>{{ p.description }}</p>
+        <p>Цена: {{ p.price }}</p>
+        <a class="btn-secondary btn" href="{{ url_for('shop.product', slug=p.slug) }}">Купить</a>
       </div>
-      <div class="product-card">
-        <img src="{{ url_for('static', filename='images/balans_trick_trening.jpg') }}" alt="Баланс-борд Pro" loading="lazy" />
-        <h4>Баланс-борд Big</h4>
-        <p>Увеличенная модель для профессионалов.</p>
-        <p>Цена: 9 900 ₽</p>
-        <button class="btn-secondary">Купить</button>
-      </div>
+      {% endfor %}
     </div>
+    <p class="store-more"><a href="{{ url_for('shop.shop_index') }}" class="btn-secondary">Все товары</a></p>
+  </section>
+
+  <!-- Проекты -->
+  <section id="projects" class="projects-section section">
+    <h2>Проекты</h2>
+    {% if projects_preview %}
+    <ul class="projects-preview-list">
+      {% for p in projects_preview %}
+      <li class="project-preview-card">
+        {% if p.cover %}
+        <img src="{{ url_for('static', filename=p.cover) }}" alt="{{ p.name }}" loading="lazy" />
+        {% endif %}
+        <h4>{{ p.name }}</h4>
+        <p>{{ p.summary }}</p>
+        {% if p.cta_url %}
+        <a class="btn-secondary btn" href="{{ p.cta_url }}">Подробнее</a>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <div class="project-preview-card project-preview-card--program">
+      <h4>Тренировочная программа для подготовки</h4>
+      <p>Системная подготовка к исполнению трюков: Start → Progress → Trick. План на 14 дней и запись в зал/на катер.</p>
+      <a class="btn-secondary btn" href="{{ url_for('training_program_page') }}">Получить план / Записаться</a>
+    </div>
+    <p class="projects-more"><a href="{{ url_for('projects_page') }}" class="btn-secondary">Все проекты</a></p>
   </section>
 
   {# Рендерим секцию мероприятий только если есть хотя бы одно событие #}
@@ -118,10 +155,20 @@
   </section>
   {% endif %}
 
-  <!-- Блог -->
+  <!-- Последние новости / Блог -->
   <section id="blog" class="blog-section">
-    <h2>Блог</h2>
-    <p>В разработке. Скоро здесь появятся новые статьи!</p>
+    <h2>Последние новости</h2>
+    {% if latest_blog_post %}
+    <article class="blog-latest">
+      <h3><a href="{{ url_for('blog.blog_post', slug=latest_blog_post.slug) }}">{{ latest_blog_post.title }}</a></h3>
+      {% if latest_blog_post.get('excerpt') %}
+      <p class="blog-excerpt">{{ latest_blog_post.excerpt }}</p>
+      {% endif %}
+      <p class="blog-more"><a href="{{ url_for('blog.blog_index') }}">Все статьи блога</a></p>
+    </article>
+    {% else %}
+    <p>Скоро здесь появятся новые статьи. <a href="{{ url_for('blog.blog_index') }}">Перейти в блог</a>.</p>
+    {% endif %}
   </section>
 
   <section class="reviews-section">
@@ -177,5 +224,6 @@
   <a href="/chat" class="btn-secondary chat-margin">Чат с тренером</a>
 
   {% include 'partials/booking_modals.html' %}
+  {% include 'partials/lead_modals.html' %}
   {% include 'partials/reco_block.html' %}
 {% endblock %}

@@ -38,7 +38,7 @@ function initializeBooking() {
     contactModal: document.getElementById("modalContact"),
     confirmModal: document.getElementById("modalConfirm"),
     modalCloseButtons: document.querySelectorAll(".close-modal"),
-    openBookingButtons: document.querySelectorAll("#openBookingBtn, .book-now, .btn-book"),
+    openBookingButtons: document.querySelectorAll("[data-modal='booking']"),
     toast: document.getElementById("toast"),
     stepIndicator: document.getElementById("step-indicator")
   };
@@ -621,7 +621,7 @@ function initializeBooking() {
       if (response.ok) {
         console.log("✅ УСПЕШНОЕ БРОНИРОВАНИЕ! Статус 200-299");
         console.log("   Результат:", result);
-        
+        hideAllModals();
         // Показываем локальный success-модал вместо перехода на внешнюю страницу
         try {
           // Человеко-понятные названия услуг
@@ -901,10 +901,12 @@ function initializeBooking() {
         return;
       }
 
-      // Устанавливаем текущий сервис (если есть)
+      // Устанавливаем текущий сервис (если есть) и бейдж в модалке
       if (serviceType) {
         currentService = serviceType;
         console.log(`[booking.js] Установлен тип сервиса: ${currentService}`);
+        const badge = document.getElementById("bookingServiceBadge");
+        if (badge) badge.textContent = serviceType === "gym" ? "Зал" : serviceType === "boat" ? "Катер" : serviceType;
       }
 
       // Настраиваем календарь в зависимости от типа услуги
@@ -921,8 +923,8 @@ function initializeBooking() {
         if (UI.stepIndicator) UI.stepIndicator.textContent = 'Шаг 1/4 - Выбор даты катания';
       }
 
-      // Определяем целевое модальное окно: либо по id из data-modal, либо дефолтное календарное модальное окно
-      const targetModal = modalId ? document.getElementById(modalId) : UI.calendarModal;
+      // data-modal="booking" → открываем первый шаг (календарь); иначе — модалка по id
+      const targetModal = (modalId === 'booking' || !modalId) ? UI.calendarModal : document.getElementById(modalId);
       console.log('[booking.js] 📍 Поиск модали:', {
         modalId: modalId,
         targetModal: targetModal ? targetModal.id : 'NOT FOUND'
@@ -958,8 +960,11 @@ function initializeBooking() {
     });
   }
 
-  if (UI.confirmContactBtn) {
-    UI.confirmContactBtn.addEventListener("click", () => {
+  const bookingContactForm = document.getElementById("bookingContactForm");
+  if (bookingContactForm) {
+    bookingContactForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!UI.bookingName || !UI.bookingPhone) return;
       if (!UI.bookingName.value.trim() || !UI.bookingPhone.value.trim()) {
         showToast('❌ Заполните все поля');
         return;
@@ -968,14 +973,9 @@ function initializeBooking() {
         showToast('❌ Введите корректный номер телефона');
         return;
       }
-      showModal(UI.confirmModal);
-      // Переход к шагу подтверждения + скролл
-      setTimeout(() => {
-        UI.confirmModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
+      submitBooking();
     });
   }
-
   if (UI.finalConfirmBtn) {
     UI.finalConfirmBtn.addEventListener("click", () => {
       submitBooking();
@@ -1148,7 +1148,8 @@ window.addEventListener('load', () => {
 });
 
 function openModal() {
-  document.getElementById("modalCalendar").classList.remove("hidden");
+  const el = document.getElementById("modalCalendar");
+  if (el) el.classList.remove("hidden");
 }
 
 // Пример: после выбора даты и времени

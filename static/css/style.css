@@ -413,7 +413,7 @@ h1, h2, h3, h4, p {
 }
 
 /* Отступы для секций */
-.services-section, .store-section, .events-section, .blog-section, .contacts-section, .chat-section {
+.services-section, .store-section, .projects-section, .events-section, .blog-section, .contacts-section, .chat-section {
   background: #fff;
   margin: 3em auto;
   padding: 1em;
@@ -424,6 +424,7 @@ h1, h2, h3, h4, p {
 /* Центрирование заголовков */
 .services-section h2,
 .store-section h2,
+.projects-section h2,
 .events-section h2,
 .blog-section h2,
 .reviews-section h2 {
@@ -482,6 +483,49 @@ h1, h2, h3, h4, p {
 .service-card-media-btn.prev { left: 10px; }
 .service-card-media-btn.next { right: 10px; }
 .service-card-media-btn:hover { background: rgba(0, 0, 0, 0.6); }
+
+/* Проекты на главной */
+.projects-preview-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1em;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5em;
+}
+.project-preview-card {
+  background: #fafafa;
+  padding: 1em;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.project-preview-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.project-preview-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 0.75em;
+}
+.project-preview-card h4 { margin: 0 0 0.5em; font-size: 1.1em; }
+.project-preview-card p { margin: 0 0 0.75em; font-size: 0.95em; color: #555; }
+.projects-more, .store-more { text-align: center; margin-top: 1em; }
+.blog-latest { margin: 0 0 1em; }
+.blog-excerpt { color: #555; margin: 0.5em 0; }
+.blog-more { margin-top: 0.75em; }
+
+/* Тренировочная программа (страница /training-program) */
+.training-program-section { max-width: 900px; margin: 2em auto; padding: 1em; }
+.training-program-section .lead { margin-bottom: 1.5em; color: #555; }
+.training-levels { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1em; margin: 1.5em 0; }
+.training-levels .level-card { background: #fafafa; padding: 1em; border-radius: 4px; }
+.training-levels .level-card h3 { margin: 0 0 0.5em; font-size: 1.1em; }
+.training-ctas { display: flex; flex-wrap: wrap; gap: 0.75em; margin-top: 1.5em; }
+.project-preview-card--program { margin-top: 0.5em; }
 
 /* Events month collapse UI */
 .events-controls {

@@ -423,6 +423,42 @@ def api_bookings_create():
         current_app.logger.exception("Неожиданная ошибка при создании бронирования")
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
+
+@api_bp.route('/lead', methods=['POST'])
+def api_lead():
+    """
+    POST /api/lead — приём лид-заявок (Тренер на выезде, Консалтинг).
+    Тело: JSON с полем type (coach_trip | consulting) и остальными полями формы.
+    """
+    if not request.is_json:
+        return jsonify({'error': 'Ожидается JSON'}), 400
+    try:
+        data = request.get_json() or {}
+        lead_type = (data.get('type') or '').strip()
+        if lead_type not in ('coach_trip', 'consulting', 'camp'):
+            return jsonify({'error': 'type должен быть coach_trip, consulting или camp'}), 400
+        contact = (data.get('contact') or '').strip()
+        if not contact:
+            return jsonify({'error': 'Поле contact обязательно'}), 400
+        current_app.logger.info("Lead received: type=%s, data=%s", lead_type, data)
+        try:
+            spreadsheet_id = current_app.config.get('SPREADSHEET_ID')
+            if spreadsheet_id:
+                if lead_type == 'coach_trip':
+                    row = [datetime.utcnow().isoformat(), lead_type, data.get('location', ''), data.get('dates', ''), data.get('format', ''), data.get('level', ''), data.get('equipment', ''), contact]
+                elif lead_type == 'camp':
+                    row = [datetime.utcnow().isoformat(), lead_type, data.get('dates', ''), data.get('level', ''), data.get('goal', ''), data.get('budget', ''), contact]
+                else:
+                    row = [datetime.utcnow().isoformat(), lead_type, data.get('topic', ''), data.get('task', ''), contact]
+                append_record(spreadsheet_id, 'Leads', row)
+        except Exception as e:
+            current_app.logger.warning("Lead sheet write failed (non-blocking): %s", e)
+        return jsonify({'ok': True, 'message': 'Заявка принята'}), 201
+    except Exception as e:
+        current_app.logger.exception("Lead submit error")
+        return jsonify({'error': 'Ошибка при отправке заявки'}), 500
+
+
 @api_ns.route('/book')
 class BookResource(Resource):
     @api_ns.expect(booking_model)

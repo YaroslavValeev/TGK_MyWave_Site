@@ -1,0 +1,2 @@
+[2026-02-02 01:02:29,169] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
+[2026-02-02 01:02:29,273] ERROR in store: [blog-store] Ошибка чтения Sheets: <HttpError 400 when requesting https://sheets.googleapis.com/v4/spreadsheets/1RJpw2mAMej3a-VC6yKAsKkVQvzGStcjUC7LijNNyn50/values/raw_feed%21A1%3AZZ1000?alt=json returned "Bad Request". Details: "EOF occurred in violation of protocol (_ssl.c:2427)">

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Тренировочная программа для подготовки — MyWave{% endblock %}
+
+{% block content %}
+<section class="container training-program-section">
+  <h1 class="section-title">Тренировочная программа для подготовки</h1>
+  <p class="lead">Системная подготовка к исполнению трюков: от базового уровня до уверенного прогресса на воде.</p>
+
+  <div class="training-levels">
+    <div class="level-card">
+      <h3>Start</h3>
+      <p>Базовый уровень: баланс, стойка, основы безопасности на воде.</p>
+    </div>
+    <div class="level-card">
+      <h3>Progress</h3>
+      <p>Прогресс: закрепление основ, первые элементы, работа с тренером.</p>
+    </div>
+    <div class="level-card">
+      <h3>Trick</h3>
+      <p>Трюки: разучивание и отработка элементов, подготовка к соревнованиям.</p>
+    </div>
+  </div>
+
+  <div class="training-ctas">
+    <a href="{{ url_for('index') }}#contacts" class="btn btn-primary">Получить план на 14 дней</a>
+    <a href="{{ url_for('index') }}#hero" class="btn btn-secondary open-booking-from-program">Записаться в зал</a>
+    <a href="{{ url_for('index') }}#services" class="btn btn-secondary">Записаться на катер</a>
+  </div>
+</section>
+{% include 'partials/reco_block.html' %}
+{% endblock %}
