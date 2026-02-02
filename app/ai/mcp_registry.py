@@ -51,5 +51,3 @@ def load_mcp_tools_from_config() -> Dict[str, Any]:
     except Exception as e:
         logger.error("[MCP] Failed to load MCP tools JSON: %s", e)
         return {}
-
-

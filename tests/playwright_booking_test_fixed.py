@@ -21,7 +21,7 @@ def main():
 
         try:
             # prefer domcontentloaded so long-loading external resources don't block the test
-            page.goto(url, wait_until='domcontentloaded', timeout=20000)
+            page.goto(url, wait_until="domcontentloaded", timeout=20000)
         except Exception as e:
             print("First navigation attempt failed (domcontentloaded):", e)
             try:
@@ -51,7 +51,10 @@ def main():
             except Exception:
                 pass
             try:
-                page.evaluate("(sel) => document.querySelector(sel) && document.querySelector(sel).click()", selector)
+                page.evaluate(
+                    "(sel) => document.querySelector(sel) && document.querySelector(sel).click()",
+                    selector,
+                )
             except Exception:
                 pass
 
@@ -60,8 +63,11 @@ def main():
             modal = page.query_selector("#modalCalendar")
             if modal:
                 class_name = modal.get_attribute("class")
-                visible = page.evaluate("el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length)", modal)
-                print(f"#modalCalendar found; class=\"{class_name}\"; visible={visible}")
+                visible = page.evaluate(
+                    "el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length)",
+                    modal,
+                )
+                print(f'#modalCalendar found; class="{class_name}"; visible={visible}')
             else:
                 print("#modalCalendar element not found in DOM.")
             # also wait briefly for any .modal.show
@@ -73,18 +79,26 @@ def main():
 
             # If modal did not become visible, attempt direct invocation of stored click handler
             try:
-                invoked = page.evaluate("(sel) => { const el = document.querySelector(sel); if (!el) return 'no-el'; if (el._clickListener) { try { el._clickListener(new MouseEvent('click', {bubbles:true, cancelable:true})); return 'invoked-listener'; } catch(e) { return 'listener-failed:' + e.message; } } return 'no-listener'; }", selector)
-                print('Direct listener invocation result:', invoked)
+                invoked = page.evaluate(
+                    "(sel) => { const el = document.querySelector(sel); if (!el) return 'no-el'; if (el._clickListener) { try { el._clickListener(new MouseEvent('click', {bubbles:true, cancelable:true})); return 'invoked-listener'; } catch(e) { return 'listener-failed:' + e.message; } } return 'no-listener'; }",
+                    selector,
+                )
+                print("Direct listener invocation result:", invoked)
                 page.wait_for_timeout(200)
                 modal = page.query_selector("#modalCalendar")
                 if modal:
                     class_name = modal.get_attribute("class")
-                    visible = page.evaluate("el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length)", modal)
-                    print(f"After direct invocation -> #modalCalendar class=\"{class_name}\"; visible={visible}")
+                    visible = page.evaluate(
+                        "el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length)",
+                        modal,
+                    )
+                    print(
+                        f'After direct invocation -> #modalCalendar class="{class_name}"; visible={visible}'
+                    )
                 else:
-                    print('After direct invocation -> #modalCalendar not found')
+                    print("After direct invocation -> #modalCalendar not found")
             except Exception as e:
-                print('Error invoking stored click handler:', e)
+                print("Error invoking stored click handler:", e)
 
         # Short pause to collect network/console
         time.sleep(1)

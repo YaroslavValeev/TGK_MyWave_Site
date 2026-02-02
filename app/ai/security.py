@@ -12,6 +12,7 @@ import logging
 # Try to import redis client; if not available we'll gracefully fall back
 try:
     import redis
+
     _redis_available = True
 except Exception:  # ImportError or others
     redis = None
@@ -76,7 +77,7 @@ class RedisRateLimiter:
 
     def __init__(self, redis_url: str, count: int = 60, window_seconds: int = 60):
         if not _redis_available:
-            raise RuntimeError('redis package not available')
+            raise RuntimeError("redis package not available")
         self.count = int(count)
         self.window_ms = int(window_seconds) * 1000
         self.client = redis.Redis.from_url(redis_url)
@@ -87,11 +88,15 @@ class RedisRateLimiter:
         try:
             now_ms = int(time.time() * 1000)
             member = f"{now_ms}-{time.time_ns()}"
-            res = self._script(keys=[f"ai_rl:{key}"], args=[now_ms, self.window_ms, self.count, member])
+            res = self._script(
+                keys=[f"ai_rl:{key}"], args=[now_ms, self.window_ms, self.count, member]
+            )
             return bool(int(res))
         except Exception as e:
             # On redis errors, log and conservatively allow (or deny?) — choose allow to avoid blocking
-            logging.getLogger(__name__).warning('Redis rate limiter error, falling back to allow: %s', e)
+            logging.getLogger(__name__).warning(
+                "Redis rate limiter error, falling back to allow: %s", e
+            )
             return True
 
 
@@ -102,34 +107,43 @@ _limiter: Optional[SimpleRateLimiter] = None
 def get_limiter() -> SimpleRateLimiter:
     global _limiter
     if _limiter is None:
-        cnt = current_app.config.get('AI_GATEWAY_RATE_LIMIT_COUNT', 60)
-        wnd = current_app.config.get('AI_GATEWAY_RATE_LIMIT_WINDOW', 60)
-        backend = current_app.config.get('AI_GATEWAY_RATE_LIMIT_BACKEND', '').lower()
-        redis_url = current_app.config.get('REDIS_URL') or current_app.config.get('AI_GATEWAY_REDIS_URL')
+        cnt = current_app.config.get("AI_GATEWAY_RATE_LIMIT_COUNT", 60)
+        wnd = current_app.config.get("AI_GATEWAY_RATE_LIMIT_WINDOW", 60)
+        backend = current_app.config.get("AI_GATEWAY_RATE_LIMIT_BACKEND", "").lower()
+        redis_url = current_app.config.get("REDIS_URL") or current_app.config.get(
+            "AI_GATEWAY_REDIS_URL"
+        )
 
-        if backend == 'redis' and redis_url and _redis_available:
+        if backend == "redis" and redis_url and _redis_available:
             try:
                 _limiter = RedisRateLimiter(redis_url, count=cnt, window_seconds=wnd)
-                current_app.logger.info('Using RedisRateLimiter for AI gateway rate limiting')
+                current_app.logger.info(
+                    "Using RedisRateLimiter for AI gateway rate limiting"
+                )
             except Exception as e:
-                current_app.logger.exception('Failed to initialize RedisRateLimiter, falling back to in-memory: %s', e)
+                current_app.logger.exception(
+                    "Failed to initialize RedisRateLimiter, falling back to in-memory: %s",
+                    e,
+                )
                 _limiter = SimpleRateLimiter(count=cnt, window_seconds=wnd)
         else:
-            if backend == 'redis' and not _redis_available:
-                current_app.logger.warning('Redis backend requested but redis package not available; using in-memory limiter')
+            if backend == "redis" and not _redis_available:
+                current_app.logger.warning(
+                    "Redis backend requested but redis package not available; using in-memory limiter"
+                )
             _limiter = SimpleRateLimiter(count=cnt, window_seconds=wnd)
     return _limiter
 
 
 def _get_api_key_from_request() -> Optional[str]:
     # Prefer Authorization: Bearer <token>
-    auth = request.headers.get('Authorization')
+    auth = request.headers.get("Authorization")
     if auth:
         parts = auth.split()
-        if len(parts) == 2 and parts[0].lower() == 'bearer':
+        if len(parts) == 2 and parts[0].lower() == "bearer":
             return parts[1]
     # fallback to X-API-Key header
-    key = request.headers.get('X-API-Key') or request.args.get('api_key')
+    key = request.headers.get("X-API-Key") or request.args.get("api_key")
     return key
 
 
@@ -146,8 +160,8 @@ def require_ai_api_key(view_func=None, *, rate_limit: bool = True):
     def decorator(fn):
         @wraps(fn)
         def wrapped(*args, **kwargs):
-            require = current_app.config.get('AI_GATEWAY_REQUIRE_API_KEY', False)
-            allowed_keys = current_app.config.get('AI_GATEWAY_API_KEYS', []) or []
+            require = current_app.config.get("AI_GATEWAY_REQUIRE_API_KEY", False)
+            allowed_keys = current_app.config.get("AI_GATEWAY_API_KEYS", []) or []
 
             api_key = _get_api_key_from_request()
 
@@ -155,24 +169,27 @@ def require_ai_api_key(view_func=None, *, rate_limit: bool = True):
             if require:
                 if not api_key:
                     AUTH_FAILURE_COUNTER.inc()
-                    return jsonify({'error': 'API key required'}), 401
+                    return jsonify({"error": "API key required"}), 401
                 if allowed_keys and api_key not in allowed_keys:
                     AUTH_FAILURE_COUNTER.inc()
-                    return jsonify({'error': 'Invalid API key'}), 401
+                    return jsonify({"error": "Invalid API key"}), 401
 
             # Attach api_key to flask.g for downstream handlers
             g.ai_api_key = api_key
 
             # Rate limiting
-            enable_rl = current_app.config.get('AI_GATEWAY_ENABLE_RATE_LIMIT', False) and rate_limit
+            enable_rl = (
+                current_app.config.get("AI_GATEWAY_ENABLE_RATE_LIMIT", False)
+                and rate_limit
+            )
             if enable_rl:
                 limiter = get_limiter()
                 # Use the provided api_key as the rate-limiting bucket; if missing, fallback to remote_addr
-                bucket = api_key or request.remote_addr or 'anon'
+                bucket = api_key or request.remote_addr or "anon"
                 allowed = limiter.allow(bucket)
                 if not allowed:
                     RATE_LIMIT_COUNTER.inc()
-                    return jsonify({'error': 'rate_limit_exceeded'}), 429
+                    return jsonify({"error": "rate_limit_exceeded"}), 429
 
             return fn(*args, **kwargs)
 

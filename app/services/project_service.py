@@ -13,15 +13,15 @@ def get_projects() -> List[Dict[str, Any]]:
     for card in cards:
         normalized.append(
             {
-                'slug': card['slug'],
-                'title': card['name'],
-                'description': card['summary'],
-                'image': card.get('cover'),
-                'detail': card.get('has_detail', False),
-                'city': card.get('city'),
-                'tags': card.get('tags', []),
-                'level': card.get('level'),
-                'price_from': card.get('price_from'),
+                "slug": card["slug"],
+                "title": card["name"],
+                "description": card["summary"],
+                "image": card.get("cover"),
+                "detail": card.get("has_detail", False),
+                "city": card.get("city"),
+                "tags": card.get("tags", []),
+                "level": card.get("level"),
+                "price_from": card.get("price_from"),
             }
         )
     return normalized

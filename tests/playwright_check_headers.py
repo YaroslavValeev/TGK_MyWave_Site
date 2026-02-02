@@ -18,7 +18,7 @@ def main():
         content = response.body()
         print(f"\nResponse body size: {len(content)} bytes")
         print("First 200 chars of body:")
-        print(content[:200].decode('utf-8', errors='ignore'))
+        print(content[:200].decode("utf-8", errors="ignore"))
 
         browser.close()
 

@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 import openai
 import os
 import logging
+
 # from scripts.gpt_integration import ask_gpt
 from app.services.openai_service import get_response
 
@@ -49,6 +50,7 @@ if not ASSISTANT_ID:
     raise ValueError("ASSISTANT_ID not found in environment variables")
 
 openai.api_key = OPENAI_API_KEY
+
 
 def get_assistant_response(user_message: str) -> str:
     """Get response from OpenAI assistant."""

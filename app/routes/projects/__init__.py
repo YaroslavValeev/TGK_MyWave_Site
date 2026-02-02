@@ -1,2 +1,1 @@
 # Blueprint для проектов MyWave
-

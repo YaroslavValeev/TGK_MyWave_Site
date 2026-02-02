@@ -13,11 +13,12 @@ def main():
         console_msgs = []
         page.on("console", lambda msg: console_msgs.append((msg.type, msg.text)))
 
-        page.goto(url, wait_until='domcontentloaded', timeout=20000)
+        page.goto(url, wait_until="domcontentloaded", timeout=20000)
         time.sleep(0.5)
 
         # After page load, check what is in UI.openBookingButtons
-        result = page.evaluate("""
+        result = page.evaluate(
+            """
         () => {
             const logs = {
                 querySelectorAll_result: [],
@@ -38,11 +39,12 @@ def main():
             // Check all [booking.js] logs from console
             return logs;
         }
-        """)
-        
+        """
+        )
+
         print("Result from page evaluation:")
         print(result)
-        
+
         # Print all console messages to see if there are any errors during init
         print("\nConsole messages (all):")
         for msg_type, msg_text in console_msgs:

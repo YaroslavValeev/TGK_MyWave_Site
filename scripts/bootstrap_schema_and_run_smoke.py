@@ -12,70 +12,72 @@ from pprint import pprint
 root = os.path.dirname(os.path.dirname(__file__))
 sys.path.insert(0, root)
 
-os.environ['PROMETHEUS_MULTIPROC_DIR'] = os.path.join(root, 'prometheus_multiproc')
-os.environ['ENABLE_GOOGLE_SERVICES'] = 'False'
+os.environ["PROMETHEUS_MULTIPROC_DIR"] = os.path.join(root, "prometheus_multiproc")
+os.environ["ENABLE_GOOGLE_SERVICES"] = "False"
 
 from app import create_app
 from app.database.models import db
 
 
 def run():
-    app = create_app('development')
+    app = create_app("development")
 
     with app.app_context():
-        print('Creating database schema via db.create_all()...')
+        print("Creating database schema via db.create_all()...")
         db.create_all()
-        print('Schema created (or already present).')
+        print("Schema created (or already present).")
 
         # Для тестов отключаем CSRF, чтобы programmatic client мог отправлять запросы
-        app.config['WTF_CSRF_ENABLED'] = False
+        app.config["WTF_CSRF_ENABLED"] = False
 
         with app.test_client() as client:
             # Create
             payload = {
-                'name': 'Test User',
-                'email': 'test@example.com',
-                'phone': '+70000000000',
-                'startDate': '2025-12-10',
-                'days': 1,
-                'level': 'beginner',
-                'message': 'Тестовая бронь (create_all)'
+                "name": "Test User",
+                "email": "test@example.com",
+                "phone": "+70000000000",
+                "startDate": "2025-12-10",
+                "days": 1,
+                "level": "beginner",
+                "message": "Тестовая бронь (create_all)",
             }
-            print('\n--- POST /api/booking/create')
-            resp = client.post('/api/booking/create', json=payload)
-            print('status:', resp.status_code)
+            print("\n--- POST /api/booking/create")
+            resp = client.post("/api/booking/create", json=payload)
+            print("status:", resp.status_code)
             try:
                 data = resp.get_json()
             except Exception:
-                data = resp.data.decode('utf-8')
+                data = resp.data.decode("utf-8")
             pprint(data)
 
-            if not isinstance(data, dict) or data.get('status') != 'success':
-                print('\nCreate failed; aborting smoke test')
+            if not isinstance(data, dict) or data.get("status") != "success":
+                print("\nCreate failed; aborting smoke test")
                 return 2
 
-            booking_id = data['booking']['id']
+            booking_id = data["booking"]["id"]
 
             # GET
-            print(f'\n--- GET /api/booking/{booking_id}')
-            resp = client.get(f'/api/booking/{booking_id}')
-            print('status:', resp.status_code)
+            print(f"\n--- GET /api/booking/{booking_id}")
+            resp = client.get(f"/api/booking/{booking_id}")
+            print("status:", resp.status_code)
             try:
                 pprint(resp.get_json())
             except Exception:
-                print(resp.data.decode('utf-8'))
+                print(resp.data.decode("utf-8"))
 
             # PATCH
-            print(f'\n--- PATCH /api/booking/{booking_id} (status->confirmed)')
-            resp = client.patch(f'/api/booking/{booking_id}', json={'status': 'confirmed'})
-            print('status:', resp.status_code)
+            print(f"\n--- PATCH /api/booking/{booking_id} (status->confirmed)")
+            resp = client.patch(
+                f"/api/booking/{booking_id}", json={"status": "confirmed"}
+            )
+            print("status:", resp.status_code)
             try:
                 pprint(resp.get_json())
             except Exception:
-                print(resp.data.decode('utf-8'))
+                print(resp.data.decode("utf-8"))
 
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(run())

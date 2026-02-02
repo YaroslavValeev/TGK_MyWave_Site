@@ -5,12 +5,14 @@ from dotenv import load_dotenv
 # Загружаем переменные окружения
 load_dotenv()
 
+
 class ChatMode(Enum):
-    STANDARD = 'standard'   # Обычный диалоговый режим (по умолчанию)
-    CHAT = 'chat'           # Продвинутый чат-режим (например, с историей)
-    SUMMARY = 'summary'     # Режим кратких резюме/выжимок
-    RESPONSES_API = 'RESPONSES_API'  # Режим для responses_api
-    CHAT_API = 'CHAT_API'            # Режим для chat_api
+    STANDARD = "standard"  # Обычный диалоговый режим (по умолчанию)
+    CHAT = "chat"  # Продвинутый чат-режим (например, с историей)
+    SUMMARY = "summary"  # Режим кратких резюме/выжимок
+    RESPONSES_API = "RESPONSES_API"  # Режим для responses_api
+    CHAT_API = "CHAT_API"  # Режим для chat_api
+
 
 # Устанавливаем режим по умолчанию через .env
 CHAT_MODE = os.getenv("OPENAI_CHAT_MODE", ChatMode.STANDARD)

@@ -16,26 +16,31 @@ def calc_save():
     result = data.get("result", {})
     ts = datetime.utcnow().isoformat()
 
-    sheet_id = current_app.config.get("ANALYTICS_SHEET_SPREADSHEET_ID") or current_app.config.get('SPREADSHEET_ID')
+    sheet_id = current_app.config.get(
+        "ANALYTICS_SHEET_SPREADSHEET_ID"
+    ) or current_app.config.get("SPREADSHEET_ID")
     sheet_name = "Calculator_Results"
     try:
         from app.services.google_sheets_service import append_record
+
         row = [
             ts,
             phone,
             city,
             ", ".join(tags) if isinstance(tags, list) else str(tags),
             json.dumps(inputs, ensure_ascii=False),
-            json.dumps(result, ensure_ascii=False)
+            json.dumps(result, ensure_ascii=False),
         ]
         if sheet_id:
             append_record(sheet_id, sheet_name, row)
             current_app.logger.info(f"Calculator result saved to sheet {sheet_name}")
         else:
-            current_app.logger.warning("No sheet_id configured for calculator results; skipping write")
+            current_app.logger.warning(
+                "No sheet_id configured for calculator results; skipping write"
+            )
     except Exception as e:
         current_app.logger.error(f"Failed to save calculator result to sheet: {e}")
-    
+
     # Логируем событие в аналитику (best-effort)
     try:
         analytics_payload = {
@@ -53,12 +58,14 @@ def calc_save():
                 "source": "site_web",
             },
             "ip": request.remote_addr or "",
-            "user_agent": request.headers.get("User-Agent", "")
+            "user_agent": request.headers.get("User-Agent", ""),
         }
         log_analytics_event(analytics_payload)
     except Exception as e:
-        current_app.logger.warning(f"Не удалось записать событие аналитики calculator_use: {e}")
-    
+        current_app.logger.warning(
+            f"Не удалось записать событие аналитики calculator_use: {e}"
+        )
+
     return jsonify({"ok": True})
 
 
@@ -68,7 +75,10 @@ def calc_history():
     history = []
     try:
         from app.services.google_sheets_service import read_records
-        sheet_id = current_app.config.get("ANALYTICS_SHEET_SPREADSHEET_ID") or current_app.config.get('SPREADSHEET_ID')
+
+        sheet_id = current_app.config.get(
+            "ANALYTICS_SHEET_SPREADSHEET_ID"
+        ) or current_app.config.get("SPREADSHEET_ID")
         sheet_name = "Calculator_Results"
         if sheet_id:
             records = read_records(sheet_id, sheet_name)
@@ -81,7 +91,9 @@ def calc_history():
                 else:
                     history.append(r)
         else:
-            current_app.logger.warning("No sheet_id configured for calculator history; returning empty history")
+            current_app.logger.warning(
+                "No sheet_id configured for calculator history; returning empty history"
+            )
     except Exception as e:
         current_app.logger.error(f"Failed to read calculator history from sheet: {e}")
     return jsonify({"ok": True, "history": history})

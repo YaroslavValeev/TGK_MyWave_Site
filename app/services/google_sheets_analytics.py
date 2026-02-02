@@ -8,7 +8,10 @@ from datetime import datetime, timezone
 
 from flask import current_app
 
-from app.services.google_sheets_service import append_record, read_records as _read_records
+from app.services.google_sheets_service import (
+    append_record,
+    read_records as _read_records,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +56,9 @@ def log_analytics_event(event: Dict[str, Any]) -> None:
         return
 
     sheet_id = current_app.config.get("ANALYTICS_SHEET_SPREADSHEET_ID") or ""
-    sheet_name = current_app.config.get("ANALYTICS_SHEET_NAME") or "analytics_statistics"
+    sheet_name = (
+        current_app.config.get("ANALYTICS_SHEET_NAME") or "analytics_statistics"
+    )
     if not sheet_id:
         return
 
@@ -77,5 +82,3 @@ def log_analytics_event(event: Dict[str, Any]) -> None:
 def read_records(spreadsheet_id: str, worksheet_name: str) -> list[dict]:
     """Thin wrapper for sponsor analytics skeleton."""
     return _read_records(spreadsheet_id, worksheet_name) or []
-
-

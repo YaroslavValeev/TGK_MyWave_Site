@@ -61,7 +61,9 @@ def _clean_text(value: str) -> str:
     text = (value or "").strip()
     if not text:
         return ""
-    if (text.startswith('"') and text.endswith('"')) or (text.startswith("“") and text.endswith("”")):
+    if (text.startswith('"') and text.endswith('"')) or (
+        text.startswith("“") and text.endswith("”")
+    ):
         text = text[1:-1].strip()
     return text
 
@@ -132,6 +134,7 @@ def get_homepage_reviews(max_items: int = 20) -> list[HomepageReview]:
     try:
         try:
             import eventlet
+
             with eventlet.Timeout(3, False):
                 raw_records = get_all_records("Feedback_Reviews")
             if raw_records is None:
@@ -139,7 +142,9 @@ def get_homepage_reviews(max_items: int = 20) -> list[HomepageReview]:
         except Exception:
             raw_records = get_all_records("Feedback_Reviews")
     except Exception as exc:
-        current_app.logger.warning("Failed to load Feedback_Reviews from Sheets: %s", exc)
+        current_app.logger.warning(
+            "Failed to load Feedback_Reviews from Sheets: %s", exc
+        )
         return _FALLBACK_REVIEWS
 
     normalized: list[tuple[Optional[datetime], HomepageReview]] = []
@@ -147,7 +152,9 @@ def get_homepage_reviews(max_items: int = 20) -> list[HomepageReview]:
         if not isinstance(rec, dict):
             continue
 
-        name = _pick_first(rec, ("name", "author", "username", "student", "client_name")).strip()
+        name = _pick_first(
+            rec, ("name", "author", "username", "student", "client_name")
+        ).strip()
         if not name:
             name = "Ученик"
 
@@ -158,14 +165,16 @@ def get_homepage_reviews(max_items: int = 20) -> list[HomepageReview]:
         created_at_raw = _pick_first(rec, ("created_at", "created", "date"))
         created_at = _parse_datetime(created_at_raw)
 
-        photo_from_sheet = _pick_first(rec, ("photo", "photo_path", "photo_static_path", "avatar", "image"))
+        photo_from_sheet = _pick_first(
+            rec, ("photo", "photo_path", "photo_static_path", "avatar", "image")
+        )
         photo = _normalize_photo_static_path(photo_from_sheet) or _photo_by_name(name)
-        normalized.append((created_at, HomepageReview(name=name, text=text, photo_static_path=photo)))
+        normalized.append(
+            (created_at, HomepageReview(name=name, text=text, photo_static_path=photo))
+        )
 
     if not normalized:
         return _FALLBACK_REVIEWS
 
     normalized.sort(key=lambda item: item[0] or datetime.min, reverse=True)
     return [item[1] for item in normalized[:max_items]]
-
-

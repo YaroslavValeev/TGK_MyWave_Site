@@ -45,5 +45,3 @@ def rag_search():
             ]
         }
     )
-
-

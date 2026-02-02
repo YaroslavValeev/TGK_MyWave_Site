@@ -53,5 +53,3 @@ def transcribe_and_reply():
         logger.warning("[Voice] analytics logging failed: %s", e)
 
     return jsonify({"transcript": transcript, "reply": reply})
-
-

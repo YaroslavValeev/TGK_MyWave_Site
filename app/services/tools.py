@@ -23,18 +23,19 @@ def _normalize_date(date_str: str | None) -> str | None:
         return (today + timedelta(days=2)).strftime(DATE_FMT)
     # через N дней
     import re
+
     m = re.match(r"^через\s+(\d{1,2})\s*дн", s)
     if m:
         return (today + timedelta(days=int(m.group(1)))).strftime(DATE_FMT)
     # по названию дня недели (рус.)
     weekdays = {
-        'понедельник': 0,
-        'вторник': 1,
-        'сред': 2,      # среда/в среду
-        'четверг': 3,
-        'пятниц': 4,    # пятница/в пятницу
-        'суббот': 5,    # суббота/в субботу
-        'воскрес': 6,   # воскресенье/в воскресенье
+        "понедельник": 0,
+        "вторник": 1,
+        "сред": 2,  # среда/в среду
+        "четверг": 3,
+        "пятниц": 4,  # пятница/в пятницу
+        "суббот": 5,  # суббота/в субботу
+        "воскрес": 6,  # воскресенье/в воскресенье
     }
     for key, idx in weekdays.items():
         if key in s:
@@ -48,7 +49,7 @@ def _normalize_date(date_str: str | None) -> str | None:
         return dt.strftime(DATE_FMT)
     except Exception:
         pass
-    
+
     # YYYY-MM-DD
     try:
         return datetime.strptime(s, DATE_FMT).strftime(DATE_FMT)
@@ -137,9 +138,7 @@ def book_slot(date: str, time: str, name: str, phone: str) -> Dict[str, Any]:
     ok, msg = sheets_mod.book_slot(norm_date, norm_time, name, phone)
     # sheets_mod.book_slot returns tuple; message can be link or error text
     confirm = (
-        msg
-        if ok
-        else (msg or "Не удалось создать запись. Попробуйте другой слот.")
+        msg if ok else (msg or "Не удалось создать запись. Попробуйте другой слот.")
     )
     result: Dict[str, Any] = {"success": bool(ok), "confirm_text": str(confirm)}
     return result

@@ -1,6 +1,7 @@
 """
 Гибридный store для блога: Sheets как источник истины, БД как резерв/кэш.
 """
+
 import json
 import time
 from datetime import datetime
@@ -35,6 +36,7 @@ def _get_cache_ttl() -> int:
     except Exception:
         pass
     import os
+
     return int(os.getenv("BLOG_SHEETS_CACHE_TTL", "120"))
 
 
@@ -42,34 +44,41 @@ def _normalize_row_from_sheets(row: Dict) -> Optional[Dict]:
     """Нормализует строку из Sheets в формат поста."""
     if not _is_publishable(row):
         return None
-    
-    sheet_id = str(row.get("id") or row.get("news_id") or row.get("raw_id") or "").strip()
+
+    sheet_id = str(
+        row.get("id") or row.get("news_id") or row.get("raw_id") or ""
+    ).strip()
     if not sheet_id:
         return None
-    
+
     title = str(row.get("title") or row.get("raw_title") or "").strip()
     if not title:
         title = f"Материал {sheet_id}"
-    
+
     # Контент
     final_posts = str(row.get("final_posts") or row.get("text") or "").strip()
     content_md = final_posts
     content_html = safe_render_markdown(content_md)
-    
+
     # Excerpt
     summary = str(row.get("summary") or row.get("lead") or "").strip()
     excerpt = summary[:280] if summary else None
-    
+
     # Slug
     sheet_slug = str(row.get("slug") or "").strip()
     slug = sheet_slug if sheet_slug else _slugify(title, sheet_id)
-    
+
     # Tags
     tags = _parse_tags(row.get("raw_tags") or row.get("tags"), row.get("ne"))
-    
+
     # Published at
-    published_at = _safe_dt(row.get("published_at")) or _safe_dt(row.get("updated_at")) or _safe_dt(row.get("created_at")) or datetime.utcnow()
-    
+    published_at = (
+        _safe_dt(row.get("published_at"))
+        or _safe_dt(row.get("updated_at"))
+        or _safe_dt(row.get("created_at"))
+        or datetime.utcnow()
+    )
+
     # Cover image
     cover = str(row.get("cover_image_url") or row.get("image_url") or "").strip()
     if not cover:
@@ -85,7 +94,7 @@ def _normalize_row_from_sheets(row: Dict) -> Optional[Dict]:
                     pass
             elif s.startswith("http"):
                 cover = s
-    
+
     return {
         "id": sheet_id,
         "title": title,
@@ -109,36 +118,38 @@ def _load_from_sheets() -> List[Dict]:
     now = time.time()
     cached = _cache.get("sheets_data", {})
     cache_ttl = _get_cache_ttl()
-    
+
     # Проверяем кэш
     if cached and now - cached.get("ts", 0) < cache_ttl:
         logger.debug("[blog-store] Используем кэшированные данные из Sheets")
         return cached.get("data", [])
-    
+
     try:
         records, headers = fetch_parser_news_rows()
         posts = []
         seen_slugs = set()
-        
+
         for row in records:
             normalized = _normalize_row_from_sheets(row)
             if not normalized:
                 continue
-            
+
             slug = normalized["slug"]
             if slug in seen_slugs:
                 continue
             seen_slugs.add(slug)
             posts.append(normalized)
-        
+
         # Сортируем по дате публикации
-        posts.sort(key=lambda p: p.get("published_at") or datetime.utcnow(), reverse=True)
-        
+        posts.sort(
+            key=lambda p: p.get("published_at") or datetime.utcnow(), reverse=True
+        )
+
         # Обновляем кэш
         _cache["sheets_data"] = {"ts": now, "data": posts}
         logger.info(f"[blog-store] Загружено {len(posts)} постов из Sheets")
         return posts
-        
+
     except Exception as e:
         logger.error(f"[blog-store] Ошибка чтения Sheets: {e}")
         # Возвращаем кэш если есть, даже если он устарел
@@ -151,13 +162,16 @@ def _load_from_sheets() -> List[Dict]:
 def _load_from_db() -> List[Dict]:
     """Загружает посты из БД (резерв)."""
     try:
-        posts = BlogPost.query.filter(
-            (BlogPost.status.in_(["READY_TO_PUBLISH", "PUBLISHED", "published"])) |
-            (BlogPost.status.is_(None))
-        ).filter(
-            BlogPost.content_html.isnot(None) | BlogPost.content.isnot(None)
-        ).order_by(BlogPost.published_at.desc().nullslast()).all()
-        
+        posts = (
+            BlogPost.query.filter(
+                (BlogPost.status.in_(["READY_TO_PUBLISH", "PUBLISHED", "published"]))
+                | (BlogPost.status.is_(None))
+            )
+            .filter(BlogPost.content_html.isnot(None) | BlogPost.content.isnot(None))
+            .order_by(BlogPost.published_at.desc().nullslast())
+            .all()
+        )
+
         result = []
         for p in posts:
             tags = []
@@ -166,33 +180,37 @@ def _load_from_db() -> List[Dict]:
                     tags = json.loads(p.tags_json)
                 except Exception:
                     pass
-            
-            result.append({
-                "id": p.id,
-                "title": p.title,
-                "slug": p.slug,
-                "excerpt": p.excerpt,
-                "content_md": p.content_md,
-                "content_html": p.content_html or p.content,
-                "cover_image_url": p.cover_image_url,
-                "tags": tags,
-                "tags_json": p.tags_json,
-                "published_at": p.published_at,
-                "source_type": p.source_type,
-                "source_name": p.source_name,
-                "source_url": p.source_url,
-                "status": p.status,
-            })
-        
+
+            result.append(
+                {
+                    "id": p.id,
+                    "title": p.title,
+                    "slug": p.slug,
+                    "excerpt": p.excerpt,
+                    "content_md": p.content_md,
+                    "content_html": p.content_html or p.content,
+                    "cover_image_url": p.cover_image_url,
+                    "tags": tags,
+                    "tags_json": p.tags_json,
+                    "published_at": p.published_at,
+                    "source_type": p.source_type,
+                    "source_name": p.source_name,
+                    "source_url": p.source_url,
+                    "status": p.status,
+                }
+            )
+
         logger.info(f"[blog-store] Загружено {len(result)} постов из БД (резерв)")
         return result
-        
+
     except Exception as e:
         logger.error(f"[blog-store] Ошибка чтения БД: {e}")
         return []
 
 
-def get_posts(page: int = 1, limit: int = 10, prefer_sheets: bool = True) -> Tuple[List[Dict], int]:
+def get_posts(
+    page: int = 1, limit: int = 10, prefer_sheets: bool = True
+) -> Tuple[List[Dict], int]:
     """
     Получает посты с пагинацией.
     prefer_sheets=True: сначала Sheets, fallback на БД
@@ -202,13 +220,13 @@ def get_posts(page: int = 1, limit: int = 10, prefer_sheets: bool = True) -> Tup
         page = 1
     if limit < 1:
         limit = 10
-    
+
     posts = []
-    
+
     if prefer_sheets:
         # Пытаемся загрузить из Sheets (источник истины)
         posts = _load_from_sheets()
-        
+
         # Если Sheets пуст или ошибка - fallback на БД
         if not posts:
             logger.info("[blog-store] Sheets пуст/ошибка, используем БД как резерв")
@@ -216,7 +234,7 @@ def get_posts(page: int = 1, limit: int = 10, prefer_sheets: bool = True) -> Tup
     else:
         # Только БД
         posts = _load_from_db()
-    
+
     total = len(posts)
     start = (page - 1) * limit
     end = start + limit
@@ -230,10 +248,10 @@ def get_post_by_slug(slug: str, prefer_sheets: bool = True) -> Optional[Dict]:
         for p in posts:
             if p.get("slug") == slug:
                 return p
-        
+
         # Fallback на БД
         logger.debug(f"[blog-store] Пост {slug} не найден в Sheets, проверяем БД")
-    
+
     # Ищем в БД
     try:
         post = BlogPost.query.filter_by(slug=slug).first()
@@ -244,7 +262,7 @@ def get_post_by_slug(slug: str, prefer_sheets: bool = True) -> Optional[Dict]:
                     tags = json.loads(post.tags_json)
                 except Exception:
                     pass
-            
+
             return {
                 "id": post.id,
                 "title": post.title,
@@ -263,7 +281,7 @@ def get_post_by_slug(slug: str, prefer_sheets: bool = True) -> Optional[Dict]:
             }
     except Exception as e:
         logger.error(f"[blog-store] Ошибка поиска в БД: {e}")
-    
+
     return None
 
 

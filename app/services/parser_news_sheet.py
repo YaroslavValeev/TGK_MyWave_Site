@@ -4,6 +4,7 @@
 - PARSER_TAB как Spreadsheet ID отдельной таблицы
 - PARSER_TAB как название листа внутри основного SPREADSHEET_ID
 """
+
 import os
 import re
 from typing import Dict, List, Tuple
@@ -37,14 +38,20 @@ def resolve_parser_source() -> Tuple[str, str]:
     - иначе считаем PARSER_TAB названием листа внутри основного SPREADSHEET_ID
     """
     parser_tab = (os.getenv("PARSER_TAB") or "").strip()
-    parser_sheet_name = (os.getenv("PARSER_SHEET_NAME") or DEFAULT_WORKSHEET_TITLE).strip()
-    main_spreadsheet_id = current_app.config.get("SPREADSHEET_ID") or os.getenv("SPREADSHEET_ID") or ""
+    parser_sheet_name = (
+        os.getenv("PARSER_SHEET_NAME") or DEFAULT_WORKSHEET_TITLE
+    ).strip()
+    main_spreadsheet_id = (
+        current_app.config.get("SPREADSHEET_ID") or os.getenv("SPREADSHEET_ID") or ""
+    )
 
     if _looks_like_spreadsheet_id(parser_tab):
         return parser_tab, parser_sheet_name
 
     if not main_spreadsheet_id:
-        raise RuntimeError("SPREADSHEET_ID is empty, cannot resolve PARSER_TAB as worksheet name")
+        raise RuntimeError(
+            "SPREADSHEET_ID is empty, cannot resolve PARSER_TAB as worksheet name"
+        )
 
     worksheet_title = parser_tab or parser_sheet_name
     return main_spreadsheet_id, worksheet_title
@@ -56,7 +63,11 @@ def fetch_parser_news_rows() -> Tuple[List[Dict], List[str]]:
     Возвращает (records, headers).
     """
     spreadsheet_id, worksheet_title = resolve_parser_source()
-    logger.info(f"[parser_news_sheet] Чтение из spreadsheet_id={spreadsheet_id[:20]}..., worksheet={worksheet_title}")
+    logger.info(
+        f"[parser_news_sheet] Чтение из spreadsheet_id={spreadsheet_id[:20]}..., worksheet={worksheet_title}"
+    )
     records, headers = read_sheet(spreadsheet_id, worksheet_title)
-    logger.info(f"[parser_news_sheet] Прочитано {len(records)} строк, заголовков: {len(headers)}")
+    logger.info(
+        f"[parser_news_sheet] Прочитано {len(records)} строк, заголовков: {len(headers)}"
+    )
     return records, headers

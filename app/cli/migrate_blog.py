@@ -2,6 +2,7 @@
 Миграция таблицы blog_post — добавление недостающих колонок.
 Запуск: flask migrate-blog
 """
+
 import click
 from flask.cli import with_appcontext
 from sqlalchemy import text
@@ -34,11 +35,11 @@ COLUMNS_TO_ADD = [
 def migrate_blog_command():
     """Добавляет недостающие колонки в таблицу blog_post."""
     from app.database.models import db
-    
+
     click.echo("🔄 Миграция таблицы blog_post...")
-    
+
     conn = db.engine.connect()
-    
+
     # Получаем существующие колонки
     try:
         result = conn.execute(text("PRAGMA table_info(blog_post)"))
@@ -51,7 +52,7 @@ def migrate_blog_command():
         db.create_all()
         click.echo("✅ Таблицы созданы!")
         return
-    
+
     added = 0
     for col_name, col_type in COLUMNS_TO_ADD:
         if col_name not in existing_columns:
@@ -63,9 +64,9 @@ def migrate_blog_command():
                 added += 1
             except Exception as e:
                 click.echo(f"   ⚠️ Не удалось добавить {col_name}: {e}")
-    
+
     conn.close()
-    
+
     if added == 0:
         click.echo("ℹ️ Все колонки уже существуют, миграция не требуется.")
     else:

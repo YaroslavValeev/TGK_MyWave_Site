@@ -18,7 +18,12 @@ TOOLS_MANIFEST = [
             "description": "Вернуть список слотов на дату",
             "parameters": {
                 "type": "object",
-                "properties": {"date": {"type": "string", "description": "YYYY-MM-DD или 'сегодня/завтра'"}},
+                "properties": {
+                    "date": {
+                        "type": "string",
+                        "description": "YYYY-MM-DD или 'сегодня/завтра'",
+                    }
+                },
                 "required": ["date"],
             },
         },
@@ -63,7 +68,9 @@ DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 PHONE_RE = re.compile(r"(?:(?:\+7|8)\s*\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2})")
 
 
-def _merge_state(state: Dict[str, Any] | None, updates: Dict[str, Any]) -> Dict[str, Any]:
+def _merge_state(
+    state: Dict[str, Any] | None, updates: Dict[str, Any]
+) -> Dict[str, Any]:
     s = dict(state or {})
     s.update({k: v for k, v in updates.items() if v not in (None, "")})
     return s
@@ -74,7 +81,11 @@ def _heuristics(user_text: str, state: Dict[str, Any]) -> Dict[str, Any]:
     Returns structure compatible with respond_structured output.
     """
     text = (user_text or "").strip().lower()
-    out: Dict[str, Any] = {"intent": "other", "entities": {}, "next_step": state.get("step") or "ask_date"}
+    out: Dict[str, Any] = {
+        "intent": "other",
+        "entities": {},
+        "next_step": state.get("step") or "ask_date",
+    }
 
     # Combined expressions: сегодня/завтра/послезавтра в HH:MM
     for kw in ("сегодня", "завтра", "послезавтра"):
@@ -116,7 +127,11 @@ def _heuristics(user_text: str, state: Dict[str, Any]) -> Dict[str, Any]:
             out.setdefault("entities", {})["phone"] = "+" + raw
 
     # Name (very light): "меня зовут Иван", "я Иван"
-    nm = re.search(r"меня\s+зовут\s+([А-ЯЁA-Z][а-яёa-z\-]+(?:\s+[А-ЯЁA-Z][а-яёa-z\-]+)?)", text, re.IGNORECASE)
+    nm = re.search(
+        r"меня\s+зовут\s+([А-ЯЁA-Z][а-яёa-z\-]+(?:\s+[А-ЯЁA-Z][а-яёa-z\-]+)?)",
+        text,
+        re.IGNORECASE,
+    )
     if nm:
         out.setdefault("entities", {})["name"] = nm.group(1).strip()
     else:
@@ -143,7 +158,9 @@ def _heuristics(user_text: str, state: Dict[str, Any]) -> Dict[str, Any]:
     return out
 
 
-def orchestrate(user_text: str, state: Dict[str, Any] | None = None) -> Tuple[str, Dict[str, Any]]:
+def orchestrate(
+    user_text: str, state: Dict[str, Any] | None = None
+) -> Tuple[str, Dict[str, Any]]:
     """
     Main entry: interpret user text, update booking_state, optionally call tools.
     Returns (reply_text, updated_state).
@@ -159,7 +176,7 @@ def orchestrate(user_text: str, state: Dict[str, Any] | None = None) -> Tuple[st
             model_result = _heuristics(user_text, state)
         else:
             raise
-    
+
     if model_result.get("error"):
         model_result = _heuristics(user_text, state)
 
@@ -181,28 +198,44 @@ def orchestrate(user_text: str, state: Dict[str, Any] | None = None) -> Tuple[st
                     cap = get_capacity(args.get("date"), args.get("time"))
                     reply_chunks.append(f"Свободно {cap['free']} из {cap['max']}")
                 elif name == "book_slot":
-                    res = book_slot(args.get("date"), args.get("time"), args.get("name"), args.get("phone"))
+                    res = book_slot(
+                        args.get("date"),
+                        args.get("time"),
+                        args.get("name"),
+                        args.get("phone"),
+                    )
                     if res.get("success"):
-                        reply_chunks.append(res.get("confirm_text", "Запись подтверждена."))
+                        reply_chunks.append(
+                            res.get("confirm_text", "Запись подтверждена.")
+                        )
                         state["step"] = "done"
                     else:
-                        reply_chunks.append(res.get("confirm_text", "Не удалось записать."))
+                        reply_chunks.append(
+                            res.get("confirm_text", "Не удалось записать.")
+                        )
                         state["step"] = "ask_time"
             except Exception as e:
                 reply_chunks.append(f"Ошибка при вызове инструмента {name}: {e}")
 
     # 3) Merge entities from interpretation
     entities = model_result.get("entities") or {}
-    updated = _merge_state(state, {
-        "step": model_result.get("next_step") or state.get("step") or "ask_date",
-        "date": entities.get("date") or state.get("date"),
-        "time": entities.get("time") or state.get("time"),
-        "name": entities.get("name") or state.get("name"),
-        "phone": entities.get("phone") or state.get("phone"),
-    })
+    updated = _merge_state(
+        state,
+        {
+            "step": model_result.get("next_step") or state.get("step") or "ask_date",
+            "date": entities.get("date") or state.get("date"),
+            "time": entities.get("time") or state.get("time"),
+            "name": entities.get("name") or state.get("name"),
+            "phone": entities.get("phone") or state.get("phone"),
+        },
+    )
 
     # 4) If both date and time known and not booked yet, propose capacity/confirm
-    if updated.get("date") and updated.get("time") and updated.get("step") in ("confirm", None):
+    if (
+        updated.get("date")
+        and updated.get("time")
+        and updated.get("step") in ("confirm", None)
+    ):
         try:
             cap = get_capacity(updated["date"], updated["time"])
             if cap["free"] > 0:
@@ -211,22 +244,40 @@ def orchestrate(user_text: str, state: Dict[str, Any] | None = None) -> Tuple[st
                 )
                 updated["step"] = "confirm"
             else:
-                reply_chunks.append("К сожалению, слот уже занят. Выберите другое время.")
+                reply_chunks.append(
+                    "К сожалению, слот уже занят. Выберите другое время."
+                )
                 updated["step"] = "ask_time"
         except Exception:
             pass
 
     # 5) Confirmation handling when user affirms/declines
     if updated.get("step") == "confirm":
-        if re.search(r"^(да|подтверждаю|ок|хорошо)$", (user_text or "").strip().lower()):
-            if updated.get("date") and updated.get("time") and updated.get("phone") and updated.get("name"):
+        if re.search(
+            r"^(да|подтверждаю|ок|хорошо)$", (user_text or "").strip().lower()
+        ):
+            if (
+                updated.get("date")
+                and updated.get("time")
+                and updated.get("phone")
+                and updated.get("name")
+            ):
                 try:
-                    res = book_slot(updated["date"], updated["time"], updated["name"], updated["phone"])
+                    res = book_slot(
+                        updated["date"],
+                        updated["time"],
+                        updated["name"],
+                        updated["phone"],
+                    )
                     if res.get("success"):
-                        reply_chunks.append(res.get("confirm_text", "Запись подтверждена."))
+                        reply_chunks.append(
+                            res.get("confirm_text", "Запись подтверждена.")
+                        )
                         updated["step"] = "done"
                     else:
-                        reply_chunks.append(res.get("confirm_text", "Не удалось записать."))
+                        reply_chunks.append(
+                            res.get("confirm_text", "Не удалось записать.")
+                        )
                         updated["step"] = "ask_time"
                 except Exception as e:
                     reply_chunks.append(f"Не удалось завершить запись: {e}")
@@ -247,10 +298,16 @@ def orchestrate(user_text: str, state: Dict[str, Any] | None = None) -> Tuple[st
         elif step == "ask_time":
             # If date known, offer slots
             try:
-                slots = get_available_slots(updated.get("date", "")) if updated.get("date") else []
+                slots = (
+                    get_available_slots(updated.get("date", ""))
+                    if updated.get("date")
+                    else []
+                )
                 if slots:
                     times = ", ".join(s.get("time") for s in slots)
-                    reply_chunks.append(f"Доступное время: {times}. Укажите удобное время.")
+                    reply_chunks.append(
+                        f"Доступное время: {times}. Укажите удобное время."
+                    )
                 else:
                     reply_chunks.append("Укажите удобное время.")
             except Exception:
@@ -258,7 +315,9 @@ def orchestrate(user_text: str, state: Dict[str, Any] | None = None) -> Tuple[st
         elif step == "confirm":
             reply_chunks.append("Подтвердите запись (да/нет).")
         elif step == "ask_phone":
-            reply_chunks.append("Укажите номер телефона в формате +7XXXXXXXXXX или 8XXXXXXXXXX.")
+            reply_chunks.append(
+                "Укажите номер телефона в формате +7XXXXXXXXXX или 8XXXXXXXXXX."
+            )
         elif step == "ask_name":
             reply_chunks.append("Как вас зовут?")
 

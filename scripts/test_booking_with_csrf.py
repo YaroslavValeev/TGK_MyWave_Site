@@ -8,24 +8,21 @@ s = requests.Session()
 r = s.get(BASE + "/api/csrf-token")
 print("GET /api/csrf-token", r.status_code)
 data = r.json()
-csrf = data.get('csrf_token')
-print('csrf:', csrf)
+csrf = data.get("csrf_token")
+print("csrf:", csrf)
 
-headers = {
-    "Content-Type": "application/json",
-    "X-CSRFToken": csrf
-}
+headers = {"Content-Type": "application/json", "X-CSRFToken": csrf}
 
 payload = {
     "name": "Тестовый пользователь",
     "phone": "+79123456789",
     "date": "2025-11-10",
-    "time": "10:00"
+    "time": "10:00",
 }
 
 resp = s.post(BASE + "/api/calendar/book", headers=headers, json=payload)
-print('POST status', resp.status_code)
+print("POST status", resp.status_code)
 try:
     print(json.dumps(resp.json(), ensure_ascii=False, indent=2))
 except Exception as e:
-    print('No json, text:', resp.text)
+    print("No json, text:", resp.text)

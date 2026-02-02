@@ -32,7 +32,7 @@ SERVICE_IMAGES = [
         "caption": "Авторская методика обучения с высоким результатом",
         "group": "services",
         "order": 1,
-        "format": "webp"
+        "format": "webp",
     },
     {
         "filename": "service-training-2.webp",
@@ -46,7 +46,7 @@ SERVICE_IMAGES = [
         "caption": "Гибкий график, максимум внимания тренера",
         "group": "services",
         "order": 2,
-        "format": "webp"
+        "format": "webp",
     },
     {
         "filename": "service-boat-1.webp",
@@ -60,7 +60,7 @@ SERVICE_IMAGES = [
         "caption": "Профессиональное оборудование и безопасность",
         "group": "services",
         "order": 3,
-        "format": "webp"
+        "format": "webp",
     },
     {
         "filename": "service-wake-discovery-1.webp",
@@ -74,7 +74,7 @@ SERVICE_IMAGES = [
         "caption": "Идеальный старт для начинающих райдеров",
         "group": "services",
         "order": 4,
-        "format": "webp"
+        "format": "webp",
     },
     {
         "filename": "service-camp-1.webp",
@@ -88,7 +88,7 @@ SERVICE_IMAGES = [
         "caption": "Недельная прокачка техники и физподготовки",
         "group": "services",
         "order": 5,
-        "format": "webp"
+        "format": "webp",
     },
     {
         "filename": "service-group-lesson.webp",
@@ -102,7 +102,7 @@ SERVICE_IMAGES = [
         "caption": "Энергия группы + профессиональный подход",
         "group": "services",
         "order": 6,
-        "format": "webp"
+        "format": "webp",
     },
     {
         "filename": "service-advanced.webp",
@@ -116,7 +116,7 @@ SERVICE_IMAGES = [
         "caption": "Для опытных райдеров готовых к новым вызовам",
         "group": "services",
         "order": 7,
-        "format": "webp"
+        "format": "webp",
     },
     {
         "filename": "service-kids.webp",
@@ -130,7 +130,7 @@ SERVICE_IMAGES = [
         "caption": "Веселье, спорт и развитие координации",
         "group": "services",
         "order": 8,
-        "format": "webp"
+        "format": "webp",
     },
     {
         "filename": "service-fitness.webp",
@@ -144,7 +144,7 @@ SERVICE_IMAGES = [
         "caption": "Укрепляем нужные группы мышц для вейка",
         "group": "services",
         "order": 9,
-        "format": "webp"
+        "format": "webp",
     },
     {
         "filename": "service-consultation.webp",
@@ -158,28 +158,30 @@ SERVICE_IMAGES = [
         "caption": "Анализ уровня + создание плана развития",
         "group": "services",
         "order": 10,
-        "format": "webp"
-    }
+        "format": "webp",
+    },
 ]
 
 
 def seed_service_images():
     """Добавляет тестовые изображения услуг в БД."""
     app = create_app()
-    
+
     with app.app_context():
         try:
             # Проверяем, не добавлены ли уже
-            existing = Image.query.filter_by(group='services').count()
+            existing = Image.query.filter_by(group="services").count()
             if existing > 0:
-                print(f"⚠️  В БД уже содержится {existing} изображений с group='services'")
+                print(
+                    f"⚠️  В БД уже содержится {existing} изображений с group='services'"
+                )
                 response = input("Продолжить добавление? (y/n): ")
-                if response.lower() != 'y':
+                if response.lower() != "y":
                     print("Отменено.")
                     return 1
-            
+
             print(f"📸 Добавление {len(SERVICE_IMAGES)} изображений услуг...\n")
-            
+
             for data in SERVICE_IMAGES:
                 img = Image(
                     filename=data["filename"],
@@ -194,24 +196,25 @@ def seed_service_images():
                     group=data["group"],
                     order=data["order"],
                     format=data["format"],
-                    optimized=False
+                    optimized=False,
                 )
                 db.session.add(img)
                 print(f"   ✓ {data['title']} (order={data['order']})")
-            
+
             db.session.commit()
             print(f"\n✅ Успешно добавлено {len(SERVICE_IMAGES)} изображений!")
-            
+
             # Проверка
-            total = Image.query.filter_by(group='services').count()
+            total = Image.query.filter_by(group="services").count()
             print(f"📊 Всего в group='services': {total} записей")
-            
+
             return 0
-            
+
         except Exception as e:
             db.session.rollback()
             print(f"\n❌ Ошибка при добавлении: {str(e)}")
             import traceback
+
             traceback.print_exc()
             return 1
 

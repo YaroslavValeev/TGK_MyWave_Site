@@ -8,5 +8,5 @@ time (like creating Google services). Tests import submodules under
 from . import google  # re-export the submodule for convenience
 
 __all__ = [
-    'google',
+    "google",
 ]

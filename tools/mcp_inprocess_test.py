@@ -12,6 +12,7 @@ This script does the following:
 This verifies end-to-end that registered tools are visible and callable
 via the MemoryObject stream transport.
 """
+
 import os
 import runpy
 import asyncio
@@ -21,34 +22,39 @@ from time import time
 
 
 # load .env (same simple loader as other tools)
-ENV_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.env'))
+ENV_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
 if os.path.exists(ENV_PATH):
-    with open(ENV_PATH, 'r', encoding='utf-8') as f:
+    with open(ENV_PATH, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
-            if not line or line.startswith('#'):
+            if not line or line.startswith("#"):
                 continue
-            if '=' not in line:
+            if "=" not in line:
                 continue
-            k, v = line.split('=', 1)
+            k, v = line.split("=", 1)
             k = k.strip()
             v = v.strip()
-            if (v.startswith('"') and v.endswith('"')) or (v.startswith("'") and v.endswith("'")):
+            if (v.startswith('"') and v.endswith('"')) or (
+                v.startswith("'") and v.endswith("'")
+            ):
                 v = v[1:-1]
             os.environ.setdefault(k, v)
 
 
 # Ensure mcp_mywave registers tools by executing it as a script
-print('Loading mcp_mywave module (this will register tools)...')
-runpy.run_path(os.path.join(os.path.dirname(__file__), '..', 'mcp_mywave.py'), run_name='__main__')
+print("Loading mcp_mywave module (this will register tools)...")
+runpy.run_path(
+    os.path.join(os.path.dirname(__file__), "..", "mcp_mywave.py"), run_name="__main__"
+)
 import mcp_mywave
-server = getattr(mcp_mywave, 'server')
-print('mcp_mywave loaded, server object:', server)
 
-low = importlib.import_module('mcp.server.lowlevel.server')
-MemoryObjectReceiveStream = getattr(low, 'MemoryObjectReceiveStream')
-MemoryObjectSendStream = getattr(low, 'MemoryObjectSendStream')
-SessionMessage = getattr(low, 'SessionMessage')
+server = getattr(mcp_mywave, "server")
+print("mcp_mywave loaded, server object:", server)
+
+low = importlib.import_module("mcp.server.lowlevel.server")
+MemoryObjectReceiveStream = getattr(low, "MemoryObjectReceiveStream")
+MemoryObjectSendStream = getattr(low, "MemoryObjectSendStream")
+SessionMessage = getattr(low, "SessionMessage")
 
 
 async def client_task(client_send, client_recv):
@@ -60,28 +66,28 @@ async def client_task(client_send, client_recv):
         init_opts = {}
 
     init_req = {
-        'jsonrpc': '2.0',
-        'id': 'init-1',
-        'method': 'initialize',
-        'params': init_opts,
+        "jsonrpc": "2.0",
+        "id": "init-1",
+        "method": "initialize",
+        "params": init_opts,
     }
 
     sm_init = SessionMessage(message=init_req, metadata=None)
-    print('Client: sending initialize')
+    print("Client: sending initialize")
     await client_send.send(sm_init)
     await asyncio.sleep(0.2)
-    print('Client: initialize sent')
+    print("Client: initialize sent")
 
     # list_tools request
     req = {
-        'jsonrpc': '2.0',
-        'id': 'req-1',
-        'method': 'list_tools',
-        'params': {},
+        "jsonrpc": "2.0",
+        "id": "req-1",
+        "method": "list_tools",
+        "params": {},
     }
-    print('Client: sending list_tools request')
+    print("Client: sending list_tools request")
     await client_send.send(SessionMessage(message=req, metadata=None))
-    print('Client: list_tools sent')
+    print("Client: list_tools sent")
 
     # read responses
     responses = []
@@ -97,12 +103,12 @@ async def client_task(client_send, client_recv):
         responses.append(msg.message)
         # stop when we see response to req-1
         try:
-            if isinstance(msg.message, dict) and msg.message.get('id') == 'req-1':
+            if isinstance(msg.message, dict) and msg.message.get("id") == "req-1":
                 break
         except Exception:
             pass
 
-    print('\nClient received responses:')
+    print("\nClient received responses:")
     for r in responses:
         print(json.dumps(r, ensure_ascii=False, indent=2))
 
@@ -130,5 +136,5 @@ async def run_test():
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(run_test())

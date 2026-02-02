@@ -1,6 +1,10 @@
 import datetime
 import logging
-from app.modules.sheets_access import get_sheet_records, get_google_sheet, append_dict_to_sheet
+from app.modules.sheets_access import (
+    get_sheet_records,
+    get_google_sheet,
+    append_dict_to_sheet,
+)
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import os
@@ -12,6 +16,7 @@ from app.modules.sheets import append_row
 
 CALENDAR_ID = os.getenv("GOOGLE_CALENDAR_ID", "primary")
 
+
 def get_google_calendar_service():
     credentials_path = os.getenv("GOOGLE_SHEETS_CREDENTIALS")
     if not credentials_path or not os.path.exists(credentials_path):
@@ -20,43 +25,60 @@ def get_google_calendar_service():
     with open(credentials_path) as f:
         info = json.load(f)
     credentials = service_account.Credentials.from_service_account_info(info)
-    service = build('calendar', 'v3', credentials=credentials)
+    service = build("calendar", "v3", credentials=credentials)
     return service
+
 
 def add_booking_to_calendar(date_str, time_str, name, phone):
     try:
         calendar_service = get_google_calendar_service()
-        start_datetime = datetime.datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+        start_datetime = datetime.datetime.strptime(
+            f"{date_str} {time_str}", "%Y-%m-%d %H:%M"
+        )
         end_datetime = start_datetime + datetime.timedelta(hours=1)
 
         event = {
             "summary": f"Тренировка: {name}",
             "description": f"Телефон: {phone}",
-            "start": {"dateTime": start_datetime.isoformat(), "timeZone": "Europe/Moscow"},
+            "start": {
+                "dateTime": start_datetime.isoformat(),
+                "timeZone": "Europe/Moscow",
+            },
             "end": {"dateTime": end_datetime.isoformat(), "timeZone": "Europe/Moscow"},
         }
 
-        created_event = calendar_service.events().insert(
-            calendarId=CALENDAR_ID,
-            body=event,
-            sendUpdates="all"
-        ).execute()
+        created_event = (
+            calendar_service.events()
+            .insert(calendarId=CALENDAR_ID, body=event, sendUpdates="all")
+            .execute()
+        )
         return True, created_event.get("htmlLink")
     except Exception as e:
         print(f"❌ Ошибка при добавлении в календарь: {e}")
         return False, str(e)
+
 
 def create_workout_if_not_exists(date_str, time_str, showcase_id=None, slot_type=None):
     sheet = get_google_sheet("Workouts")
     if not sheet.values or len(sheet.values) == 0:
         # Если лист пустой, создаём заголовки и первую строку
         headers = [
-            "workout_id", "date", "time", "duration", "location", "workout_type",
-            "max_capacity", "coach_name", "workout_status", "current_capacity"
+            "workout_id",
+            "date",
+            "time",
+            "duration",
+            "location",
+            "workout_type",
+            "max_capacity",
+            "coach_name",
+            "workout_status",
+            "current_capacity",
         ]
         # Можно добавить первую строку-заголовок, если это поддерживается API
-        append_to_sheet = __import__('app.modules.sheets_access', fromlist=['append_to_sheet']).append_to_sheet
-        append_to_sheet('Workouts', headers)
+        append_to_sheet = __import__(
+            "app.modules.sheets_access", fromlist=["append_to_sheet"]
+        ).append_to_sheet
+        append_to_sheet("Workouts", headers)
         sheet = get_google_sheet("Workouts")
     headers = sheet.values[0]
     records = sheet.get_all_records()
@@ -78,20 +100,24 @@ def create_workout_if_not_exists(date_str, time_str, showcase_id=None, slot_type
         "max_capacity": 4,
         "coach_name": "Тренер",
         "workout_status": "активно",
-        "current_capacity": 0
+        "current_capacity": 0,
     }
     # Используем универсальную функцию для записи
-    append_dict_to_sheet('Workouts', new_row)
+    append_dict_to_sheet("Workouts", new_row)
     return new_id
+
 
 # Новая функция с валидацией, логированием и синхронной записью
 
+
 def create_calendar_event(event_data):
-    if not event_data.get('start') or not event_data.get('summary'):
+    if not event_data.get("start") or not event_data.get("summary"):
         raise ValueError("Missing required calendar fields")
     service = get_google_calendar_service()
     try:
-        created = service.events().insert(calendarId=CALENDAR_ID, body=event_data).execute()
+        created = (
+            service.events().insert(calendarId=CALENDAR_ID, body=event_data).execute()
+        )
     except HttpError as e:
         logging.error(f"Calendar insert failed: {e}")
         raise
@@ -100,5 +126,7 @@ def create_calendar_event(event_data):
     db.session.add(db_event)
     db.session.commit()
     # Сохраняем в Google Sheets
-    append_row("CalendarEvents", [created['id'], event_data['start'], event_data['summary']])
+    append_row(
+        "CalendarEvents", [created["id"], event_data["start"], event_data["summary"]]
+    )
     return created

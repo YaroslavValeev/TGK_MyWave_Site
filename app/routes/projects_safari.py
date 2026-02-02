@@ -1,6 +1,7 @@
 """
 Blueprint для страницы проекта Wake Surf Safari 2026.
 """
+
 from flask import Blueprint, render_template, redirect, url_for
 
 from app.services.project_content import load_safari_bundle
@@ -23,4 +24,3 @@ def safari_alias_2026():
     """
     ctx = load_safari_bundle()
     return render_template("projects/safari.html", **ctx)
-

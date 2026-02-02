@@ -7,6 +7,7 @@ when the DB was created without running the full migration history.
 Usage:
   & "venv/Scripts/Activate.ps1"; python tools/init_db.py
 """
+
 import sys
 from pathlib import Path
 
@@ -20,13 +21,13 @@ from app.database.models import db
 
 
 def main():
-    app = create_app('development')
+    app = create_app("development")
     with app.app_context():
-        print('Creating all tables (if missing)...')
+        print("Creating all tables (if missing)...")
         db.create_all()
-        print('db.create_all() finished.')
+        print("db.create_all() finished.")
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

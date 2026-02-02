@@ -12,8 +12,10 @@ def main():
         page.on("console", lambda msg: console_msgs.append((msg.type, msg.text)))
 
         # Start recording before page load
-        page.goto(url, timeout=20000)  # Wait for full page load, not just DOMContentLoaded
-        
+        page.goto(
+            url, timeout=20000
+        )  # Wait for full page load, not just DOMContentLoaded
+
         time.sleep(1)
 
         # Now list ALL console messages to see the sequence

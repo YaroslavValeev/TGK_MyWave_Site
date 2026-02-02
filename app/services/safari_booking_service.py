@@ -1,4 +1,5 @@
 """Service for managing WakeSurfSafari participant and booking flows."""
+
 from __future__ import annotations
 
 from typing import Dict, Any, Optional
@@ -11,22 +12,22 @@ logger = logging.getLogger(__name__)
 
 
 def _upsert_participant(payload: Dict[str, Any]) -> Participant:
-    email = (payload.get('email') or '').strip().lower()
+    email = (payload.get("email") or "").strip().lower()
     if not email:
-        raise ValueError('missing_email')
+        raise ValueError("missing_email")
 
     participant = Participant.query.filter_by(email=email).first()
     if participant:
         # Update simple fields if provided
         updated = False
-        if payload.get('name') and participant.name != payload.get('name'):
-            participant.name = payload.get('name')
+        if payload.get("name") and participant.name != payload.get("name"):
+            participant.name = payload.get("name")
             updated = True
-        if payload.get('phone') and participant.phone != payload.get('phone'):
-            participant.phone = payload.get('phone')
+        if payload.get("phone") and participant.phone != payload.get("phone"):
+            participant.phone = payload.get("phone")
             updated = True
-        if payload.get('level') and participant.level != payload.get('level'):
-            participant.level = payload.get('level')
+        if payload.get("level") and participant.level != payload.get("level"):
+            participant.level = payload.get("level")
             updated = True
         if updated:
             db.session.add(participant)
@@ -35,11 +36,11 @@ def _upsert_participant(payload: Dict[str, Any]) -> Participant:
 
     # create
     participant = Participant(
-        name=(payload.get('name') or '').strip(),
+        name=(payload.get("name") or "").strip(),
         email=email,
-        phone=(payload.get('phone') or '').strip(),
-        level=(payload.get('level') or '').strip(),
-        route_id=payload.get('route_id')
+        phone=(payload.get("phone") or "").strip(),
+        level=(payload.get("level") or "").strip(),
+        route_id=payload.get("route_id"),
     )
     db.session.add(participant)
     db.session.commit()
@@ -53,16 +54,16 @@ def create_booking(payload: Dict[str, Any]) -> SafariBooking:
     Raises: ValueError if validation fails
     """
     # Basic validation
-    if not payload.get('startDate'):
-        raise ValueError('missing_startDate')
+    if not payload.get("startDate"):
+        raise ValueError("missing_startDate")
     try:
-        start = datetime.strptime(payload.get('startDate'), '%Y-%m-%d').date()
+        start = datetime.strptime(payload.get("startDate"), "%Y-%m-%d").date()
     except Exception:
-        raise ValueError('invalid_startDate')
+        raise ValueError("invalid_startDate")
 
-    days = int(payload.get('days') or 1)
+    days = int(payload.get("days") or 1)
     if days < 1 or days > 30:
-        raise ValueError('invalid_days')
+        raise ValueError("invalid_days")
 
     # Upsert participant
     participant = _upsert_participant(payload)
@@ -70,11 +71,11 @@ def create_booking(payload: Dict[str, Any]) -> SafariBooking:
     # Create booking
     booking = SafariBooking(
         participant_id=participant.id,
-        status='pending',
+        status="pending",
         start_date=start,
         days=days,
-        message=payload.get('message'),
-        route_id=payload.get('route_id')
+        message=payload.get("message"),
+        route_id=payload.get("route_id"),
     )
     db.session.add(booking)
     db.session.commit()
@@ -83,15 +84,21 @@ def create_booking(payload: Dict[str, Any]) -> SafariBooking:
     try:
         from app.services.notifications import notify_admin_new_booking
 
-        notify_admin_new_booking({
-            'type': 'safari_booking',
-            'booking_id': booking.id,
-            'participant': {'id': participant.id, 'name': participant.name, 'email': participant.email},
-            'start_date': str(start),
-            'days': days,
-        })
+        notify_admin_new_booking(
+            {
+                "type": "safari_booking",
+                "booking_id": booking.id,
+                "participant": {
+                    "id": participant.id,
+                    "name": participant.name,
+                    "email": participant.email,
+                },
+                "start_date": str(start),
+                "days": days,
+            }
+        )
     except Exception:
-        logger.debug('notify_admin_new_booking not available or failed')
+        logger.debug("notify_admin_new_booking not available or failed")
 
     return booking
 
@@ -106,22 +113,22 @@ def update_booking(booking_id: int, data: Dict[str, Any]) -> SafariBooking:
     """
     b = SafariBooking.query.get(booking_id)
     if not b:
-        raise ValueError('not_found')
+        raise ValueError("not_found")
     # allowed updates: status, message, start_date, days
-    if data.get('status'):
-        b.status = data.get('status')
-    if 'message' in data:
-        b.message = data.get('message')
-    if data.get('startDate'):
+    if data.get("status"):
+        b.status = data.get("status")
+    if "message" in data:
+        b.message = data.get("message")
+    if data.get("startDate"):
         try:
-            b.start_date = datetime.strptime(data.get('startDate'), '%Y-%m-%d').date()
+            b.start_date = datetime.strptime(data.get("startDate"), "%Y-%m-%d").date()
         except Exception:
-            raise ValueError('invalid_startDate')
-    if data.get('days'):
+            raise ValueError("invalid_startDate")
+    if data.get("days"):
         try:
-            b.days = int(data.get('days'))
+            b.days = int(data.get("days"))
         except Exception:
-            raise ValueError('invalid_days')
+            raise ValueError("invalid_days")
 
     db.session.add(b)
     db.session.commit()

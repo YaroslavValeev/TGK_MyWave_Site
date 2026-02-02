@@ -1,6 +1,7 @@
 """
 Синхронизация блога из Google Sheets (PARSER_TAB) в локальную БД.
 """
+
 import json
 import hashlib
 from datetime import datetime
@@ -8,6 +9,7 @@ from typing import Any, Dict, List, Optional
 
 try:
     from dateutil.parser import parse as dt_parse
+
     DATEUTIL_AVAILABLE = True
 except ImportError:
     DATEUTIL_AVAILABLE = False
@@ -118,12 +120,12 @@ def _is_publishable(row: Dict[str, Any]) -> bool:
     status = str(row.get("status") or "").strip().upper()
     published_posts = _as_bool(row.get("published_posts"))
     final_posts = str(row.get("final_posts") or "").strip()
-    
+
     # Если есть news_articles с готовыми полями
     if row.get("title") and row.get("text"):
         status_lower = status.lower()
         return status_lower in PUBLISHABLE_STATUSES or published_posts
-    
+
     # Для raw_feed: нужен final_posts
     return bool(final_posts) and (status in PUBLISHABLE_STATUSES or published_posts)
 
@@ -146,7 +148,9 @@ def sync_blog_from_parser_tab(db_session, logger=None) -> Dict[str, int]:
     hidden = 0  # непубликуемые
 
     for row in records:
-        sheet_id = str(row.get("id") or row.get("news_id") or row.get("raw_id") or "").strip()
+        sheet_id = str(
+            row.get("id") or row.get("news_id") or row.get("raw_id") or ""
+        ).strip()
         if not sheet_id:
             skipped += 1
             continue
@@ -179,7 +183,12 @@ def sync_blog_from_parser_tab(db_session, logger=None) -> Dict[str, int]:
         tags = _parse_tags(row.get("raw_tags") or row.get("tags"), row.get("ne"))
 
         # published_at
-        published_at = _safe_dt(row.get("published_at")) or _safe_dt(row.get("updated_at")) or _safe_dt(row.get("created_at")) or datetime.utcnow()
+        published_at = (
+            _safe_dt(row.get("published_at"))
+            or _safe_dt(row.get("updated_at"))
+            or _safe_dt(row.get("created_at"))
+            or datetime.utcnow()
+        )
 
         if not post:
             post = BlogPost(
@@ -251,6 +260,13 @@ def sync_blog_from_parser_tab(db_session, logger=None) -> Dict[str, int]:
         return {"created": 0, "updated": 0, "skipped": 0, "hidden": 0, "error": str(e)}
 
     if logger:
-        logger.info(f"[blog-sync] created={created}, updated={updated}, skipped={skipped}, hidden={hidden}")
+        logger.info(
+            f"[blog-sync] created={created}, updated={updated}, skipped={skipped}, hidden={hidden}"
+        )
 
-    return {"created": created, "updated": updated, "skipped": skipped, "hidden": hidden}
+    return {
+        "created": created,
+        "updated": updated,
+        "skipped": skipped,
+        "hidden": hidden,
+    }
