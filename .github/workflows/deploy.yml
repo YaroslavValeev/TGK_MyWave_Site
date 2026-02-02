@@ -32,7 +32,7 @@ jobs:
 
       - name: Run formatter check
         run: |
-          python -m black --check $(git ls-files '*.py')
+          git ls-files '*.py' | grep -vE '(^|/)(venv|\.venv)/' | xargs -r python -m black --check
 
       - name: Run unit tests
         run: |

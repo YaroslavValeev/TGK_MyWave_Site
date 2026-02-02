@@ -1,0 +1,5 @@
+[tool.black]
+line-length = 88
+target-version = ['py311']
+# Не форматировать виртуальные окружения и служебные каталоги
+exclude = '/\\.git|\\.venv|venv|__pycache__/'
