@@ -1,0 +1,29 @@
+# Чек-лист для организатора соревнований
+id: contest_org_checklist
+slug: contest-org-checklist
+name: "Чек-лист для организатора соревнований"
+summary: "Условия и критерии для проведения соревнований по вейксерфингу"
+description: |
+  Чек-лист условий для организаторов соревнований: судьи, акватория,
+  площадка, безопасность. Помогает достичь высоких показателей мероприятия.
+category: education
+kind: resource
+schema_type: WebApplication
+status: published
+city: ""
+country: Россия
+start_date: ""
+end_date: ""
+tags:
+  - checklist
+  - organizer
+level: null
+price_from: null
+capacity: null
+cover_image: images/hero-wakesurf.webp
+gallery: []
+cta_url: "/projects/contest-org-checklist"
+route: "/projects"
+channels:
+  - projects
+metadata: {}

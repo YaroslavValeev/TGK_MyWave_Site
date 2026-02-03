@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title | default('PDF временно недоступен') }}{% endblock %}
+
+{% block content %}
+<section class="mw-section">
+  <div class="mw-container">
+    <div class="mw-card" style="max-width: 600px; margin: 2em auto; text-align: center; padding: 2em;">
+      <h1 style="color: #0066cc; margin-bottom: 1em;">PDF временно недоступен</h1>
+      <p style="font-size: 1.1em; margin-bottom: 1.5em; color: #666;">
+        Генерация PDF файла временно недоступна. Вы можете использовать функцию печати браузера для сохранения страницы в PDF.
+      </p>
+      <div style="margin-top: 2em;">
+        <a href="{{ url_for('contest_org_checklist.checklist_page') }}" class="btn-primary">
+          Вернуться к чек-листу
+        </a>
+        <button onclick="window.print()" class="btn-secondary" style="margin-left: 1em;">
+          🖨️ Печать страницы
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

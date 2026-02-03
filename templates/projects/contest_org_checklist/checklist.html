@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title | default('Чек-лист организатора соревнований') }}{% endblock %}
+
+{% block extra_head %}
+<meta name="description" content="Подробный чеклист условий для организации профессиональных соревнований по вейксерфингу. Скачайте PDF версию для использования.">
+<link rel="canonical" href="{{ url_for('contest_org_checklist.checklist_page', _external=True) }}">
+<meta property="og:title" content="Чек-лист организатора соревнований по вейксерфингу">
+<meta property="og:description" content="Подробный чеклист условий для организации профессиональных соревнований по вейксерфингу. Скачайте PDF версию для использования.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ url_for('contest_org_checklist.checklist_page', _external=True) }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Чек-лист организатора соревнований по вейксерфингу">
+<meta name="twitter:description" content="Подробный чеклист условий для организации профессиональных соревнований по вейксерфингу.">
+{% endblock %}
+
+{% block body_class %}project--contest-org-checklist{% endblock %}
+
+{% block content %}
+
+<section class="mw-section mw-hero wake-industry-hero">
+  <div class="mw-container">
+    <div class="wake-industry-hero__badge">Чеклист</div>
+    <h1 class="wake-industry-hero__title">{{ page_heading | default('Чек-лист организатора соревнований') }}</h1>
+    <p class="wake-industry-hero__subtitle">
+      {{ page_subheading | default('Условия для соревнований по вейксерфингу') }}
+    </p>
+    <div class="wake-industry-hero__actions">
+      <a href="{{ download_pdf_url or url_for('contest_org_checklist.download_checklist_pdf') }}" class="btn-primary" download>
+        📄 Скачать PDF
+      </a>
+      <button onclick="window.print()" class="btn-secondary btn-ghost">
+        🖨️ Печать
+      </button>
+    </div>
+  </div>
+</section>
+
+{% include "projects/contest_org_checklist/_checklist_content.html" %}
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+  // Сохранение состояния чекбоксов в localStorage
+  document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.wake-checklist__checkbox');
+    
+    // Загружаем сохраненные состояния
+    checkboxes.forEach(checkbox => {
+      const saved = localStorage.getItem(checkbox.id);
+      if (saved === 'true') {
+        checkbox.checked = true;
+      }
+    });
+    
+    // Сохраняем при изменении
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        localStorage.setItem(checkbox.id, checkbox.checked);
+      });
+    });
+    
+    // Кнопка сброса всех чекбоксов
+    const resetBtn = document.createElement('button');
+    resetBtn.textContent = 'Сбросить все';
+    resetBtn.className = 'btn-secondary';
+    resetBtn.style.marginTop = '20px';
+    resetBtn.addEventListener('click', function() {
+      if (confirm('Сбросить все отметки?')) {
+        checkboxes.forEach(cb => {
+          cb.checked = false;
+          localStorage.removeItem(cb.id);
+        });
+      }
+    });
+    const actionsContainer = document.querySelector('.wake-industry-hero__actions');
+    if (actionsContainer) {
+      actionsContainer.appendChild(resetBtn);
+    }
+  });
+</script>
+{% endblock %}
