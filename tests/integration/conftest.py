@@ -94,7 +94,7 @@ def _mock_get_google_sheet(sheet_name):
     return []
 
 
-def _mock_create_workout_if_not_exists(date_str, time_str, showcase_id=None, slot_type=None):
+def _mock_create_workout_if_not_exists(date_str, time_str, showcase_id=None, slot_type=None, service_type=None):
     """Mock workout creation."""
     return f"mock_workout_{date_str}_{time_str}".replace('-', '_').replace(':', '_')
 

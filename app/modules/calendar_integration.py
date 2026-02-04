@@ -1,14 +1,16 @@
 import datetime
 import logging
-from app.modules.sheets_access import get_sheet_records, get_google_sheet, append_dict_to_sheet
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
 import os
 import json
 import uuid
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+
 from app.database.models import db, CalendarEvent
 from app.modules.sheets import append_row
+from app.modules.sheets_access import get_sheet_records, get_google_sheet, append_dict_to_sheet
+from app.services.google_sheets_service import update_record
 
 CALENDAR_ID = os.getenv("GOOGLE_CALENDAR_ID", "primary")
 
@@ -46,13 +48,13 @@ def add_booking_to_calendar(date_str, time_str, name, phone):
         print(f"❌ Ошибка при добавлении в календарь: {e}")
         return False, str(e)
 
-def create_workout_if_not_exists(date_str, time_str, showcase_id=None, slot_type=None):
+def create_workout_if_not_exists(date_str, time_str, showcase_id=None, slot_type=None, service_type=None):
     sheet = get_google_sheet("Workouts")
     if not sheet.values or len(sheet.values) == 0:
         # Если лист пустой, создаём заголовки и первую строку
         headers = [
             "workout_id", "date", "time", "duration", "location", "workout_type",
-            "max_capacity", "coach_name", "workout_status", "current_capacity"
+            "max_capacity", "coach_name", "workout_status", "current_capacity", "service_type"
         ]
         # Можно добавить первую строку-заголовок, если это поддерживается API
         append_to_sheet = __import__('app.modules.sheets_access', fromlist=['append_to_sheet']).append_to_sheet
@@ -61,9 +63,41 @@ def create_workout_if_not_exists(date_str, time_str, showcase_id=None, slot_type
     headers = sheet.values[0]
     records = sheet.get_all_records()
 
+    # Если в листе ещё нет колонки service_type (K), добавляем её в заголовок
+    if "service_type" not in headers:
+        try:
+            update_record(worksheet_name="Workouts", range_="A1", values=headers + ["service_type"])
+            sheet = get_google_sheet("Workouts")
+            headers = sheet.values[0]
+            records = sheet.get_all_records()
+        except Exception as e:
+            logging.error(f"Не удалось добавить колонку service_type в Workouts: {e}")
+
+    normalized_service_type = (service_type or slot_type or "boat").strip().lower()
+
     # Проверяем, существует ли уже тренировка на эту дату и время
     for idx, row in enumerate(records, start=2):  # начиная со строки 2
         if row.get("date") == date_str and row.get("time") == time_str:
+            existing_service_type = (row.get("service_type") or "").strip().lower()
+
+            # Если тренировка найдена, но поле service_type пустое — заполняем его значением по умолчанию
+            if not existing_service_type:
+                try:
+                    col_idx = headers.index("service_type")
+                    col_letter = chr(ord('A') + col_idx)
+                    update_record(
+                        worksheet_name="Workouts",
+                        range_=f"{col_letter}{idx}",
+                        values=[normalized_service_type]
+                    )
+                except Exception as e:
+                    logging.error(
+                        "Не удалось обновить service_type для существующей тренировки %s %s: %s",
+                        date_str,
+                        time_str,
+                        e,
+                    )
+
             return row.get("workout_id")
 
     # Создаём новую тренировку
@@ -78,7 +112,8 @@ def create_workout_if_not_exists(date_str, time_str, showcase_id=None, slot_type
         "max_capacity": 4,
         "coach_name": "Тренер",
         "workout_status": "активно",
-        "current_capacity": 0
+        "current_capacity": 0,
+        "service_type": normalized_service_type
     }
     # Используем универсальную функцию для записи
     append_dict_to_sheet('Workouts', new_row)
