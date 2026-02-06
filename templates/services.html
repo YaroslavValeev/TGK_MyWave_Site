@@ -29,7 +29,7 @@
                         1200px"
                  loading="lazy" 
                  alt="{{ service.name }}" 
-                 data-fallback="{{ url_for('static', filename='images/sample-product.jpg') }}">
+                 data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
           </div>
           <h3>{{ service.name }}</h3>
           <p>{{ service.description }}</p>
@@ -57,7 +57,8 @@
 
   <!-- Модальные окна для бронирования -->
   {% include 'partials/booking_modals.html' %}
-  {% include 'partials/reco_block.html' with context='services' %}
+  {% set context = 'services' %}
+  {% include 'partials/reco_block.html' %}
 
 {% endblock %}
 

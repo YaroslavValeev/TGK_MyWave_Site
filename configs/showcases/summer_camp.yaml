@@ -1,0 +1,29 @@
+# Летний лагерь
+id: summer_camp
+slug: summer-camp
+name: "Летний лагерь"
+summary: "Летние интенсивы и лагеря по вейксерфингу для детей и взрослых"
+description: |
+  Летние лагеря и интенсивы: катание за катером, ОФП, разбор техники и
+  подготовка к сезону. Расписание и запись — по запросу.
+category: camp
+kind: event
+schema_type: SportsEvent
+status: scheduled
+city: ""
+country: Россия
+start_date: "2026-06-01"
+end_date: "2026-08-31"
+tags:
+  - camp
+  - summer
+level: all
+price_from: "по запросу"
+capacity: null
+cover_image: images/hero-wakesurf.webp
+gallery: []
+cta_url: "/#contacts"
+route: "/projects"
+channels:
+  - projects
+metadata: {}

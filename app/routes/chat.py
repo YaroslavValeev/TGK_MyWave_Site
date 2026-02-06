@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, current_app, render_template, session
+from flask import Blueprint, jsonify, request, redirect, current_app, render_template, session, url_for
 from app.database.models import (
     ChatMessage,
     db,
@@ -39,11 +39,11 @@ def _clean_assistant_text(text: str) -> str:
         return text
 
 
-# Отдельная страница чата удалена - используется только плавающий чат на главной странице
-# @chat_bp.route("/")
-# def chat_page():
-#     messages = ChatMessage.query.order_by(ChatMessage.created_at.asc()).all()
-#     return render_template("chat.html", messages=messages)
+# Отдельная страница чата удалена — используется плавающий чат на главной. GET /chat ведёт на главную.
+@chat_bp.route("/", methods=["GET"])
+def chat_page():
+    """Редирект на главную, где доступен плавающий чат."""
+    return redirect(url_for("index") + "#contact", code=302)
 
 
 @chat_bp.route("/api", methods=["POST"])

@@ -502,7 +502,8 @@ def api_lead():
         contact = (data.get("contact") or "").strip()
         if not contact:
             return jsonify({"error": "Поле contact обязательно"}), 400
-        current_app.logger.info("Lead received: type=%s, data=%s", lead_type, data)
+        contact_masked = (contact[-4:] if len(contact) >= 4 else "****") if contact else "****"
+        current_app.logger.info("Lead received: type=%s, contact_masked=***%s", lead_type, contact_masked)
         try:
             spreadsheet_id = current_app.config.get("SPREADSHEET_ID")
             if spreadsheet_id:
@@ -541,6 +542,65 @@ def api_lead():
         return jsonify({"ok": True, "message": "Заявка принята"}), 201
     except Exception as e:
         current_app.logger.exception("Lead submit error")
+        return jsonify({"error": "Ошибка при отправке заявки"}), 500
+
+
+@api_bp.route("/camp-ruza/apply", methods=["POST"])
+def camp_ruza_apply():
+    """
+    POST /api/camp-ruza/apply — приём заявок на MyWave Camp Ruza.
+    Тело: JSON со всеми полями формы заявки.
+    """
+    if not request.is_json:
+        return jsonify({"error": "Ожидается JSON"}), 400
+    try:
+        data = request.get_json() or {}
+        # Собираем строку для таблицы (порядок колонок)
+        row = [
+            datetime.utcnow().isoformat(),
+            data.get("who_applies", ""),
+            data.get("parent_name", ""),
+            data.get("phone", ""),
+            data.get("email", ""),
+            data.get("contact_preference", ""),
+            data.get("participant_name", ""),
+            data.get("birthdate", ""),
+            data.get("age_group", ""),
+            data.get("city", ""),
+            data.get("level", ""),
+            data.get("goal", ""),
+            data.get("package", ""),
+            data.get("health_restrictions", ""),
+            data.get("health_detail", ""),
+            "да" if data.get("health_docs") else "",
+            data.get("logistics", ""),
+            "да" if data.get("agree_rules") else "",
+            "да" if data.get("agree_personal_data") else "",
+            data.get("photo_video", ""),
+        ]
+        spreadsheet_id = current_app.config.get("SPREADSHEET_ID")
+        if spreadsheet_id:
+            try:
+                append_record(
+                    spreadsheet_id=spreadsheet_id,
+                    worksheet_name="CampRuza",
+                    values=row,
+                )
+            except Exception as e:
+                current_app.logger.warning(
+                    "Camp Ruza sheet write failed (non-blocking): %s", e
+                )
+        return (
+            jsonify(
+                {
+                    "ok": True,
+                    "message": "Заявка принята ✅ Мы свяжемся с вами в течение 24 часов и пришлём программу смены, список вещей и следующий шаг по бронированию места.",
+                }
+            ),
+            201,
+        )
+    except Exception as e:
+        current_app.logger.exception("Camp Ruza apply error")
         return jsonify({"error": "Ошибка при отправке заявки"}), 500
 
 

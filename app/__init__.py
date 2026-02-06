@@ -33,6 +33,7 @@ from flask import (
     jsonify,
     g,
     request,
+    redirect,
     url_for,
     make_response,
     current_app,
@@ -66,6 +67,18 @@ from app.services.responses_api import responses_bp
 from app.routes.safari_cms_api import safari_cms_bp
 from app.routes.safari import safari_bp
 from app.routes.shop import shop_bp
+from app.routes.projects_camp import projects_camp_bp
+from app.routes.wake_industry import wake_industry_bp
+from app.routes.projects_safari import projects_safari_bp
+try:
+    from app.routes.projects.wakesurf_challenge import wakesurf_challenge_bp
+except (ModuleNotFoundError, ImportError):
+    wakesurf_challenge_bp = None
+try:
+    # Опционально: blueprint чек-листа организатора есть только в ветке/релизе проекта.
+    from app.routes.contest_org_checklist import contest_org_checklist_bp
+except ModuleNotFoundError:
+    contest_org_checklist_bp = None
 
 try:
     from app.routes.telegram.routes import telegram_bp
@@ -153,11 +166,11 @@ def create_app(config_name="development"):
     def home():
         # Временно отключаем получение событий календаря
         months = {"Июнь": [], "Июль": [], "Август": [], "Сентябрь": [], "Октябрь": []}
-        # Проекты для секции на главной
+        # Проекты для секции на главной (приоритет: WSC 2026, Safari, Летний лагерь)
         try:
-            from app.services.showcases import get_project_cards
+            from app.services.showcases import get_project_cards_preview
 
-            projects_preview = get_project_cards()[:3]
+            projects_preview = get_project_cards_preview(3)
         except Exception:
             projects_preview = []
         # Последний пост для блока «Последние новости»
@@ -302,6 +315,9 @@ def create_app(config_name="development"):
     # Затем остальные расширения
     init_extensions(app, db)
     init_websocket(app)
+    from app.extensions import limiter
+    if hasattr(limiter, "init_app"):
+        limiter.init_app(app)
 
     # Инициализация кэширования
     from app.extensions import cache
@@ -401,6 +417,13 @@ def create_app(config_name="development"):
     app.register_blueprint(calendar_bp)
     app.register_blueprint(services_bp)
     app.register_blueprint(shop_bp)
+    app.register_blueprint(projects_camp_bp)
+    app.register_blueprint(projects_safari_bp)
+    app.register_blueprint(wake_industry_bp)
+    if wakesurf_challenge_bp is not None:
+        app.register_blueprint(wakesurf_challenge_bp)
+    if contest_org_checklist_bp is not None:
+        app.register_blueprint(contest_org_checklist_bp)
     app.register_blueprint(booking_bp)
     app.register_blueprint(api_bp, url_prefix="/api")
     app.register_blueprint(reviews_bp)
@@ -501,9 +524,11 @@ def create_app(config_name="development"):
 
     api.add_namespace(api_ns, path="/api")
 
-    # Exempt API blueprints from CSRF to allow programmatic API clients/tests
+    # Exempt only specific API views that need programmatic access (lead form, tests)
     try:
-        csrf.exempt(api_bp)
+        from app.routes.api import api_lead
+
+        csrf.exempt(api_lead)
         csrf.exempt(booking_api_bp)
         # Exempt AI gateway API from CSRF for programmatic clients/tests
         try:
@@ -566,11 +591,21 @@ def create_app(config_name="development"):
     def projects_page():
         from app.services.showcases import get_project_cards, get_projects_graph
 
-        projects = get_project_cards()
-        jsonld = get_projects_graph()
+        try:
+            projects = get_project_cards()
+            jsonld = get_projects_graph()
+        except Exception as e:
+            app.logger.exception("projects_page: %s", e)
+            projects = []
+            jsonld = {}
         return render_template(
             "projects.html", projects=projects, showcase_graph=jsonld
         )
+
+    @app.route("/book", methods=["GET"])
+    def book_redirect():
+        """Редирект с /book и /book?s=... на главную (бронирование через модалку)."""
+        return redirect(url_for("index") + "#booking", code=302)
 
     @app.route("/training-program", methods=["GET"])
     def training_program_page():
@@ -587,9 +622,11 @@ def create_app(config_name="development"):
     @app.route("/sitemap.xml", methods=["GET"])
     def sitemap():
         lastmod = datetime.utcnow().date().isoformat()
+        # Страницы проектов с отдельным роутом (не только якорь на /projects)
+        project_slugs = ["camp-ruza", "contest-org-checklist"]
         urls = {
             "static": ["/", "/projects", "/services", "/book", "/calculator", "/blog"],
-            "project_slugs": [],
+            "project_slugs": project_slugs,
         }
         xml = render_template("sitemap.xml", lastmod=lastmod, urls=urls)
         resp = make_response(xml)
@@ -676,7 +713,9 @@ def create_app(config_name="development"):
                     )
             except Exception as e:
                 app.logger.error(f"Failed to write analytics to sheet (fallback): {e}")
-        return jsonify({"ok": True})
+        return "", 204
+
+    csrf.exempt(analytics_log)
 
     # Global exception handler: report to Sentry (if configured) and trigger a Telegram alert
     # It's defensive: HTTPExceptions are re-raised so Flask can handle them normally.

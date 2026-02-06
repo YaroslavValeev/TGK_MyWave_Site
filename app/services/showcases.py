@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field, asdict
+from datetime import date, datetime
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -10,6 +12,8 @@ from typing import Any
 import yaml
 
 from flask import current_app, url_for
+
+logger = logging.getLogger(__name__)
 
 from app.seo.schema_org import build_showcase_graph, build_event_list
 
@@ -44,6 +48,10 @@ class ShowcaseConfig:
     metadata: dict[str, Any] = field(default_factory=dict)
     itinerary: list[dict[str, Any]] = field(default_factory=list)
     leaderboard: list[dict[str, Any]] = field(default_factory=list)
+    # Поля для раздела «Проекты» (модалка, CTA, канонический URL страницы)
+    modal_content: str | None = None
+    primary_actions: list[dict[str, Any]] = field(default_factory=list)
+    page_url: str | None = None
 
     @property
     def url(self) -> str:
@@ -52,7 +60,7 @@ class ShowcaseConfig:
         return f"/projects/{self.slug}"
 
     def as_card(self) -> dict[str, Any]:
-        return {
+        card: dict[str, Any] = {
             "id": self.id,
             "slug": self.slug,
             "name": self.name,
@@ -68,6 +76,11 @@ class ShowcaseConfig:
             "level": self.level,
             "price_from": self.price_from,
         }
+        # Поля для модалки и CTA (раздел «Проекты», PROJECTS_UX_SPEC_AND_DOD)
+        card["modal_content"] = self.modal_content or ""
+        card["primary_actions"] = self.primary_actions if self.primary_actions is not None else []
+        card["page_url"] = self.page_url if self.page_url else self.url
+        return card
 
     def as_schema_payload(self, base_route: str) -> dict[str, Any]:
         payload = asdict(self)
@@ -83,18 +96,47 @@ class ShowcaseConfig:
         return payload
 
 
+def _normalize_value(v: Any) -> Any:
+    """Приводим date/datetime к строкам для корректной JSON-сериализации в шаблонах."""
+    if isinstance(v, datetime):
+        return v.date().isoformat() if v else ""
+    if isinstance(v, date):
+        return v.isoformat() if v else ""
+    return v
+
+
+def _filter_showcase_data(data: dict[str, Any]) -> dict[str, Any]:
+    """Оставляем только поля, известные ShowcaseConfig (защита от лишних ключей в YAML)."""
+    allowed = set(ShowcaseConfig.__dataclass_fields__)
+    out = {}
+    for k, v in data.items():
+        if k not in allowed:
+            continue
+        if k in ("start_date", "end_date"):
+            out[k] = _normalize_value(v)
+        elif k == "primary_actions":
+            out[k] = v if isinstance(v, list) else []
+        else:
+            out[k] = v
+    return out
+
+
 @lru_cache(maxsize=1)
 def load_showcase_configs() -> dict[str, ShowcaseConfig]:
     configs: dict[str, ShowcaseConfig] = {}
     if not SHOWCASE_DIR.exists():
         return configs
     for path in sorted(SHOWCASE_DIR.glob("*.y*ml")):
-        with path.open("r", encoding="utf-8") as fh:
-            data = yaml.safe_load(fh) or {}
-        if not data:
+        try:
+            with path.open("r", encoding="utf-8") as fh:
+                data = yaml.safe_load(fh) or {}
+            if not data:
+                continue
+            cfg = ShowcaseConfig(**_filter_showcase_data(data))
+            configs[cfg.id] = cfg
+        except Exception as e:
+            logger.warning("Пропуск showcase %s: %s", path.name, e)
             continue
-        cfg = ShowcaseConfig(**data)
-        configs[cfg.id] = cfg
     return configs
 
 
@@ -115,20 +157,56 @@ def get_showcase(showcase_id: str) -> ShowcaseConfig | None:
     return configs.get(showcase_id)
 
 
+# Fallback-обложка, если файл из YAML отсутствует (убирает 404 в Network)
+COVER_FALLBACK = "images/hero-wakesurf.webp"
+
+# Порядок slug'ов для превью на главной (первые 3 показываются в карусели)
+PROJECTS_PREVIEW_SLUGS = ["wsc-2026", "wakesurf-safari", "camp-ruza"]
+
+
 def get_project_cards() -> list[dict[str, Any]]:
     cards = []
+    static_dir = BASE_DIR / "static"
     for sc in list_showcases(channel="projects"):
         card = sc.as_card()
         card["url"] = sc.url
+        cover = card.get("cover")
+        if cover and not (static_dir / cover).exists():
+            card["cover"] = COVER_FALLBACK
+        if getattr(sc, "metadata", None) and isinstance(sc.metadata, dict):
+            card["badges"] = sc.metadata.get("badges") or []
+        else:
+            card["badges"] = []
         cards.append(card)
     return cards
 
 
+def get_project_cards_preview(limit: int = 3) -> list[dict[str, Any]]:
+    """Карточки для блока «Проекты» на главной: приоритетный порядок (WSC 2026, Safari, Летний лагерь)."""
+    all_cards = get_project_cards()
+    by_slug = {c["slug"]: c for c in all_cards}
+    ordered = []
+    for slug in PROJECTS_PREVIEW_SLUGS:
+        if slug in by_slug:
+            ordered.append(by_slug[slug])
+    for c in all_cards:
+        if c["slug"] not in PROJECTS_PREVIEW_SLUGS:
+            ordered.append(c)
+    return ordered[:limit]
+
+
 def get_projects_graph() -> dict[str, Any]:
-    showcases = [
-        sc.as_schema_payload(url_for("projects_page", _external=True))
-        for sc in list_showcases(channel="projects")
-    ]
+    base = ""
+    try:
+        base = url_for("projects_page", _external=True)
+    except Exception:
+        base = "https://mywavetreaning.ru/projects"
+    showcases = []
+    for sc in list_showcases(channel="projects"):
+        try:
+            showcases.append(sc.as_schema_payload(base))
+        except Exception as e:
+            logger.warning("Пропуск schema для showcase %s: %s", sc.id, e)
     return build_showcase_graph(showcases)
 
 

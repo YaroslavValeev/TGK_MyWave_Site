@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, abort
+from flask import Blueprint, render_template, abort, current_app
 
 shop_bp = Blueprint("shop", __name__, url_prefix="/shop")
 
@@ -22,17 +22,18 @@ PRODUCTS = {
         "description": "Удобное сменное пончо — быстро надеть/снять на пляже, сохраняет тепло.",
         "image": "images/01.jpg",
     },
-    "wave-cards": {
-        "title": "Настольная игра «Wave Cards»",
-        "price": "1 200 ₽",
-        "description": "Игра про трюки и тактику на воде — весёлая и простая, подходит для вечеринок.",
-        "image": "images/sample-product.jpg",
-    },
     "wakesurfpolia": {
         "title": "WakeSurfPolia",
         "price": "5 000 ₽",
-        "description": "Комплект для тренировок на воде: страховочные элементы и аксессуары.",
+        "description": "Настольная игра про вейк, волны и тактику. Состав: карты, правила, счёт. Подходит для компании и вечеринок.",
         "image": "images/hero-wakesurf.png",
+    },
+    "wave-cards": {
+        "title": "Настольная игра «Wave Cards»",
+        "price": "уточняется",
+        "description": "В разработке: карточная игра про волны и вейк. Пока только в dev/staging.",
+        "image": "images/hero-wakesurf.png",
+        "dev_only": True,
     },
     "balance-board-pro": {
         "title": "Баланс-борд Pro",
@@ -65,13 +66,21 @@ PRODUCTS_PREVIEW_SLUGS = [
 ]
 
 
-def get_products_preview(limit=6):
-    """Список товаров для блока «Товары» на главной."""
+def get_products_preview(limit=6, show_dev=None):
+    """Список товаров для блока «Товары» на главной. На production товары с dev_only не включаются."""
+    if show_dev is None:
+        try:
+            show_dev = current_app.config.get("SHOW_DEV_PRODUCTS", False)
+        except RuntimeError:
+            show_dev = False
     out = []
     for slug in PRODUCTS_PREVIEW_SLUGS[:limit]:
         p = PRODUCTS.get(slug)
-        if p:
-            out.append({"slug": slug, **p})
+        if not p:
+            continue
+        if p.get("dev_only") and not show_dev:
+            continue
+        out.append({"slug": slug, **p})
     return out
 
 
@@ -85,5 +94,7 @@ def shop_index():
 def product(slug):
     product = PRODUCTS.get(slug)
     if not product:
+        abort(404)
+    if product.get("dev_only") and not current_app.config.get("SHOW_DEV_PRODUCTS", False):
         abort(404)
     return render_template("shop_product.html", product=product, slug=slug)

@@ -1,6 +1,244 @@
-[2026-02-02 01:02:29,169] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
-[2026-02-02 01:02:29,273] ERROR in store: [blog-store] Ошибка чтения Sheets: <HttpError 400 when requesting https://sheets.googleapis.com/v4/spreadsheets/1RJpw2mAMej3a-VC6yKAsKkVQvzGStcjUC7LijNNyn50/values/raw_feed%21A1%3AZZ1000?alt=json returned "Bad Request". Details: "EOF occurred in violation of protocol (_ssl.c:2427)">
-[2026-02-02 01:02:29,275] WARNING in store: [blog-store] Используем устаревший кэш из Sheets
-[2026-02-02 14:54:41,049] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
-[2026-02-02 14:54:43,576] INFO in parser_news_sheet: [parser_news_sheet] Прочитано 150 строк, заголовков: 89
-[2026-02-02 14:54:43,917] INFO in store: [blog-store] Загружено 2 постов из Sheets
+[2026-02-03 10:20:44,875] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
+[2026-02-03 11:27:27,645] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
+[2026-02-03 11:27:30,137] INFO in parser_news_sheet: [parser_news_sheet] Прочитано 150 строк, заголовков: 89
+[2026-02-03 11:27:30,478] INFO in store: [blog-store] Загружено 2 постов из Sheets
+[2026-02-03 11:58:20,026] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
+[2026-02-03 11:58:20,261] ERROR in store: [blog-store] Ошибка чтения Sheets: <HttpError 400 when requesting https://sheets.googleapis.com/v4/spreadsheets/1RJpw2mAMej3a-VC6yKAsKkVQvzGStcjUC7LijNNyn50/values/raw_feed%21A1%3AZZ1000?alt=json returned "Bad Request". Details: "EOF occurred in violation of protocol (_ssl.c:2427)">
+[2026-02-03 11:58:20,268] WARNING in store: [blog-store] Используем устаревший кэш из Sheets
+[2026-02-03 12:23:38,942] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
+[2026-02-03 12:23:40,045] ERROR in store: [blog-store] Ошибка чтения Sheets: EOF occurred in violation of protocol (_ssl.c:2427)
+[2026-02-03 12:23:40,288] WARNING in store: [blog-store] Используем устаревший кэш из Sheets
+[2026-02-03 12:37:51,144] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
+[2026-02-03 12:37:56,351] ERROR in monitoring: Exception reported: expected token 'end of statement block', got '='
+Traceback (most recent call last):
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\app\__init__.py", line 579, in projects_page
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\flask\templating.py", line 149, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\jinja2\environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\jinja2\environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\jinja2\loaders.py", line 138, in load
+    code = environment.compile(source, name, filename)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\jinja2\environment.py", line 771, in compile
+    self.handle_exception(source=source_hint)
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "E:\Проекты MyWave\Site_MyWave\templates\projects.html", line 61, in template
+    {% include 'partials/reco_block.html' with context='projects' %}
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.TemplateSyntaxError: expected token 'end of statement block', got '='
+[2026-02-03 12:37:56,788] INFO in parser_news_sheet: [parser_news_sheet] Прочитано 150 строк, заголовков: 89
+[2026-02-03 12:37:56,989] INFO in store: [blog-store] Загружено 2 постов из Sheets
+[2026-02-03 12:37:59,489] ERROR in monitoring: Failed to send monitoring alert: 403 {"ok":false,"error_code":403,"description":"Forbidden: bots can't send messages to bots"}
+[2026-02-03 16:26:51,774] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
+[2026-02-03 16:26:52,859] ERROR in store: [blog-store] Ошибка чтения Sheets: EOF occurred in violation of protocol (_ssl.c:2427)
+[2026-02-03 16:26:53,300] WARNING in store: [blog-store] Используем устаревший кэш из Sheets
+[2026-02-03 16:27:30,384] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
+[2026-02-03 16:27:40,460] ERROR in store: [blog-store] Ошибка чтения Sheets: [Errno 11004] getaddrinfo failed
+[2026-02-03 16:27:40,464] WARNING in store: [blog-store] Используем устаревший кэш из Sheets
+[2026-02-03 16:28:08,127] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
+[2026-02-03 16:28:10,369] ERROR in store: [blog-store] Ошибка чтения Sheets: <HttpError 400 when requesting https://sheets.googleapis.com/v4/spreadsheets/1RJpw2mAMej3a-VC6yKAsKkVQvzGStcjUC7LijNNyn50/values/raw_feed%21A1%3AZZ1000?alt=json returned "Bad Request". Details: "EOF occurred in violation of protocol (_ssl.c:2427)">
+[2026-02-03 16:28:10,371] WARNING in store: [blog-store] Используем устаревший кэш из Sheets
+[2026-02-03 16:28:33,098] ERROR in monitoring: Exception reported: expected token 'end of statement block', got '='
+Traceback (most recent call last):
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\app\__init__.py", line 579, in projects_page
+    projects = []
+       ^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\flask\templating.py", line 149, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\jinja2\environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\jinja2\environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\jinja2\loaders.py", line 138, in load
+    code = environment.compile(source, name, filename)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\jinja2\environment.py", line 771, in compile
+    self.handle_exception(source=source_hint)
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "E:\Проекты MyWave\Site_MyWave\templates\projects.html", line 66, in template
+    {% include 'partials/reco_block.html' with context='projects' %}
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.TemplateSyntaxError: expected token 'end of statement block', got '='
+[2026-02-03 16:28:35,137] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
+[2026-02-03 16:28:38,817] ERROR in monitoring: Exception while sending monitoring alert: HTTPSConnectionPool(host='api.telegram.org', port=443): Max retries exceeded with url: /bot7632502935:AAHDsh2YLhvNMXLTdl7aPecTmE3f5RjjxQs/sendMessage?chat_id=7632502935&text=Unhandled+exception+in+MyWave+%281.0.0%29%3A+expected+token+%27end+of+statement+block%27%2C+got+%27%3D%27+%5BGET+%2Fprojects%5D&parse_mode=HTML (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x00000266D0F58210>: Failed to establish a new connection: [Errno 10051] WSAENETUNREACH'))
+Traceback (most recent call last):
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\connection.py", line 198, in _new_conn
+    sock = connection.create_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\util\connection.py", line 85, in create_connection
+    raise err
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\util\connection.py", line 73, in create_connection
+    sock.connect(sa)
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\eventlet\greenio\base.py", line 265, in connect
+    socket_checkerr(fd)
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\eventlet\greenio\base.py", line 50, in socket_checkerr
+    raise OSError(err, errno.errorcode[err])
+OSError: [Errno 10051] WSAENETUNREACH
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\connectionpool.py", line 1093, in _validate_conn
+    conn.connect()
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\connection.py", line 704, in connect
+    self.sock = sock = self._new_conn()
+                       ^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\connection.py", line 213, in _new_conn
+    raise NewConnectionError(
+urllib3.exceptions.NewConnectionError: <urllib3.connection.HTTPSConnection object at 0x00000266D0F58210>: Failed to establish a new connection: [Errno 10051] WSAENETUNREACH
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\requests\adapters.py", line 486, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\util\retry.py", line 519, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='api.telegram.org', port=443): Max retries exceeded with url: /bot7632502935:AAHDsh2YLhvNMXLTdl7aPecTmE3f5RjjxQs/sendMessage?chat_id=7632502935&text=Unhandled+exception+in+MyWave+%281.0.0%29%3A+expected+token+%27end+of+statement+block%27%2C+got+%27%3D%27+%5BGET+%2Fprojects%5D&parse_mode=HTML (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x00000266D0F58210>: Failed to establish a new connection: [Errno 10051] WSAENETUNREACH'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Проекты MyWave\Site_MyWave\app\services\monitoring.py", line 47, in send_monitoring_alert
+    resp = requests.get(
+           ^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\requests\api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\requests\api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\requests\adapters.py", line 519, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='api.telegram.org', port=443): Max retries exceeded with url: /bot7632502935:AAHDsh2YLhvNMXLTdl7aPecTmE3f5RjjxQs/sendMessage?chat_id=7632502935&text=Unhandled+exception+in+MyWave+%281.0.0%29%3A+expected+token+%27end+of+statement+block%27%2C+got+%27%3D%27+%5BGET+%2Fprojects%5D&parse_mode=HTML (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x00000266D0F58210>: Failed to establish a new connection: [Errno 10051] WSAENETUNREACH'))
+[2026-02-03 16:28:39,776] WARNING in monitoring: Monitoring alert attempt 1 failed: HTTPSConnectionPool(host='api.telegram.org', port=443): Max retries exceeded with url: /bot7632502935:AAHDsh2YLhvNMXLTdl7aPecTmE3f5RjjxQs/sendMessage?chat_id=7632502935&text=Unhandled+exception+in+MyWave+%281.0.0%29%3A+expected+token+%27end+of+statement+block%27%2C+got+%27%3D%27+%5BGET+%2Fprojects%5D&parse_mode=HTML (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x00000266D0F58210>: Failed to establish a new connection: [Errno 10051] WSAENETUNREACH'))
+[2026-02-03 16:28:40,989] ERROR in store: [blog-store] Ошибка чтения Sheets: <HttpError 400 when requesting https://sheets.googleapis.com/v4/spreadsheets/1RJpw2mAMej3a-VC6yKAsKkVQvzGStcjUC7LijNNyn50/values/raw_feed%21A1%3AZZ1000?alt=json returned "Bad Request". Details: "[Errno 11004] getaddrinfo failed">
+[2026-02-03 16:28:40,992] WARNING in store: [blog-store] Используем устаревший кэш из Sheets
+[2026-02-03 16:28:47,206] ERROR in monitoring: Exception while sending monitoring alert: HTTPSConnectionPool(host='api.telegram.org', port=443): Max retries exceeded with url: /bot7632502935:AAHDsh2YLhvNMXLTdl7aPecTmE3f5RjjxQs/sendMessage?chat_id=7632502935&text=Unhandled+exception+in+MyWave+%281.0.0%29%3A+expected+token+%27end+of+statement+block%27%2C+got+%27%3D%27+%5BGET+%2Fprojects%5D&parse_mode=HTML (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x00000266D0DECCD0>: Failed to establish a new connection: [Errno 10051] WSAENETUNREACH'))
+Traceback (most recent call last):
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\connection.py", line 198, in _new_conn
+    sock = connection.create_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\util\connection.py", line 85, in create_connection
+    raise err
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\util\connection.py", line 73, in create_connection
+    sock.connect(sa)
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\eventlet\greenio\base.py", line 265, in connect
+    socket_checkerr(fd)
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\eventlet\greenio\base.py", line 50, in socket_checkerr
+    raise OSError(err, errno.errorcode[err])
+OSError: [Errno 10051] WSAENETUNREACH
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\connectionpool.py", line 1093, in _validate_conn
+    conn.connect()
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\connection.py", line 704, in connect
+    self.sock = sock = self._new_conn()
+                       ^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\connection.py", line 213, in _new_conn
+    raise NewConnectionError(
+urllib3.exceptions.NewConnectionError: <urllib3.connection.HTTPSConnection object at 0x00000266D0DECCD0>: Failed to establish a new connection: [Errno 10051] WSAENETUNREACH
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\requests\adapters.py", line 486, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\urllib3\util\retry.py", line 519, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='api.telegram.org', port=443): Max retries exceeded with url: /bot7632502935:AAHDsh2YLhvNMXLTdl7aPecTmE3f5RjjxQs/sendMessage?chat_id=7632502935&text=Unhandled+exception+in+MyWave+%281.0.0%29%3A+expected+token+%27end+of+statement+block%27%2C+got+%27%3D%27+%5BGET+%2Fprojects%5D&parse_mode=HTML (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x00000266D0DECCD0>: Failed to establish a new connection: [Errno 10051] WSAENETUNREACH'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\Проекты MyWave\Site_MyWave\app\services\monitoring.py", line 47, in send_monitoring_alert
+    resp = requests.get(
+           ^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\requests\api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\requests\api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Проекты MyWave\Site_MyWave\.venv\Lib\site-packages\requests\adapters.py", line 519, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='api.telegram.org', port=443): Max retries exceeded with url: /bot7632502935:AAHDsh2YLhvNMXLTdl7aPecTmE3f5RjjxQs/sendMessage?chat_id=7632502935&text=Unhandled+exception+in+MyWave+%281.0.0%29%3A+expected+token+%27end+of+statement+block%27%2C+got+%27%3D%27+%5BGET+%2Fprojects%5D&parse_mode=HTML (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x00000266D0DECCD0>: Failed to establish a new connection: [Errno 10051] WSAENETUNREACH'))
+[2026-02-03 16:28:47,492] WARNING in monitoring: Monitoring alert attempt 2 failed: HTTPSConnectionPool(host='api.telegram.org', port=443): Max retries exceeded with url: /bot7632502935:AAHDsh2YLhvNMXLTdl7aPecTmE3f5RjjxQs/sendMessage?chat_id=7632502935&text=Unhandled+exception+in+MyWave+%281.0.0%29%3A+expected+token+%27end+of+statement+block%27%2C+got+%27%3D%27+%5BGET+%2Fprojects%5D&parse_mode=HTML (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x00000266D0DECCD0>: Failed to establish a new connection: [Errno 10051] WSAENETUNREACH'))
+[2026-02-03 16:28:52,673] ERROR in monitoring: Failed to send monitoring alert: 403 {"ok":false,"error_code":403,"description":"Forbidden: bots can't send messages to bots"}
+[2026-02-03 16:32:08,871] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
+[2026-02-03 16:32:13,628] INFO in parser_news_sheet: [parser_news_sheet] Прочитано 150 строк, заголовков: 89
+[2026-02-03 16:32:13,725] INFO in store: [blog-store] Загружено 2 постов из Sheets
+[2026-02-03 16:47:47,174] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
+[2026-02-03 16:47:47,284] ERROR in store: [blog-store] Ошибка чтения Sheets: <HttpError 400 when requesting https://sheets.googleapis.com/v4/spreadsheets/1RJpw2mAMej3a-VC6yKAsKkVQvzGStcjUC7LijNNyn50/values/raw_feed%21A1%3AZZ1000?alt=json returned "Bad Request". Details: "EOF occurred in violation of protocol (_ssl.c:2427)">
+[2026-02-03 16:47:47,286] WARNING in store: [blog-store] Используем устаревший кэш из Sheets
+[2026-02-03 16:50:42,353] INFO in parser_news_sheet: [parser_news_sheet] Чтение из spreadsheet_id=1RJpw2mAMej3a-VC6yKA..., worksheet=raw_feed
+[2026-02-03 16:50:45,717] INFO in parser_news_sheet: [parser_news_sheet] Прочитано 150 строк, заголовков: 89
+[2026-02-03 16:50:45,728] INFO in store: [blog-store] Загружено 2 постов из Sheets

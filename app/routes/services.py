@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, current_app, render_template, url_for
+from flask import Blueprint, jsonify, request, redirect, current_app, render_template, url_for
 from app.services.openai_service import ask
 from app.services.google import get_google_services
 from app.services.images_service import get_image_url, save_image
@@ -210,11 +210,16 @@ def wake_camp():
 # Эндпоинт бронирования
 @services_bp.route("/book", methods=["GET", "POST"])
 def book_service():
-    """Endpoint для бронирования услуги"""
+    """Endpoint для бронирования услуги. GET — редирект на главную (бронирование через модалку)."""
+    if request.method == "GET":
+        return redirect(url_for("index") + "#booking", code=302)
+
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
 
         # Валидация входных данных
+        if not data:
+            return jsonify({"error": "Missing JSON body"}), 400
         required_fields = ["service_id", "date", "time", "name", "phone"]
         for field in required_fields:
             if field not in data:

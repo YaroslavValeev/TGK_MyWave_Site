@@ -173,8 +173,8 @@ def project_page():
         {
             "title": "WakeSurf Challenge 2025 — официальный проект",
             "description": "Пилотная программа в Москве: тренировки, вебинары, прозрачное судейство (40/30/30), медиа и витрина KPI для партнёров.",
-            "url": "https://mywavetraining.ru/projects/wakesurf-challenge-2025",
-            "image": "https://mywavetraining.ru/static/images/challenge/challenge1.png",
+            "url": "https://mywavetreaning.ru/projects/wakesurf-challenge-2025",
+            "image": "https://mywavetreaning.ru/static/images/challenge/challenge1.png",
             "site_name": "MyWave",
             "locale": "ru_RU",
         },

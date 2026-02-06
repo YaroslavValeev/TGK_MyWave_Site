@@ -1,0 +1,34 @@
+# Индустрия Wake
+id: wake_industry
+slug: wake-industry
+name: "Индустрия Wake"
+summary: "Ресурсы и материалы для развития индустрии вейксерфинга"
+description: |
+  Индустрия Wake — раздел о стандартах, чек-листах и условиях для
+  организаторов соревнований и развития вейк-направления.
+category: education
+kind: resource
+schema_type: WebApplication
+status: published
+city: ""
+country: Россия
+start_date: ""
+end_date: ""
+tags:
+  - industry
+  - wake
+level: null
+price_from: null
+capacity: null
+cover_image: images/hero-wakesurf.webp
+gallery: []
+cta_url: "/wake-industry"
+route: "/projects"
+channels:
+  - projects
+metadata: {}
+modal_content: ""
+primary_actions:
+  - label: "Чек-лист организатора"
+    href: "/projects/contest-org-checklist"
+page_url: "/projects/contest-org-checklist"

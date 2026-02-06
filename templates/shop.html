@@ -5,19 +5,19 @@
   <h2>Он‑лайн‑магазин</h2>
 
   <!-- фильтры -->
-  <div class="store-filters">
-    <button class="filter-btn active" data-category="all">Все</button>
-    <button class="filter-btn" data-category="balance-board">Баланс‑борды</button>
-    <button class="filter-btn" data-category="poncho">Пончо</button>
-    <button class="filter-btn" data-category="boardgame">Настольные&nbsp;игры</button>
-    <button class="filter-btn" data-category="wakesurfpolia">WakeSurfPolia</button>
-    <button class="filter-btn" data-category="certificate">Сертификаты</button>
+    <div class="store-filters">
+    <button class="filter-btn active" data-category="all" aria-pressed="true">Все</button>
+    <button class="filter-btn" data-category="balance-board" aria-pressed="false">Баланс‑борды</button>
+    <button class="filter-btn" data-category="poncho" aria-pressed="false">Пончо</button>
+    <button class="filter-btn" data-category="wakesurfpolia" aria-pressed="false">WakeSurfPolia</button>
+    <button class="filter-btn" data-category="certificate" aria-pressed="false">Сертификаты</button>
+    {% if show_dev_products %}<button class="filter-btn" data-category="wave-cards" aria-pressed="false">Wave Cards (dev)</button>{% endif %}
   </div>
 
   <!-- карточки -->
   <div id="store-products" class="store-list">
     <div class="product-card" data-category="balance-board">
-      <img src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="Баланс-борд">
+      <img src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="Баланс-борд" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
       <h4>Баланс-борд</h4>
       <p>Тренировочный баланс-борд для трюков и фитнеса.</p>
       <p class="price">7 500&nbsp;₽</p>
@@ -25,7 +25,7 @@
     </div>
 
     <div class="product-card" data-category="balance-board">
-      <img src="{{ url_for('static', filename='images/balans_trick_trening.jpg') }}" alt="Баланс-борд Big">
+      <img src="{{ url_for('static', filename='images/balans_trick_trening.jpg') }}" alt="Баланс-борд Big" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
       <h4>Баланс-борд Big</h4>
       <p>Увеличенная модель для продвинутых — стабильнее и удобнее для силовых упражнений.</p>
       <p class="price">9 900&nbsp;₽</p>
@@ -33,31 +33,23 @@
     </div>
 
     <div class="product-card" data-category="poncho">
-      <img src="{{ url_for('static', filename='images/01.jpg') }}" alt="Пончо — Комбез">
+      <img src="{{ url_for('static', filename='images/01.jpg') }}" alt="Пончо — Комбез" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
       <h4>Пончо — Комбез (переодевалка)</h4>
       <p>Удобное сменное пончо — быстро надеть/снять на пляже, сохраняет тепло.</p>
       <p class="price">4 500&nbsp;₽</p>
       <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='poncho') }}">Купить</a>
     </div>
 
-    <div class="product-card" data-category="boardgame">
-      <img src="{{ url_for('static', filename='images/sample-product.jpg') }}" alt="Настольная игра">
-      <h4>Настольная игра «Wave Cards»</h4>
-      <p>Игра про трюки и тактику на воде — весёлая и простая, подходит для вечеринок.</p>
-      <p class="price">1 200&nbsp;₽</p>
-      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='wave-cards') }}">Купить</a>
-    </div>
-
     <div class="product-card" data-category="wakesurfpolia">
-      <img src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="WakeSurfPolia">
-      <h4>WakeSurfPolia (настольная игра)</h4>
-      <p>Настольная игра про вейксерф: трюки, тактика и дух волны. Состав: карты, правила, счёт. Подходит для компании и вечеринок.</p>
+      <img src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="WakeSurfPolia" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
+      <h4>WakeSurfPolia</h4>
+      <p>Настольная игра про вейк, волны и тактику. Состав: карты, правила, счёт. Подходит для компании и вечеринок.</p>
       <p class="price">5 000&nbsp;₽</p>
       <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='wakesurfpolia') }}">Купить</a>
     </div>
 
     <div class="product-card" data-category="balance-board">
-      <img src="{{ url_for('static', filename='images/02.jpg') }}" alt="Баланс-борд Pro">
+      <img src="{{ url_for('static', filename='images/02.jpg') }}" alt="Баланс-борд Pro" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
       <h4>Баланс-борд Pro</h4>
       <p>Профессиональная доска с улучшенной устойчивостью и долговечностью.</p>
       <p class="price">12 500&nbsp;₽</p>
@@ -65,7 +57,7 @@
     </div>
 
     <div class="product-card" data-category="balance-board">
-      <img src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="Баланс-борд NewStyle">
+      <img src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="Баланс-борд NewStyle" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
       <h4>Баланс-борд NewStyle</h4>
       <p>Стильная модель для тренировок и трюков. Подходит для дома и зала.</p>
       <p class="price">8 900&nbsp;₽</p>
@@ -73,12 +65,22 @@
     </div>
 
     <div class="product-card" data-category="certificate">
-      <img src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="Сертификат на 10 занятий">
+      <img src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="Сертификат на 10 занятий" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
       <h4>Сертификат на 10 занятий</h4>
       <p>Идеальный подарок — путь к уверенному уровню «аматор». Прогресс фиксируется и закрепляется.</p>
       <p class="price">30 000&nbsp;₽</p>
       <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='certificate-10') }}">Купить</a>
     </div>
+    {% if show_dev_products %}
+    <div class="product-card product-card--dev" data-category="wave-cards">
+      <span class="product-badge product-badge--dev">В разработке</span>
+      <img src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="Wave Cards" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
+      <h4>Настольная игра «Wave Cards»</h4>
+      <p>Карточная игра про волны и вейк. Пока только в dev/staging.</p>
+      <p class="price">уточняется</p>
+      <span class="btn btn-primary-lg btn--disabled">Скоро</span>
+    </div>
+    {% endif %}
   </div>
 </section>
   <script src="{{ url_for('static', filename='js/shop-filter.js') }}"></script>

@@ -807,6 +807,7 @@ Wake Surf Safari 2026 Styles
 .mw-field textarea:focus{
   outline: none;
   border-color: var(--mw-brand, #35C0CD);
+  box-shadow: 0 0 0 3px rgba(53, 192, 205, 0.15);
 }
 .mw-field textarea{
   resize: vertical;

@@ -5,21 +5,7 @@
   gap: 12px;
   margin: 1em 0;
 }
-.services-carousel .carousel-prev,
-.services-carousel .carousel-next {
-  background: #f0f0f0;
-  border: 1px solid #e0e0e0;
-  color: #333;
-  font-size: 20px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-.services-carousel .carousel-prev[disabled],
-.services-carousel .carousel-next[disabled] {
-  opacity: 0.4;
-  cursor: default;
-}
+
 .services-carousel .carousel-track {
   display: flex;
   gap: 16px;
@@ -43,3 +29,167 @@
 @media (max-width: 900px) {
   .services-carousel .service-card { min-width: 220px; }
 }
+
+/* Reuse carousel styles for products & projects */
+.products-carousel,
+.projects-carousel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 1em 0;
+}
+
+
+
+.products-carousel .carousel-track,
+.projects-carousel .carousel-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 4px;
+}
+
+.products-carousel .product-card { min-width: 280px; max-width: 360px; flex: 0 0 auto; }
+/* Единый размер карточек проектов (как у услуг/товаров), без «широкой» карточки */
+.projects-carousel .project-card {
+  min-width: 280px;
+  max-width: 320px;
+  flex: 0 0 auto;
+  background: #fafafa;
+  padding: 1em;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.projects-carousel .project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.projects-carousel .project-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 0.5em;
+}
+.projects-carousel .project-card h4 { margin: 0 0 0.4em; font-size: 1.05em; }
+.projects-carousel .project-card p {
+  margin: 0 0 0.6em;
+  font-size: 0.9em;
+  color: #555;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* «Тренировочная программа» — тот же размер, не растягивать */
+.projects-carousel .project-card--wide {
+  min-width: 280px;
+  max-width: 320px;
+}
+
+@media (max-width: 900px) {
+  .products-carousel .product-card { min-width: 220px; }
+  .projects-carousel .project-card,
+  .projects-carousel .project-card--wide { min-width: 260px; max-width: 280px; }
+}
+
+/* Единые стили для всех scroll-каруселей: Услуги, Товары, Проекты, Блог */
+.products-carousel,
+.projects-carousel,
+.blog-carousel,
+.services-carousel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 1em 0;
+}
+
+.products-carousel .carousel-track,
+.projects-carousel .carousel-track,
+.blog-carousel .carousel-track,
+.services-carousel .carousel-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 4px;
+}
+
+.products-carousel .carousel-prev,
+.products-carousel .carousel-next,
+.projects-carousel .carousel-prev,
+.projects-carousel .carousel-next,
+.blog-carousel .carousel-prev,
+.blog-carousel .carousel-next,
+.services-carousel .carousel-prev,
+.services-carousel .carousel-next {
+  background: var(--neutral-0);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 1.2rem;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.products-carousel .carousel-prev:hover,
+.products-carousel .carousel-next:hover,
+.projects-carousel .carousel-prev:hover,
+.projects-carousel .carousel-next:hover,
+.blog-carousel .carousel-prev:hover,
+.blog-carousel .carousel-next:hover,
+.services-carousel .carousel-prev:hover,
+.services-carousel .carousel-next:hover {
+  background: var(--bg);
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.products-carousel .carousel-prev:focus-visible,
+.products-carousel .carousel-next:focus-visible,
+.projects-carousel .carousel-prev:focus-visible,
+.projects-carousel .carousel-next:focus-visible,
+.blog-carousel .carousel-prev:focus-visible,
+.blog-carousel .carousel-next:focus-visible,
+.services-carousel .carousel-prev:focus-visible,
+.services-carousel .carousel-next:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring-color);
+}
+
+.products-carousel .carousel-prev[disabled],
+.products-carousel .carousel-next[disabled],
+.projects-carousel .carousel-prev[disabled],
+.projects-carousel .carousel-next[disabled],
+.blog-carousel .carousel-prev[disabled],
+.blog-carousel .carousel-next[disabled],
+.services-carousel .carousel-prev[disabled],
+.services-carousel .carousel-next[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.blog-carousel .blog-card {
+  min-width: 280px;
+  max-width: 360px;
+  flex: 0 0 auto;
+  background: #fafafa;
+  padding: 1em;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.blog-carousel .blog-card h3 { margin-top: 0; }
+.blog-carousel .carousel-track::-webkit-scrollbar { height: 8px; }
+.blog-carousel .carousel-track::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 8px; }

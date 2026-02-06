@@ -95,7 +95,7 @@
   {% block head %}{% endblock %}
 </head>
 
-<body>
+<body class="{% block body_class %}{% endblock %}">
   <!-- Шапка -->
   <header class="site-header" id="site-header">
     <div class="header-inner">
@@ -195,6 +195,8 @@
   <script src="{{ url_for('static', filename='js/inline.js') }}"></script>
   <script src="{{ url_for('static', filename='js/preloader.js') }}"></script>
   <script src="{{ url_for('static', filename='js/image-effects.js') }}"></script>
+
+  <script defer src="{{ url_for('static', filename='js/image-fallbacks.js') }}"></script>
 
   <!-- Recommendations client script (loads recommendation widgets & analytics pings) -->
   <script type="module" src="{{ url_for('static', filename='js/reco.js') }}" nonce="{{ g.csp_nonce }}"></script>

@@ -100,9 +100,10 @@ function initializeBooking() {
     });
   }
 
-  // Закрытие модального окна по клику вне его
+  // Закрытие только модалок бронирования по клику вне (не трогаем лид-модалки)
+  const bookingModals = [UI.calendarModal, UI.slotsModal, UI.contactModal, UI.confirmModal].filter(Boolean);
   document.addEventListener("click", (e) => {
-    if (e.target.classList.contains("modal")) {
+    if (e.target.classList && e.target.classList.contains("modal") && bookingModals.includes(e.target)) {
       hideAllModals();
     }
   });
@@ -1051,11 +1052,13 @@ function initializeBooking() {
     if (e.key === "Escape") hideAllModals();
   });
 
-  // Закрытие по клику вне модального окна
-  document.querySelectorAll(".modal").forEach((modal) => {
-    modal.addEventListener("mousedown", (e) => {
-      if (e.target === modal) hideAllModals();
-    });
+  // Закрытие по клику вне модального окна — только модалки бронирования (не лид-модалки)
+  bookingModals.forEach((modal) => {
+    if (modal) {
+      modal.addEventListener("mousedown", (e) => {
+        if (e.target === modal) hideAllModals();
+      });
+    }
   });
 
   // Enter = "Далее" (ищем первую .btn-primary в видимой модалке)

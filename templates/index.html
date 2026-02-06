@@ -5,8 +5,8 @@
 {% block content %}
   <!-- Герой-блок -->
   <section id="hero" class="hero-section relative-section">
-    <img src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}" alt="Вейксерфинг на волне" class="hero-bg hero-bg-cover hero-bg-light" loading="lazy" />
-    <img src="{{ url_for('static', filename='images/hero-wakesurf-dark.webp') }}" alt="Вейксерфинг на волне (тёмная тема)" class="hero-bg hero-bg-cover hero-bg-dark" loading="lazy" />
+    <img src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}" alt="Вейксерфинг на волне" class="hero-bg hero-bg-cover hero-bg-light" loading="lazy" decoding="async" />
+    <img src="{{ url_for('static', filename='images/hero-wakesurf-dark.webp') }}" alt="Вейксерфинг на волне (тёмная тема)" class="hero-bg hero-bg-cover hero-bg-dark" loading="lazy" decoding="async" />
     <div class="hero-content center-padding hero-content-relative">
       <h1 class="hero-title">MyWave</h1>
       <p class="hero-subtitle">Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
@@ -37,12 +37,12 @@
   <section id="services" class="services-section">
     <h2>Услуги</h2>
     <div class="services-carousel">
-      <button class="carousel-prev" aria-label="Предыдущие услуги">◀</button>
+      <button class="carousel-prev" type="button" aria-label="Назад">‹</button>
       <div class="carousel-track">
         <div class="service-card">
-          <h4>Тренировка</h4>
-          <p>Тренировка на авторских тренажёрах по уникальной методике вейксерфинга. Развиваем баланс, координацию, биомеханику и нейронные связи, чтобы вы уверенно и эффектно выполняли трюки.</p>
-          <p>Цена: 3500 рублей</p>
+          <h4>Запись на тренировку (Зал)</h4>
+          <p>Тренировки на авторских тренажёрах по методике вейксерфинга: баланс, координация, биомеханика, подготовка к воде и трюкам.</p>
+          <p>Цена: 3 500 ₽</p>
           <button class="btn-secondary btn-book" data-service="gym" data-modal="booking">Подробнее / Записаться</button>
         </div>
 
@@ -81,50 +81,61 @@
           <button type="button" class="btn-secondary btn-lead" data-lead="consulting" aria-label="Обсудить запуск">Обсудить запуск</button>
         </div>
       </div>
-      <button class="carousel-next" aria-label="Следующие услуги">▶</button>
+      <button class="carousel-next" type="button" aria-label="Вперёд">›</button>
     </div>
   </section>
 
-  <!-- Товары (6 обязательных карточек из каталога) -->
+  <!-- Товары (карусель) -->
   <section id="store" class="store-section">
     <h2>Товары</h2>
-    <div class="cards-grid">
-      {% for p in products_preview %}
-      <div class="product-card">
-        <img src="{{ url_for('static', filename=p.image) }}" alt="{{ p.title }}" loading="lazy" />
-        <h4>{{ p.title }}</h4>
-        <p>{{ p.description }}</p>
-        <p>Цена: {{ p.price }}</p>
-        <a class="btn-secondary btn" href="{{ url_for('shop.product', slug=p.slug) }}">Купить</a>
+    <div class="products-carousel">
+      <button class="carousel-prev" type="button" aria-label="Прокрутить товары влево">‹</button>
+      <div class="carousel-track">
+        {% for p in products_preview %}
+        <a class="product-card" href="{{ url_for('shop.product', slug=p.slug) }}">
+          <img
+            src="{{ url_for('static', filename=(p.image or 'images/hero-wakesurf.webp')) }}"
+            alt="{{ p.title }}"
+            loading="lazy" decoding="async" width="360" height="220"
+            
+          />
+          <h4>{{ p.title }}</h4>
+          <p>{{ p.description }}</p>
+          <p class="price">Цена: {{ p.price }}</p>
+          <span class="buy-btn">Купить</span>
+        </a>
+        {% endfor %}
       </div>
-      {% endfor %}
+      <button class="carousel-next" type="button" aria-label="Прокрутить товары вправо">›</button>
     </div>
     <p class="store-more"><a href="{{ url_for('shop.shop_index') }}" class="btn-secondary">Все товары</a></p>
   </section>
 
-  <!-- Проекты -->
+  <!-- Проекты (карусель) -->
   <section id="projects" class="projects-section section">
     <h2>Проекты</h2>
-    {% if projects_preview %}
-    <ul class="projects-preview-list">
-      {% for p in projects_preview %}
-      <li class="project-preview-card">
-        {% if p.cover %}
-        <img src="{{ url_for('static', filename=p.cover) }}" alt="{{ p.name }}" loading="lazy" />
-        {% endif %}
-        <h4>{{ p.name }}</h4>
-        <p>{{ p.summary }}</p>
-        {% if p.cta_url %}
-        <a class="btn-secondary btn" href="{{ p.cta_url }}">Подробнее</a>
-        {% endif %}
-      </li>
-      {% endfor %}
-    </ul>
-    {% endif %}
-    <div class="project-preview-card project-preview-card--program">
-      <h4>Тренировочная программа для подготовки</h4>
-      <p>Системная подготовка к исполнению трюков: Start → Progress → Trick. План на 14 дней и запись в зал/на катер.</p>
-      <a class="btn-secondary btn" href="{{ url_for('training_program_page') }}">Получить план / Записаться</a>
+    <div class="projects-carousel">
+      <button class="carousel-prev" type="button" aria-label="Прокрутить проекты влево">‹</button>
+      <div class="carousel-track">
+        {% for p in projects_preview %}
+        <div class="project-card">
+          {% if p.cover %}
+          <img src="{{ url_for('static', filename=p.cover) }}" alt="{{ p.name }}" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}" />
+          {% else %}
+          <img src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}" alt="{{ p.name }}" loading="lazy" decoding="async" width="360" height="220" />
+          {% endif %}
+          {% if p.badges %}
+          <p class="project-card__badges">{% for b in p.badges %}<span class="badge">{{ b }}</span>{% if not loop.last %} · {% endif %}{% endfor %}</p>
+          {% endif %}
+          <h4>{{ p.name }}</h4>
+          <p>{{ p.summary }}</p>
+          {% if p.cta_url or p.url %}
+          <a href="{{ p.cta_url or p.url }}" class="btn-secondary">Подробнее</a>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <button class="carousel-next" type="button" aria-label="Прокрутить проекты вправо">›</button>
     </div>
     <p class="projects-more"><a href="{{ url_for('projects_page') }}" class="btn-secondary">Все проекты</a></p>
   </section>
@@ -155,20 +166,28 @@
   </section>
   {% endif %}
 
-  <!-- Последние новости / Блог -->
+  <!-- Последние новости / Блог (карусель) -->
   <section id="blog" class="blog-section">
     <h2>Последние новости</h2>
-    {% if latest_blog_post %}
-    <article class="blog-latest">
-      <h3><a href="{{ url_for('blog.blog_post', slug=latest_blog_post.slug) }}">{{ latest_blog_post.title }}</a></h3>
-      {% if latest_blog_post.get('excerpt') %}
-      <p class="blog-excerpt">{{ latest_blog_post.excerpt }}</p>
-      {% endif %}
-      <p class="blog-more"><a href="{{ url_for('blog.blog_index') }}">Все статьи блога</a></p>
-    </article>
-    {% else %}
-    <p>Скоро здесь появятся новые статьи. <a href="{{ url_for('blog.blog_index') }}">Перейти в блог</a>.</p>
-    {% endif %}
+    <div class="blog-carousel">
+      <button class="carousel-prev" type="button" aria-label="Назад">‹</button>
+      <div class="carousel-track">
+        {% if latest_blog_post %}
+        <article class="blog-card">
+          <h3><a href="{{ url_for('blog.blog_post', slug=latest_blog_post.slug) }}">{{ latest_blog_post.title }}</a></h3>
+          {% if latest_blog_post.get('excerpt') %}
+          <p class="blog-excerpt">{{ latest_blog_post.excerpt }}</p>
+          {% endif %}
+          <p class="blog-more"><a href="{{ url_for('blog.blog_index') }}">Все статьи блога</a></p>
+        </article>
+        {% else %}
+        <div class="blog-card blog-card--placeholder">
+          <p>Скоро здесь появятся новые статьи. <a href="{{ url_for('blog.blog_index') }}">Перейти в блог</a>.</p>
+        </div>
+        {% endif %}
+      </div>
+      <button class="carousel-next" type="button" aria-label="Вперёд">›</button>
+    </div>
   </section>
 
   <section class="reviews-section">

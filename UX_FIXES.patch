@@ -1,0 +1,834 @@
+diff --git a/app/__init__.py b/app/__init__.py
+index 5aa236b6..ee2032b0 100644
+--- a/app/__init__.py
++++ b/app/__init__.py
+@@ -130,7 +130,33 @@ def create_app(config_name="development"):
+     def home():
+         # ╨Т╤А╨╡╨╝╨╡╨╜╨╜╨╛ ╨╛╤В╨║╨╗╤О╤З╨░╨╡╨╝ ╨┐╨╛╨╗╤Г╤З╨╡╨╜╨╕╨╡ ╤Б╨╛╨▒╤Л╤В╨╕╨╣ ╨║╨░╨╗╨╡╨╜╨┤╨░╤А╤П
+         months = {'╨Ш╤О╨╜╤М': [], '╨Ш╤О╨╗╤М': [], '╨Р╨▓╨│╤Г╤Б╤В': [], '╨б╨╡╨╜╤В╤П╨▒╤А╤М': [], '╨Ю╨║╤В╤П╨▒╤А╤М': []}
+-        return render_template('index.html', months=months)
++        # ╨Я╤А╨╛╨╡╨║╤В╤Л ╨┤╨╗╤П ╤Б╨╡╨║╤Ж╨╕╨╕ ╨╜╨░ ╨│╨╗╨░╨▓╨╜╨╛╨╣
++        try:
++            from app.services.showcases import get_project_cards
++            projects_preview = get_project_cards()[:3]
++        except Exception:
++            projects_preview = []
++        # ╨Я╨╛╤Б╨╗╨╡╨┤╨╜╨╕╨╣ ╨┐╨╛╤Б╤В ╨┤╨╗╤П ╨▒╨╗╨╛╨║╨░ ┬л╨Я╨╛╤Б╨╗╨╡╨┤╨╜╨╕╨╡ ╨╜╨╛╨▓╨╛╤Б╤В╨╕┬╗
++        latest_blog_post = None
++        try:
++            from app.services.blog.store import get_latest_post
++            latest_blog_post = get_latest_post(prefer_sheets=True)
++        except Exception:
++            pass
++        # ╨в╨╛╨▓╨░╤А╤Л ╨┤╨╗╤П ╨▓╨╕╤В╤А╨╕╨╜╤Л ╨╜╨░ ╨│╨╗╨░╨▓╨╜╨╛╨╣ (6 ╨║╨░╤А╤В╨╛╤З╨╡╨║)
++        products_preview = []
++        try:
++            from app.routes.shop import get_products_preview
++            products_preview = get_products_preview(6)
++        except Exception:
++            pass
++        return render_template(
++            'index.html',
++            months=months,
++            projects_preview=projects_preview,
++            latest_blog_post=latest_blog_post,
++            products_preview=products_preview,
++        )
+ 
+     @app.route('/favicon.ico')
+     def favicon():
+@@ -450,6 +476,10 @@ def create_app(config_name="development"):
+         jsonld = get_projects_graph()
+         return render_template('projects.html', projects=projects, showcase_graph=jsonld)
+ 
++    @app.route('/training-program', methods=['GET'])
++    def training_program_page():
++        return render_template('training_program.html')
++
+     @app.route('/events', methods=['GET'])
+     def events_page():
+         from app.services.showcases import get_events_schema, get_event_cards
+diff --git a/app/routes/api.py b/app/routes/api.py
+index b51c8f2c..9ed7a715 100644
+--- a/app/routes/api.py
++++ b/app/routes/api.py
+@@ -423,6 +423,42 @@ def api_bookings_create():
+         current_app.logger.exception("╨Э╨╡╨╛╨╢╨╕╨┤╨░╨╜╨╜╨░╤П ╨╛╤И╨╕╨▒╨║╨░ ╨┐╤А╨╕ ╤Б╨╛╨╖╨┤╨░╨╜╨╕╨╕ ╨▒╤А╨╛╨╜╨╕╤А╨╛╨▓╨░╨╜╨╕╤П")
+         return jsonify({'error': '╨Т╨╜╤Г╤В╤А╨╡╨╜╨╜╤П╤П ╨╛╤И╨╕╨▒╨║╨░ ╤Б╨╡╤А╨▓╨╡╤А╨░'}), 500
+ 
++
++@api_bp.route('/lead', methods=['POST'])
++def api_lead():
++    """
++    POST /api/lead тАФ ╨┐╤А╨╕╤С╨╝ ╨╗╨╕╨┤-╨╖╨░╤П╨▓╨╛╨║ (╨в╤А╨╡╨╜╨╡╤А ╨╜╨░ ╨▓╤Л╨╡╨╖╨┤╨╡, ╨Ъ╨╛╨╜╤Б╨░╨╗╤В╨╕╨╜╨│).
++    ╨в╨╡╨╗╨╛: JSON ╤Б ╨┐╨╛╨╗╨╡╨╝ type (coach_trip | consulting) ╨╕ ╨╛╤Б╤В╨░╨╗╤М╨╜╤Л╨╝╨╕ ╨┐╨╛╨╗╤П╨╝╨╕ ╤Д╨╛╤А╨╝╤Л.
++    """
++    if not request.is_json:
++        return jsonify({'error': '╨Ю╨╢╨╕╨┤╨░╨╡╤В╤Б╤П JSON'}), 400
++    try:
++        data = request.get_json() or {}
++        lead_type = (data.get('type') or '').strip()
++        if lead_type not in ('coach_trip', 'consulting', 'camp'):
++            return jsonify({'error': 'type ╨┤╨╛╨╗╨╢╨╡╨╜ ╨▒╤Л╤В╤М coach_trip, consulting ╨╕╨╗╨╕ camp'}), 400
++        contact = (data.get('contact') or '').strip()
++        if not contact:
++            return jsonify({'error': '╨Я╨╛╨╗╨╡ contact ╨╛╨▒╤П╨╖╨░╤В╨╡╨╗╤М╨╜╨╛'}), 400
++        current_app.logger.info("Lead received: type=%s, data=%s", lead_type, data)
++        try:
++            spreadsheet_id = current_app.config.get('SPREADSHEET_ID')
++            if spreadsheet_id:
++                if lead_type == 'coach_trip':
++                    row = [datetime.utcnow().isoformat(), lead_type, data.get('location', ''), data.get('dates', ''), data.get('format', ''), data.get('level', ''), data.get('equipment', ''), contact]
++                elif lead_type == 'camp':
++                    row = [datetime.utcnow().isoformat(), lead_type, data.get('dates', ''), data.get('level', ''), data.get('goal', ''), data.get('budget', ''), contact]
++                else:
++                    row = [datetime.utcnow().isoformat(), lead_type, data.get('topic', ''), data.get('task', ''), contact]
++                append_record(spreadsheet_id, 'Leads', row)
++        except Exception as e:
++            current_app.logger.warning("Lead sheet write failed (non-blocking): %s", e)
++        return jsonify({'ok': True, 'message': '╨Ч╨░╤П╨▓╨║╨░ ╨┐╤А╨╕╨╜╤П╤В╨░'}), 201
++    except Exception as e:
++        current_app.logger.exception("Lead submit error")
++        return jsonify({'error': '╨Ю╤И╨╕╨▒╨║╨░ ╨┐╤А╨╕ ╨╛╤В╨┐╤А╨░╨▓╨║╨╡ ╨╖╨░╤П╨▓╨║╨╕'}), 500
++
++
+ @api_ns.route('/book')
+ class BookResource(Resource):
+     @api_ns.expect(booking_model)
+diff --git a/app/routes/shop.py b/app/routes/shop.py
+index f271232e..daf4110f 100644
+--- a/app/routes/shop.py
++++ b/app/routes/shop.py
+@@ -17,7 +17,7 @@ PRODUCTS = {
+         'image': 'images/balans_trick_trening.jpg'
+     },
+     'poncho': {
+-        'title': '╨Я╨╛╨╜╤З╨╛ ╨┤╨╗╤П ╤Б╤С╤А╤Д╨╕╨╜╨│╨░',
++        'title': '╨Я╨╛╨╜╤З╨╛ тАФ ╨Ъ╨╛╨╝╨▒╨╡╨╖ (╨┐╨╡╤А╨╡╨╛╨┤╨╡╨▓╨░╨╗╨║╨░)',
+         'price': '4 500 тВ╜',
+         'description': '╨г╨┤╨╛╨▒╨╜╨╛╨╡ ╤Б╨╝╨╡╨╜╨╜╨╛╨╡ ╨┐╨╛╨╜╤З╨╛ тАФ ╨▒╤Л╤Б╤В╤А╨╛ ╨╜╨░╨┤╨╡╤В╤М/╤Б╨╜╤П╤В╤М ╨╜╨░ ╨┐╨╗╤П╨╢╨╡, ╤Б╨╛╤Е╤А╨░╨╜╤П╨╡╤В ╤В╨╡╨┐╨╗╨╛.',
+         'image': 'images/01.jpg'
+@@ -39,9 +39,41 @@ PRODUCTS = {
+         'price': '12 500 тВ╜',
+         'description': '╨Я╤А╨╛╤Д╨╡╤Б╤Б╨╕╨╛╨╜╨░╨╗╤М╨╜╨░╤П ╨┤╨╛╤Б╨║╨░ ╤Б ╤Г╨╗╤Г╤З╤И╨╡╨╜╨╜╨╛╨╣ ╤Г╤Б╤В╨╛╨╣╤З╨╕╨▓╨╛╤Б╤В╤М╤О ╨╕ ╨┤╨╛╨╗╨│╨╛╨▓╨╡╤З╨╜╨╛╤Б╤В╤М╤О.',
+         'image': 'images/02.jpg'
++    },
++    'balance-board-newstyle': {
++        'title': '╨С╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤ NewStyle',
++        'price': '8 900 тВ╜',
++        'description': '╨б╤В╨╕╨╗╤М╨╜╨░╤П ╨╝╨╛╨┤╨╡╨╗╤М ╨┤╨╗╤П ╤В╤А╨╡╨╜╨╕╤А╨╛╨▓╨╛╨║ ╨╕ ╤В╤А╤О╨║╨╛╨▓. ╨Я╨╛╨┤╤Е╨╛╨┤╨╕╤В ╨┤╨╗╤П ╨┤╨╛╨╝╨░ ╨╕ ╨╖╨░╨╗╨░.',
++        'image': 'images/balans_trick_trening1.jpg'
++    },
++    'certificate-10': {
++        'title': '╨б╨╡╤А╤В╨╕╤Д╨╕╨║╨░╤В ╨╜╨░ 10 ╨╖╨░╨╜╤П╤В╨╕╨╣',
++        'price': '30 000 тВ╜',
++        'description': '╨Ш╨┤╨╡╨░╨╗╤М╨╜╤Л╨╣ ╨┐╨╛╨┤╨░╤А╨╛╨║ ╨┤╨╗╤П ╨┐╨╛╨║╨╗╨╛╨╜╨╜╨╕╨║╨░ ╨▓╨╡╨╣╨║╨▒╨╛╤А╨┤╨╕╨╜╨│╨░ ╨╕╨╗╨╕ ╨▓╨╡╨╣╨║╤Б╨╡╤А╤Д╨╕╨╜╨│╨░ тАФ ╨┐╤Г╤В╤М ╨║ ╤Г╨▓╨╡╤А╨╡╨╜╨╜╨╛╨╝╤Г ╤Г╤А╨╛╨▓╨╜╤О ┬л╨░╨╝╨░╤В╨╛╤А┬╗. ╨Ъ╨░╨╢╨┤╨╛╨╡ ╨╖╨░╨╜╤П╤В╨╕╨╡ ╤Б╤В╤А╨╛╨╕╤В╤Б╤П ╨╜╨░ ╨┐╤А╨╡╨┤╤Л╨┤╤Г╤Й╨╡╨╝ ╨╛╨┐╤Л╤В╨╡: ╨┐╤А╨╛╨│╤А╨╡╤Б╤Б ╤Д╨╕╨║╤Б╨╕╤А╤Г╨╡╤В╤Б╤П ╨╕ ╨╖╨░╨║╤А╨╡╨┐╨╗╤П╨╡╤В╤Б╤П.',
++        'image': 'images/hero-wakesurf.png'
+     }
+ }
+ 
++# ╨Я╨╛╤А╤П╨┤╨╛╨║ slug'╨╛╨▓ ╨┤╨╗╤П ╨▓╨╕╤В╤А╨╕╨╜╤Л ╨╜╨░ ╨│╨╗╨░╨▓╨╜╨╛╨╣ (6 ╨╛╨▒╤П╨╖╨░╤В╨╡╨╗╤М╨╜╤Л╤Е ╨║╨░╤А╤В╨╛╤З╨╡╨║)
++PRODUCTS_PREVIEW_SLUGS = [
++    'balance-board',      # ╨С╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤ MyWave
++    'balance-board-big',  # ╨С╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤ Big
++    'balance-board-newstyle',
++    'certificate-10',
++    'poncho',             # ╨Я╨╛╨╜╤З╨╛ тАФ ╨Ъ╨╛╨╝╨▒╨╡╨╖
++    'wakesurfpolia',      # ╨Э╨░╤Б╤В╨╛╨╗╤М╨╜╨░╤П ╨╕╨│╤А╨░
++]
++
++
++def get_products_preview(limit=6):
++    """╨б╨┐╨╕╤Б╨╛╨║ ╤В╨╛╨▓╨░╤А╨╛╨▓ ╨┤╨╗╤П ╨▒╨╗╨╛╨║╨░ ┬л╨в╨╛╨▓╨░╤А╤Л┬╗ ╨╜╨░ ╨│╨╗╨░╨▓╨╜╨╛╨╣."""
++    out = []
++    for slug in PRODUCTS_PREVIEW_SLUGS[:limit]:
++        p = PRODUCTS.get(slug)
++        if p:
++            out.append({'slug': slug, **p})
++    return out
++
+ 
+ @shop_bp.route('/', methods=['GET'])
+ def shop_index():
+diff --git a/static/css/style.css b/static/css/style.css
+index 962b1fde..2852be24 100644
+--- a/static/css/style.css
++++ b/static/css/style.css
+@@ -413,7 +413,7 @@ h1, h2, h3, h4, p {
+ }
+ 
+ /* ╨Ю╤В╤Б╤В╤Г╨┐╤Л ╨┤╨╗╤П ╤Б╨╡╨║╤Ж╨╕╨╣ */
+-.services-section, .store-section, .events-section, .blog-section, .contacts-section, .chat-section {
++.services-section, .store-section, .projects-section, .events-section, .blog-section, .contacts-section, .chat-section {
+   background: #fff;
+   margin: 3em auto;
+   padding: 1em;
+@@ -424,6 +424,7 @@ h1, h2, h3, h4, p {
+ /* ╨ж╨╡╨╜╤В╤А╨╕╤А╨╛╨▓╨░╨╜╨╕╨╡ ╨╖╨░╨│╨╛╨╗╨╛╨▓╨║╨╛╨▓ */
+ .services-section h2,
+ .store-section h2,
++.projects-section h2,
+ .events-section h2,
+ .blog-section h2,
+ .reviews-section h2 {
+@@ -483,6 +484,49 @@ h1, h2, h3, h4, p {
+ .service-card-media-btn.next { right: 10px; }
+ .service-card-media-btn:hover { background: rgba(0, 0, 0, 0.6); }
+ 
++/* ╨Я╤А╨╛╨╡╨║╤В╤Л ╨╜╨░ ╨│╨╗╨░╨▓╨╜╨╛╨╣ */
++.projects-preview-list {
++  list-style: none;
++  padding: 0;
++  margin: 0 0 1em;
++  display: grid;
++  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
++  gap: 1.5em;
++}
++.project-preview-card {
++  background: #fafafa;
++  padding: 1em;
++  border-radius: 4px;
++  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
++  transition: transform 0.3s ease, box-shadow 0.3s ease;
++}
++.project-preview-card:hover {
++  transform: translateY(-5px);
++  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
++}
++.project-preview-card img {
++  width: 100%;
++  height: 180px;
++  object-fit: cover;
++  border-radius: 4px;
++  margin-bottom: 0.75em;
++}
++.project-preview-card h4 { margin: 0 0 0.5em; font-size: 1.1em; }
++.project-preview-card p { margin: 0 0 0.75em; font-size: 0.95em; color: #555; }
++.projects-more, .store-more { text-align: center; margin-top: 1em; }
++.blog-latest { margin: 0 0 1em; }
++.blog-excerpt { color: #555; margin: 0.5em 0; }
++.blog-more { margin-top: 0.75em; }
++
++/* ╨в╤А╨╡╨╜╨╕╤А╨╛╨▓╨╛╤З╨╜╨░╤П ╨┐╤А╨╛╨│╤А╨░╨╝╨╝╨░ (╤Б╤В╤А╨░╨╜╨╕╤Ж╨░ /training-program) */
++.training-program-section { max-width: 900px; margin: 2em auto; padding: 1em; }
++.training-program-section .lead { margin-bottom: 1.5em; color: #555; }
++.training-levels { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1em; margin: 1.5em 0; }
++.training-levels .level-card { background: #fafafa; padding: 1em; border-radius: 4px; }
++.training-levels .level-card h3 { margin: 0 0 0.5em; font-size: 1.1em; }
++.training-ctas { display: flex; flex-wrap: wrap; gap: 0.75em; margin-top: 1.5em; }
++.project-preview-card--program { margin-top: 0.5em; }
++
+ /* Events month collapse UI */
+ .events-controls {
+   display: flex;
+diff --git a/static/js/booking.js b/static/js/booking.js
+index 5d05c1a0..a4babcaa 100644
+--- a/static/js/booking.js
++++ b/static/js/booking.js
+@@ -38,7 +38,7 @@ function initializeBooking() {
+     contactModal: document.getElementById("modalContact"),
+     confirmModal: document.getElementById("modalConfirm"),
+     modalCloseButtons: document.querySelectorAll(".close-modal"),
+-    openBookingButtons: document.querySelectorAll("#openBookingBtn, .book-now, .btn-book"),
++    openBookingButtons: document.querySelectorAll("[data-modal='booking']"),
+     toast: document.getElementById("toast"),
+     stepIndicator: document.getElementById("step-indicator")
+   };
+@@ -621,7 +621,7 @@ function initializeBooking() {
+       if (response.ok) {
+         console.log("тЬЕ ╨г╨б╨Я╨Х╨и╨Э╨Ю╨Х ╨С╨а╨Ю╨Э╨Ш╨а╨Ю╨Т╨Р╨Э╨Ш╨Х! ╨б╤В╨░╤В╤Г╤Б 200-299");
+         console.log("   ╨а╨╡╨╖╤Г╨╗╤М╤В╨░╤В:", result);
+-        
++        hideAllModals();
+         // ╨Я╨╛╨║╨░╨╖╤Л╨▓╨░╨╡╨╝ ╨╗╨╛╨║╨░╨╗╤М╨╜╤Л╨╣ success-╨╝╨╛╨┤╨░╨╗ ╨▓╨╝╨╡╤Б╤В╨╛ ╨┐╨╡╤А╨╡╤Е╨╛╨┤╨░ ╨╜╨░ ╨▓╨╜╨╡╤И╨╜╤О╤О ╤Б╤В╤А╨░╨╜╨╕╤Ж╤Г
+         try {
+           // ╨з╨╡╨╗╨╛╨▓╨╡╨║╨╛-╨┐╨╛╨╜╤П╤В╨╜╤Л╨╡ ╨╜╨░╨╖╨▓╨░╨╜╨╕╤П ╤Г╤Б╨╗╤Г╨│
+@@ -901,10 +901,12 @@ function initializeBooking() {
+         return;
+       }
+ 
+-      // ╨г╤Б╤В╨░╨╜╨░╨▓╨╗╨╕╨▓╨░╨╡╨╝ ╤В╨╡╨║╤Г╤Й╨╕╨╣ ╤Б╨╡╤А╨▓╨╕╤Б (╨╡╤Б╨╗╨╕ ╨╡╤Б╤В╤М)
++      // ╨г╤Б╤В╨░╨╜╨░╨▓╨╗╨╕╨▓╨░╨╡╨╝ ╤В╨╡╨║╤Г╤Й╨╕╨╣ ╤Б╨╡╤А╨▓╨╕╤Б (╨╡╤Б╨╗╨╕ ╨╡╤Б╤В╤М) ╨╕ ╨▒╨╡╨╣╨┤╨╢ ╨▓ ╨╝╨╛╨┤╨░╨╗╨║╨╡
+       if (serviceType) {
+         currentService = serviceType;
+         console.log(`[booking.js] ╨г╤Б╤В╨░╨╜╨╛╨▓╨╗╨╡╨╜ ╤В╨╕╨┐ ╤Б╨╡╤А╨▓╨╕╤Б╨░: ${currentService}`);
++        const badge = document.getElementById("bookingServiceBadge");
++        if (badge) badge.textContent = serviceType === "gym" ? "╨Ч╨░╨╗" : serviceType === "boat" ? "╨Ъ╨░╤В╨╡╤А" : serviceType;
+       }
+ 
+       // ╨Э╨░╤Б╤В╤А╨░╨╕╨▓╨░╨╡╨╝ ╨║╨░╨╗╨╡╨╜╨┤╨░╤А╤М ╨▓ ╨╖╨░╨▓╨╕╤Б╨╕╨╝╨╛╤Б╤В╨╕ ╨╛╤В ╤В╨╕╨┐╨░ ╤Г╤Б╨╗╤Г╨│╨╕
+@@ -921,8 +923,8 @@ function initializeBooking() {
+         if (UI.stepIndicator) UI.stepIndicator.textContent = '╨и╨░╨│ 1/4 - ╨Т╤Л╨▒╨╛╤А ╨┤╨░╤В╤Л ╨║╨░╤В╨░╨╜╨╕╤П';
+       }
+ 
+-      // ╨Ю╨┐╤А╨╡╨┤╨╡╨╗╤П╨╡╨╝ ╤Ж╨╡╨╗╨╡╨▓╨╛╨╡ ╨╝╨╛╨┤╨░╨╗╤М╨╜╨╛╨╡ ╨╛╨║╨╜╨╛: ╨╗╨╕╨▒╨╛ ╨┐╨╛ id ╨╕╨╖ data-modal, ╨╗╨╕╨▒╨╛ ╨┤╨╡╤Д╨╛╨╗╤В╨╜╨╛╨╡ ╨║╨░╨╗╨╡╨╜╨┤╨░╤А╨╜╨╛╨╡ ╨╝╨╛╨┤╨░╨╗╤М╨╜╨╛╨╡ ╨╛╨║╨╜╨╛
+-      const targetModal = modalId ? document.getElementById(modalId) : UI.calendarModal;
++      // data-modal="booking" тЖТ ╨╛╤В╨║╤А╤Л╨▓╨░╨╡╨╝ ╨┐╨╡╤А╨▓╤Л╨╣ ╤И╨░╨│ (╨║╨░╨╗╨╡╨╜╨┤╨░╤А╤М); ╨╕╨╜╨░╤З╨╡ тАФ ╨╝╨╛╨┤╨░╨╗╨║╨░ ╨┐╨╛ id
++      const targetModal = (modalId === 'booking' || !modalId) ? UI.calendarModal : document.getElementById(modalId);
+       console.log('[booking.js] ЁЯУН ╨Я╨╛╨╕╤Б╨║ ╨╝╨╛╨┤╨░╨╗╨╕:', {
+         modalId: modalId,
+         targetModal: targetModal ? targetModal.id : 'NOT FOUND'
+@@ -958,8 +960,11 @@ function initializeBooking() {
+     });
+   }
+ 
+-  if (UI.confirmContactBtn) {
+-    UI.confirmContactBtn.addEventListener("click", () => {
++  const bookingContactForm = document.getElementById("bookingContactForm");
++  if (bookingContactForm) {
++    bookingContactForm.addEventListener("submit", (e) => {
++      e.preventDefault();
++      if (!UI.bookingName || !UI.bookingPhone) return;
+       if (!UI.bookingName.value.trim() || !UI.bookingPhone.value.trim()) {
+         showToast('тЭМ ╨Ч╨░╨┐╨╛╨╗╨╜╨╕╤В╨╡ ╨▓╤Б╨╡ ╨┐╨╛╨╗╤П');
+         return;
+@@ -968,14 +973,9 @@ function initializeBooking() {
+         showToast('тЭМ ╨Т╨▓╨╡╨┤╨╕╤В╨╡ ╨║╨╛╤А╤А╨╡╨║╤В╨╜╤Л╨╣ ╨╜╨╛╨╝╨╡╤А ╤В╨╡╨╗╨╡╤Д╨╛╨╜╨░');
+         return;
+       }
+-      showModal(UI.confirmModal);
+-      // ╨Я╨╡╤А╨╡╤Е╨╛╨┤ ╨║ ╤И╨░╨│╤Г ╨┐╨╛╨┤╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╕╤П + ╤Б╨║╤А╨╛╨╗╨╗
+-      setTimeout(() => {
+-        UI.confirmModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+-      }, 100);
++      submitBooking();
+     });
+   }
+-
+   if (UI.finalConfirmBtn) {
+     UI.finalConfirmBtn.addEventListener("click", () => {
+       submitBooking();
+@@ -1148,7 +1148,8 @@ window.addEventListener('load', () => {
+ });
+ 
+ function openModal() {
+-  document.getElementById("modalCalendar").classList.remove("hidden");
++  const el = document.getElementById("modalCalendar");
++  if (el) el.classList.remove("hidden");
+ }
+ 
+ // ╨Я╤А╨╕╨╝╨╡╤А: ╨┐╨╛╤Б╨╗╨╡ ╨▓╤Л╨▒╨╛╤А╨░ ╨┤╨░╤В╤Л ╨╕ ╨▓╤А╨╡╨╝╨╡╨╜╨╕
+diff --git a/static/js/lead-forms.js b/static/js/lead-forms.js
+new file mode 100644
+index 00000000..71b85cd4
+--- /dev/null
++++ b/static/js/lead-forms.js
+@@ -0,0 +1,87 @@
++/**
++ * ╨Ы╨╕╨┤-╤Д╨╛╤А╨╝╤Л: ╨в╤А╨╡╨╜╨╡╤А ╨╜╨░ ╨▓╤Л╨╡╨╖╨┤╨╡ (data-lead="coach-trip"), ╨Ъ╨╛╨╜╤Б╨░╨╗╤В╨╕╨╜╨│ (data-lead="consulting").
++ * ╨Ю╤В╨║╤А╤Л╤В╨╕╨╡ ╨╝╨╛╨┤╨░╨╗╨║╨╕ ╨┐╨╛ ╨║╨╗╨╕╨║╤Г, ╨╛╤В╨┐╤А╨░╨▓╨║╨░ POST /api/lead, ╨┐╨╛╨║╨░╨╖ success.
++ */
++(function () {
++  const modalIds = { 'coach-trip': 'lead-modal-coach-trip', 'consulting': 'lead-modal-consulting', 'camp': 'lead-modal-camp' };
++  const successIds = { 'coach-trip': 'lead-coach-success', 'consulting': 'lead-consulting-success', 'camp': 'lead-camp-success' };
++
++  function hideLeadModals() {
++    ['lead-modal-camp', 'lead-modal-coach-trip', 'lead-modal-consulting'].forEach(function (id) {
++      var m = document.getElementById(id);
++      if (m) { m.classList.add('hidden'); m.style.display = 'none'; }
++    });
++    document.body.style.overflow = '';
++  }
++
++  function showLeadModal(id) {
++    hideLeadModals();
++    const el = document.getElementById(id);
++    if (el) {
++      el.classList.remove('hidden');
++      el.style.display = 'flex';
++      document.body.style.overflow = 'hidden';
++    }
++  }
++
++  document.addEventListener('DOMContentLoaded', function () {
++    document.querySelectorAll('[data-lead]').forEach(function (btn) {
++      var lead = btn.getAttribute('data-lead');
++      if (!modalIds[lead]) return;
++      btn.addEventListener('click', function (e) {
++        e.preventDefault();
++        showLeadModal(modalIds[lead]);
++      });
++    });
++
++    document.querySelectorAll('.lead-modal-close').forEach(function (btn) {
++      btn.addEventListener('click', hideLeadModals);
++    });
++    document.querySelectorAll('#lead-modal-camp, #lead-modal-coach-trip, #lead-modal-consulting').forEach(function (modal) {
++      modal.addEventListener('click', function (e) {
++        if (e.target === modal) hideLeadModals();
++      });
++    });
++
++    document.getElementById('lead-form-coach-trip') && document.getElementById('lead-form-coach-trip').addEventListener('submit', function (e) {
++      e.preventDefault();
++      var form = e.target;
++      var data = { type: 'coach_trip', location: form.location.value, dates: form.dates.value, format: form.format.value, level: form.level.value, equipment: form.equipment.value, contact: form.contact.value };
++      sendLead(data, 'coach-trip');
++    });
++    document.getElementById('lead-form-consulting') && document.getElementById('lead-form-consulting').addEventListener('submit', function (e) {
++      e.preventDefault();
++      var form = e.target;
++      var data = { type: 'consulting', topic: form.topic.value, task: form.task.value, contact: form.contact.value };
++      sendLead(data, 'consulting');
++    });
++    document.getElementById('lead-form-camp') && document.getElementById('lead-form-camp').addEventListener('submit', function (e) {
++      e.preventDefault();
++      var form = e.target;
++      var data = { type: 'camp', dates: form.dates.value, level: form.level.value, goal: form.goal.value, budget: form.budget.value, contact: form.contact.value };
++      sendLead(data, 'camp');
++    });
++
++    function sendLead(data, leadKey) {
++      var formEl = (leadKey === 'coach-trip' ? document.getElementById('lead-form-coach-trip') : leadKey === 'consulting' ? document.getElementById('lead-form-consulting') : document.getElementById('lead-form-camp'));
++      var successEl = document.getElementById(successIds[leadKey]);
++      var modalEl = document.getElementById(modalIds[leadKey]);
++      var csrfEl = document.querySelector('meta[name="csrf-token"]');
++      var csrf = csrfEl ? csrfEl.getAttribute('content') : '';
++      fetch('/api/lead', {
++        method: 'POST',
++        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
++        credentials: 'same-origin',
++        body: JSON.stringify(data)
++      }).then(function (r) {
++        if (!r.ok) return r.json().then(function (j) { throw new Error(j.error || '╨Ю╤И╨╕╨▒╨║╨░ ╨╛╤В╨┐╤А╨░╨▓╨║╨╕'); });
++        return r.json();
++      }).then(function () {
++        if (formEl) formEl.classList.add('hidden');
++        if (successEl) { successEl.classList.remove('hidden'); successEl.textContent = '╨Ч╨░╤П╨▓╨║╨░ ╨╛╤В╨┐╤А╨░╨▓╨╗╨╡╨╜╨░. ╨Ь╤Л ╤Б╨▓╤П╨╢╨╡╨╝╤Б╤П ╤Б ╨▓╨░╨╝╨╕ ╨▓ ╨▒╨╗╨╕╨╢╨░╨╣╤И╨╡╨╡ ╨▓╤А╨╡╨╝╤П.'; }
++      }).catch(function (err) {
++        alert(err.message || '╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨╛╤В╨┐╤А╨░╨▓╨╕╤В╤М ╨╖╨░╤П╨▓╨║╤Г.');
++      });
++    }
++  });
++})();
+diff --git a/templates/base.html b/templates/base.html
+index 1d8b3921..4ae620d7 100644
+--- a/templates/base.html
++++ b/templates/base.html
+@@ -104,11 +104,13 @@
+       </div>
+       <nav class="site-nav" id="site-nav">
+         <ul>
+-          <li><a href="#hero">╨У╨╗╨░╨▓╨╜╨░╤П</a></li>
+-          <li><a href="#services">╨г╤Б╨╗╤Г╨│╨╕</a></li>
+-          <li><a href="#events">╨Ь╨╡╤А╨╛╨┐╤А╨╕╤П╤В╨╕╤П</a></li>
+-          <li><a href="#blog">╨С╨╗╨╛╨│</a></li>
+-          <li><a href="#contacts">╨Ъ╨╛╨╜╤В╨░╨║╤В╤Л</a></li>
++          <li><a href="{{ url_for('index') }}#hero">╨У╨╗╨░╨▓╨╜╨░╤П</a></li>
++          <li><a href="{{ url_for('index') }}#services">╨г╤Б╨╗╤Г╨│╨╕</a></li>
++          <li><a href="{{ url_for('index') }}#store">╨в╨╛╨▓╨░╤А╤Л</a></li>
++          <li><a href="{{ url_for('index') }}#projects">╨Я╤А╨╛╨╡╨║╤В╤Л</a></li>
++          <li><a href="{{ url_for('index') }}#events">╨Ь╨╡╤А╨╛╨┐╤А╨╕╤П╤В╨╕╤П</a></li>
++          <li><a href="{{ url_for('index') }}#blog">╨С╨╗╨╛╨│</a></li>
++          <li><a href="{{ url_for('index') }}#contacts">╨Ъ╨╛╨╜╤В╨░╨║╤В╤Л</a></li>
+         </ul>
+       </nav>
+       <button id="dark-mode-toggle" class="theme-toggle" aria-label="╨Я╨╡╤А╨╡╨║╨╗╤О╤З╨╕╤В╤М ╤В╨╡╨╝╤Г">ЁЯМЩ</button>
+@@ -199,6 +201,7 @@
+ 
+   <!-- booking.js ╨┤╨╛╨╗╨╢╨╡╨╜ ╨▒╤Л╤В╤М ╨┐╨╛╤Б╨╗╨╡ ╨▒╨╗╨╛╨║╨░ content ╨╕ ╨▓╤Б╨╡╤Е ╨╝╨╛╨┤╨░╨╗╨╛╨║ -->
+   <script defer src="{{ url_for('static', filename='js/booking.js') }}"></script>
++  <script defer src="{{ url_for('static', filename='js/lead-forms.js') }}"></script>
+ 
+   <!-- ╨Ъ╨╛╨╜╤В╨╡╨╣╨╜╨╡╤А ╨┤╨╗╤П success-view partial (╨┐╨╛╨┤╨│╤А╤Г╨╢╨░╨╡╤В╤Б╤П ╨┤╨╕╨╜╨░╨╝╨╕╤З╨╡╤Б╨║╨╕) -->
+   <div id="success-modal" class="modal success-modal hidden" aria-hidden="true">
+diff --git a/templates/index.html b/templates/index.html
+index cc749b85..00072d64 100644
+--- a/templates/index.html
++++ b/templates/index.html
+@@ -4,13 +4,13 @@
+ 
+ {% block content %}
+   <!-- ╨У╨╡╤А╨╛╨╣-╨▒╨╗╨╛╨║ -->
+-  <section class="hero-section relative-section">
++  <section id="hero" class="hero-section relative-section">
+     <img src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}" alt="╨Т╨╡╨╣╨║╤Б╨╡╤А╤Д╨╕╨╜╨│ ╨╜╨░ ╨▓╨╛╨╗╨╜╨╡" class="hero-bg hero-bg-cover hero-bg-light" loading="lazy" />
+     <img src="{{ url_for('static', filename='images/hero-wakesurf-dark.webp') }}" alt="╨Т╨╡╨╣╨║╤Б╨╡╤А╤Д╨╕╨╜╨│ ╨╜╨░ ╨▓╨╛╨╗╨╜╨╡ (╤В╤С╨╝╨╜╨░╤П ╤В╨╡╨╝╨░)" class="hero-bg hero-bg-cover hero-bg-dark" loading="lazy" />
+     <div class="hero-content center-padding hero-content-relative">
+       <h1 class="hero-title">MyWave</h1>
+       <p class="hero-subtitle">╨Ч╨░╨┐╨╕╤И╨╕╤В╨╡╤Б╤М ╨╜╨░ ╨╖╨░╨╜╤П╤В╨╕╤П ╨╕ ╨╛╤В╨║╤А╨╛╨╣╤В╨╡ ╨┤╨╗╤П ╤Б╨╡╨▒╤П ╨╝╨╕╤А ╨╜╨╛╨▓╤Л╤Е ╨▓╨╛╨╖╨╝╨╛╨╢╨╜╨╛╤Б╤В╨╡╨╣!</p>
+-      <button class="btn-primary book-now" id="openBookingBtn" data-service="gym">╨Ч╨░╨┐╨╕╤Б╨░╤В╤М╤Б╤П</button>
++      <button class="btn-primary book-now" id="openBookingBtn" data-service="gym" data-modal="booking">╨Ч╨░╨┐╨╕╤Б╨░╤В╤М╤Б╤П</button>
+     </div>
+   </section>
+ 
+@@ -43,53 +43,90 @@
+           <h4>╨в╤А╨╡╨╜╨╕╤А╨╛╨▓╨║╨░</h4>
+           <p>╨в╤А╨╡╨╜╨╕╤А╨╛╨▓╨║╨░ ╨╜╨░ ╨░╨▓╤В╨╛╤А╤Б╨║╨╕╤Е ╤В╤А╨╡╨╜╨░╨╢╤С╤А╨░╤Е ╨┐╨╛ ╤Г╨╜╨╕╨║╨░╨╗╤М╨╜╨╛╨╣ ╨╝╨╡╤В╨╛╨┤╨╕╨║╨╡ ╨▓╨╡╨╣╨║╤Б╨╡╤А╤Д╨╕╨╜╨│╨░. ╨а╨░╨╖╨▓╨╕╨▓╨░╨╡╨╝ ╨▒╨░╨╗╨░╨╜╤Б, ╨║╨╛╨╛╤А╨┤╨╕╨╜╨░╤Ж╨╕╤О, ╨▒╨╕╨╛╨╝╨╡╤Е╨░╨╜╨╕╨║╤Г ╨╕ ╨╜╨╡╨╣╤А╨╛╨╜╨╜╤Л╨╡ ╤Б╨▓╤П╨╖╨╕, ╤З╤В╨╛╨▒╤Л ╨▓╤Л ╤Г╨▓╨╡╤А╨╡╨╜╨╜╨╛ ╨╕ ╤Н╤Д╤Д╨╡╨║╤В╨╜╨╛ ╨▓╤Л╨┐╨╛╨╗╨╜╤П╨╗╨╕ ╤В╤А╤О╨║╨╕.</p>
+           <p>╨ж╨╡╨╜╨░: 3500 ╤А╤Г╨▒╨╗╨╡╨╣</p>
+-          <button class="btn-secondary btn-book" data-service="gym">╨Я╨╛╨┤╤А╨╛╨▒╨╜╨╡╨╡ / ╨Ч╨░╨┐╨╕╤Б╨░╤В╤М╤Б╤П</button>
++          <button class="btn-secondary btn-book" data-service="gym" data-modal="booking">╨Я╨╛╨┤╤А╨╛╨▒╨╜╨╡╨╡ / ╨Ч╨░╨┐╨╕╤Б╨░╤В╤М╤Б╤П</button>
+         </div>
+ 
+         <div class="service-card" id="boat-card">
+           <h4>╨Ч╨░╨┐╨╕╤Б╤М ╨╜╨░ ╨║╨░╤В╨╡╤А</h4>
+           <p>╨в╤А╨╡╨╜╨╕╤А╨╛╨▓╨║╨░ ╨╖╨░ ╨║╨░╤В╨╡╤А╨╛╨╝ ╤Б ╤В╤А╨╡╨╜╨╡╤А╨╛╨╝ (30 ╨╝╨╕╨╜╤Г╤В)</p>
+           <p>╨ж╨╡╨╜╨░: 10 000 ╤А╤Г╨▒╨╗╨╡╨╣</p>
+-          <button class="btn-secondary btn-book" data-service="boat">╨Я╨╛╨┤╤А╨╛╨▒╨╜╨╡╨╡ / ╨Ч╨░╨┐╨╕╤Б╨░╤В╤М╤Б╤П</button>
++          <button class="btn-secondary btn-book" data-service="boat" data-modal="booking">╨Я╨╛╨┤╤А╨╛╨▒╨╜╨╡╨╡ / ╨Ч╨░╨┐╨╕╤Б╨░╤В╤М╤Б╤П</button>
+         </div>
+ 
+         <div class="service-card">
+           <h4>Wake Discovery</h4>
+           <p>╨Ъ╨╛╤А╨╛╤В╨║╨░╤П ╨╛╨╖╨╜╨░╨║╨╛╨╝╨╕╤В╨╡╨╗╤М╨╜╨░╤П ╤Б╨╡╤Б╤Б╨╕╤П ╨┤╨╗╤П ╨╜╨╛╨▓╨╕╤З╨║╨╛╨▓ ╤Б ╨╕╨╜╤Б╤В╤А╤Г╨║╤В╨╛╤А╨╛╨╝. ╨Ь╨╛╨╢╨╜╨╛ ╨╛╤В╨║╤А╤Л╤В╤М ╨║╨░╨╗╤М╨║╤Г╨╗╤П╤В╨╛╤А ╨┤╨╗╤П ╤А╨░╤Б╤З╤С╤В╨░ ╤В╤Г╤А╨░.</p>
+           <p>╨ж╨╡╨╜╨░: 2500 ╤А╤Г╨▒╨╗╨╡╨╣</p>
+-          <button class="btn-secondary btn-book" data-service="boat">╨Я╨╛╨┤╤А╨╛╨▒╨╜╨╡╨╡ / ╨Ъ╨░╨╗╤М╨║╤Г╨╗╤П╤В╨╛╤А</button>
++          <button class="btn-secondary btn-book" data-service="boat" data-modal="booking">╨Я╨╛╨┤╤А╨╛╨▒╨╜╨╡╨╡ / ╨Ъ╨░╨╗╤М╨║╤Г╨╗╤П╤В╨╛╤А</button>
+         </div>
+ 
+         <div class="service-card">
+           <h4>Wake Camp</h4>
+-          <p>╨Ш╨╜╤В╨╡╨╜╤Б╨╕╨▓╨╜╤Л╨╣ ╨╗╨░╨│╨╡╤А╤М ╨┤╨╗╤П ╨┐╨╛╤Б╤В╨╛╤П╨╜╨╜╨╛╨╣ ╤А╨░╨▒╨╛╤В╤Л ╨╜╨░╨┤ ╤В╨╡╤Е╨╜╨╕╨║╨╛╨╣ ╨╕ ╤Д╨╕╨╖╨╕╤З╨╡╤З╤Б╨║╨╛╨╣ ╨┐╨╛╨┤╨│╨╛╤В╨╛╨▓╨║╨╛╨╣.</p>
+-          <p>╨ж╨╡╨╜╨░: ╨╛╤В 15 000 ╤А╤Г╨▒╨╗╨╡╨╣</p>
+-          <button class="btn-secondary btn-book" data-service="boat">╨Я╨╛╨┤╤А╨╛╨▒╨╜╨╡╨╡ / ╨Ч╨░╨┐╨╕╤Б╨░╤В╤М╤Б╤П</button>
++          <p>╨Ш╨╜╤В╨╡╨╜╤Б╨╕╨▓╨╜╤Л╨╣ ╨╗╨░╨│╨╡╤А╤М ╨┤╨╗╤П ╨┐╨╛╤Б╤В╨╛╤П╨╜╨╜╨╛╨╣ ╤А╨░╨▒╨╛╤В╤Л ╨╜╨░╨┤ ╤В╨╡╤Е╨╜╨╕╨║╨╛╨╣ ╨╕ ╤Д╨╕╨╖╨╕╤З╨╡╤Б╨║╨╛╨╣ ╨┐╨╛╨┤╨│╨╛╤В╨╛╨▓╨║╨╛╨╣.</p>
++          <p>╨ж╨╡╨╜╨░: ╨╛╤В 15 000 ╤А╤Г╨▒╨╗╨╡╨╣ (╨┐╨╛ ╨╖╨░╨┐╤А╨╛╤Б╤Г)</p>
++          <button type="button" class="btn-secondary btn-lead" data-lead="camp" aria-label="╨Ч╨░╨┐╤А╨╛╤Б╨╕╤В╤М ╨┐╤А╨╛╨│╤А╨░╨╝╨╝╤Г">╨Ч╨░╨┐╤А╨╛╤Б╨╕╤В╤М ╨┐╤А╨╛╨│╤А╨░╨╝╨╝╤Г</button>
++        </div>
++
++        <div class="service-card">
++          <h4>╨в╤А╨╡╨╜╨╡╤А ╨╜╨░ ╨▓╤Л╨╡╨╖╨┤╨╡</h4>
++          <p>╨Т╤Л╨╡╨╖╨┤ ╨╕╨╜╤Б╤В╤А╤Г╨║╤В╨╛╤А╨░ ╨╜╨░ ╨▓╨░╤И ╨▓╨╛╨┤╨╛╤С╨╝ ╨╕╨╗╨╕ ╨▒╨░╨╖╤Г. ╨Ш╨╜╨┤╨╕╨▓╨╕╨┤╤Г╨░╨╗╤М╨╜╤Л╨╡ ╨╕ ╨│╤А╤Г╨┐╨┐╨╛╨▓╤Л╨╡ ╤В╤А╨╡╨╜╨╕╤А╨╛╨▓╨║╨╕.</p>
++          <p>╨ж╨╡╨╜╨░: ╨┐╨╛ ╨╖╨░╨┐╤А╨╛╤Б╤Г</p>
++          <button type="button" class="btn-secondary btn-lead" data-lead="coach-trip" aria-label="╨Ч╨░╨┐╤А╨╛╤Б╨╕╤В╤М ╨▓╤Л╨╡╨╖╨┤">╨Ч╨░╨┐╤А╨╛╤Б╨╕╤В╤М ╨▓╤Л╨╡╨╖╨┤</button>
++        </div>
++
++        <div class="service-card">
++          <h4>╨Ъ╨╛╨╜╤Б╨░╨╗╤В╨╕╨╜╨│</h4>
++          <p>╨Ъ╨╛╨╜╤Б╤Г╨╗╤М╤В╨░╤Ж╨╕╨╕ ╨┐╨╛ ╨╛╤А╨│╨░╨╜╨╕╨╖╨░╤Ж╨╕╨╕ ╤Б╨╛╤А╨╡╨▓╨╜╨╛╨▓╨░╨╜╨╕╨╣, ╨┐╨╛╨┤╨▒╨╛╤А╤Г ╨╛╨▒╨╛╤А╤Г╨┤╨╛╨▓╨░╨╜╨╕╤П ╨╕ ╨╝╨╡╤В╨╛╨┤╨╕╨║╨╡ ╨╛╨▒╤Г╤З╨╡╨╜╨╕╤П.</p>
++          <p>╨ж╨╡╨╜╨░: ╨┐╨╛ ╨╖╨░╨┐╤А╨╛╤Б╤Г</p>
++          <button type="button" class="btn-secondary btn-lead" data-lead="consulting" aria-label="╨Ю╨▒╤Б╤Г╨┤╨╕╤В╤М ╨╖╨░╨┐╤Г╤Б╨║">╨Ю╨▒╤Б╤Г╨┤╨╕╤В╤М ╨╖╨░╨┐╤Г╤Б╨║</button>
+         </div>
+       </div>
+       <button class="carousel-next" aria-label="╨б╨╗╨╡╨┤╤Г╤О╤Й╨╕╨╡ ╤Г╤Б╨╗╤Г╨│╨╕">тЦ╢</button>
+     </div>
+   </section>
+ 
+-  <!-- ╨в╨╛╨▓╨░╤А╤Л -->
++  <!-- ╨в╨╛╨▓╨░╤А╤Л (6 ╨╛╨▒╤П╨╖╨░╤В╨╡╨╗╤М╨╜╤Л╤Е ╨║╨░╤А╤В╨╛╤З╨╡╨║ ╨╕╨╖ ╨║╨░╤В╨░╨╗╨╛╨│╨░) -->
+   <section id="store" class="store-section">
+     <h2>╨в╨╛╨▓╨░╤А╤Л</h2>
+     <div class="cards-grid">
++      {% for p in products_preview %}
+       <div class="product-card">
+-        <img src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="╨С╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤" loading="lazy" />
+-        <h4>╨С╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤</h4>
+-        <p>╨в╤А╨╡╨╜╨╕╤А╨╛╨▓╨╛╤З╨╜╤Л╨╣ ╨▒╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤ ╨┤╨╗╤П ╤В╤А╤О╨║╨╛╨▓ ╨╕ ╤Д╨╕╤В╨╜╨╡╤Б╨░. ╨г╨╗╤Г╤З╤И╨░╨╡╤В ╨║╨╛╨╛╤А╨┤╨╕╨╜╨░╤Ж╨╕╤О, ╨┐╨╛╨┤╤Е╨╛╨┤╨╕╤В ╨┤╨╗╤П ╨▓╤Б╨╡╤Е ╤Г╤А╨╛╨▓╨╜╨╡╨╣ ╨┐╨╛╨┤╨│╨╛╤В╨╛╨▓╨║╨╕.</p>
+-        <p>╨ж╨╡╨╜╨░: 7 500 тВ╜</p>
+-        <button class="btn-secondary">╨Ъ╤Г╨┐╨╕╤В╤М</button>
+-      </div>
+-      <div class="product-card">
+-        <img src="{{ url_for('static', filename='images/balans_trick_trening.jpg') }}" alt="╨С╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤ Pro" loading="lazy" />
+-        <h4>╨С╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤ Big</h4>
+-        <p>╨г╨▓╨╡╨╗╨╕╤З╨╡╨╜╨╜╨░╤П ╨╝╨╛╨┤╨╡╨╗╤М ╨┤╨╗╤П ╨┐╤А╨╛╤Д╨╡╤Б╤Б╨╕╨╛╨╜╨░╨╗╨╛╨▓.</p>
+-        <p>╨ж╨╡╨╜╨░: 9 900 тВ╜</p>
+-        <button class="btn-secondary">╨Ъ╤Г╨┐╨╕╤В╤М</button>
++        <img src="{{ url_for('static', filename=p.image) }}" alt="{{ p.title }}" loading="lazy" />
++        <h4>{{ p.title }}</h4>
++        <p>{{ p.description }}</p>
++        <p>╨ж╨╡╨╜╨░: {{ p.price }}</p>
++        <a class="btn-secondary btn" href="{{ url_for('shop.product', slug=p.slug) }}">╨Ъ╤Г╨┐╨╕╤В╤М</a>
+       </div>
++      {% endfor %}
++    </div>
++    <p class="store-more"><a href="{{ url_for('shop.shop_index') }}" class="btn-secondary">╨Т╤Б╨╡ ╤В╨╛╨▓╨░╤А╤Л</a></p>
++  </section>
++
++  <!-- ╨Я╤А╨╛╨╡╨║╤В╤Л -->
++  <section id="projects" class="projects-section section">
++    <h2>╨Я╤А╨╛╨╡╨║╤В╤Л</h2>
++    {% if projects_preview %}
++    <ul class="projects-preview-list">
++      {% for p in projects_preview %}
++      <li class="project-preview-card">
++        {% if p.cover %}
++        <img src="{{ url_for('static', filename=p.cover) }}" alt="{{ p.name }}" loading="lazy" />
++        {% endif %}
++        <h4>{{ p.name }}</h4>
++        <p>{{ p.summary }}</p>
++        {% if p.cta_url %}
++        <a class="btn-secondary btn" href="{{ p.cta_url }}">╨Я╨╛╨┤╤А╨╛╨▒╨╜╨╡╨╡</a>
++        {% endif %}
++      </li>
++      {% endfor %}
++    </ul>
++    {% endif %}
++    <div class="project-preview-card project-preview-card--program">
++      <h4>╨в╤А╨╡╨╜╨╕╤А╨╛╨▓╨╛╤З╨╜╨░╤П ╨┐╤А╨╛╨│╤А╨░╨╝╨╝╨░ ╨┤╨╗╤П ╨┐╨╛╨┤╨│╨╛╤В╨╛╨▓╨║╨╕</h4>
++      <p>╨б╨╕╤Б╤В╨╡╨╝╨╜╨░╤П ╨┐╨╛╨┤╨│╨╛╤В╨╛╨▓╨║╨░ ╨║ ╨╕╤Б╨┐╨╛╨╗╨╜╨╡╨╜╨╕╤О ╤В╤А╤О╨║╨╛╨▓: Start тЖТ Progress тЖТ Trick. ╨Я╨╗╨░╨╜ ╨╜╨░ 14 ╨┤╨╜╨╡╨╣ ╨╕ ╨╖╨░╨┐╨╕╤Б╤М ╨▓ ╨╖╨░╨╗/╨╜╨░ ╨║╨░╤В╨╡╤А.</p>
++      <a class="btn-secondary btn" href="{{ url_for('training_program_page') }}">╨Я╨╛╨╗╤Г╤З╨╕╤В╤М ╨┐╨╗╨░╨╜ / ╨Ч╨░╨┐╨╕╤Б╨░╤В╤М╤Б╤П</a>
+     </div>
++    <p class="projects-more"><a href="{{ url_for('projects_page') }}" class="btn-secondary">╨Т╤Б╨╡ ╨┐╤А╨╛╨╡╨║╤В╤Л</a></p>
+   </section>
+ 
+   {# ╨а╨╡╨╜╨┤╨╡╤А╨╕╨╝ ╤Б╨╡╨║╤Ж╨╕╤О ╨╝╨╡╤А╨╛╨┐╤А╨╕╤П╤В╨╕╨╣ ╤В╨╛╨╗╤М╨║╨╛ ╨╡╤Б╨╗╨╕ ╨╡╤Б╤В╤М ╤Е╨╛╤В╤П ╨▒╤Л ╨╛╨┤╨╜╨╛ ╤Б╨╛╨▒╤Л╤В╨╕╨╡ #}
+@@ -118,10 +155,20 @@
+   </section>
+   {% endif %}
+ 
+-  <!-- ╨С╨╗╨╛╨│ -->
++  <!-- ╨Я╨╛╤Б╨╗╨╡╨┤╨╜╨╕╨╡ ╨╜╨╛╨▓╨╛╤Б╤В╨╕ / ╨С╨╗╨╛╨│ -->
+   <section id="blog" class="blog-section">
+-    <h2>╨С╨╗╨╛╨│</h2>
+-    <p>╨Т ╤А╨░╨╖╤А╨░╨▒╨╛╤В╨║╨╡. ╨б╨║╨╛╤А╨╛ ╨╖╨┤╨╡╤Б╤М ╨┐╨╛╤П╨▓╤П╤В╤Б╤П ╨╜╨╛╨▓╤Л╨╡ ╤Б╤В╨░╤В╤М╨╕!</p>
++    <h2>╨Я╨╛╤Б╨╗╨╡╨┤╨╜╨╕╨╡ ╨╜╨╛╨▓╨╛╤Б╤В╨╕</h2>
++    {% if latest_blog_post %}
++    <article class="blog-latest">
++      <h3><a href="{{ url_for('blog.blog_post', slug=latest_blog_post.slug) }}">{{ latest_blog_post.title }}</a></h3>
++      {% if latest_blog_post.get('excerpt') %}
++      <p class="blog-excerpt">{{ latest_blog_post.excerpt }}</p>
++      {% endif %}
++      <p class="blog-more"><a href="{{ url_for('blog.blog_index') }}">╨Т╤Б╨╡ ╤Б╤В╨░╤В╤М╨╕ ╨▒╨╗╨╛╨│╨░</a></p>
++    </article>
++    {% else %}
++    <p>╨б╨║╨╛╤А╨╛ ╨╖╨┤╨╡╤Б╤М ╨┐╨╛╤П╨▓╤П╤В╤Б╤П ╨╜╨╛╨▓╤Л╨╡ ╤Б╤В╨░╤В╤М╨╕. <a href="{{ url_for('blog.blog_index') }}">╨Я╨╡╤А╨╡╨╣╤В╨╕ ╨▓ ╨▒╨╗╨╛╨│</a>.</p>
++    {% endif %}
+   </section>
+ 
+   <section class="reviews-section">
+@@ -177,5 +224,6 @@
+   <a href="/chat" class="btn-secondary chat-margin">╨з╨░╤В ╤Б ╤В╤А╨╡╨╜╨╡╤А╨╛╨╝</a>
+ 
+   {% include 'partials/booking_modals.html' %}
++  {% include 'partials/lead_modals.html' %}
+   {% include 'partials/reco_block.html' %}
+ {% endblock %}
+diff --git a/templates/partials/booking_modals.html b/templates/partials/booking_modals.html
+index 89448c06..4f565303 100644
+--- a/templates/partials/booking_modals.html
++++ b/templates/partials/booking_modals.html
+@@ -1,51 +1,52 @@
+-<div id="bookingDateModal" class="modal hidden">
++{# ID ╨┐╤А╨╕╨▓╨╡╨┤╨╡╨╜╤Л ╨║ ╤Б╨╡╨╗╨╡╨║╤В╨╛╤А╨░╨╝ ╨▓ booking.js: modalCalendar, bookingDateInput, modalSlots, modalContact, modalConfirm #}
++<div id="modalCalendar" class="modal hidden" aria-labelledby="booking-date-title" aria-modal="true">
+   <div class="modal-content">
+-      <span class="close-modal" data-modal-close>&times;</span>
+-      <h2>╨Т╤Л╨▒╨╡╤А╨╕╤В╨╡ ╨┤╨░╤В╤Г</h2>
+-      <p class="booking-service-hint">╨г╤Б╨╗╤Г╨│╨░: <strong id="bookingServiceBadge">╨Ч╨░╨╗</strong></p>
+-      <p class="progress-info">╨и╨░╨│ 1 / 3</p>
+-      <div class="date-input-container">
+-          <input type="text" id="bookingDatePickr" placeholder="╨Т╤Л╨▒╨╡╤А╨╕╤В╨╡ ╨┤╨░╤В╤Г" readonly>
+-          <i id="dateIcon" class="fas fa-calendar-alt"></i>
+-      </div>
+-      <p id="selectedDateDisplay">╨Ф╨░╤В╨░ ╨╜╨╡ ╨▓╤Л╨▒╤А╨░╨╜╨░</p>
+-      <button id="confirmDateBtn" class="btn btn-primary">╨Ф╨░╨╗╨╡╨╡</button>
++    <span class="close-modal" data-modal-close aria-label="╨Ч╨░╨║╤А╤Л╤В╤М">&times;</span>
++    <h2 id="booking-date-title">╨Т╤Л╨▒╨╡╤А╨╕╤В╨╡ ╨┤╨░╤В╤Г</h2>
++    <p class="booking-service-hint">╨г╤Б╨╗╤Г╨│╨░: <strong id="bookingServiceBadge">╨Ч╨░╨╗</strong></p>
++    <p class="progress-info">╨и╨░╨│ 1 / 3</p>
++    <div class="date-input-container">
++      <input type="text" id="bookingDateInput" placeholder="╨Т╤Л╨▒╨╡╤А╨╕╤В╨╡ ╨┤╨░╤В╤Г" readonly aria-label="╨Ф╨░╤В╨░ ╨╖╨░╨╜╤П╤В╨╕╤П">
++      <i id="dateIcon" class="fas fa-calendar-alt" aria-hidden="true"></i>
++    </div>
++    <p id="selectedDateDisplay">╨Ф╨░╤В╨░ ╨╜╨╡ ╨▓╤Л╨▒╤А╨░╨╜╨░</p>
++    <button id="confirmDateBtn" class="btn btn-primary">╨Ф╨░╨╗╨╡╨╡</button>
+   </div>
+ </div>
+-<div id="bookingTimeModal" class="modal hidden">
++<div id="modalSlots" class="modal hidden" aria-labelledby="booking-time-title" aria-modal="true">
+   <div class="modal-content">
+-    <h3>╨Т╤Л╨▒╨╡╤А╨╕╤В╨╡ ╨▓╤А╨╡╨╝╤П</h3>
++    <h3 id="booking-time-title">╨Т╤Л╨▒╨╡╤А╨╕╤В╨╡ ╨▓╤А╨╡╨╝╤П</h3>
+     <p class="progress-info">╨и╨░╨│ 2 / 3</p>
+     <div id="slotButtonsContainer"></div>
+     <input type="hidden" id="selectedSlot" />
+-    <button id="confirmTimeBtn" disabled>╨Ф╨░╨╗╨╡╨╡</button>
+-    <button id="backToTimeBtn" class="close-modal">╨Э╨░╨╖╨░╨┤</button>
++    <button id="confirmSlotBtn" disabled class="btn btn-primary">╨Ф╨░╨╗╨╡╨╡</button>
++    <button type="button" id="backToTimeBtn" class="close-modal">╨Э╨░╨╖╨░╨┤</button>
+   </div>
+ </div>
+-<div id="bookingContactModal" class="modal hidden">
++<div id="modalContact" class="modal hidden" aria-labelledby="booking-contact-title" aria-modal="true">
+   <div class="modal-content">
+-    <h3>╨Т╨░╤И╨╕ ╨┤╨░╨╜╨╜╤Л╨╡</h3>
++    <h3 id="booking-contact-title">╨Т╨░╤И╨╕ ╨┤╨░╨╜╨╜╤Л╨╡</h3>
+     <p class="progress-info">╨и╨░╨│ 3 / 3</p>
+     <form id="bookingContactForm">
+-      <input type="text" id="bookingName" placeholder="╨Ш╨╝╤П" required />
+-      <input type="text" id="bookingPhone" placeholder="╨в╨╡╨╗╨╡╤Д╨╛╨╜" required />
++      <input type="text" id="bookingName" name="name" placeholder="╨Ш╨╝╤П" required autocomplete="name" />
++      <input type="text" id="bookingPhone" name="phone" placeholder="╨в╨╡╨╗╨╡╤Д╨╛╨╜ ╨╕╨╗╨╕ Telegram" required autocomplete="tel" />
+       <input type="hidden" id="bookingServiceType" name="service_type" value="gym">
+-      <button type="submit">╨Ю╤В╨┐╤А╨░╨▓╨╕╤В╤М</button>
++      <button type="submit" id="confirmContactBtn" class="btn btn-primary">╨Ю╤В╨┐╤А╨░╨▓╨╕╤В╤М</button>
+     </form>
+-    <button id="backToTimeBtn2" class="close-modal">╨Э╨░╨╖╨░╨┤</button>
++    <button type="button" id="backToTimeBtn2" class="close-modal">╨Э╨░╨╖╨░╨┤</button>
+   </div>
+ </div>
+-<div id="bookingSuccessModal" class="modal hidden">
++<div id="modalConfirm" class="modal hidden" aria-labelledby="booking-success-title" aria-modal="true">
+   <div class="modal-content">
+-    <button class="close-modal" id="closeSuccessModal" data-modal-close>&times;</button>
+-    <h2>╨Я╨╛╨┤╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╕╨╡ ╨╖╨░╨┐╨╕╤Б╨╕</h2>
++    <button type="button" class="close-modal" id="closeSuccessModal" data-modal-close aria-label="╨Ч╨░╨║╤А╤Л╤В╤М">&times;</button>
++    <h2 id="booking-success-title">╨Я╨╛╨┤╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╕╨╡ ╨╖╨░╨┐╨╕╤Б╨╕</h2>
+     <p id="successMessage"></p>
+     <p class="pay-hint">
+-      ЁЯТ│ ╨Ю╨┐╨╗╨░╤В╨░ ╨┐╤А╨╛╨╕╨╖╨▓╨╛╨┤╨╕╤В╤Б╤П ╨╜╨░ ╨╝╨╡╤Б╤В╨╡ ╨┐╨╛╤Б╨╗╨╡ ╤В╤А╨╡╨╜╨╕╤А╨╛╨▓╨║╨╕. 
++      ЁЯТ│ ╨Ю╨┐╨╗╨░╤В╨░ ╨┐╤А╨╛╨╕╨╖╨▓╨╛╨┤╨╕╤В╤Б╤П ╨╜╨░ ╨╝╨╡╤Б╤В╨╡ ╨┐╨╛╤Б╨╗╨╡ ╤В╤А╨╡╨╜╨╕╤А╨╛╨▓╨║╨╕.
+       ╨Ь╤Л ╨┐╨╛╨║╨░ ╨╜╨╡ ╨┐╤А╨╕╨╜╨╕╨╝╨░╨╡╨╝ ╨╛╨╜╨╗╨░╨╣╨╜-╨╛╨┐╨╗╨░╤В╤Г.
+     </p>
+   </div>
+ </div>
+-<div id="bookingToast" class="toast"></div>
+-<input type="hidden" id="bookingDate">
+-<input type="hidden" id="bookingTime">
++<div id="bookingToast" class="toast" role="status" aria-live="polite"></div>
++<input type="hidden" id="bookingDate" name="booking_date">
++<input type="hidden" id="bookingTime" name="booking_time">
+diff --git a/templates/partials/lead_modals.html b/templates/partials/lead_modals.html
+new file mode 100644
+index 00000000..c0a17240
+--- /dev/null
++++ b/templates/partials/lead_modals.html
+@@ -0,0 +1,53 @@
++{# ╨Ы╨╕╨┤-╤Д╨╛╤А╨╝╤Л: ╨в╤А╨╡╨╜╨╡╤А ╨╜╨░ ╨▓╤Л╨╡╨╖╨┤╨╡, ╨Ъ╨╛╨╜╤Б╨░╨╗╤В╨╕╨╜╨│, Wake Camp #}
++<div id="lead-modal-camp" class="modal hidden" aria-labelledby="lead-camp-title" aria-modal="true">
++  <div class="modal-content">
++    <span class="close-modal lead-modal-close" aria-label="╨Ч╨░╨║╤А╤Л╤В╤М">&times;</span>
++    <h2 id="lead-camp-title">╨Ч╨░╨┐╤А╨╛╤Б╨╕╤В╤М ╨┐╤А╨╛╨│╤А╨░╨╝╨╝╤Г Wake Camp</h2>
++    <form id="lead-form-camp" class="lead-form">
++      <input type="hidden" name="type" value="camp">
++      <label>╨Ц╨╡╨╗╨░╨╡╨╝╤Л╨╡ ╨┤╨░╤В╤Л / ╨╛╨║╨╜╨╛ <input type="text" name="dates" placeholder="╨Э╨░╨┐╤А╨╕╨╝╨╡╤А: 15тАУ20 ╨╕╤О╨╗╤П ╨╕╨╗╨╕ ╨░╨▓╨│╤Г╤Б╤В"></label>
++      <label>╨г╤А╨╛╨▓╨╡╨╜╤М <input type="text" name="level" placeholder="╨Э╨░╤З╨╕╨╜╨░╤О╤Й╨╕╨╣ / ╤Б╤А╨╡╨┤╨╜╨╕╨╣ / ╨┐╤А╨╛╨┤╨▓╨╕╨╜╤Г╤В╤Л╨╣"></label>
++      <label>╨ж╨╡╨╗╤М <input type="text" name="goal" placeholder="╨в╨╡╤Е╨╜╨╕╨║╨░, ╤В╤А╤О╨║╨╕, ╨╛╨▒╤Й╨░╤П ╨┐╨╛╨┤╨│╨╛╤В╨╛╨▓╨║╨░"></label>
++      <label>╨С╤О╨┤╨╢╨╡╤В╨╜╤Л╨╣ ╨║╨╛╤А╨╕╨┤╨╛╤А (╨╛╨┐╤Ж.) <input type="text" name="budget" placeholder="╨Я╨╛ ╨╖╨░╨┐╤А╨╛╤Б╤Г / ╨┤╨╛ 20 000 / ╨┤╤А╤Г╨│╨╛╨╡"></label>
++      <label>╨Ъ╨╛╨╜╤В╨░╨║╤В (╤В╨╡╨╗╨╡╤Д╨╛╨╜ ╨╕╨╗╨╕ Telegram) <input type="text" name="contact" placeholder="+7 тАж ╨╕╨╗╨╕ @nick" required></label>
++      <button type="submit" class="btn btn-primary">╨Ю╤В╨┐╤А╨░╨▓╨╕╤В╤М ╨╖╨░╤П╨▓╨║╤Г</button>
++    </form>
++    <p id="lead-camp-success" class="lead-success hidden">╨Ч╨░╤П╨▓╨║╨░ ╨╛╤В╨┐╤А╨░╨▓╨╗╨╡╨╜╨░. ╨Ь╤Л ╤Б╨▓╤П╨╢╨╡╨╝╤Б╤П ╤Б ╨▓╨░╨╝╨╕ ╨▓ ╨▒╨╗╨╕╨╢╨░╨╣╤И╨╡╨╡ ╨▓╤А╨╡╨╝╤П.</p>
++  </div>
++</div>
++<div id="lead-modal-coach-trip" class="modal hidden" aria-labelledby="lead-coach-title" aria-modal="true">
++  <div class="modal-content">
++    <span class="close-modal lead-modal-close" aria-label="╨Ч╨░╨║╤А╤Л╤В╤М">&times;</span>
++    <h2 id="lead-coach-title">╨Ч╨░╨┐╤А╨╛╤Б╨╕╤В╤М ╨▓╤Л╨╡╨╖╨┤ ╤В╤А╨╡╨╜╨╡╤А╨░</h2>
++    <form id="lead-form-coach-trip" class="lead-form">
++      <input type="hidden" name="type" value="coach_trip">
++      <label>╨У╨╛╤А╨╛╨┤ / ╨╗╨╛╨║╨░╤Ж╨╕╤П <input type="text" name="location" placeholder="╨У╨╛╤А╨╛╨┤ ╨╕╨╗╨╕ ╨▓╨╛╨┤╨╛╤С╨╝" required></label>
++      <label>╨Ф╨░╤В╤Л (╨┤╨╕╨░╨┐╨░╨╖╨╛╨╜) <input type="text" name="dates" placeholder="╨Э╨░╨┐╤А╨╕╨╝╨╡╤А: 15тАУ20 ╨╕╤О╨╗╤П"></label>
++      <label>╨д╨╛╤А╨╝╨░╤В
++        <select name="format">
++          <option value="individual">╨Ш╨╜╨┤╨╕╨▓╨╕╨┤╤Г╨░╨╗╤М╨╜╨╛</option>
++          <option value="group">╨У╤А╤Г╨┐╨┐╨░</option>
++        </select>
++      </label>
++      <label>╨г╤А╨╛╨▓╨╡╨╜╤М <input type="text" name="level" placeholder="╨Э╨░╤З╨╕╨╜╨░╤О╤Й╨╕╨╣ / ╤Б╤А╨╡╨┤╨╜╨╕╨╣ / ╨┐╤А╨╛╨┤╨▓╨╕╨╜╤Г╤В╤Л╨╣"></label>
++      <label>╨Х╤Б╤В╤М ╨║╨░╤В╨╡╤А/╨╛╨▒╨╛╤А╤Г╨┤╨╛╨▓╨░╨╜╨╕╨╡? <input type="text" name="equipment" placeholder="╨Ф╨░ / ╨Э╨╡╤В / ╨з╨░╤Б╤В╨╕╤З╨╜╨╛"></label>
++      <label>╨Ъ╨╛╨╜╤В╨░╨║╤В (╤В╨╡╨╗╨╡╤Д╨╛╨╜ ╨╕╨╗╨╕ Telegram) <input type="text" name="contact" placeholder="+7 тАж ╨╕╨╗╨╕ @nick" required></label>
++      <button type="submit" class="btn btn-primary">╨Ю╤В╨┐╤А╨░╨▓╨╕╤В╤М ╨╖╨░╤П╨▓╨║╤Г</button>
++    </form>
++    <p id="lead-coach-success" class="lead-success hidden">╨Ч╨░╤П╨▓╨║╨░ ╨╛╤В╨┐╤А╨░╨▓╨╗╨╡╨╜╨░. ╨Ь╤Л ╤Б╨▓╤П╨╢╨╡╨╝╤Б╤П ╤Б ╨▓╨░╨╝╨╕ ╨▓ ╨▒╨╗╨╕╨╢╨░╨╣╤И╨╡╨╡ ╨▓╤А╨╡╨╝╤П.</p>
++  </div>
++</div>
++<div id="lead-modal-consulting" class="modal hidden" aria-labelledby="lead-consulting-title" aria-modal="true">
++  <div class="modal-content">
++    <span class="close-modal lead-modal-close" aria-label="╨Ч╨░╨║╤А╤Л╤В╤М">&times;</span>
++    <h2 id="lead-consulting-title">╨Ю╨▒╤Б╤Г╨┤╨╕╤В╤М ╨╖╨░╨┐╤Г╤Б╨║</h2>
++    <form id="lead-form-consulting" class="lead-form">
++      <input type="hidden" name="type" value="consulting">
++      <label>╨в╨╡╨╝╨░ <input type="text" name="topic" placeholder="╨Ю╤А╨│╨░╨╜╨╕╨╖╨░╤Ж╨╕╤П ╤Б╨╛╤А╨╡╨▓╨╜╨╛╨▓╨░╨╜╨╕╨╣ / ╨╛╨▒╨╛╤А╤Г╨┤╨╛╨▓╨░╨╜╨╕╨╡ / ╨╝╨╡╤В╨╛╨┤╨╕╨║╨░" required></label>
++      <label>╨Ъ╤А╨░╤В╨║╨╛ ╨╖╨░╨┤╨░╤З╨░ <textarea name="task" rows="3" placeholder="╨Ю╨┐╨╕╤И╨╕╤В╨╡ ╨╖╨░╨┤╨░╤З╤Г"></textarea></label>
++      <label>╨Ъ╨╛╨╜╤В╨░╨║╤В <input type="text" name="contact" placeholder="╨в╨╡╨╗╨╡╤Д╨╛╨╜ ╨╕╨╗╨╕ Telegram" required></label>
++      <button type="submit" class="btn btn-primary">╨Ю╤В╨┐╤А╨░╨▓╨╕╤В╤М</button>
++    </form>
++    <p id="lead-consulting-success" class="lead-success hidden">╨Ч╨░╤П╨▓╨║╨░ ╨╛╤В╨┐╤А╨░╨▓╨╗╨╡╨╜╨░. ╨Ь╤Л ╤Б╨▓╤П╨╢╨╡╨╝╤Б╤П ╤Б ╨▓╨░╨╝╨╕.</p>
++  </div>
++</div>
+diff --git a/templates/shop.html b/templates/shop.html
+index 80658cc6..8bb89219 100644
+--- a/templates/shop.html
++++ b/templates/shop.html
+@@ -11,6 +11,7 @@
+     <button class="filter-btn" data-category="poncho">╨Я╨╛╨╜╤З╨╛</button>
+     <button class="filter-btn" data-category="boardgame">╨Э╨░╤Б╤В╨╛╨╗╤М╨╜╤Л╨╡&nbsp;╨╕╨│╤А╤Л</button>
+     <button class="filter-btn" data-category="wakesurfpolia">WakeSurfPolia</button>
++    <button class="filter-btn" data-category="certificate">╨б╨╡╤А╤В╨╕╤Д╨╕╨║╨░╤В╤Л</button>
+   </div>
+ 
+   <!-- ╨║╨░╤А╤В╨╛╤З╨║╨╕ -->
+@@ -32,8 +33,8 @@
+     </div>
+ 
+     <div class="product-card" data-category="poncho">
+-      <img src="{{ url_for('static', filename='images/01.jpg') }}" alt="╨Я╨╛╨╜╤З╨╛ ╤Б╤Г╤Е╨╛╨╡">
+-      <h4>╨Я╨╛╨╜╤З╨╛ ╨┤╨╗╤П ╤Б╤С╤А╤Д╨╕╨╜╨│╨░</h4>
++      <img src="{{ url_for('static', filename='images/01.jpg') }}" alt="╨Я╨╛╨╜╤З╨╛ тАФ ╨Ъ╨╛╨╝╨▒╨╡╨╖">
++      <h4>╨Я╨╛╨╜╤З╨╛ тАФ ╨Ъ╨╛╨╝╨▒╨╡╨╖ (╨┐╨╡╤А╨╡╨╛╨┤╨╡╨▓╨░╨╗╨║╨░)</h4>
+       <p>╨г╨┤╨╛╨▒╨╜╨╛╨╡ ╤Б╨╝╨╡╨╜╨╜╨╛╨╡ ╨┐╨╛╨╜╤З╨╛ тАФ ╨▒╤Л╤Б╤В╤А╨╛ ╨╜╨░╨┤╨╡╤В╤М/╤Б╨╜╤П╤В╤М ╨╜╨░ ╨┐╨╗╤П╨╢╨╡, ╤Б╨╛╤Е╤А╨░╨╜╤П╨╡╤В ╤В╨╡╨┐╨╗╨╛.</p>
+       <p class="price">4 500&nbsp;тВ╜</p>
+       <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='poncho') }}">╨Ъ╤Г╨┐╨╕╤В╤М</a>
+@@ -49,8 +50,8 @@
+ 
+     <div class="product-card" data-category="wakesurfpolia">
+       <img src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="WakeSurfPolia">
+-      <h4>WakeSurfPolia</h4>
+-      <p>╨Ъ╨╛╨╝╨┐╨╗╨╡╨║╤В ╨┤╨╗╤П ╤В╤А╨╡╨╜╨╕╤А╨╛╨▓╨╛╨║ ╨╜╨░ ╨▓╨╛╨┤╨╡: ╤Б╤В╤А╨░╤Е╨╛╨▓╨╛╤З╨╜╤Л╨╡ ╤Н╨╗╨╡╨╝╨╡╨╜╤В╤Л ╨╕ ╨░╨║╤Б╨╡╤Б╤Б╤Г╨░╤А╤Л.</p>
++      <h4>WakeSurfPolia (╨╜╨░╤Б╤В╨╛╨╗╤М╨╜╨░╤П ╨╕╨│╤А╨░)</h4>
++      <p>╨Э╨░╤Б╤В╨╛╨╗╤М╨╜╨░╤П ╨╕╨│╤А╨░ ╨┐╤А╨╛ ╨▓╨╡╨╣╨║╤Б╨╡╤А╤Д: ╤В╤А╤О╨║╨╕, ╤В╨░╨║╤В╨╕╨║╨░ ╨╕ ╨┤╤Г╤Е ╨▓╨╛╨╗╨╜╤Л. ╨б╨╛╤Б╤В╨░╨▓: ╨║╨░╤А╤В╤Л, ╨┐╤А╨░╨▓╨╕╨╗╨░, ╤Б╤З╤С╤В. ╨Я╨╛╨┤╤Е╨╛╨┤╨╕╤В ╨┤╨╗╤П ╨║╨╛╨╝╨┐╨░╨╜╨╕╨╕ ╨╕ ╨▓╨╡╤З╨╡╤А╨╕╨╜╨╛╨║.</p>
+       <p class="price">5 000&nbsp;тВ╜</p>
+       <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='wakesurfpolia') }}">╨Ъ╤Г╨┐╨╕╤В╤М</a>
+     </div>
+@@ -62,6 +63,22 @@
+       <p class="price">12 500&nbsp;тВ╜</p>
+       <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='balance-board-pro') }}">╨Ъ╤Г╨┐╨╕╤В╤М</a>
+     </div>
++
++    <div class="product-card" data-category="balance-board">
++      <img src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="╨С╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤ NewStyle">
++      <h4>╨С╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤ NewStyle</h4>
++      <p>╨б╤В╨╕╨╗╤М╨╜╨░╤П ╨╝╨╛╨┤╨╡╨╗╤М ╨┤╨╗╤П ╤В╤А╨╡╨╜╨╕╤А╨╛╨▓╨╛╨║ ╨╕ ╤В╤А╤О╨║╨╛╨▓. ╨Я╨╛╨┤╤Е╨╛╨┤╨╕╤В ╨┤╨╗╤П ╨┤╨╛╨╝╨░ ╨╕ ╨╖╨░╨╗╨░.</p>
++      <p class="price">8 900&nbsp;тВ╜</p>
++      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='balance-board-newstyle') }}">╨Ъ╤Г╨┐╨╕╤В╤М</a>
++    </div>
++
++    <div class="product-card" data-category="certificate">
++      <img src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="╨б╨╡╤А╤В╨╕╤Д╨╕╨║╨░╤В ╨╜╨░ 10 ╨╖╨░╨╜╤П╤В╨╕╨╣">
++      <h4>╨б╨╡╤А╤В╨╕╤Д╨╕╨║╨░╤В ╨╜╨░ 10 ╨╖╨░╨╜╤П╤В╨╕╨╣</h4>
++      <p>╨Ш╨┤╨╡╨░╨╗╤М╨╜╤Л╨╣ ╨┐╨╛╨┤╨░╤А╨╛╨║ тАФ ╨┐╤Г╤В╤М ╨║ ╤Г╨▓╨╡╤А╨╡╨╜╨╜╨╛╨╝╤Г ╤Г╤А╨╛╨▓╨╜╤О ┬л╨░╨╝╨░╤В╨╛╤А┬╗. ╨Я╤А╨╛╨│╤А╨╡╤Б╤Б ╤Д╨╕╨║╤Б╨╕╤А╤Г╨╡╤В╤Б╤П ╨╕ ╨╖╨░╨║╤А╨╡╨┐╨╗╤П╨╡╤В╤Б╤П.</p>
++      <p class="price">30 000&nbsp;тВ╜</p>
++      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='certificate-10') }}">╨Ъ╤Г╨┐╨╕╤В╤М</a>
++    </div>
+   </div>
+ </section>
+   <script src="{{ url_for('static', filename='js/shop-filter.js') }}"></script>
+diff --git a/templates/training_program.html b/templates/training_program.html
+new file mode 100644
+index 00000000..7fb8524d
+--- /dev/null
++++ b/templates/training_program.html
+@@ -0,0 +1,32 @@
++{% extends "base.html" %}
++
++{% block title %}╨в╤А╨╡╨╜╨╕╤А╨╛╨▓╨╛╤З╨╜╨░╤П ╨┐╤А╨╛╨│╤А╨░╨╝╨╝╨░ ╨┤╨╗╤П ╨┐╨╛╨┤╨│╨╛╤В╨╛╨▓╨║╨╕ тАФ MyWave{% endblock %}
++
++{% block content %}
++<section class="container training-program-section">
++  <h1 class="section-title">╨в╤А╨╡╨╜╨╕╤А╨╛╨▓╨╛╤З╨╜╨░╤П ╨┐╤А╨╛╨│╤А╨░╨╝╨╝╨░ ╨┤╨╗╤П ╨┐╨╛╨┤╨│╨╛╤В╨╛╨▓╨║╨╕</h1>
++  <p class="lead">╨б╨╕╤Б╤В╨╡╨╝╨╜╨░╤П ╨┐╨╛╨┤╨│╨╛╤В╨╛╨▓╨║╨░ ╨║ ╨╕╤Б╨┐╨╛╨╗╨╜╨╡╨╜╨╕╤О ╤В╤А╤О╨║╨╛╨▓: ╨╛╤В ╨▒╨░╨╖╨╛╨▓╨╛╨│╨╛ ╤Г╤А╨╛╨▓╨╜╤П ╨┤╨╛ ╤Г╨▓╨╡╤А╨╡╨╜╨╜╨╛╨│╨╛ ╨┐╤А╨╛╨│╤А╨╡╤Б╤Б╨░ ╨╜╨░ ╨▓╨╛╨┤╨╡.</p>
++
++  <div class="training-levels">
++    <div class="level-card">
++      <h3>Start</h3>
++      <p>╨С╨░╨╖╨╛╨▓╤Л╨╣ ╤Г╤А╨╛╨▓╨╡╨╜╤М: ╨▒╨░╨╗╨░╨╜╤Б, ╤Б╤В╨╛╨╣╨║╨░, ╨╛╤Б╨╜╨╛╨▓╤Л ╨▒╨╡╨╖╨╛╨┐╨░╤Б╨╜╨╛╤Б╤В╨╕ ╨╜╨░ ╨▓╨╛╨┤╨╡.</p>
++    </div>
++    <div class="level-card">
++      <h3>Progress</h3>
++      <p>╨Я╤А╨╛╨│╤А╨╡╤Б╤Б: ╨╖╨░╨║╤А╨╡╨┐╨╗╨╡╨╜╨╕╨╡ ╨╛╤Б╨╜╨╛╨▓, ╨┐╨╡╤А╨▓╤Л╨╡ ╤Н╨╗╨╡╨╝╨╡╨╜╤В╤Л, ╤А╨░╨▒╨╛╤В╨░ ╤Б ╤В╤А╨╡╨╜╨╡╤А╨╛╨╝.</p>
++    </div>
++    <div class="level-card">
++      <h3>Trick</h3>
++      <p>╨в╤А╤О╨║╨╕: ╤А╨░╨╖╤Г╤З╨╕╨▓╨░╨╜╨╕╨╡ ╨╕ ╨╛╤В╤А╨░╨▒╨╛╤В╨║╨░ ╤Н╨╗╨╡╨╝╨╡╨╜╤В╨╛╨▓, ╨┐╨╛╨┤╨│╨╛╤В╨╛╨▓╨║╨░ ╨║ ╤Б╨╛╤А╨╡╨▓╨╜╨╛╨▓╨░╨╜╨╕╤П╨╝.</p>
++    </div>
++  </div>
++
++  <div class="training-ctas">
++    <a href="{{ url_for('index') }}#contacts" class="btn btn-primary">╨Я╨╛╨╗╤Г╤З╨╕╤В╤М ╨┐╨╗╨░╨╜ ╨╜╨░ 14 ╨┤╨╜╨╡╨╣</a>
++    <a href="{{ url_for('index') }}#hero" class="btn btn-secondary open-booking-from-program">╨Ч╨░╨┐╨╕╤Б╨░╤В╤М╤Б╤П ╨▓ ╨╖╨░╨╗</a>
++    <a href="{{ url_for('index') }}#services" class="btn btn-secondary">╨Ч╨░╨┐╨╕╤Б╨░╤В╤М╤Б╤П ╨╜╨░ ╨║╨░╤В╨╡╤А</a>
++  </div>
++</section>
++{% include 'partials/reco_block.html' %}
++{% endblock %}

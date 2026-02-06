@@ -1,0 +1,35 @@
+# WSC 2026 — WakeSurf Coach Challenge
+id: wsc_2026
+slug: wsc-2026
+name: "WSC 2026 (WakeSurf Coach Challenge)"
+summary: "Соревнования и образовательная программа для тренеров и райдеров"
+description: |
+  WakeSurf Coach Challenge — проект для тренеров и спортсменов: соревнования,
+  судейство, разбор техники и методика подготовки.
+category: challenge
+kind: event
+schema_type: SportsEvent
+status: scheduled
+city: ""
+country: Россия
+start_date: "2026-01-01"
+end_date: "2026-12-31"
+tags:
+  - challenge
+  - coaching
+level: all
+price_from: null
+capacity: null
+cover_image: images/hero-wakesurf.webp
+gallery: []
+cta_url: "/projects/wakesurf-challenge-2025"
+route: "/projects"
+channels:
+  - projects
+metadata: {}
+# Поля для модалки и CTA (раздел «Проекты»)
+modal_content: ""
+primary_actions:
+  - label: "Перейти на страницу проекта"
+    href: "/projects/wakesurf-challenge-2025"
+page_url: "/projects/wakesurf-challenge-2025"

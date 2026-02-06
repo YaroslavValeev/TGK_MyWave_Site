@@ -2,6 +2,10 @@
 
 {% block title %}WakeSurf Safari — Экспедиция в мир вейксерфинга | MyWave{% endblock %}
 
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/safari.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="safari-container">
   <!-- Hero Section -->
@@ -134,60 +138,11 @@
     </section>
   </div>
 </div>
+{% endblock %}
 
-<!-- Styles -->
-<style>
-  .safari-container {
-    background: #f8f9fa;
-  }
-
-  .safari-hero {
-    position: relative;
-    height: 400px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    overflow: hidden;
-  }
-
-  .safari-hero .hero-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.3);
-    z-index: 0;
-  }
-
-  .safari-hero .hero-content {
-    position: relative;
-    z-index: 1;
-  }
-
-  .safari-hero h1 {
-    font-size: 3.5rem;
-    margin-bottom: 1rem;
-    font-weight: bold;
-  }
-
-  .safari-hero .subtitle {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .safari-hero .description {
-    font-size: 1.1rem;
-    opacity: 0.95;
-  }
-
-  .section-title {
-    font-size: 2.5rem;
-    text-align: center;
-    margin-bottom: 2rem;
+{% block scripts %}
+  <script defer src="{{ url_for('static', filename='js/safari-booking.js') }}"></script>
+{% endblock %}
     color: #333;
     font-weight: bold;
   }
@@ -325,25 +280,27 @@
     flex: 1;
   }
 
-  .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* Scoped styles for booking form buttons to avoid overriding global .btn rules */
+  .safari-booking-form .btn-primary {
+    background: var(--primary);
     border: none;
-    color: white;
+    color: var(--neutral-0);
     padding: 0.75rem 2rem;
     font-size: 1.1rem;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     width: 100%;
-    transition: all 0.3s ease;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
   }
 
-  .btn-primary:hover {
+  .safari-booking-form .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: var(--shadow-md);
   }
 
-  .btn-primary:active {
+  .safari-booking-form .btn-primary:active {
     transform: translateY(0);
+    box-shadow: var(--shadow-sm);
   }
 
   .alert-container {
@@ -405,82 +362,8 @@
       padding: 1.5rem;
     }
   }
-</style>
+{% endblock %}
 
-<!-- Scripts -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const form = document.getElementById('safariBookingForm');
-  const statusDiv = document.getElementById('bookingStatus');
-
-  form.addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    const formData = new FormData(form);
-    const data = {
-      name: formData.get('name'),
-      email: formData.get('email'),
-      phone: formData.get('phone'),
-      level: formData.get('level'),
-      days: parseInt(formData.get('days'), 10),
-      startDate: formData.get('startDate'),
-      message: formData.get('message')
-    };
-
-    // Validate
-    if (!data.name || !data.email || !data.phone || !data.level || !data.days || !data.startDate) {
-      showAlert('Пожалуйста, заполните все обязательные поля', 'danger');
-      return;
-    }
-
-    // Show loading state
-    const submitBtn = form.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.classList.add('loading');
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
-
-    try {
-      const response = await fetch('/api/booking/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.status === 'success') {
-        const bookingId = result.booking.id;
-        showAlert(
-          'Спасибо! Ваша заявка на бронирование принята. Мы вскоре свяжемся с вами.',
-          'success'
-        );
-        form.reset();
-        // Optional: redirect to success page after 2 seconds
-        setTimeout(() => {
-          window.location.href = `/wakesurf-safari/booking-success?id=${bookingId}`;
-        }, 2000);
-      } else {
-        const errorMsg = result.error || 'Произошла ошибка при создании бронирования';
-        showAlert(`Ошибка: ${errorMsg}`, 'danger');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      showAlert('Произошла ошибка при отправке. Пожалуйста, попробуйте позже.', 'danger');
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.classList.remove('loading');
-      submitBtn.innerHTML = originalText;
-    }
-  });
-
-  function showAlert(message, type) {
-    statusDiv.innerHTML = `<div class="alert alert-${type} show">${message}</div>`;
-    // Scroll to alert
-    statusDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-});
-</script>
+{% block scripts %}
+  <script defer src="{{ url_for('static', filename='js/safari-booking.js') }}"></script>
 {% endblock %}

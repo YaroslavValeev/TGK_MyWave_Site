@@ -1,6 +1,6 @@
 id: wakesurf_safari
 slug: wakesurf-safari
-name: "WakeSurf Safari 2025"
+name: "WakeSurf Safari"
 summary: "Экспедиционный тур по Волге с тренировками и проживанием"
 description: |
   Семидневный маршрут с выездом на Волгу: катер Malibu, проживание в речных
@@ -26,7 +26,7 @@ cover_image: images/projects/wakesurfsafari/cover.webp
 gallery:
   - images/projects/wakesurfsafari/stage-1.webp
   - images/projects/wakesurfsafari/stage-2.webp
-cta_url: "/book?s=ws-safari"
+cta_url: "/projects/wakesurf-safari"
 route: "/projects"
 channels:
   - projects
@@ -34,6 +34,11 @@ channels:
 metadata:
   season: summer
   timezone: Europe/Samara
+modal_content: ""
+primary_actions:
+  - label: "Перейти на страницу проекта"
+    href: "/projects/wakesurf-safari"
+page_url: "/projects/wakesurf-safari"
 itinerary:
   - day: 1
     title: "Самара — welcome day"

@@ -10,6 +10,31 @@ from flask_caching import Cache
 from prometheus_flask_exporter import PrometheusMetrics
 from flask_sqlalchemy import SQLAlchemy
 
+# Rate limiter: опционально (flask-limiter). Если не установлен — no-op, лимиты не применяются.
+try:
+    from flask_limiter import Limiter
+    from flask_limiter.util import get_remote_address
+    limiter = Limiter(key_func=get_remote_address)
+except ImportError:
+    limiter = None
+
+
+def _noop_limit(*args, **kwargs):
+    """Декоратор-заглушка, когда limiter не установлен."""
+    def decorator(f):
+        return f
+    return decorator
+
+
+# Чтобы роуты могли писать @limiter.limit("5 per minute") при limiter=None:
+class _LimiterPlaceholder:
+    def limit(self, *args, **kwargs):
+        return _noop_limit
+
+
+if limiter is None:
+    limiter = _LimiterPlaceholder()
+
 socketio = SocketIO(
     cors_allowed_origins=[
         "https://mywavetreaning.ru",

@@ -28,6 +28,8 @@ class Config:
     CSP_ENABLED = os.getenv("CSP_ENABLED", "True") in ("1", "true", "True")
     # Sitemap build timestamp (optional override)
     SITEMAP_BUILD_TS = os.getenv("SITEMAP_BUILD_TS", "")
+    # Показывать товары в разработке (Wave Cards и др.): только dev/staging, на production — скрыты
+    SHOW_DEV_PRODUCTS = os.getenv("SHOW_DEV_PRODUCTS", "False").lower() in ("1", "true", "yes")
     TIMEZONE = "Europe/Moscow"
     SESSION_TYPE = "filesystem"
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
@@ -169,6 +171,7 @@ class TestingConfig(Config):
 class ProductionConfig(Config):
     """Конфигурация для продакшн."""
 
+    SHOW_DEV_PRODUCTS = False  # На production не показываем товары в разработке
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or "sqlite:///app.db"
     SQLALCHEMY_ECHO = False  # Отключаем вывод SQL-запросов в продакшн
 
