@@ -34,7 +34,10 @@
                         </a>
                         <button type="button" 
                                 class="btn btn-sm btn-outline-danger"
-                                onclick="confirmDelete({{ image.id }}, '{{ image.title or image.orig_filename }}')">
+                                data-action="delete-image"
+                                data-image-id="{{ image.id }}"
+                                data-image-name="{{ image.title or image.orig_filename }}"
+                                aria-label="Удалить изображение">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -92,7 +95,9 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/ui-actions.js') }}" defer></script>
 <script>
+// Старая функция для совместимости, если остались inline обработчики
 function confirmDelete(id, name) {
     document.getElementById('deleteImageName').textContent = name;
     document.getElementById('deleteForm').action = "{{ url_for('admin_images.delete', id=0) }}".replace('0', id);

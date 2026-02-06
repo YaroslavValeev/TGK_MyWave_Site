@@ -20,7 +20,7 @@
       <a href="{{ download_pdf_url or url_for('contest_org_checklist.download_checklist_pdf') }}" class="btn-primary" download>
         📄 Скачать PDF
       </a>
-      <button onclick="window.print()" class="btn-secondary btn-ghost">
+      <button class="btn-secondary btn-ghost" data-action="print" aria-label="Печать страницы">
         🖨️ Печать
       </button>
     </div>

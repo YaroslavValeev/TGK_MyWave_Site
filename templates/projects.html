@@ -8,15 +8,17 @@
     {% for p in projects %}
       <li class="project-card">
         {% if p.cover %}
-        <img
+        <img class="card__media card__image"
           src="{{ url_for('static', filename=p.cover) }}"
           alt="{{ p.name }} — обложка проекта"
-          loading="lazy" width="1200" height="800">
+          loading="lazy" width="1200" height="800"
+          data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
         {% else %}
-        <img
-          src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}"
+        <img class="card__media card__image"
+          src="{{ url_for('static', filename='images/Place1Logo.png') }}"
           alt="{{ p.name }} — обложка проекта"
-          loading="lazy" width="1200" height="800">
+          loading="lazy" width="1200" height="800"
+          data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
         {% endif %}
         <div class="project-card__body">
           {% if p.badges %}
@@ -46,10 +48,10 @@
           {% if p.images %}
           <div class="project-card__gallery" aria-label="Превью галереи">
             {% for img in p.images %}
-              <img src="{{ url_for('static', filename=img) }}"
-                   alt="{{ p.name }} — превью {{ loop.index }}"
-                   loading="lazy" width="400" height="266"
-                   data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
+                  <img class="card__media card__image" src="{{ url_for('static', filename=img) }}"
+                    alt="{{ p.name }} — превью {{ loop.index }}"
+                    loading="lazy" width="400" height="266"
+                    data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
             {% endfor %}
           </div>
           {% endif %}

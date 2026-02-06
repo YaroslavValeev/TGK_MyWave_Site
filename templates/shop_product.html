@@ -6,7 +6,7 @@
     {% if product.get('dev_only') %}
     <span class="product-badge product-badge--dev">В разработке</span>
     {% endif %}
-        <img src="{{ url_for('static', filename=product.image or 'images/hero-wakesurf.webp') }}" alt="{{ product.title }}" loading="lazy" decoding="async" width="800" height="500" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
+        <img src="{{ url_for('static', filename=product.image or 'images/Place1Logo.png') }}" alt="{{ product.title }}" loading="lazy" decoding="async" width="800" height="500" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
     <h2>{{ product.title }}</h2>
     <p class="price">{{ product.price }}</p>
     <p>{{ product.description }}</p>

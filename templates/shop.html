@@ -16,69 +16,101 @@
 
   <!-- карточки -->
   <div id="store-products" class="store-list">
-    <div class="product-card" data-category="balance-board">
-      <img src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="Баланс-борд" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
-      <h4>Баланс-борд</h4>
-      <p>Тренировочный баланс-борд для трюков и фитнеса.</p>
-      <p class="price">7 500&nbsp;₽</p>
-      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='balance-board') }}">Купить</a>
+    <div class="product-card mw-card" data-category="balance-board">
+      <img class="card__media card__image" src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="Баланс-борд" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
+      <div class="card__body">
+        <h4 class="card__title">Баланс-борд</h4>
+        <p class="card__text">Тренировочный баланс-борд для трюков и фитнеса.</p>
+        <div class="card__actions">
+          <p class="card__meta price">7 500&nbsp;₽</p>
+          <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='balance-board') }}">Купить</a>
+        </div>
+      </div>
     </div>
 
-    <div class="product-card" data-category="balance-board">
-      <img src="{{ url_for('static', filename='images/balans_trick_trening.jpg') }}" alt="Баланс-борд Big" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
-      <h4>Баланс-борд Big</h4>
-      <p>Увеличенная модель для продвинутых — стабильнее и удобнее для силовых упражнений.</p>
-      <p class="price">9 900&nbsp;₽</p>
-      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='balance-board-big') }}">Купить</a>
+    <div class="product-card mw-card" data-category="balance-board">
+      <img class="card__media card__image" src="{{ url_for('static', filename='images/balans_trick_trening.jpg') }}" alt="Баланс-борд Big" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
+      <div class="card__body">
+        <h4 class="card__title">Баланс-борд Big</h4>
+        <p class="card__text">Увеличенная модель для продвинутых — стабильнее и удобнее для силовых упражнений.</p>
+        <div class="card__actions">
+          <p class="card__meta price">9 900&nbsp;₽</p>
+          <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='balance-board-big') }}">Купить</a>
+        </div>
+      </div>
     </div>
 
-    <div class="product-card" data-category="poncho">
-      <img src="{{ url_for('static', filename='images/01.jpg') }}" alt="Пончо — Комбез" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
-      <h4>Пончо — Комбез (переодевалка)</h4>
-      <p>Удобное сменное пончо — быстро надеть/снять на пляже, сохраняет тепло.</p>
-      <p class="price">4 500&nbsp;₽</p>
-      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='poncho') }}">Купить</a>
+    <div class="product-card mw-card" data-category="poncho">
+      <img class="card__media card__image" src="{{ url_for('static', filename='images/01.jpg') }}" alt="Пончо — Комбез" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
+      <div class="card__body">
+        <h4 class="card__title">Пончо — Комбез (переодевалка)</h4>
+        <p class="card__text">Удобное сменное пончо — быстро надеть/снять на пляже, сохраняет тепло.</p>
+        <div class="card__actions">
+          <p class="card__meta price">4 500&nbsp;₽</p>
+          <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='poncho') }}">Купить</a>
+        </div>
+      </div>
     </div>
 
-    <div class="product-card" data-category="wakesurfpolia">
-      <img src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="WakeSurfPolia" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
-      <h4>WakeSurfPolia</h4>
-      <p>Настольная игра про вейк, волны и тактику. Состав: карты, правила, счёт. Подходит для компании и вечеринок.</p>
-      <p class="price">5 000&nbsp;₽</p>
-      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='wakesurfpolia') }}">Купить</a>
+    <div class="product-card mw-card" data-category="wakesurfpolia">
+      <img class="card__media card__image" src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="WakeSurfPolia" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
+      <div class="card__body">
+        <h4 class="card__title">WakeSurfPolia</h4>
+        <p class="card__text">Настольная игра про вейк, волны и тактику. Состав: карты, правила, счёт. Подходит для компании и вечеринок.</p>
+        <div class="card__actions">
+          <p class="card__meta price">5 000&nbsp;₽</p>
+          <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='wakesurfpolia') }}">Купить</a>
+        </div>
+      </div>
     </div>
 
-    <div class="product-card" data-category="balance-board">
-      <img src="{{ url_for('static', filename='images/02.jpg') }}" alt="Баланс-борд Pro" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
-      <h4>Баланс-борд Pro</h4>
-      <p>Профессиональная доска с улучшенной устойчивостью и долговечностью.</p>
-      <p class="price">12 500&nbsp;₽</p>
-      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='balance-board-pro') }}">Купить</a>
+    <div class="product-card mw-card" data-category="balance-board">
+      <img class="card__media card__image" src="{{ url_for('static', filename='images/02.jpg') }}" alt="Баланс-борд Pro" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
+      <div class="card__body">
+        <h4 class="card__title">Баланс-борд Pro</h4>
+        <p class="card__text">Профессиональная доска с улучшенной устойчивостью и долговечностью.</p>
+        <div class="card__actions">
+          <p class="card__meta price">12 500&nbsp;₽</p>
+          <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='balance-board-pro') }}">Купить</a>
+        </div>
+      </div>
     </div>
 
-    <div class="product-card" data-category="balance-board">
-      <img src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="Баланс-борд NewStyle" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
-      <h4>Баланс-борд NewStyle</h4>
-      <p>Стильная модель для тренировок и трюков. Подходит для дома и зала.</p>
-      <p class="price">8 900&nbsp;₽</p>
-      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='balance-board-newstyle') }}">Купить</a>
+    <div class="product-card mw-card" data-category="balance-board">
+      <img class="card__media card__image" src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="Баланс-борд NewStyle" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
+      <div class="card__body">
+        <h4 class="card__title">Баланс-борд NewStyle</h4>
+        <p class="card__text">Стильная модель для тренировок и трюков. Подходит для дома и зала.</p>
+        <div class="card__actions">
+          <p class="card__meta price">8 900&nbsp;₽</p>
+          <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='balance-board-newstyle') }}">Купить</a>
+        </div>
+      </div>
     </div>
 
-    <div class="product-card" data-category="certificate">
-      <img src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="Сертификат на 10 занятий" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
-      <h4>Сертификат на 10 занятий</h4>
-      <p>Идеальный подарок — путь к уверенному уровню «аматор». Прогресс фиксируется и закрепляется.</p>
-      <p class="price">30 000&nbsp;₽</p>
-      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='certificate-10') }}">Купить</a>
+    <div class="product-card mw-card" data-category="certificate">
+      <img class="card__media card__image" src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="Сертификат на 10 занятий" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
+      <div class="card__body">
+        <h4 class="card__title">Сертификат на 10 занятий</h4>
+        <p class="card__text">Идеальный подарок — путь к уверенному уровню «аматор». Прогресс фиксируется и закрепляется.</p>
+        <div class="card__actions">
+          <p class="card__meta price">30 000&nbsp;₽</p>
+          <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='certificate-10') }}">Купить</a>
+        </div>
+      </div>
     </div>
     {% if show_dev_products %}
-    <div class="product-card product-card--dev" data-category="wave-cards">
+    <div class="product-card product-card--dev mw-card" data-category="wave-cards">
       <span class="product-badge product-badge--dev">В разработке</span>
-      <img src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="Wave Cards" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
-      <h4>Настольная игра «Wave Cards»</h4>
-      <p>Карточная игра про волны и вейк. Пока только в dev/staging.</p>
-      <p class="price">уточняется</p>
-      <span class="btn btn-primary-lg btn--disabled">Скоро</span>
+      <img class="card__media card__image" src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="Wave Cards" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
+      <div class="card__body">
+        <h4 class="card__title">Настольная игра «Wave Cards»</h4>
+        <p class="card__text">Карточная игра про волны и вейк. Пока только в dev/staging.</p>
+        <div class="card__actions">
+          <p class="card__meta price">уточняется</p>
+          <span class="btn btn-primary-lg btn--disabled">Скоро</span>
+        </div>
+      </div>
     </div>
     {% endif %}
   </div>

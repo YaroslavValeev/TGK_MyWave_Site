@@ -210,6 +210,38 @@ button:focus-visible, a.btn:focus-visible, .btn:focus-visible {
   justify-content: flex-start;
 }
 
+/* Modern card refinements: subtle hover elevation and focus outline for accessibility */
+.mw-card {
+  transition: transform 180ms var(--ease), box-shadow 180ms var(--ease);
+  will-change: transform;
+}
+.mw-card:focus-within,
+.mw-card:focus,
+.mw-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(12,20,30,0.12);
+}
+.card__media.card__image {
+  min-height: 160px;
+  background-color: var(--bg);
+  display: block;
+}
+.card__title { font-size: 1.05rem; }
+.card__text { color: var(--text-secondary); font-size: 0.95rem; }
+
+/* Validation UX: do not show native invalid styles until after user interaction */
+input:invalid, textarea:invalid, select:invalid {
+  box-shadow: none;
+  outline: none;
+  border-color: var(--border);
+}
+/* show invalid only after form attempted submit (has class was-validated) or field is focused */
+form.was-validated input:invalid, form.was-validated textarea:invalid, form.was-validated select:invalid,
+input:focus:invalid, textarea:focus:invalid, select:focus:invalid {
+  border-color: #e05353; /* danger */
+  box-shadow: 0 0 0 4px rgba(224,83,83,0.08);
+}
+
 /* Carousel control component (arrows) — unified across all carousels */
 .carousel-prev,
 .carousel-next {
@@ -2811,6 +2843,14 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
 }
 .event-card:hover,
 .blog-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Focus-within state for keyboard navigation and accessibility */
+.blog-card:focus-within {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
   transform: translateY(-4px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }

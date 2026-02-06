@@ -158,7 +158,7 @@ def get_showcase(showcase_id: str) -> ShowcaseConfig | None:
 
 
 # Fallback-обложка, если файл из YAML отсутствует (убирает 404 в Network)
-COVER_FALLBACK = "images/hero-wakesurf.webp"
+COVER_FALLBACK = "images/Place1Logo.png"
 
 # Порядок slug'ов для превью на главной (первые 3 показываются в карусели)
 PROJECTS_PREVIEW_SLUGS = ["wsc-2026", "wakesurf-safari", "camp-ruza"]

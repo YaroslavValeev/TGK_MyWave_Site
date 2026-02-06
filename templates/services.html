@@ -19,16 +19,10 @@
             <div class="image-placeholder"></div>
             <img class="service-image" 
                  src="{{ url_for('static', filename='images/' + service.image_url) }}"
-                 srcset="
-                    {{ url_for('static', filename='images/small/' + service.image_url) }} 300w,
-                    {{ url_for('static', filename='images/medium/' + service.image_url) }} 600w,
-                    {{ url_for('static', filename='images/large/' + service.image_url) }} 1200w
-                 "
-                 sizes="(max-width: 300px) 300px,
-                        (max-width: 600px) 600px,
-                        1200px"
                  loading="lazy" 
-                 alt="{{ service.name }}" 
+                 alt="{{ service.name }}"
+                 width="300"
+                 height="300"
                  data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
           </div>
           <h3>{{ service.name }}</h3>

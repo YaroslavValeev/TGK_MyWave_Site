@@ -595,7 +595,14 @@ def create_app(config_name="development"):
             projects = get_project_cards()
             jsonld = get_projects_graph()
         except Exception as e:
-            app.logger.exception("projects_page: %s", e)
+            import traceback
+
+            # Log full traceback to logger and print to stderr for local dev visibility
+            tb = traceback.format_exc()
+            app.logger.exception("projects_page exception: %s\n%s", e, tb)
+            print("--- projects_page traceback (local) ---")
+            print(tb)
+            print("--- end traceback ---")
             projects = []
             jsonld = {}
         return render_template(

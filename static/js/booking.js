@@ -61,13 +61,19 @@ function initializeBooking() {
 
   if (!UI.bookingDateInput || !UI.slotButtonsContainer) {
     console.warn("⚠️ Предупреждение: отсутствуют некоторые модальные элементы (это нормально, если они подгружаются позже).");
-    // NOTE: We do NOT return here anymore - this allows booking buttons to work even if modals aren't ready yet
   }
 
-  // Проверяем инициализацию кнопок бронирования
-  if (!UI.openBookingButtons || UI.openBookingButtons.length === 0) {
-    console.warn("⚠️ Не найдены кнопки для бронирования - попытаемся продолжить");
-    // NOTE: We do NOT return here - let booking initialization continue
+  // Quick detection: if the page doesn't contain any booking UI, bail out quietly
+  const bookingContactForm = document.getElementById("bookingContactForm");
+  const hasBookingUi = (UI.openBookingButtons && UI.openBookingButtons.length > 0)
+    || UI.bookingDateInput || UI.slotButtonsContainer
+    || UI.calendarModal || UI.slotsModal || UI.contactModal || UI.confirmModal
+    || bookingContactForm;
+
+  if (!hasBookingUi) {
+    console.info('[booking.js] Booking UI not detected on this page — skipping booking initialization.');
+    window.bookingStatus.initialized = false;
+    return; // prevent noisy errors on pages without booking widgets
   }
 
 
@@ -965,6 +971,8 @@ function initializeBooking() {
   if (bookingContactForm) {
     bookingContactForm.addEventListener("submit", (e) => {
       e.preventDefault();
+      // mark form as validated to reveal field errors visually
+      bookingContactForm.classList.add('was-validated');
       if (!UI.bookingName || !UI.bookingPhone) return;
       if (!UI.bookingName.value.trim() || !UI.bookingPhone.value.trim()) {
         showToast('❌ Заполните все поля');

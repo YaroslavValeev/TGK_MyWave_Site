@@ -5,8 +5,8 @@
 {% block content %}
   <!-- Герой-блок -->
   <section id="hero" class="hero-section relative-section">
-    <img src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}" alt="Вейксерфинг на волне" class="hero-bg hero-bg-cover hero-bg-light" loading="lazy" decoding="async" />
-    <img src="{{ url_for('static', filename='images/hero-wakesurf-dark.webp') }}" alt="Вейксерфинг на волне (тёмная тема)" class="hero-bg hero-bg-cover hero-bg-dark" loading="lazy" decoding="async" />
+    <img src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}" alt="Вейксерфинг на волне" class="hero-bg hero-bg-cover hero-bg-light" loading="lazy" decoding="async" width="1920" height="600" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}" />
+    <img src="{{ url_for('static', filename='images/hero-wakesurf-dark.webp') }}" alt="Вейксерфинг на волне (тёмная тема)" class="hero-bg hero-bg-cover hero-bg-dark" loading="lazy" decoding="async" width="1920" height="600" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}" />
     <div class="hero-content center-padding hero-content-relative">
       <h1 class="hero-title">MyWave</h1>
       <p class="hero-subtitle">Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
@@ -92,17 +92,21 @@
       <button class="carousel-prev" type="button" aria-label="Прокрутить товары влево">‹</button>
       <div class="carousel-track">
         {% for p in products_preview %}
-        <a class="product-card" href="{{ url_for('shop.product', slug=p.slug) }}">
-          <img
-            src="{{ url_for('static', filename=(p.image or 'images/hero-wakesurf.webp')) }}"
+        <a class="product-card mw-card" href="{{ url_for('shop.product', slug=p.slug) }}">
+          <img class="card__media card__image"
+            src="{{ url_for('static', filename=(p.image or 'images/Place1Logo.png')) }}"
             alt="{{ p.title }}"
             loading="lazy" decoding="async" width="360" height="220"
-            
+            data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}"
           />
-          <h4>{{ p.title }}</h4>
-          <p>{{ p.description }}</p>
-          <p class="price">Цена: {{ p.price }}</p>
-          <span class="buy-btn">Купить</span>
+          <div class="card__body">
+            <h4 class="card__title">{{ p.title }}</h4>
+            <p class="card__text">{{ p.description }}</p>
+            <div class="card__actions">
+              <p class="card__meta price">Цена: {{ p.price }}</p>
+              <span class="btn btn-primary buy-btn">Купить</span>
+            </div>
+          </div>
         </a>
         {% endfor %}
       </div>
@@ -118,20 +122,24 @@
       <button class="carousel-prev" type="button" aria-label="Прокрутить проекты влево">‹</button>
       <div class="carousel-track">
         {% for p in projects_preview %}
-        <div class="project-card">
+        <div class="project-card mw-card">
           {% if p.cover %}
-          <img src="{{ url_for('static', filename=p.cover) }}" alt="{{ p.name }}" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}" />
+          <img class="card__media card__image" src="{{ url_for('static', filename=p.cover) }}" alt="{{ p.name }}" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}" />
           {% else %}
-          <img src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}" alt="{{ p.name }}" loading="lazy" decoding="async" width="360" height="220" />
+          <img class="card__media card__image" src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}" alt="{{ p.name }}" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}" />
           {% endif %}
-          {% if p.badges %}
-          <p class="project-card__badges">{% for b in p.badges %}<span class="badge">{{ b }}</span>{% if not loop.last %} · {% endif %}{% endfor %}</p>
-          {% endif %}
-          <h4>{{ p.name }}</h4>
-          <p>{{ p.summary }}</p>
-          {% if p.cta_url or p.url %}
-          <a href="{{ p.cta_url or p.url }}" class="btn-secondary">Подробнее</a>
-          {% endif %}
+          <div class="card__body">
+            {% if p.badges %}
+            <p class="project-card__badges">{% for b in p.badges %}<span class="badge">{{ b }}</span>{% if not loop.last %} · {% endif %}{% endfor %}</p>
+            {% endif %}
+            <h4 class="card__title">{{ p.name }}</h4>
+            <p class="card__text">{{ p.summary }}</p>
+            <div class="card__actions">
+              {% if p.cta_url or p.url %}
+              <a href="{{ p.cta_url or p.url }}" class="btn-secondary">Подробнее</a>
+              {% endif %}
+            </div>
+          </div>
         </div>
         {% endfor %}
       </div>
