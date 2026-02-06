@@ -95,7 +95,7 @@
   {% block head %}{% endblock %}
 </head>
 
-<body>
+<body class="{% block body_class %}{% endblock %}">
   <!-- Шапка -->
   <header class="site-header" id="site-header">
     <div class="header-inner">
@@ -104,11 +104,13 @@
       </div>
       <nav class="site-nav" id="site-nav">
         <ul>
-          <li><a href="#hero">Главная</a></li>
-          <li><a href="#services">Услуги</a></li>
-          <li><a href="#events">Мероприятия</a></li>
-          <li><a href="#blog">Блог</a></li>
-          <li><a href="#contacts">Контакты</a></li>
+          <li><a href="{{ url_for('index') }}#hero">Главная</a></li>
+          <li><a href="{{ url_for('index') }}#services">Услуги</a></li>
+          <li><a href="{{ url_for('index') }}#store">Товары</a></li>
+          <li><a href="{{ url_for('index') }}#projects">Проекты</a></li>
+          <li><a href="{{ url_for('index') }}#events">Мероприятия</a></li>
+          <li><a href="{{ url_for('index') }}#blog">Блог</a></li>
+          <li><a href="{{ url_for('index') }}#contacts">Контакты</a></li>
         </ul>
       </nav>
       <button id="dark-mode-toggle" class="theme-toggle" aria-label="Переключить тему">🌙</button>
@@ -194,11 +196,14 @@
   <script src="{{ url_for('static', filename='js/preloader.js') }}"></script>
   <script src="{{ url_for('static', filename='js/image-effects.js') }}"></script>
 
+  <script defer src="{{ url_for('static', filename='js/image-fallbacks.js') }}" nonce="{{ g.csp_nonce }}"></script>
+
   <!-- Recommendations client script (loads recommendation widgets & analytics pings) -->
   <script type="module" src="{{ url_for('static', filename='js/reco.js') }}" nonce="{{ g.csp_nonce }}"></script>
 
   <!-- booking.js должен быть после блока content и всех модалок -->
   <script defer src="{{ url_for('static', filename='js/booking.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/lead-forms.js') }}"></script>
 
   <!-- Контейнер для success-view partial (подгружается динамически) -->
   <div id="success-modal" class="modal success-modal hidden" aria-hidden="true">

@@ -18,7 +18,9 @@ def get_sponsor_kpi(project: str) -> Dict[str, Any]:
     """
     try:
         sheet_id = current_app.config.get("ANALYTICS_SHEET_SPREADSHEET_ID")
-        sheet_name = current_app.config.get("ANALYTICS_SHEET_NAME", "analytics_statistics")
+        sheet_name = current_app.config.get(
+            "ANALYTICS_SHEET_NAME", "analytics_statistics"
+        )
         events: list[dict] = []
         if sheet_id:
             try:
@@ -41,5 +43,3 @@ def get_sponsor_kpi(project: str) -> Dict[str, Any]:
             "error": "kpi_error",
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-
-

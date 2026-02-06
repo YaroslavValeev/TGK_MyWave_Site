@@ -4,7 +4,9 @@ import logging
 from app.ai.core_gateway import create_default_gateway
 from app.services.google_sheets_analytics import log_analytics_event
 
-challenge_concierge_bp = Blueprint("challenge_concierge", __name__, url_prefix="/api/ai/challenge")
+challenge_concierge_bp = Blueprint(
+    "challenge_concierge", __name__, url_prefix="/api/ai/challenge"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -46,5 +48,3 @@ def challenge_chat():
         logger.warning("[Challenge concierge] analytics logging failed: %s", e)
 
     return jsonify(reply)
-
-

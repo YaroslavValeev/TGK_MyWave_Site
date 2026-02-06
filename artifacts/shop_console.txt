@@ -1,0 +1,31 @@
+[debug] [CSP Monitor] Инициализирован (sessionId: 2b21dd92...)
+[log] [Chat] Модуль инициализирован (заглушка)
+[log] [Booking] Модуль инициализирован (заглушка)
+[log] [StoreFilter] Модуль инициализирован (заглушка)
+[log] ✅ chat.js успешно загружен
+[error] WebSocket connection to 'ws://127.0.0.1:5001/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 400
+[error] ❌ WebSocket connection error: Error: websocket error
+    at i.value (https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js:6:9704)
+    at ws.onerror (https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js:6:17874)
+[error] WebSocket connection to 'ws://127.0.0.1:5001/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 400
+[error] ❌ WebSocket connection error: Error: websocket error
+    at i.value (https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js:6:9704)
+    at ws.onerror (https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js:6:17874)
+[error] WebSocket ошибка подключения: Error: websocket error
+    at i.value (https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js:6:9704)
+    at ws.onerror (https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js:6:17874)
+[error] WebSocket connection to 'ws://127.0.0.1:5001/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 400
+[error] ❌ WebSocket connection error: Error: websocket error
+    at i.value (https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js:6:9704)
+    at ws.onerror (https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js:6:17874)
+[error] WebSocket connection to 'ws://127.0.0.1:5001/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 400
+[error] ❌ WebSocket connection error: Error: websocket error
+    at i.value (https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js:6:9704)
+    at ws.onerror (https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js:6:17874)
+[error] WebSocket ошибка подключения: Error: websocket error
+    at i.value (https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js:6:9704)
+    at ws.onerror (https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js:6:17874)
+[error] WebSocket connection to 'ws://127.0.0.1:5001/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 400
+[error] ❌ WebSocket connection error: Error: websocket error
+    at i.value (https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js:6:9704)
+    at ws.onerror (https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js:6:17874)

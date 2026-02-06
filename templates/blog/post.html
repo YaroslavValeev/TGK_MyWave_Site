@@ -55,7 +55,7 @@
       {% endif %}
 
       {% if post.cover_image_url %}
-        <img src="{{ post.cover_image_url }}" alt="" style="width:100%; border-radius: 14px; margin: 8px 0 18px 0;">
+        <img src="{{ post.cover_image_url }}" alt="" loading="lazy" decoding="async" width="1200" height="630" style="width:100%; border-radius: 14px; margin: 8px 0 18px 0;" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
       {% endif %}
 
       <article style="line-height: 1.65; font-size: 16px;">

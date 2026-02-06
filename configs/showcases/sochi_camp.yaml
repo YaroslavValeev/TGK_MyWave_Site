@@ -28,7 +28,6 @@ gallery:
 cta_url: "/book?s=sochi-camp"
 route: "/events"
 channels:
-  - projects
   - events
 metadata:
   season: winter

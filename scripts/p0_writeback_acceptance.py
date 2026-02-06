@@ -53,8 +53,17 @@ def main() -> int:
     from app import create_app
     from app.services.google import append_to_sheet, read_sheet
     from app.services.google import get_google_services
-    from app.services.parser_news_sheet import resolve_parser_source, fetch_parser_news_rows
-    from app.services.blog.publish import acquire_publish_lock, ack_publish, release_publish_lock, record_publish_error_by_id, update_sheet_cells
+    from app.services.parser_news_sheet import (
+        resolve_parser_source,
+        fetch_parser_news_rows,
+    )
+    from app.services.blog.publish import (
+        acquire_publish_lock,
+        ack_publish,
+        release_publish_lock,
+        record_publish_error_by_id,
+        update_sheet_cells,
+    )
 
     app = create_app("development")
 
@@ -64,13 +73,24 @@ def main() -> int:
         # Диагностика: где API видит строку заголовков (простая проверка наличия id+status)
         try:
             svc = get_google_services()[1]
-            res = svc.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=f"{sheet_name}!A1:ZZ1000").execute()
+            res = (
+                svc.spreadsheets()
+                .values()
+                .get(spreadsheetId=spreadsheet_id, range=f"{sheet_name}!A1:ZZ1000")
+                .execute()
+            )
             values = res.get("values", [])
 
             def norm(x: str) -> str:
                 return str(x or "").strip().lower()
 
-            expected = {"id", "status", "published_posts", "publish_error", "source_type"}
+            expected = {
+                "id",
+                "status",
+                "published_posts",
+                "publish_error",
+                "source_type",
+            }
             best_score = 0
             best_row = 1
             first_id_status_row = None
@@ -81,10 +101,21 @@ def main() -> int:
                 if score > best_score:
                     best_score = score
                     best_row = i + 1
-                if "id" in rowset and "status" in rowset and first_id_status_row is None:
+                if (
+                    "id" in rowset
+                    and "status" in rowset
+                    and first_id_status_row is None
+                ):
                     first_id_status_row = i + 1
 
-            print("header_scan", {"best_score": best_score, "best_row": best_row, "first_id_status_row": first_id_status_row})
+            print(
+                "header_scan",
+                {
+                    "best_score": best_score,
+                    "best_row": best_row,
+                    "first_id_status_row": first_id_status_row,
+                },
+            )
         except Exception as e:
             print("header_scan_error", str(e))
 
@@ -124,7 +155,9 @@ def main() -> int:
         row[col("status")] = "READY_TO_PUBLISH"
         row[col("slug")] = test_slug
         row[col("telegram_published")] = "TRUE"
-        row[col("final_posts")] = f"# P0 test\n\nThis is a P0 integration test record ({test_id})."
+        row[col("final_posts")] = (
+            f"# P0 test\n\nThis is a P0 integration test record ({test_id})."
+        )
         row[col("final_ready")] = "TRUE"
 
         append_to_sheet(spreadsheet_id, sheet_name, [row])
@@ -138,11 +171,21 @@ def main() -> int:
         rec = rec[0]
 
         sheet_row = int(str(rec.get("_sheet_row_number") or "").strip())
-        print("located", {"sheet_row": sheet_row, "row_number_before": str(rec.get("row_number") or "")})
+        print(
+            "located",
+            {
+                "sheet_row": sheet_row,
+                "row_number_before": str(rec.get("row_number") or ""),
+            },
+        )
 
         rn_col_idx = col("row_number")
         rn_letter = _idx_to_letter(int(rn_col_idx))
-        update_sheet_cells(spreadsheet_id, sheet_name, [{"range": f"{rn_letter}{sheet_row}", "values": [[str(sheet_row)]]}])
+        update_sheet_cells(
+            spreadsheet_id,
+            sheet_name,
+            [{"range": f"{rn_letter}{sheet_row}", "values": [[str(sheet_row)]]}],
+        )
         print("row_number_set", sheet_row)
 
         records3, _ = fetch_parser_news_rows()
@@ -195,4 +238,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

@@ -1,0 +1,41 @@
+# MyWave Camp Ruza — летний детский лагерь на Рузе
+id: camp_ruza
+slug: camp-ruza
+name: "MyWave Camp Ruza"
+summary: "14 дней на Рузе: вода за Wakeflot, команда, результат"
+description: |
+  Летний лагерь на Рузском водохранилище: проживание на территории отеля,
+  тренировки за катером Wakeflot, группы 10–13 / 14–16 / 17–20 лет.
+  Режим, безопасность, прогресс.
+category: camp
+kind: event
+schema_type: SportsEvent
+status: scheduled
+city: Руза
+country: Россия
+start_date: "2026-08-10"
+end_date: "2026-08-23"
+tags:
+  - camp
+  - summer
+  - kids
+  - teens
+level: all
+price_from: "170 000 – 250 000 ₽"
+capacity: 16
+cover_image: images/Project/SummerCamp/SummerCampKids1.png
+gallery: []
+cta_url: "/projects/camp-ruza"
+route: "/projects"
+channels:
+  - projects
+metadata:
+  badges:
+    - "10–20 лет"
+    - "10–23 августа 2026"
+    - "12–16 мест"
+modal_content: ""
+primary_actions:
+  - label: "Перейти на страницу проекта"
+    href: "/projects/camp-ruza"
+page_url: "/projects/camp-ruza"

@@ -4,13 +4,13 @@
 
 {% block content %}
   <!-- Герой-блок -->
-  <section class="hero-section relative-section">
-    <img src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}" alt="Вейксерфинг на волне" class="hero-bg hero-bg-cover hero-bg-light" loading="lazy" />
-    <img src="{{ url_for('static', filename='images/hero-wakesurf-dark.webp') }}" alt="Вейксерфинг на волне (тёмная тема)" class="hero-bg hero-bg-cover hero-bg-dark" loading="lazy" />
+  <section id="hero" class="hero-section relative-section">
+    <img src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}" alt="Вейксерфинг на волне" class="hero-bg hero-bg-cover hero-bg-light" loading="lazy" decoding="async" width="1920" height="600" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}" />
+    <img src="{{ url_for('static', filename='images/hero-wakesurf-dark.webp') }}" alt="Вейксерфинг на волне (тёмная тема)" class="hero-bg hero-bg-cover hero-bg-dark" loading="lazy" decoding="async" width="1920" height="600" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}" />
     <div class="hero-content center-padding hero-content-relative">
       <h1 class="hero-title">MyWave</h1>
       <p class="hero-subtitle">Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
-      <button class="btn-primary book-now" id="openBookingBtn" data-service="gym">Записаться</button>
+      <button class="btn-primary book-now" id="openBookingBtn" data-service="gym" data-modal="booking">Записаться</button>
     </div>
   </section>
 
@@ -37,59 +37,115 @@
   <section id="services" class="services-section">
     <h2>Услуги</h2>
     <div class="services-carousel">
-      <button class="carousel-prev" aria-label="Предыдущие услуги">◀</button>
+      <button class="carousel-prev" type="button" aria-label="Назад">‹</button>
       <div class="carousel-track">
         <div class="service-card">
-          <h4>Тренировка</h4>
-          <p>Тренировка на авторских тренажёрах по уникальной методике вейксерфинга. Развиваем баланс, координацию, биомеханику и нейронные связи, чтобы вы уверенно и эффектно выполняли трюки.</p>
-          <p>Цена: 3500 рублей</p>
-          <button class="btn-secondary btn-book" data-service="gym">Подробнее / Записаться</button>
+          <h4>Запись на тренировку (Зал)</h4>
+          <p>Тренировки на авторских тренажёрах по методике вейксерфинга: баланс, координация, биомеханика, подготовка к воде и трюкам.</p>
+          <p>Цена: 3 500 ₽</p>
+          <button class="btn-secondary btn-book" data-service="gym" data-modal="booking">Подробнее / Записаться</button>
         </div>
 
         <div class="service-card" id="boat-card">
           <h4>Запись на катер</h4>
           <p>Тренировка за катером с тренером (30 минут)</p>
           <p>Цена: 10 000 рублей</p>
-          <button class="btn-secondary btn-book" data-service="boat">Подробнее / Записаться</button>
+          <button class="btn-secondary btn-book" data-service="boat" data-modal="booking">Подробнее / Записаться</button>
         </div>
 
         <div class="service-card">
           <h4>Wake Discovery</h4>
           <p>Короткая ознакомительная сессия для новичков с инструктором. Можно открыть калькулятор для расчёта тура.</p>
           <p>Цена: 2500 рублей</p>
-          <button class="btn-secondary btn-book" data-service="boat">Подробнее / Калькулятор</button>
+          <button class="btn-secondary btn-book" data-service="boat" data-modal="booking">Подробнее / Калькулятор</button>
         </div>
 
         <div class="service-card">
           <h4>Wake Camp</h4>
-          <p>Интенсивный лагерь для постоянной работы над техникой и физичечской подготовкой.</p>
-          <p>Цена: от 15 000 рублей</p>
-          <button class="btn-secondary btn-book" data-service="boat">Подробнее / Записаться</button>
+          <p>Интенсивный лагерь для постоянной работы над техникой и физической подготовкой.</p>
+          <p>Цена: от 15 000 рублей (по запросу)</p>
+          <button type="button" class="btn-secondary btn-lead" data-lead="camp" aria-label="Запросить программу">Запросить программу</button>
+        </div>
+
+        <div class="service-card">
+          <h4>Тренер на выезде</h4>
+          <p>Выезд инструктора на ваш водоём или базу. Индивидуальные и групповые тренировки.</p>
+          <p>Цена: по запросу</p>
+          <button type="button" class="btn-secondary btn-lead" data-lead="coach-trip" aria-label="Запросить выезд">Запросить выезд</button>
+        </div>
+
+        <div class="service-card">
+          <h4>Консалтинг</h4>
+          <p>Консультации по организации соревнований, подбору оборудования и методике обучения.</p>
+          <p>Цена: по запросу</p>
+          <button type="button" class="btn-secondary btn-lead" data-lead="consulting" aria-label="Обсудить запуск">Обсудить запуск</button>
         </div>
       </div>
-      <button class="carousel-next" aria-label="Следующие услуги">▶</button>
+      <button class="carousel-next" type="button" aria-label="Вперёд">›</button>
     </div>
   </section>
 
-  <!-- Товары -->
+  <!-- Товары (карусель) -->
   <section id="store" class="store-section">
     <h2>Товары</h2>
-    <div class="cards-grid">
-      <div class="product-card">
-        <img src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="Баланс-борд" loading="lazy" />
-        <h4>Баланс-борд</h4>
-        <p>Тренировочный баланс-борд для трюков и фитнеса. Улучшает координацию, подходит для всех уровней подготовки.</p>
-        <p>Цена: 7 500 ₽</p>
-        <button class="btn-secondary">Купить</button>
+    <div class="products-carousel">
+      <button class="carousel-prev" type="button" aria-label="Прокрутить товары влево">‹</button>
+      <div class="carousel-track">
+        {% for p in products_preview %}
+        <a class="product-card mw-card" href="{{ url_for('shop.product', slug=p.slug) }}">
+          <img class="card__media card__image"
+            src="{{ url_for('static', filename=(p.image or 'images/Place1Logo.png')) }}"
+            alt="{{ p.title }}"
+            loading="lazy" decoding="async" width="360" height="220"
+            data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}"
+          />
+          <div class="card__body">
+            <h4 class="card__title">{{ p.title }}</h4>
+            <p class="card__text">{{ p.description }}</p>
+            <div class="card__actions">
+              <p class="card__meta price">Цена: {{ p.price }}</p>
+              <span class="btn btn-primary buy-btn">Купить</span>
+            </div>
+          </div>
+        </a>
+        {% endfor %}
       </div>
-      <div class="product-card">
-        <img src="{{ url_for('static', filename='images/balans_trick_trening.jpg') }}" alt="Баланс-борд Pro" loading="lazy" />
-        <h4>Баланс-борд Big</h4>
-        <p>Увеличенная модель для профессионалов.</p>
-        <p>Цена: 9 900 ₽</p>
-        <button class="btn-secondary">Купить</button>
-      </div>
+      <button class="carousel-next" type="button" aria-label="Прокрутить товары вправо">›</button>
     </div>
+    <p class="store-more"><a href="{{ url_for('shop.shop_index') }}" class="btn-secondary">Все товары</a></p>
+  </section>
+
+  <!-- Проекты (карусель) -->
+  <section id="projects" class="projects-section section">
+    <h2>Проекты</h2>
+    <div class="projects-carousel">
+      <button class="carousel-prev" type="button" aria-label="Прокрутить проекты влево">‹</button>
+      <div class="carousel-track">
+        {% for p in projects_preview %}
+        <div class="project-card mw-card">
+          {% if p.cover %}
+          <img class="card__media card__image" src="{{ url_for('static', filename=p.cover) }}" alt="{{ p.name }}" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}" />
+          {% else %}
+          <img class="card__media card__image" src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}" alt="{{ p.name }}" loading="lazy" decoding="async" width="360" height="220" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}" />
+          {% endif %}
+          <div class="card__body">
+            {% if p.badges %}
+            <p class="project-card__badges">{% for b in p.badges %}<span class="badge">{{ b }}</span>{% if not loop.last %} · {% endif %}{% endfor %}</p>
+            {% endif %}
+            <h4 class="card__title">{{ p.name }}</h4>
+            <p class="card__text">{{ p.summary }}</p>
+            <div class="card__actions">
+              {% if p.cta_url or p.url %}
+              <a href="{{ p.cta_url or p.url }}" class="btn-secondary">Подробнее</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <button class="carousel-next" type="button" aria-label="Прокрутить проекты вправо">›</button>
+    </div>
+    <p class="projects-more"><a href="{{ url_for('projects_page') }}" class="btn-secondary">Все проекты</a></p>
   </section>
 
   {# Рендерим секцию мероприятий только если есть хотя бы одно событие #}
@@ -118,10 +174,28 @@
   </section>
   {% endif %}
 
-  <!-- Блог -->
+  <!-- Последние новости / Блог (карусель) -->
   <section id="blog" class="blog-section">
-    <h2>Блог</h2>
-    <p>В разработке. Скоро здесь появятся новые статьи!</p>
+    <h2>Последние новости</h2>
+    <div class="blog-carousel">
+      <button class="carousel-prev" type="button" aria-label="Назад">‹</button>
+      <div class="carousel-track">
+        {% if latest_blog_post %}
+        <article class="blog-card">
+          <h3><a href="{{ url_for('blog.blog_post', slug=latest_blog_post.slug) }}">{{ latest_blog_post.title }}</a></h3>
+          {% if latest_blog_post.get('excerpt') %}
+          <p class="blog-excerpt">{{ latest_blog_post.excerpt }}</p>
+          {% endif %}
+          <p class="blog-more"><a href="{{ url_for('blog.blog_index') }}">Все статьи блога</a></p>
+        </article>
+        {% else %}
+        <div class="blog-card blog-card--placeholder">
+          <p>Скоро здесь появятся новые статьи. <a href="{{ url_for('blog.blog_index') }}">Перейти в блог</a>.</p>
+        </div>
+        {% endif %}
+      </div>
+      <button class="carousel-next" type="button" aria-label="Вперёд">›</button>
+    </div>
   </section>
 
   <section class="reviews-section">
@@ -177,5 +251,6 @@
   <a href="/chat" class="btn-secondary chat-margin">Чат с тренером</a>
 
   {% include 'partials/booking_modals.html' %}
+  {% include 'partials/lead_modals.html' %}
   {% include 'partials/reco_block.html' %}
 {% endblock %}

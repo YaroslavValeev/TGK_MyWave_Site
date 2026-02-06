@@ -6,17 +6,29 @@
 
   <ul class="projects-grid">
     {% for p in projects %}
-      <li class="project-card">
+      <li class="project-card mw-card" tabindex="0">
         {% if p.cover %}
-        <img
+        <img class="card__media card__image"
           src="{{ url_for('static', filename=p.cover) }}"
           alt="{{ p.name }} — обложка проекта"
-          loading="lazy" width="1200" height="800">
+          loading="lazy" width="1200" height="800"
+          data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
+        {% else %}
+        <img class="card__media card__image"
+          src="{{ url_for('static', filename='images/Place1Logo.png') }}"
+          alt="{{ p.name }} — обложка проекта"
+          loading="lazy" width="1200" height="800"
+          data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
         {% endif %}
-        <div class="project-card__body">
-          <h2 class="project-card__title">{{ p.name }}</h2>
-          <p class="project-card__summary">{{ p.summary }}</p>
-          <p class="project-card__meta">
+        <div class="card__body">
+          {% if p.badges %}
+          <p class="project-card__badges">
+            {% for b in p.badges %}<span class="badge">{{ b }}</span>{% if not loop.last %} · {% endif %}{% endfor %}
+          </p>
+          {% endif %}
+          <h2 class="card__title">{{ p.name }}</h2>
+          <p class="card__text">{{ p.summary }}</p>
+          <p class="card__meta">
             <span class="city">{{ p.city }}</span>
             {% if p.tags %}
               <span class="tags">
@@ -36,23 +48,26 @@
           {% if p.images %}
           <div class="project-card__gallery" aria-label="Превью галереи">
             {% for img in p.images %}
-              <img src="{{ url_for('static', filename=img) }}"
-                   alt="{{ p.name }} — превью {{ loop.index }}"
-                   loading="lazy" width="400" height="266">
+                  <img class="card__media card__image" src="{{ url_for('static', filename=img) }}"
+                    alt="{{ p.name }} — превью {{ loop.index }}"
+                    loading="lazy" width="400" height="266"
+                    data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
             {% endfor %}
           </div>
           {% endif %}
-
-          {% if p.cta_url %}
-            <a class="btn btn-primary" href="{{ p.cta_url }}">Записаться</a>
-          {% endif %}
+          <div class="card__actions">
+            {% if p.cta_url or p.url %}
+              <a class="btn btn-primary" href="{{ p.cta_url or p.url }}">Подробнее</a>
+            {% endif %}
+          </div>
         </div>
       </li>
     {% endfor %}
   </ul>
 </section>
 
-{% include 'partials/reco_block.html' with context='projects' %}
+{% set context = 'projects' %}
+{% include 'partials/reco_block.html' %}
 
 {% if showcase_graph %}
 <script type="application/ld+json" nonce="{{ csp_nonce }}">

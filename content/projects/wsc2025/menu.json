@@ -1,0 +1,19 @@
+{
+  "anchors": [
+    {"id": "about", "label": "О проекте"},
+    {"id": "how", "label": "Как это работает"},
+    {"id": "register", "label": "Регистрация"},
+    {"id": "judging", "label": "Судейство"},
+    {"id": "media", "label": "Медиа"},
+    {"id": "partners", "label": "Партнёрам"},
+    {"id": "final-day", "label": "Программа финального дня"},
+    {"id": "webinars", "label": "Календарь вебинаров"},
+    {"id": "faq", "label": "FAQ"},
+    {"id": "contacts", "label": "Контакты"}
+  ],
+  "downloads": [
+    {"label": "📄 Материалы участника", "href": "/static/docs/wsc_participant_pack.zip"},
+    {"label": "📄 Материалы тренера", "href": "/static/docs/wsc_coach_pack.zip"},
+    {"label": "📄 Пакет спонсора", "href": "/static/docs/wsc_sponsor_pack.zip"}
+  ]
+}

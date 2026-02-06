@@ -2,7 +2,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
-const fetch = require("node-fetch");  // исправлен импорт fetch для совместимости
+// Node 18+: нативный global fetch. node-fetch@3 — ESM-only, require() падает.
+const fetch = typeof globalThis.fetch === "function" ? globalThis.fetch : (() => { throw new Error("Node 18+ required for fetch"); })();
 
 const app = express();
 app.use(bodyParser.json());

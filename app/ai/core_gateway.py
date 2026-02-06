@@ -35,10 +35,17 @@ class AIGateway:
             raise ValueError("Invalid tool registration")
         self.tools[name] = fn
 
-    def handle_message(self, user_id: str, message: str, context: Optional[dict] = None) -> Dict[str, Any]:
+    def handle_message(
+        self, user_id: str, message: str, context: Optional[dict] = None
+    ) -> Dict[str, Any]:
         # Keep it deterministic and safe: no logging of raw message/user PII
         try:
-            text = ask(message, mode=ChatMode.RESPONSES_API, client_id=user_id, source=(context or {}).get("agent", "web"))
+            text = ask(
+                message,
+                mode=ChatMode.RESPONSES_API,
+                client_id=user_id,
+                source=(context or {}).get("agent", "web"),
+            )
             return {"type": "text", "text": text}
         except Exception as e:
             logger.error("[AI gateway] handle_message error: %s", e)
@@ -63,5 +70,3 @@ def create_default_gateway(app: Flask) -> AIGateway:
         logger.error("[MCP] Failed to init MCP layer: %s", e)
 
     return gateway
-
-

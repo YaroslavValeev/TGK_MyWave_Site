@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
   const carousels = Array.from(document.querySelectorAll('.js-service-carousel'));
-  if (carousels.length === 0) return;
 
   function parseImages(raw) {
     return String(raw || '')
@@ -21,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const prev = carousel.querySelector('.service-card-media-btn.prev');
     const next = carousel.querySelector('.service-card-media-btn.next');
 
-    if (!img || images.length === 0) return;
+    if (!img || images.length === 0) return; // skip this card only
 
     let currentIndex = 0;
 
@@ -43,6 +42,75 @@ document.addEventListener('DOMContentLoaded', () => {
       if (next) next.style.display = 'none';
     }
   });
+
 });
+
+// Единая логика scroll для Услуги / Товары / Проекты / Блог (не ломает .js-service-carousel)
+(function () {
+  function initScrollCarousel(root) {
+    const track = root.querySelector(".carousel-track");
+    const prev = root.querySelector(".carousel-prev");
+    const next = root.querySelector(".carousel-next");
+    if (!track || !prev || !next) return;
+
+    const stop = function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const getStep = function () {
+      const first = track.querySelector(":scope > *");
+      if (first) {
+        const styles = window.getComputedStyle(track);
+        const gap =
+          parseFloat(styles.columnGap || styles.gap || "0") ||
+          0;
+        return first.getBoundingClientRect().width + gap;
+      }
+      return Math.max(240, Math.round(track.clientWidth * 0.9));
+    };
+
+    const update = function () {
+      const max = track.scrollWidth - track.clientWidth;
+      prev.disabled = track.scrollLeft <= 2;
+      next.disabled = track.scrollLeft >= max - 2;
+    };
+
+    prev.addEventListener("click", function (e) {
+      stop(e);
+      track.scrollBy({ left: -getStep(), behavior: "smooth" });
+      window.setTimeout(update, 200);
+    });
+
+    next.addEventListener("click", function (e) {
+      stop(e);
+      track.scrollBy({ left: getStep(), behavior: "smooth" });
+      window.setTimeout(update, 200);
+    });
+
+    track.addEventListener(
+      "scroll",
+      function () { window.requestAnimationFrame(update); },
+      { passive: true }
+    );
+
+    window.addEventListener("resize", update);
+    update();
+  }
+
+  function initAll() {
+    document
+      .querySelectorAll(
+        ".services-carousel, .products-carousel, .projects-carousel, .blog-carousel"
+      )
+      .forEach(initScrollCarousel);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAll);
+  } else {
+    initAll();
+  }
+})();
 
 

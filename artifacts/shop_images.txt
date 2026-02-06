@@ -1,0 +1,7 @@
+/static/images/balans_trick_trening1.jpg
+/static/images/balans_trick_trening.jpg
+/static/images/01.jpg
+/static/images/hero-wakesurf.png
+/static/images/02.jpg
+/static/images/balans_trick_trening1.jpg
+/static/images/hero-wakesurf.png

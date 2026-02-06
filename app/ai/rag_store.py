@@ -42,7 +42,12 @@ class RAGStore:
     def save(self) -> None:
         os.makedirs(os.path.dirname(self.path), exist_ok=True)
         with open(self.path, "w", encoding="utf-8") as f:
-            json.dump({"docs": [asdict(d) for d in self.docs]}, f, ensure_ascii=False, indent=2)
+            json.dump(
+                {"docs": [asdict(d) for d in self.docs]},
+                f,
+                ensure_ascii=False,
+                indent=2,
+            )
         logger.info("[RAG] Saved %s docs to %s", len(self.docs), self.path)
 
     def add_docs(self, docs: List[RAGDocument], replace: bool = False) -> None:
@@ -71,5 +76,3 @@ def get_rag_store() -> RAGStore:
     store = RAGStore(path)
     store.load()
     return store
-
-

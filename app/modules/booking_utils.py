@@ -14,14 +14,18 @@ from app.modules.sheets import (
     # SheetWrapper,  # Уже закомментировано
     increment_capacity,
     # get_slot_capacity,  # Удалено
-    book_slot
+    book_slot,
 )
-from app.modules.calendar_integration import add_booking_to_calendar, create_workout_if_not_exists
+from app.modules.calendar_integration import (
+    add_booking_to_calendar,
+    create_workout_if_not_exists,
+)
 import os
 import requests
 from app.modules.logger import get_logger
 
 logger = get_logger(__name__)
+
 
 def get_workout_by_datetime(date_str: str, time_str: str):
     """
@@ -51,16 +55,8 @@ def get_workout_by_datetime(date_str: str, time_str: str):
 
             # 3️⃣  Сравниваем с целевым значением
             if date_time == target:
-                workout_id = (
-                    row.get("workout_id")
-                    or row.get("id")
-                    or row.get("ID")
-                )
-                capacity = (
-                    row.get("max_capacity")
-                    or row.get("capacity")
-                    or 0
-                )
+                workout_id = row.get("workout_id") or row.get("id") or row.get("ID")
+                capacity = row.get("max_capacity") or row.get("capacity") or 0
                 return {
                     "workout_id": workout_id,
                     "max_capacity": int(capacity) if str(capacity).isdigit() else 0,
@@ -106,7 +102,7 @@ def send_telegram_message(text):
     try:
         requests.post(
             f"https://api.telegram.org/bot{token}/sendMessage",
-            data={"chat_id": chat_id, "text": text}
+            data={"chat_id": chat_id, "text": text},
         )
     except Exception as e:
         print(f"Ошибка отправки Telegram: {e}")
@@ -114,4 +110,3 @@ def send_telegram_message(text):
 
 def handle_booking(data):
     return book_slot(data["date"], data["time"], data["name"], data["phone"])
-

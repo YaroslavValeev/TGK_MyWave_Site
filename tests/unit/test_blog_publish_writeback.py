@@ -12,7 +12,10 @@ def test_ack_publish_writes_canonical_url_and_site_fields(app, mocker):
     """
     from app.services.blog import publish as publish_mod
 
-    mocker.patch("app.services.blog.publish.resolve_parser_source", return_value=("sheet1", "raw_feed"))
+    mocker.patch(
+        "app.services.blog.publish.resolve_parser_source",
+        return_value=("sheet1", "raw_feed"),
+    )
 
     headers = [
         "id",
@@ -47,7 +50,9 @@ def test_ack_publish_writes_canonical_url_and_site_fields(app, mocker):
         }
     ]
 
-    mocker.patch("app.services.blog.publish.read_sheet", return_value=(records, headers))
+    mocker.patch(
+        "app.services.blog.publish.read_sheet", return_value=(records, headers)
+    )
 
     captured = {}
 
@@ -57,11 +62,16 @@ def test_ack_publish_writes_canonical_url_and_site_fields(app, mocker):
         captured["updates"] = updates
         return True
 
-    mocker.patch("app.services.blog.publish.update_sheet_cells", side_effect=_fake_update_sheet_cells)
+    mocker.patch(
+        "app.services.blog.publish.update_sheet_cells",
+        side_effect=_fake_update_sheet_cells,
+    )
 
     with app.app_context():
         # SERVER_NAME не задан в проекте по умолчанию → fallback на mywavetraining.ru
-        ok = publish_mod.ack_publish(2, "1013", datetime(2026, 1, 28, 10, 0, 0), slug=None)
+        ok = publish_mod.ack_publish(
+            2, "1013", datetime(2026, 1, 28, 10, 0, 0), slug=None
+        )
 
     assert ok is True
     assert captured["spreadsheet_id"] == "sheet1"
@@ -98,7 +108,10 @@ def test_ack_publish_schema_mismatch_sets_publish_error(app, mocker):
     """P0: если нет обязательных колонок (например canonical_url) — publish_error=WP_SCHEMA_MISMATCH, ack=False."""
     from app.services.blog import publish as publish_mod
 
-    mocker.patch("app.services.blog.publish.resolve_parser_source", return_value=("sheet1", "raw_feed"))
+    mocker.patch(
+        "app.services.blog.publish.resolve_parser_source",
+        return_value=("sheet1", "raw_feed"),
+    )
 
     # canonical_url отсутствует
     headers = [
@@ -112,7 +125,9 @@ def test_ack_publish_schema_mismatch_sets_publish_error(app, mocker):
         "publish_error",
     ]
     records = [{"id": "1013", "row_number": "2"}]
-    mocker.patch("app.services.blog.publish.read_sheet", return_value=(records, headers))
+    mocker.patch(
+        "app.services.blog.publish.read_sheet", return_value=(records, headers)
+    )
 
     captured = {"updates": []}
 
@@ -120,10 +135,15 @@ def test_ack_publish_schema_mismatch_sets_publish_error(app, mocker):
         captured["updates"] = updates
         return True
 
-    mocker.patch("app.services.blog.publish.update_sheet_cells", side_effect=_fake_update_sheet_cells)
+    mocker.patch(
+        "app.services.blog.publish.update_sheet_cells",
+        side_effect=_fake_update_sheet_cells,
+    )
 
     with app.app_context():
-        ok = publish_mod.ack_publish(2, "1013", datetime(2026, 1, 28, 10, 0, 0), slug="x")
+        ok = publish_mod.ack_publish(
+            2, "1013", datetime(2026, 1, 28, 10, 0, 0), slug="x"
+        )
 
     assert ok is False
     # Должны попытаться записать WP_SCHEMA_MISMATCH в publish_error (колонка H -> range H2 в нашем порядке)
@@ -135,7 +155,10 @@ def test_record_publish_error_by_id_uses_unique_id_match(app, mocker):
     """P0: если row_number отсутствует — пишем publish_error по уникальному совпадению ID."""
     from app.services.blog import publish as publish_mod
 
-    mocker.patch("app.services.blog.publish.resolve_parser_source", return_value=("sheet1", "raw_feed"))
+    mocker.patch(
+        "app.services.blog.publish.resolve_parser_source",
+        return_value=("sheet1", "raw_feed"),
+    )
 
     # Две строки, нужная — вторая (i=1 → row_number=3)
     records = [
@@ -143,15 +166,22 @@ def test_record_publish_error_by_id_uses_unique_id_match(app, mocker):
         {"id": "target"},
     ]
     headers = ["id"]
-    mocker.patch("app.services.blog.publish.read_sheet", return_value=(records, headers))
+    mocker.patch(
+        "app.services.blog.publish.read_sheet", return_value=(records, headers)
+    )
 
     called = {}
 
-    def _fake_record_publish_error(row_number, error_msg, increment_attempts=True, logger=None):
+    def _fake_record_publish_error(
+        row_number, error_msg, increment_attempts=True, logger=None
+    ):
         called["row_number"] = row_number
         called["error_msg"] = error_msg
 
-    mocker.patch("app.services.blog.publish.record_publish_error", side_effect=_fake_record_publish_error)
+    mocker.patch(
+        "app.services.blog.publish.record_publish_error",
+        side_effect=_fake_record_publish_error,
+    )
 
     with app.app_context():
         ok = publish_mod.record_publish_error_by_id("target", "WP_ROW_NUMBER_MISSING")
@@ -159,4 +189,3 @@ def test_record_publish_error_by_id_uses_unique_id_match(app, mocker):
     assert ok is True
     assert called["row_number"] == 3
     assert called["error_msg"] == "WP_ROW_NUMBER_MISSING"
-

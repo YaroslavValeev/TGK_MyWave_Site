@@ -28,7 +28,11 @@ def blog_index():
 
     # Фильтр по тегу (если задан)
     if tag and items:
-        items = [p for p in items if tag.lower() in [t.lower() for t in (p.get("tags") or [])]]
+        items = [
+            p
+            for p in items
+            if tag.lower() in [t.lower() for t in (p.get("tags") or [])]
+        ]
         total = len(items)
 
     # Простая пагинация
@@ -54,7 +58,7 @@ def blog_post(slug: str):
     """
     prefer_sheets = request.args.get("db_only") != "1"
     post = get_post_by_slug(slug, prefer_sheets=prefer_sheets)
-    
+
     if not post:
         abort(404)
 
@@ -66,19 +70,25 @@ def blog_post(slug: str):
 def api_blog_latest():
     """API: последний пост (Sheets → БД fallback)."""
     prefer_sheets = request.args.get("db_only") != "1"
-    
+
     try:
         post = get_latest_post(prefer_sheets=prefer_sheets)
         if not post:
             return jsonify({"error": "no posts"}), 404
-        
-        return jsonify({
-            "title": post["title"],
-            "lead": post.get("excerpt"),
-            "slug": post["slug"],
-            "published_at": post["published_at"].isoformat() if post.get("published_at") else None,
-            "tags": post.get("tags", []),
-        })
+
+        return jsonify(
+            {
+                "title": post["title"],
+                "lead": post.get("excerpt"),
+                "slug": post["slug"],
+                "published_at": (
+                    post["published_at"].isoformat()
+                    if post.get("published_at")
+                    else None
+                ),
+                "tags": post.get("tags", []),
+            }
+        )
     except Exception as e:
         logger.error("blog: ошибка api latest: %s", e)
         return jsonify({"error": "unavailable"}), 503
@@ -90,26 +100,32 @@ def api_blog_posts():
     page = int(request.args.get("page", 1))
     limit = int(request.args.get("limit", 10))
     prefer_sheets = request.args.get("db_only") != "1"
-    
+
     try:
         items, total = get_posts(page=page, limit=limit, prefer_sheets=prefer_sheets)
-        
-        return jsonify({
-            "page": page,
-            "limit": limit,
-            "total": total,
-            "items": [
-                {
-                    "title": p["title"],
-                    "lead": p.get("excerpt"),
-                    "slug": p["slug"],
-                    "published_at": p["published_at"].isoformat() if p.get("published_at") else None,
-                    "tags": p.get("tags", []),
-                    "image_url": p.get("cover_image_url"),
-                }
-                for p in items
-            ],
-        })
+
+        return jsonify(
+            {
+                "page": page,
+                "limit": limit,
+                "total": total,
+                "items": [
+                    {
+                        "title": p["title"],
+                        "lead": p.get("excerpt"),
+                        "slug": p["slug"],
+                        "published_at": (
+                            p["published_at"].isoformat()
+                            if p.get("published_at")
+                            else None
+                        ),
+                        "tags": p.get("tags", []),
+                        "image_url": p.get("cover_image_url"),
+                    }
+                    for p in items
+                ],
+            }
+        )
     except Exception as e:
         logger.error("blog: ошибка api posts: %s", e)
         return jsonify({"error": "unavailable"}), 503

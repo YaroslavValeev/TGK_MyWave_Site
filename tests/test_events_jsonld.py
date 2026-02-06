@@ -3,11 +3,15 @@ import json
 
 
 def test_events_jsonld_present_and_valid(client):
-    resp = client.get('/events')
+    resp = client.get("/events")
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
 
-    m = re.search(r'<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', html, re.S)
+    m = re.search(
+        r'<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
+        html,
+        re.S,
+    )
     assert m, "JSON-LD script tag not found on /events"
 
     js = m.group(1).strip()
@@ -16,39 +20,44 @@ def test_events_jsonld_present_and_valid(client):
     assert isinstance(data, list) and len(data) >= 1
 
     ev = data[0]
-    assert ev.get('@context') == 'https://schema.org'
-    assert ev.get('@type') == 'Event'
+    assert ev.get("@context") == "https://schema.org"
+    assert ev.get("@type") == "Event"
     # Required-ish fields for our acceptance: name, startDate, location
-    for k in ('name', 'startDate', 'location'):
-        assert k in ev, f'Missing {k} in event schema'
+    for k in ("name", "startDate", "location"):
+        assert k in ev, f"Missing {k} in event schema"
 
     # Additional structural checks
     # startDate should look like an ISO date or datetime (basic check)
     import re as _re
-    iso_re = _re.compile(r"^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?(Z|[+-]\d{2}:\d{2})?)?$")
-    assert iso_re.match(ev.get('startDate', '')) , f"startDate is not ISO-like: {ev.get('startDate')!r}"
+
+    iso_re = _re.compile(
+        r"^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?(Z|[+-]\d{2}:\d{2})?)?$"
+    )
+    assert iso_re.match(
+        ev.get("startDate", "")
+    ), f"startDate is not ISO-like: {ev.get('startDate')!r}"
 
     # location must contain name and address
-    loc = ev.get('location')
+    loc = ev.get("location")
     assert isinstance(loc, dict)
-    assert loc.get('name'), 'location.name missing'
-    assert loc.get('address'), 'location.address missing'
+    assert loc.get("name"), "location.name missing"
+    assert loc.get("address"), "location.address missing"
 
     # image should be a list with at least one url, prefer local static path
-    imgs = ev.get('image')
+    imgs = ev.get("image")
     assert isinstance(imgs, list) and len(imgs) >= 1
-    assert isinstance(imgs[0], str) and imgs[0].strip() != ''
+    assert isinstance(imgs[0], str) and imgs[0].strip() != ""
 
     # eventAttendanceMode must be one of the schema.org attendance mode URIs
-    mode = ev.get('eventAttendanceMode')
+    mode = ev.get("eventAttendanceMode")
     valid_modes = {
-        'https://schema.org/OnlineEventAttendanceMode',
-        'https://schema.org/OfflineEventAttendanceMode',
-        'https://schema.org/MixedEventAttendanceMode'
+        "https://schema.org/OnlineEventAttendanceMode",
+        "https://schema.org/OfflineEventAttendanceMode",
+        "https://schema.org/MixedEventAttendanceMode",
     }
-    assert mode in valid_modes, f'Unexpected eventAttendanceMode: {mode}'
+    assert mode in valid_modes, f"Unexpected eventAttendanceMode: {mode}"
 
     # url should be present and look like a path or absolute URL
-    url = ev.get('url')
+    url = ev.get("url")
     assert url and isinstance(url, str)
-    assert url.startswith('/') or url.startswith('http'), 'url looks invalid'
+    assert url.startswith("/") or url.startswith("http"), "url looks invalid"

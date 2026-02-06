@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+
+{% block title %}{{ meta.title }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="canonical" href="{{ meta.og.url or request.url }}">
+  <meta name="description" content="{{ meta.description }}">
+  <meta property="og:type" content="{{ meta.og.type or 'website' }}">
+  <meta property="og:title" content="{{ meta.og.title or meta.title }}">
+  <meta property="og:description" content="{{ meta.og.description or meta.description }}">
+  <meta property="og:image" content="{{ meta.og.image }}">
+  <meta property="og:url" content="{{ meta.og.url or request.url }}">
+  <meta name="twitter:card" content="{{ meta.twitter.card or 'summary_large_image' }}">
+  <meta name="twitter:title" content="{{ meta.twitter.title or meta.title }}">
+  <meta name="twitter:description" content="{{ meta.twitter.description or meta.description }}">
+  <meta name="twitter:image" content="{{ meta.twitter.image or meta.og.image }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/camp-ruza.css') }}" />
+{% endblock %}
+
+{% block content %}
+
+<section class="camp-ruza-hero" id="top">
+  <div class="camp-ruza-hero__bg"></div>
+  <div class="camp-ruza-hero__track"></div>
+  <div class="camp-ruza-hero__content">
+    <h1 class="camp-ruza-hero__title">14 дней на Рузе: вода, команда, результат</h1>
+    <p class="camp-ruza-hero__subtitle">Живём на территории отеля у Рузского водохранилища и тренируемся за катером Wakeflot. От новичка до уверенного катания — с прогрессией, режимом и безопасностью.</p>
+    <ul class="camp-ruza-hero__bullets">
+      <li>1–2 водные сессии в день по погоде + сильная подготовка на суше</li>
+      <li>Группы по возрасту и уровню: 10–13 / 14–16 / 17–20</li>
+      <li>Контроль и забота: правила, экипировка, допуск, сопровождение</li>
+    </ul>
+    <div class="camp-ruza-hero__badges">
+      <span>10–20 лет</span>
+      <span>10–23 августа 2026</span>
+      <span>12–16 мест</span>
+    </div>
+    <div class="camp-ruza-hero__actions">
+      <div class="camp-ruza-hero__cta-group">
+        <button type="button" class="btn-primary js-camp-ruza-cta" data-source="parent" aria-label="Запросить программу и места">Запросить программу и места</button>
+        <p class="camp-ruza-hero__cta-hint">Ответим в течение 24 часов · Август 10–23 · 12–16 мест</p>
+      </div>
+      <div class="camp-ruza-hero__cta-group">
+        <button type="button" class="btn-secondary btn-ghost js-camp-ruza-cta" data-source="teen" aria-label="Хочу в команду MyWave">Хочу в команду MyWave</button>
+        <p class="camp-ruza-hero__cta-hint">Для 10–20 лет · 2 окна связи в день · Прогресс по уровням</p>
+      </div>
+    </div>
+    <p class="camp-ruza-hero__disclaimer">10–20 лет; участие — по анкете здоровья и медсправке; допуск к воде — после инструктажа.</p>
+  </div>
+</section>
+
+<!-- Sticky CTA -->
+<aside class="camp-ruza-sticky-cta" id="camp-ruza-sticky-cta" aria-hidden="true">
+  <div class="camp-ruza-sticky-cta__inner">
+    <button type="button" class="btn-primary js-camp-ruza-cta" data-source="parent">Запросить программу и места</button>
+    <a href="#camp-ruza-form" class="btn-secondary btn-ghost js-camp-ruza-cta" data-source="teen">Хочу в команду MyWave</a>
+  </div>
+</aside>
+
+<main class="camp-ruza-main">
+  <!-- 3.2 Описание лагеря -->
+  <section class="camp-ruza-section" id="description">
+    <div class="camp-ruza-container">
+      <h2 class="camp-ruza-h2">Описание лагеря (для родителей)</h2>
+      <div class="camp-ruza-card camp-ruza-prose">
+        <p>MyWave Camp Ruza — летний лагерь на Рузском водохранилище для детей и подростков 10–20 лет. Участники живут на территории отеля у воды, тренируются за катером Wakeflot (wakesurf), занимаются ОФП и отдыхают в режиме, который сочетает спорт, обучение и безопасность. Программа рассчитана на 14 дней (10–23 августа 2026), группы формируются по возрасту (10–13, 14–16, 17–20) и уровню катания. Контроль и забота обеспечиваются правилами, экипировкой, допуском к воде после инструктажа и постоянным сопровождением.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.3 Кому подойдёт / не подойдёт -->
+  <section class="camp-ruza-section" id="for-whom">
+    <div class="camp-ruza-container">
+      <h2 class="camp-ruza-h2">Кому подойдёт / Кому не подойдёт</h2>
+      <div class="camp-ruza-grid-2">
+        <div class="camp-ruza-card">
+          <h3 class="camp-ruza-h3">Подойдёт</h3>
+          <ul class="camp-ruza-ul">
+            <li>Детям и подросткам, которые хотят научиться кататься на вейкборде/вейксерфе или прогрессировать</li>
+            <li>Тем, кому важны режим, дисциплина и командная атмосфера</li>
+            <li>Родителям, которые ищут безопасный и содержательный отдых с физической активностью</li>
+            <li>Участникам, готовым следовать правилам и проходить допуск к воде</li>
+            <li>Тем, кто готов к 1–2 водным сессиям в день и занятиям на суше</li>
+          </ul>
+        </div>
+        <div class="camp-ruza-card">
+          <h3 class="camp-ruza-h3">Не подойдёт</h3>
+          <ul class="camp-ruza-ul">
+            <li>Тем, кто ожидает «лагерь с аниматорами» без спортивной нагрузки</li>
+            <li>Участникам, которые не готовы к режиму и правилам безопасности</li>
+            <li>Если нет возможности предоставить анкету здоровья и медсправку до заезда</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.4 Что изменится за 14 дней -->
+  <section class="camp-ruza-section" id="results">
+    <div class="camp-ruza-container">
+      <h2 class="camp-ruza-h2">Что ребёнок увезёт с собой через 14 дней</h2>
+      <ul class="camp-ruza-results">
+        <li>Уверенность в воде и теле</li>
+        <li>Навык следовать правилам и режиму</li>
+        <li>Реальный физический прогресс</li>
+        <li>Опыт команды и ответственности</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 3.5 Это НЕ… -->
+  <section class="camp-ruza-section camp-ruza-section--accent" id="not">
+    <div class="camp-ruza-container">
+      <div class="camp-ruza-card camp-ruza-prose">
+        <p class="camp-ruza-lead">Это не санаторий, не аниматорский отель и не лагерь «для посидеть с телефоном». MyWave Camp Ruza — для тех, кто готов двигаться, учиться и быть частью команды.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.6 Программа и формат -->
+  <section class="camp-ruza-section" id="program">
+    <div class="camp-ruza-container">
+      <h2 class="camp-ruza-h2">Программа и формат</h2>
+      <div class="camp-ruza-card">
+        <h3 class="camp-ruza-h3">Смена 14 дней с проживанием — 10–23 августа 2026</h3>
+        <p>Пример дня: утро — зарядка/разминка, водная сессия за катером; день — ОФП, теория, отдых; вечер — командные активности, подготовка к следующему дню. Баланс: спорт, обучение, отдых и безопасность.</p>
+      </div>
+      <div class="camp-ruza-card">
+        <h3 class="camp-ruza-h3">Camp Weekend (уикенд-интенсив)</h3>
+        <p>Альтернативный формат без фиксированных дат — по запросу. Напишите нам, обсудим варианты.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.7 Wakeflot и водные активности -->
+  <section class="camp-ruza-section" id="wakeflot">
+    <div class="camp-ruza-container">
+      <h2 class="camp-ruza-h2">Wakeflot и водные активности</h2>
+      <div class="camp-ruza-card camp-ruza-prose">
+        <p>Тренировки за катером Wakeflot: wakesurf по уровням (новичок / средний / продвинутый). Прогрессия — от первых стартов до уверенного катания. При плохой погоде программа переносится на сушу (ОФП, теория, игры) без «провала» смены.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.8 Безопасность и сопровождение -->
+  <section class="camp-ruza-section" id="safety">
+    <div class="camp-ruza-container">
+      <h2 class="camp-ruza-h2">Безопасность и сопровождение</h2>
+      <div class="camp-ruza-card camp-ruza-prose">
+        <p>Политика безопасности: допуск к воде только после инструктажа, соблюдение правил на воде и на территории. Команда: инструкторы, сопровождающие, координатор (роли без персональных имён в публичных материалах). Чек-лист экипировки: что выдаём на месте и что нужно взять с собой — присылаем после заявки.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.9 Проживание / питание / логистика -->
+  <section class="camp-ruza-section" id="logistics">
+    <div class="camp-ruza-container">
+      <h2 class="camp-ruza-h2">Проживание / питание / логистика</h2>
+      <div class="camp-ruza-card camp-ruza-prose">
+        <p><strong>Проживание:</strong> на территории отеля у Рузского водохранилища.</p>
+        <p><strong>Питание:</strong> по принципам полноценного рациона; ограничения по анкете здоровья учитываются.</p>
+        <p><strong>Как добраться:</strong> родители привозят и забирают детей; самостоятельное прибытие старших участников — только по письменному согласию родителей.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.10 Стоимость и пакеты -->
+  <section class="camp-ruza-section" id="pricing">
+    <div class="camp-ruza-container">
+      <h2 class="camp-ruza-h2">Стоимость и пакеты</h2>
+      <div class="camp-ruza-pricing">
+        <div class="camp-ruza-package">
+          <h3 class="camp-ruza-h3">Эконом/Оптимум</h3>
+          <p class="camp-ruza-price">170 000 – 210 000 ₽</p>
+          <ul class="camp-ruza-ul">
+            <li>Проживание на территории отеля</li>
+            <li>Питание</li>
+            <li>Водные сессии за Wakeflot</li>
+            <li>ОФП и программа на суше</li>
+            <li>Сопровождение и безопасность</li>
+          </ul>
+        </div>
+        <div class="camp-ruza-package camp-ruza-package--pro">
+          <h3 class="camp-ruza-h3">Pro</h3>
+          <p class="camp-ruza-price">250 000 ₽</p>
+          <ul class="camp-ruza-ul">
+            <li>Всё из пакета Оптимум</li>
+            <li>Расширенная программа и приоритет в расписании водных сессий</li>
+          </ul>
+        </div>
+      </div>
+      <p class="camp-ruza-trust">Оформление по договору с ИП · возврат — 14 рабочих дней · анкета + медсправка обязательны</p>
+      <p class="camp-ruza-legal">Условия возврата: в течение 14 рабочих дней после расчёта фактических расходов и получения реквизитов.</p>
+    </div>
+  </section>
+
+  <!-- Документы -->
+  <section class="camp-ruza-section" id="documents">
+    <div class="camp-ruza-container">
+      <h2 class="camp-ruza-h2">Документы</h2>
+      <div class="camp-ruza-card">
+        <p>Исполнитель: ИП Валеев Ярослав Радионович</p>
+        <p>Возврат — 14 рабочих дней (после расчёта фактических расходов)</p>
+        <ul class="camp-ruza-docs">
+          <li><a href="{{ url_for('static', filename='docs/MyWave_Camp_Ruza_Dogovor_IP_Valeev.pdf') }}" download class="camp-ruza-doc-link js-camp-ruza-download" data-doc="contract">Договор (PDF)</a></li>
+          <li><a href="{{ url_for('static', filename='docs/MyWave_Camp_Ruza_Prilocheniya_IP_Valeev.pdf') }}" download class="camp-ruza-doc-link js-camp-ruza-download" data-doc="appendices">Приложения к договору (PDF)</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.11 Партнёрства -->
+  <section class="camp-ruza-section" id="partners">
+    <div class="camp-ruza-container">
+      <h2 class="camp-ruza-h2">Партнёрства</h2>
+      <div class="camp-ruza-card camp-ruza-prose">
+        <p>Партнёрства открыты: экипировка / медиа / бренды / страховка. Напишите нам — обсудим формат.</p>
+        <p><a href="mailto:MyWaveProject@yandex.ru">MyWaveProject@yandex.ru</a> · <a href="tel:+79160117179">+7 916 011 71 79</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.12 FAQ -->
+  <section class="camp-ruza-section" id="faq">
+    <div class="camp-ruza-container">
+      <h2 class="camp-ruza-h2">Частые вопросы</h2>
+      <div class="camp-ruza-faq">
+        <div class="camp-ruza-faq-item">
+          <button type="button" class="camp-ruza-faq-q js-faq-toggle" aria-expanded="false" data-faq-id="1">Кто может участвовать?</button>
+          <div class="camp-ruza-faq-a" id="faq-1">Участники 10–20 лет. Необходимы анкета здоровья и медсправка допуска до заезда.</div>
+        </div>
+        <div class="camp-ruza-faq-item">
+          <button type="button" class="camp-ruza-faq-q js-faq-toggle" aria-expanded="false" data-faq-id="2">Где проходит лагерь?</button>
+          <div class="camp-ruza-faq-a" id="faq-2">На территории отеля у Рузского водохранилища. Точный адрес и логистику пришлём после заявки.</div>
+        </div>
+        <div class="camp-ruza-faq-item">
+          <button type="button" class="camp-ruza-faq-q js-faq-toggle" aria-expanded="false" data-faq-id="3">Нужен ли опыт катания?</button>
+          <div class="camp-ruza-faq-a" id="faq-3">Нет. Группы формируются по уровню: новичок, средний, продвинутый.</div>
+        </div>
+        <div class="camp-ruza-faq-item">
+          <button type="button" class="camp-ruza-faq-q js-faq-toggle" aria-expanded="false" data-faq-id="4">Как попасть на смену?</button>
+          <div class="camp-ruza-faq-a" id="faq-4">Оставьте заявку через кнопку «Запросить программу и места». Мы свяжемся в течение 24 часов и пришлём программу, список вещей и шаги по бронированию.</div>
+        </div>
+        <div class="camp-ruza-faq-item">
+          <button type="button" class="camp-ruza-faq-q js-faq-toggle" aria-expanded="false" data-faq-id="5">Что если погода плохая?</button>
+          <div class="camp-ruza-faq-a" id="faq-5">Водные сессии переносятся или заменяются программой на суше (ОФП, теория). Программа смены не «проваливается».</div>
+        </div>
+        <div class="camp-ruza-faq-item">
+          <button type="button" class="camp-ruza-faq-q js-faq-toggle" aria-expanded="false" data-faq-id="6">Как связаться с ребёнком?</button>
+          <div class="camp-ruza-faq-a" id="faq-6">Два окна связи в день для общения с родителями. Детали — в программе смены.</div>
+        </div>
+        <div class="camp-ruza-faq-item">
+          <button type="button" class="camp-ruza-faq-q js-faq-toggle" aria-expanded="false" data-faq-id="7">Что взять с собой?</button>
+          <div class="camp-ruza-faq-a" id="faq-7">Список вещей и экипировки пришлём после заявки. Часть экипировки выдаём на месте.</div>
+        </div>
+        <div class="camp-ruza-faq-item">
+          <button type="button" class="camp-ruza-faq-q js-faq-toggle" aria-expanded="false" data-faq-id="8">Условия возврата денег?</button>
+          <div class="camp-ruza-faq-a" id="faq-8">Возврат в течение 14 рабочих дней после расчёта фактических расходов и получения реквизитов. Подробности — в договоре.</div>
+        </div>
+        <div class="camp-ruza-faq-item">
+          <button type="button" class="camp-ruza-faq-q js-faq-toggle" aria-expanded="false" data-faq-id="9">Можно ли приехать не на всю смену?</button>
+          <div class="camp-ruza-faq-a" id="faq-9">Обсуждается индивидуально. Напишите в заявке.</div>
+        </div>
+        <div class="camp-ruza-faq-item">
+          <button type="button" class="camp-ruza-faq-q js-faq-toggle" aria-expanded="false" data-faq-id="10">Есть ли возрастные группы?</button>
+          <div class="camp-ruza-faq-a" id="faq-10">Да: 10–13, 14–16, 17–20 лет. Расписание и активности адаптированы под группы.</div>
+        </div>
+        <div class="camp-ruza-faq-item">
+          <button type="button" class="camp-ruza-faq-q js-faq-toggle" aria-expanded="false" data-faq-id="11">Кто сопровождает детей?</button>
+          <div class="camp-ruza-faq-a" id="faq-11">Инструкторы на воде, сопровождающие на территории, координатор смены. Все — с опытом работы с детьми и подростками.</div>
+        </div>
+        <div class="camp-ruza-faq-item">
+          <button type="button" class="camp-ruza-faq-q js-faq-toggle" aria-expanded="false" data-faq-id="12">Нужна ли медсправка?</button>
+          <div class="camp-ruza-faq-a" id="faq-12">Да. Анкета здоровья и медсправка допуска обязательны до заезда.</div>
+        </div>
+        <div class="camp-ruza-faq-item">
+          <button type="button" class="camp-ruza-faq-q js-faq-toggle" aria-expanded="false" data-faq-id="13">Как оплатить?</button>
+          <div class="camp-ruza-faq-a" id="faq-13">После заявки пришлём программу и реквизиты. Оформление по договору с ИП.</div>
+        </div>
+        <div class="camp-ruza-faq-item">
+          <button type="button" class="camp-ruza-faq-q js-faq-toggle" aria-expanded="false" data-faq-id="14">Можно ли привезти ребёнка самолётом/поездом?</button>
+          <div class="camp-ruza-faq-a" id="faq-14">Самостоятельное прибытие старших участников — по письменному согласию родителей. Детали обсудим после заявки.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.13 Финальный экран -->
+  <section class="camp-ruza-section camp-ruza-final" id="camp-ruza-final">
+    <div class="camp-ruza-container">
+      <h2 class="camp-ruza-hero__title camp-ruza-final__title">Лето, которое запомнится не фотографиями, а результатом</h2>
+      <p class="camp-ruza-hero__subtitle camp-ruza-final__subtitle">MyWave Camp Ruza — когда отдых и развитие идут вместе.</p>
+      <button type="button" class="btn-primary js-camp-ruza-cta" data-source="parent">Запросить программу и места</button>
+    </div>
+  </section>
+</main>
+
+<!-- Модалка формы -->
+<div class="camp-ruza-modal hidden" id="camp-ruza-modal" role="dialog" aria-labelledby="camp-ruza-form-title" aria-modal="true">
+  <div class="camp-ruza-modal__backdrop"></div>
+  <div class="camp-ruza-modal__box">
+    <button type="button" class="camp-ruza-modal__close" aria-label="Закрыть">&times;</button>
+    <h2 id="camp-ruza-form-title" class="camp-ruza-modal__title">Заявка на MyWave Camp Ruza (10–23 августа, 14 дней)</h2>
+    <p class="camp-ruza-modal__subtitle">12–16 участников · группы 10–13 / 14–16 / 17–20 · вода за Wakeflot + программа на суше</p>
+
+    <form id="camp-ruza-form" class="camp-ruza-form" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="applicant_type" id="camp-ruza-applicant-type" value="parent">
+
+      <fieldset class="camp-ruza-fieldset">
+        <legend>Кто оставляет заявку <span class="required">*</span></legend>
+        <label><input type="radio" name="who_applies" value="parent" required> Родитель / законный представитель</label>
+        <label><input type="radio" name="who_applies" value="teen"> Участник (подросток)</label>
+      </fieldset>
+
+      <div class="camp-ruza-field">
+        <label for="parent_name">Имя и фамилия родителя <span class="required">*</span></label>
+        <input type="text" id="parent_name" name="parent_name" required placeholder="Как в договоре">
+      </div>
+      <div class="camp-ruza-field">
+        <label for="phone">Телефон (WhatsApp) <span class="required">*</span></label>
+        <input type="tel" id="phone" name="phone" required placeholder="Сюда отправим подтверждение">
+      </div>
+      <div class="camp-ruza-field">
+        <label for="email">Email <span class="required">*</span></label>
+        <input type="email" id="email" name="email" required placeholder="Пришлём программу и документы">
+      </div>
+      <div class="camp-ruza-field">
+        <label>Удобный способ связи <span class="required">*</span></label>
+        <select name="contact_preference" required>
+          <option value="">Выберите</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="call">Звонок</option>
+          <option value="email">Email</option>
+        </select>
+      </div>
+
+      <div class="camp-ruza-field">
+        <label for="participant_name">ФИО участника <span class="required">*</span></label>
+        <input type="text" id="participant_name" name="participant_name" required>
+      </div>
+      <div class="camp-ruza-field">
+        <label for="birthdate">Дата рождения <span class="required">*</span></label>
+        <input type="date" id="birthdate" name="birthdate" required>
+      </div>
+      <div class="camp-ruza-field">
+        <label>Возрастная группа <span class="required">*</span></label>
+        <select name="age_group" required>
+          <option value="">Выберите</option>
+          <option value="10-13">10–13</option>
+          <option value="14-16">14–16</option>
+          <option value="17-20">17–20</option>
+          <option value="unsure">Не уверен(а)</option>
+        </select>
+      </div>
+      <div class="camp-ruza-field">
+        <label for="city">Город</label>
+        <input type="text" id="city" name="city" placeholder="Необязательно">
+      </div>
+
+      <div class="camp-ruza-field">
+        <label>Уровень <span class="required">*</span></label>
+        <select name="level" required>
+          <option value="">Выберите</option>
+          <option value="novice">Новичок</option>
+          <option value="intermediate">Средний</option>
+          <option value="advanced">Продвинутый</option>
+        </select>
+      </div>
+      <div class="camp-ruza-field">
+        <label for="goal">Цель (1–2 фразы)</label>
+        <textarea id="goal" name="goal" rows="2" placeholder="Необязательно"></textarea>
+      </div>
+
+      <div class="camp-ruza-field">
+        <label>Пакет <span class="required">*</span></label>
+        <select name="package" required>
+          <option value="">Выберите</option>
+          <option value="economy">Эконом/Оптимум (170–210 тыс)</option>
+          <option value="pro">Pro (250 тыс)</option>
+        </select>
+      </div>
+
+      <div class="camp-ruza-field">
+        <label>Есть ли ограничения/аллергии? <span class="required">*</span></label>
+        <label><input type="radio" name="health_restrictions" value="no" required> Нет</label>
+        <label><input type="radio" name="health_restrictions" value="yes"> Да</label>
+      </div>
+      <div class="camp-ruza-field camp-ruza-field--health-detail hidden">
+        <label for="health_detail">Кратко опишите</label>
+        <textarea id="health_detail" name="health_detail" rows="2"></textarea>
+      </div>
+      <div class="camp-ruza-field">
+        <label class="camp-ruza-checkbox">
+          <input type="checkbox" name="health_docs" required>
+          Подтверждаю, что предоставлю анкету здоровья и медсправку допуска до заезда. <span class="required">*</span>
+        </label>
+      </div>
+
+      <div class="camp-ruza-field">
+        <label>Логистика <span class="required">*</span></label>
+        <label><input type="radio" name="logistics" value="parent_drive" required> Родители привозят/забирают</label>
+        <label><input type="radio" name="logistics" value="self"> Самостоятельное прибытие старшего участника (по письменному согласию)</label>
+      </div>
+
+      <div class="camp-ruza-field">
+        <label class="camp-ruza-checkbox">
+          <input type="checkbox" name="agree_rules" required>
+          Согласен(на) с правилами безопасности и дисциплины лагеря. <span class="required">*</span>
+        </label>
+      </div>
+      <div class="camp-ruza-field">
+        <label class="camp-ruza-checkbox">
+          <input type="checkbox" name="agree_personal_data" required>
+          Даю согласие на обработку персональных данных для оформления заявки и исполнения договора. <span class="required">*</span>
+        </label>
+      </div>
+      <div class="camp-ruza-field">
+        <label>Фото/видео</label>
+        <label><input type="radio" name="photo_video" value="publish" required> Разрешаю публикацию на сайте/в соцсетях MyWave</label>
+        <label><input type="radio" name="photo_video" value="archive"> Разрешаю только для семейного архива (без публикации)</label>
+        <label><input type="radio" name="photo_video" value="no"> Не разрешаю фото/видео</label>
+      </div>
+
+      <div class="camp-ruza-form__actions">
+        <button type="submit" class="btn-primary" id="camp-ruza-submit">Отправить заявку</button>
+      </div>
+      <p class="camp-ruza-form__contacts">
+        WhatsApp/Телефон: <a href="tel:+79160117179">+7 916 011 71 79</a><br>
+        Email: <a href="mailto:MyWaveProject@yandex.ru">MyWaveProject@yandex.ru</a>
+      </p>
+    </form>
+
+    <div class="camp-ruza-modal__success hidden" id="camp-ruza-success">
+      <p>Заявка принята ✅ Мы свяжемся с вами в течение 24 часов и пришлём программу смены, список вещей и следующий шаг по бронированию места.</p>
+      <p>Контакты: <a href="tel:+79160117179">+7 916 011 71 79</a> · <a href="mailto:MyWaveProject@yandex.ru">MyWaveProject@yandex.ru</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- Ссылки внизу -->
+<footer class="camp-ruza-footer">
+  <div class="camp-ruza-container">
+    <p><a href="{{ url_for('index') }}#contacts">Контакты</a> · <a href="{{ url_for('projects_page') }}">Проекты MyWave</a></p>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/camp-ruza.js') }}"></script>
+{% endblock %}

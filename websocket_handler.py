@@ -9,6 +9,7 @@ from app.extensions import socketio  # ✅ используем общий эк�
 # Глобальный набор подключенных клиентов
 connected_clients = set()
 
+
 class WebSocketHandler:
     def __init__(self):
         self.active_connections = {}
@@ -28,6 +29,7 @@ class WebSocketHandler:
         if sid in self.active_connections:
             self.disconnect(self.active_connections[sid])
 
+
 # Вспомогательная функция
 def get_day_of_week(date_str):
     try:
@@ -37,18 +39,21 @@ def get_day_of_week(date_str):
         logging.error(f"Ошибка получения дня недели: {e}")
         return None
 
+
 # ✅ Подключаем события
-@socketio.on('connect')
+@socketio.on("connect")
 def handle_connect():
     current_app.logger.info(f"WebSocket: подключение от клиента {request.sid}")
     connected_clients.add(request.sid)
     print(f"Client connected. Total clients: {len(connected_clients)}")
 
-@socketio.on('disconnect')
+
+@socketio.on("disconnect")
 def handle_disconnect():
     current_app.logger.info(f"WebSocket: отключение клиента {request.sid}")
     connected_clients.discard(request.sid)
     print(f"Client disconnected. Total clients: {len(connected_clients)}")
+
 
 @socketio.on("request_slots")
 def handle_request_slots(data):
@@ -64,10 +69,14 @@ def handle_request_slots(data):
     print(f"📡 WebSocket отправляет: {slots}")
     emit("update_slots", slots)
 
+
 def broadcast_message(message):
     if connected_clients:
-        current_app.logger.info(f"WebSocket: широковещательное сообщение для {len(connected_clients)} клиентов")
-        emit('broadcast', message, broadcast=True)
+        current_app.logger.info(
+            f"WebSocket: широковещательное сообщение для {len(connected_clients)} клиентов"
+        )
+        emit("broadcast", message, broadcast=True)
+
 
 # Экземпляр класса (если используется где-то ещё)
 ws_handler = WebSocketHandler()

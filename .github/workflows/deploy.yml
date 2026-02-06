@@ -28,11 +28,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt -r requirements-ci.txt
 
       - name: Run formatter check
         run: |
-          python -m black --check $(git ls-files '*.py')
+          git ls-files '*.py' | grep -vE '(^|/)(venv|\.venv)/' | grep -v 'playwright_booking_test\.py' | xargs -r python -m black --check
 
       - name: Run unit tests
         run: |

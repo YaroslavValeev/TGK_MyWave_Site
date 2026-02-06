@@ -36,7 +36,7 @@ def print_step(num, title):
 def check_app_health():
     """Проверяет здоровье приложения."""
     import requests
-    
+
     try:
         resp = requests.get("http://localhost:5000/", timeout=2)
         if resp.status_code == 200:
@@ -48,8 +48,9 @@ def check_app_health():
 
 def main():
     print_header("🚀 Production Readiness Startup Guide")
-    
-    print("""
+
+    print(
+        """
 Это руководство поможет вам подготовить MyWave к production.
 
 Компоненты для запуска:
@@ -60,12 +61,14 @@ def main():
 
 Все компоненты УЖЕ реализованы в коде.
 Нужно только выполнить проверки и запустить тесты.
-""")
-    
+"""
+    )
+
     # ==============================================================
     print_step(1, "Запуск приложения Flask")
     # ==============================================================
-    print("""
+    print(
+        """
 Откройте новый терминал и запустите:
     
     python main.py
@@ -75,10 +78,11 @@ def main():
     docker-compose up
 
 Убедитесь, что приложение доступно на http://localhost:5000
-""")
-    
+"""
+    )
+
     input("Нажмите Enter когда приложение запущено... ")
-    
+
     # Проверяем доступность
     print("\n⏳ Проверка доступности приложения...", end=" ", flush=True)
     for _ in range(10):
@@ -90,64 +94,69 @@ def main():
         print("❌\n⚠️  Приложение не доступно на localhost:5000")
         print("Убедитесь, что оно запущено, и повторите попытку.")
         return 1
-    
+
     # ==============================================================
     print_step(2, "Заполнение Image таблицы")
     # ==============================================================
-    print("""
+    print(
+        """
 Добавим тестовые изображения услуг для рекомендаций:
     
     python scripts/seed_service_images.py
-""")
-    
+"""
+    )
+
     response = input("Запустить скрипт сейчас? (y/n): ").strip().lower()
-    if response == 'y':
+    if response == "y":
         try:
             exec_result = subprocess.run(
                 [sys.executable, "scripts/seed_service_images.py"],
                 cwd=os.path.dirname(os.path.dirname(__file__)),
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
             print(exec_result.stdout)
             if exec_result.returncode != 0:
                 print("❌ Ошибка:", exec_result.stderr)
         except Exception as e:
             print(f"❌ Не смог запустить скрипт: {e}")
-    
+
     # ==============================================================
     print_step(3, "Тестирование Analytics endpoint")
     # ==============================================================
-    print("""
+    print(
+        """
 Протестируем логирование событий в Google Sheets:
     
     python scripts/test_analytics_log.py
     
 Скрипт отправит 4 тестовых события и проверит ответ.
 Не забудьте проверить записи в Google Sheet 'analytics_statistics'.
-""")
-    
+"""
+    )
+
     response = input("Запустить тест аналитики? (y/n): ").strip().lower()
-    if response == 'y':
+    if response == "y":
         try:
             exec_result = subprocess.run(
                 [sys.executable, "scripts/test_analytics_log.py"],
                 cwd=os.path.dirname(os.path.dirname(__file__)),
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
             print(exec_result.stdout)
             if exec_result.returncode != 0:
                 print("⚠️  Stderr:", exec_result.stderr)
         except Exception as e:
             print(f"❌ Не смог запустить скрипт: {e}")
-    
+
     # ==============================================================
     print_step(4, "Проверка CSP мониторинга")
     # ==============================================================
-    print("""
+    print(
+        """
 CSP мониторинг уже встроен в приложение.
 
 Проверка:
@@ -158,14 +167,16 @@ CSP мониторинг уже встроен в приложение.
      (лист 'csp_violations')
 
 ✅ Ожидаемый результат: НОЛЬ нарушений (все скрипты имеют nonce)
-""")
-    
+"""
+    )
+
     input("Нажмите Enter когда проверили CSP мониторинг... ")
-    
+
     # ==============================================================
     print_step(5, "Проверка кэш метрик")
     # ==============================================================
-    print("""
+    print(
+        """
 Текущие статистики кэша рекомендаций доступны по:
     
     curl http://localhost:5000/api/reco/stats | python -m json.tool
@@ -183,38 +194,42 @@ CSP мониторинг уже встроен в приложение.
 После генерации нескольких запросов рекомендаций:
   - hit_rate должна возрастать
   - cache_size должна быть > 0
-""")
-    
+"""
+    )
+
     # ==============================================================
     print_step(6, "Финальная проверка всех компонентов")
     # ==============================================================
-    print("""
+    print(
+        """
 Запустим скрипт проверки готовности:
     
     python scripts/verify_production_readiness.py
-""")
-    
+"""
+    )
+
     response = input("Запустить финальную проверку? (y/n): ").strip().lower()
-    if response == 'y':
+    if response == "y":
         try:
             exec_result = subprocess.run(
                 [sys.executable, "scripts/verify_production_readiness.py"],
                 cwd=os.path.dirname(os.path.dirname(__file__)),
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
             print(exec_result.stdout)
             if exec_result.returncode != 0:
                 print("⚠️  Stderr:", exec_result.stderr)
         except Exception as e:
             print(f"❌ Не смог запустить скрипт: {e}")
-    
+
     # ==============================================================
     print_header("✅ ГОТОВО К PRODUCTION!")
     # ==============================================================
-    
-    print("""
+
+    print(
+        """
 Резюме выполненных действий:
 
 1. ✅ Analytics Logging
@@ -254,8 +269,9 @@ CSP мониторинг уже встроен в приложение.
   - Cache метрики: GET /api/reco/stats
 
 Удачи! 🚀
-""")
-    
+"""
+    )
+
     return 0
 
 
@@ -268,5 +284,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n\n❌ Ошибка: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

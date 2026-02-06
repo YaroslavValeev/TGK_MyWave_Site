@@ -51,12 +51,26 @@ def main(argv: list[str] | None = None) -> int:
     if load_dotenv:
         load_dotenv()
 
-    parser = argparse.ArgumentParser(description="Upload knowledge_base files to OpenAI (developer tool)")
-    parser.add_argument("--path", default="knowledge_base", help="Base path to knowledge_base")
-    parser.add_argument("--folders", nargs="*", default=["wakesurfing_tips.txt", "tricks.txt", "training_methods.pdf"],
-                        help="Subfolder names or file names to include")
-    parser.add_argument("--upload", action="store_true", help="Perform the actual upload (requires OPENAI_API_KEY)")
-    parser.add_argument("--rate", type=float, default=1.0, help="Seconds to wait between uploads")
+    parser = argparse.ArgumentParser(
+        description="Upload knowledge_base files to OpenAI (developer tool)"
+    )
+    parser.add_argument(
+        "--path", default="knowledge_base", help="Base path to knowledge_base"
+    )
+    parser.add_argument(
+        "--folders",
+        nargs="*",
+        default=["wakesurfing_tips.txt", "tricks.txt", "training_methods.pdf"],
+        help="Subfolder names or file names to include",
+    )
+    parser.add_argument(
+        "--upload",
+        action="store_true",
+        help="Perform the actual upload (requires OPENAI_API_KEY)",
+    )
+    parser.add_argument(
+        "--rate", type=float, default=1.0, help="Seconds to wait between uploads"
+    )
     args = parser.parse_args(argv)
 
     base = Path(args.path)
@@ -74,11 +88,15 @@ def main(argv: list[str] | None = None) -> int:
         print(" -", p)
 
     if not args.upload:
-        print("\nDry run: nothing will be uploaded. Rerun with --upload to perform uploads (requires OPENAI_API_KEY).")
+        print(
+            "\nDry run: nothing will be uploaded. Rerun with --upload to perform uploads (requires OPENAI_API_KEY)."
+        )
         return 0
 
     if openai is None:
-        print("❌ The openai package is not installed. Install with: pip install openai")
+        print(
+            "❌ The openai package is not installed. Install with: pip install openai"
+        )
         return 3
 
     api_key = os.getenv("OPENAI_API_KEY")
@@ -115,7 +133,9 @@ def main(argv: list[str] | None = None) -> int:
                     thread_id=thread_id,
                     role="user",
                     content=f"File {i} of {len(uploaded_files)}: attached for file_search",
-                    attachments=[{"file_id": file_id, "tools": [{"type": "file_search"}]}]
+                    attachments=[
+                        {"file_id": file_id, "tools": [{"type": "file_search"}]}
+                    ],
                 )
                 print(f"� Attached {file_id} to thread {thread_id}")
                 time.sleep(args.rate)

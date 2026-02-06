@@ -1,0 +1,10 @@
+{
+  "weights": {
+    "difficulty": 40,
+    "quality": 30,
+    "style": 30
+  },
+  "outliers": {
+    "threshold": 2.0
+  }
+}

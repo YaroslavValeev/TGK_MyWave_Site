@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Индустрия вейка — Чеклист условий для соревнований{% endblock %}
+{% block title %}{{ page_title | default('Чек-лист организатора соревнований') }}{% endblock %}
 
 {% block extra_head %}
 <meta name="description" content="Подробный чеклист условий для организации профессиональных соревнований по вейксерфингу. Скачайте PDF версию для использования.">
@@ -12,44 +12,22 @@
 <section class="mw-section mw-hero wake-industry-hero">
   <div class="mw-container">
     <div class="wake-industry-hero__badge">Чеклист</div>
-    <h1 class="wake-industry-hero__title">Индустрия вейка</h1>
+    <h1 class="wake-industry-hero__title">{{ page_heading | default('Чек-лист организатора соревнований') }}</h1>
     <p class="wake-industry-hero__subtitle">
-      Необходимые и наилучшие условия для достижения высоких показателей в соревнованиях по вейксерфингу
+      {{ page_subheading | default('Условия для соревнований по вейксерфингу') }}
     </p>
     <div class="wake-industry-hero__actions">
-      <a href="{{ url_for('wake_industry.download_checklist_pdf') }}" class="btn-primary" download>
+      <a href="{{ download_pdf_url or url_for('contest_org_checklist.download_checklist_pdf') }}" class="btn-primary" download>
         📄 Скачать PDF
       </a>
-      <button onclick="window.print()" class="btn-secondary btn-ghost">
+      <button class="btn-secondary btn-ghost" data-action="print" aria-label="Печать страницы">
         🖨️ Печать
       </button>
     </div>
   </div>
 </section>
 
-<section class="mw-section" id="checklist-content">
-  <div class="mw-container">
-    <div class="mw-card wake-checklist">
-      
-      <div class="wake-checklist__intro">
-        <p class="wake-checklist__intro-text">
-          Данный чеклист содержит все необходимые условия и требования для организации профессиональных соревнований по вейксерфингу. Используйте его как руководство при подготовке мероприятий для обеспечения высокого уровня проведения соревнований.
-        </p>
-      </div>
-
-      <!-- 1. Судьи -->
-      <section class="wake-checklist__section">
-        <h2 class="wake-checklist__section-title">1. Судьи</h2>
-        
-        <div class="wake-checklist__item">
-          <div class="wake-checklist__item-header">
-            <input type="checkbox" id="judge-1-1" class="wake-checklist__checkbox">
-            <label for="judge-1-1" class="wake-checklist__item-title">1.1 Количество соревнований в качестве главного судьи</label>
-          </div>
-          <div class="wake-checklist__item-description">
-            <p>Опыт главного судьи напрямую влияет на качество и профессионализм судейства. Чем больше соревнований он провел в этой роли, тем лучше он понимает все нюансы процесса: от организации судейской команды до принятия сложных решений в спорных ситуациях. Главный судья отвечает за координацию всех аспектов судейства, а значительный опыт помогает ему быстро и точно реагировать на любые проблемы, обеспечивая справедливое и беспристрастное судейство.</p>
-          </div>
-        </div>
+{% include "wake_industry/checklist_sections.html" %}
 
         <div class="wake-checklist__item">
           <div class="wake-checklist__item-header">

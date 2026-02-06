@@ -1,0 +1,313 @@
+diff --git a/.gitignore b/.gitignore
+index cff65d0f..4219f6b3 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -65,12 +65,11 @@ token.json
+ # OS
+ .DS_Store
+ Thumbs.db
+-EOF
+-# Secrets
++
++# Secrets (╨▒╨╡╨╖ ╨╝╨░╤А╨║╨╡╤А╨░ EOF ╨╕ ╨▒╨╡╨╖ *.json тАФ ╨╕╨╜╨░╤З╨╡ ╨╕╨│╨╜╨╛╤А╨╕╤А╤Г╨╡╤В╤Б╤П package.json ╨╕ ╨║╨╛╨╜╤Д╨╕╨│╨╕)
+ tmp_token.txt
+ client_secret*.json
+ configs/service_account.json
+-*.json
+ knowledge_base/*
+ !knowledge_base/**/
+ !knowledge_base/**/*.py
+diff --git a/app/__init__.py b/app/__init__.py
+index 5aa236b6..67158e51 100644
+--- a/app/__init__.py
++++ b/app/__init__.py
+@@ -130,7 +130,25 @@ def create_app(config_name="development"):
+     def home():
+         # ╨Т╤А╨╡╨╝╨╡╨╜╨╜╨╛ ╨╛╤В╨║╨╗╤О╤З╨░╨╡╨╝ ╨┐╨╛╨╗╤Г╤З╨╡╨╜╨╕╨╡ ╤Б╨╛╨▒╤Л╤В╨╕╨╣ ╨║╨░╨╗╨╡╨╜╨┤╨░╤А╤П
+         months = {'╨Ш╤О╨╜╤М': [], '╨Ш╤О╨╗╤М': [], '╨Р╨▓╨│╤Г╤Б╤В': [], '╨б╨╡╨╜╤В╤П╨▒╤А╤М': [], '╨Ю╨║╤В╤П╨▒╤А╤М': []}
+-        return render_template('index.html', months=months)
++        # ╨Я╤А╨╛╨╡╨║╤В╤Л ╨┤╨╗╤П ╤Б╨╡╨║╤Ж╨╕╨╕ ╨╜╨░ ╨│╨╗╨░╨▓╨╜╨╛╨╣
++        try:
++            from app.services.showcases import get_project_cards
++            projects_preview = get_project_cards()[:3]
++        except Exception:
++            projects_preview = []
++        # ╨Я╨╛╤Б╨╗╨╡╨┤╨╜╨╕╨╣ ╨┐╨╛╤Б╤В ╨┤╨╗╤П ╨▒╨╗╨╛╨║╨░ ┬л╨Я╨╛╤Б╨╗╨╡╨┤╨╜╨╕╨╡ ╨╜╨╛╨▓╨╛╤Б╤В╨╕┬╗
++        latest_blog_post = None
++        try:
++            from app.services.blog.store import get_latest_post
++            latest_blog_post = get_latest_post(prefer_sheets=True)
++        except Exception:
++            pass
++        return render_template(
++            'index.html',
++            months=months,
++            projects_preview=projects_preview,
++            latest_blog_post=latest_blog_post,
++        )
+ 
+     @app.route('/favicon.ico')
+     def favicon():
+diff --git a/app/routes/shop.py b/app/routes/shop.py
+index f271232e..c91498a5 100644
+--- a/app/routes/shop.py
++++ b/app/routes/shop.py
+@@ -39,6 +39,18 @@ PRODUCTS = {
+         'price': '12 500 тВ╜',
+         'description': '╨Я╤А╨╛╤Д╨╡╤Б╤Б╨╕╨╛╨╜╨░╨╗╤М╨╜╨░╤П ╨┤╨╛╤Б╨║╨░ ╤Б ╤Г╨╗╤Г╤З╤И╨╡╨╜╨╜╨╛╨╣ ╤Г╤Б╤В╨╛╨╣╤З╨╕╨▓╨╛╤Б╤В╤М╤О ╨╕ ╨┤╨╛╨╗╨│╨╛╨▓╨╡╤З╨╜╨╛╤Б╤В╤М╤О.',
+         'image': 'images/02.jpg'
++    },
++    'balance-board-newstyle': {
++        'title': '╨С╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤ NewStyle',
++        'price': '8 900 тВ╜',
++        'description': '╨б╤В╨╕╨╗╤М╨╜╨░╤П ╨╝╨╛╨┤╨╡╨╗╤М ╨┤╨╗╤П ╤В╤А╨╡╨╜╨╕╤А╨╛╨▓╨╛╨║ ╨╕ ╤В╤А╤О╨║╨╛╨▓. ╨Я╨╛╨┤╤Е╨╛╨┤╨╕╤В ╨┤╨╗╤П ╨┤╨╛╨╝╨░ ╨╕ ╨╖╨░╨╗╨░.',
++        'image': 'images/balans_trick_trening1.jpg'
++    },
++    'certificate-10': {
++        'title': '╨б╨╡╤А╤В╨╕╤Д╨╕╨║╨░╤В ╨╜╨░ 10 ╨╖╨░╨╜╤П╤В╨╕╨╣',
++        'price': '30 000 тВ╜',
++        'description': '╨Ш╨┤╨╡╨░╨╗╤М╨╜╤Л╨╣ ╨┐╨╛╨┤╨░╤А╨╛╨║ ╨┤╨╗╤П ╨┐╨╛╨║╨╗╨╛╨╜╨╜╨╕╨║╨░ ╨▓╨╡╨╣╨║╨▒╨╛╤А╨┤╨╕╨╜╨│╨░ ╨╕╨╗╨╕ ╨▓╨╡╨╣╨║╤Б╨╡╤А╤Д╨╕╨╜╨│╨░ тАФ ╨┐╤Г╤В╤М ╨║ ╤Г╨▓╨╡╤А╨╡╨╜╨╜╨╛╨╝╤Г ╤Г╤А╨╛╨▓╨╜╤О ┬л╨░╨╝╨░╤В╨╛╤А┬╗. ╨Ъ╨░╨╢╨┤╨╛╨╡ ╨╖╨░╨╜╤П╤В╨╕╨╡ ╤Б╤В╤А╨╛╨╕╤В╤Б╤П ╨╜╨░ ╨┐╤А╨╡╨┤╤Л╨┤╤Г╤Й╨╡╨╝ ╨╛╨┐╤Л╤В╨╡: ╨┐╤А╨╛╨│╤А╨╡╤Б╤Б ╤Д╨╕╨║╤Б╨╕╤А╤Г╨╡╤В╤Б╤П ╨╕ ╨╖╨░╨║╤А╨╡╨┐╨╗╤П╨╡╤В╤Б╤П.',
++        'image': 'images/hero-wakesurf.png'
+     }
+ }
+ 
+diff --git a/package.json b/package.json
+index f5a41b37..59f08d62 100644
+--- a/package.json
++++ b/package.json
+@@ -1,12 +1,11 @@
+ {
++  "engines": { "node": ">=18" },
+   "dependencies": {
+     "body-parser": "^1.20.3",
+     "express": "^4.21.2",
+     "flatpickr": "^4.6.13",
+-    "node-fetch": "^3.3.2",
+     "socket.io": "^4.8.1"
+-  }
+-  ,
++  },
+   "scripts": {
+     "start": "node server.js"
+   }
+diff --git a/server.js b/server.js
+index db894384..07087a32 100644
+--- a/server.js
++++ b/server.js
+@@ -2,7 +2,8 @@
+ const express = require("express");
+ const bodyParser = require("body-parser");
+ const path = require("path");
+-const fetch = require("node-fetch");  // ╨╕╤Б╨┐╤А╨░╨▓╨╗╨╡╨╜ ╨╕╨╝╨┐╨╛╤А╤В fetch ╨┤╨╗╤П ╤Б╨╛╨▓╨╝╨╡╤Б╤В╨╕╨╝╨╛╤Б╤В╨╕
++// Node 18+: ╨╜╨░╤В╨╕╨▓╨╜╤Л╨╣ global fetch. node-fetch@3 тАФ ESM-only, require() ╨┐╨░╨┤╨░╨╡╤В.
++const fetch = typeof globalThis.fetch === "function" ? globalThis.fetch : (() => { throw new Error("Node 18+ required for fetch"); })();
+ 
+ const app = express();
+ app.use(bodyParser.json());
+diff --git a/static/css/style.css b/static/css/style.css
+index 962b1fde..7ed9265e 100644
+--- a/static/css/style.css
++++ b/static/css/style.css
+@@ -413,7 +413,7 @@ h1, h2, h3, h4, p {
+ }
+ 
+ /* ╨Ю╤В╤Б╤В╤Г╨┐╤Л ╨┤╨╗╤П ╤Б╨╡╨║╤Ж╨╕╨╣ */
+-.services-section, .store-section, .events-section, .blog-section, .contacts-section, .chat-section {
++.services-section, .store-section, .projects-section, .events-section, .blog-section, .contacts-section, .chat-section {
+   background: #fff;
+   margin: 3em auto;
+   padding: 1em;
+@@ -424,6 +424,7 @@ h1, h2, h3, h4, p {
+ /* ╨ж╨╡╨╜╤В╤А╨╕╤А╨╛╨▓╨░╨╜╨╕╨╡ ╨╖╨░╨│╨╛╨╗╨╛╨▓╨║╨╛╨▓ */
+ .services-section h2,
+ .store-section h2,
++.projects-section h2,
+ .events-section h2,
+ .blog-section h2,
+ .reviews-section h2 {
+@@ -483,6 +484,40 @@ h1, h2, h3, h4, p {
+ .service-card-media-btn.next { right: 10px; }
+ .service-card-media-btn:hover { background: rgba(0, 0, 0, 0.6); }
+ 
++/* ╨Я╤А╨╛╨╡╨║╤В╤Л ╨╜╨░ ╨│╨╗╨░╨▓╨╜╨╛╨╣ */
++.projects-preview-list {
++  list-style: none;
++  padding: 0;
++  margin: 0 0 1em;
++  display: grid;
++  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
++  gap: 1.5em;
++}
++.project-preview-card {
++  background: #fafafa;
++  padding: 1em;
++  border-radius: 4px;
++  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
++  transition: transform 0.3s ease, box-shadow 0.3s ease;
++}
++.project-preview-card:hover {
++  transform: translateY(-5px);
++  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
++}
++.project-preview-card img {
++  width: 100%;
++  height: 180px;
++  object-fit: cover;
++  border-radius: 4px;
++  margin-bottom: 0.75em;
++}
++.project-preview-card h4 { margin: 0 0 0.5em; font-size: 1.1em; }
++.project-preview-card p { margin: 0 0 0.75em; font-size: 0.95em; color: #555; }
++.projects-more, .store-more { text-align: center; margin-top: 1em; }
++.blog-latest { margin: 0 0 1em; }
++.blog-excerpt { color: #555; margin: 0.5em 0; }
++.blog-more { margin-top: 0.75em; }
++
+ /* Events month collapse UI */
+ .events-controls {
+   display: flex;
+diff --git a/templates/base.html b/templates/base.html
+index 1d8b3921..1ad7c6af 100644
+--- a/templates/base.html
++++ b/templates/base.html
+@@ -106,6 +106,8 @@
+         <ul>
+           <li><a href="#hero">╨У╨╗╨░╨▓╨╜╨░╤П</a></li>
+           <li><a href="#services">╨г╤Б╨╗╤Г╨│╨╕</a></li>
++          <li><a href="{{ url_for('shop.shop_index') }}">╨в╨╛╨▓╨░╤А╤Л</a></li>
++          <li><a href="{{ url_for('projects_page') }}">╨Я╤А╨╛╨╡╨║╤В╤Л</a></li>
+           <li><a href="#events">╨Ь╨╡╤А╨╛╨┐╤А╨╕╤П╤В╨╕╤П</a></li>
+           <li><a href="#blog">╨С╨╗╨╛╨│</a></li>
+           <li><a href="#contacts">╨Ъ╨╛╨╜╤В╨░╨║╤В╤Л</a></li>
+diff --git a/templates/index.html b/templates/index.html
+index cc749b85..601444f3 100644
+--- a/templates/index.html
++++ b/templates/index.html
+@@ -62,10 +62,24 @@
+ 
+         <div class="service-card">
+           <h4>Wake Camp</h4>
+-          <p>╨Ш╨╜╤В╨╡╨╜╤Б╨╕╨▓╨╜╤Л╨╣ ╨╗╨░╨│╨╡╤А╤М ╨┤╨╗╤П ╨┐╨╛╤Б╤В╨╛╤П╨╜╨╜╨╛╨╣ ╤А╨░╨▒╨╛╤В╤Л ╨╜╨░╨┤ ╤В╨╡╤Е╨╜╨╕╨║╨╛╨╣ ╨╕ ╤Д╨╕╨╖╨╕╤З╨╡╤З╤Б╨║╨╛╨╣ ╨┐╨╛╨┤╨│╨╛╤В╨╛╨▓╨║╨╛╨╣.</p>
++          <p>╨Ш╨╜╤В╨╡╨╜╤Б╨╕╨▓╨╜╤Л╨╣ ╨╗╨░╨│╨╡╤А╤М ╨┤╨╗╤П ╨┐╨╛╤Б╤В╨╛╤П╨╜╨╜╨╛╨╣ ╤А╨░╨▒╨╛╤В╤Л ╨╜╨░╨┤ ╤В╨╡╤Е╨╜╨╕╨║╨╛╨╣ ╨╕ ╤Д╨╕╨╖╨╕╤З╨╡╤Б╨║╨╛╨╣ ╨┐╨╛╨┤╨│╨╛╤В╨╛╨▓╨║╨╛╨╣.</p>
+           <p>╨ж╨╡╨╜╨░: ╨╛╤В 15 000 ╤А╤Г╨▒╨╗╨╡╨╣</p>
+           <button class="btn-secondary btn-book" data-service="boat">╨Я╨╛╨┤╤А╨╛╨▒╨╜╨╡╨╡ / ╨Ч╨░╨┐╨╕╤Б╨░╤В╤М╤Б╤П</button>
+         </div>
++
++        <div class="service-card">
++          <h4>╨в╤А╨╡╨╜╨╡╤А ╨╜╨░ ╨▓╤Л╨╡╨╖╨┤╨╡</h4>
++          <p>╨Т╤Л╨╡╨╖╨┤ ╨╕╨╜╤Б╤В╤А╤Г╨║╤В╨╛╤А╨░ ╨╜╨░ ╨▓╨░╤И ╨▓╨╛╨┤╨╛╤С╨╝ ╨╕╨╗╨╕ ╨▒╨░╨╖╤Г. ╨Ш╨╜╨┤╨╕╨▓╨╕╨┤╤Г╨░╨╗╤М╨╜╤Л╨╡ ╨╕ ╨│╤А╤Г╨┐╨┐╨╛╨▓╤Л╨╡ ╤В╤А╨╡╨╜╨╕╤А╨╛╨▓╨║╨╕.</p>
++          <p>╨ж╨╡╨╜╨░: ╨┐╨╛ ╨╖╨░╨┐╤А╨╛╤Б╤Г</p>
++          <button class="btn-secondary btn-book" data-service="boat">╨Я╨╛╨┤╤А╨╛╨▒╨╜╨╡╨╡ / ╨Ч╨░╨┐╨╕╤Б╨░╤В╤М╤Б╤П</button>
++        </div>
++
++        <div class="service-card">
++          <h4>╨Ъ╨╛╨╜╤Б╨░╨╗╤В╨╕╨╜╨│</h4>
++          <p>╨Ъ╨╛╨╜╤Б╤Г╨╗╤М╤В╨░╤Ж╨╕╨╕ ╨┐╨╛ ╨╛╤А╨│╨░╨╜╨╕╨╖╨░╤Ж╨╕╨╕ ╤Б╨╛╤А╨╡╨▓╨╜╨╛╨▓╨░╨╜╨╕╨╣, ╨┐╨╛╨┤╨▒╨╛╤А╤Г ╨╛╨▒╨╛╤А╤Г╨┤╨╛╨▓╨░╨╜╨╕╤П ╨╕ ╨╝╨╡╤В╨╛╨┤╨╕╨║╨╡ ╨╛╨▒╤Г╤З╨╡╨╜╨╕╤П.</p>
++          <p>╨ж╨╡╨╜╨░: ╨┐╨╛ ╨╖╨░╨┐╤А╨╛╤Б╤Г</p>
++          <button class="btn-secondary btn-book" data-service="gym">╨Я╨╛╨┤╤А╨╛╨▒╨╜╨╡╨╡</button>
++        </div>
+       </div>
+       <button class="carousel-next" aria-label="╨б╨╗╨╡╨┤╤Г╤О╤Й╨╕╨╡ ╤Г╤Б╨╗╤Г╨│╨╕">тЦ╢</button>
+     </div>
+@@ -80,16 +94,39 @@
+         <h4>╨С╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤</h4>
+         <p>╨в╤А╨╡╨╜╨╕╤А╨╛╨▓╨╛╤З╨╜╤Л╨╣ ╨▒╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤ ╨┤╨╗╤П ╤В╤А╤О╨║╨╛╨▓ ╨╕ ╤Д╨╕╤В╨╜╨╡╤Б╨░. ╨г╨╗╤Г╤З╤И╨░╨╡╤В ╨║╨╛╨╛╤А╨┤╨╕╨╜╨░╤Ж╨╕╤О, ╨┐╨╛╨┤╤Е╨╛╨┤╨╕╤В ╨┤╨╗╤П ╨▓╤Б╨╡╤Е ╤Г╤А╨╛╨▓╨╜╨╡╨╣ ╨┐╨╛╨┤╨│╨╛╤В╨╛╨▓╨║╨╕.</p>
+         <p>╨ж╨╡╨╜╨░: 7 500 тВ╜</p>
+-        <button class="btn-secondary">╨Ъ╤Г╨┐╨╕╤В╤М</button>
++        <a class="btn-secondary btn" href="{{ url_for('shop.product', slug='balance-board') }}">╨Ъ╤Г╨┐╨╕╤В╤М</a>
+       </div>
+       <div class="product-card">
+-        <img src="{{ url_for('static', filename='images/balans_trick_trening.jpg') }}" alt="╨С╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤ Pro" loading="lazy" />
++        <img src="{{ url_for('static', filename='images/balans_trick_trening.jpg') }}" alt="╨С╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤ Big" loading="lazy" />
+         <h4>╨С╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤ Big</h4>
+         <p>╨г╨▓╨╡╨╗╨╕╤З╨╡╨╜╨╜╨░╤П ╨╝╨╛╨┤╨╡╨╗╤М ╨┤╨╗╤П ╨┐╤А╨╛╤Д╨╡╤Б╤Б╨╕╨╛╨╜╨░╨╗╨╛╨▓.</p>
+         <p>╨ж╨╡╨╜╨░: 9 900 тВ╜</p>
+-        <button class="btn-secondary">╨Ъ╤Г╨┐╨╕╤В╤М</button>
++        <a class="btn-secondary btn" href="{{ url_for('shop.product', slug='balance-board-big') }}">╨Ъ╤Г╨┐╨╕╤В╤М</a>
+       </div>
+     </div>
++    <p class="store-more"><a href="{{ url_for('shop.shop_index') }}" class="btn-secondary">╨Т╤Б╨╡ ╤В╨╛╨▓╨░╤А╤Л</a></p>
++  </section>
++
++  <!-- ╨Я╤А╨╛╨╡╨║╤В╤Л -->
++  <section id="projects" class="projects-section section">
++    <h2>╨Я╤А╨╛╨╡╨║╤В╤Л</h2>
++    {% if projects_preview %}
++    <ul class="projects-preview-list">
++      {% for p in projects_preview %}
++      <li class="project-preview-card">
++        {% if p.cover %}
++        <img src="{{ url_for('static', filename=p.cover) }}" alt="{{ p.name }}" loading="lazy" />
++        {% endif %}
++        <h4>{{ p.name }}</h4>
++        <p>{{ p.summary }}</p>
++        {% if p.cta_url %}
++        <a class="btn-secondary btn" href="{{ p.cta_url }}">╨Я╨╛╨┤╤А╨╛╨▒╨╜╨╡╨╡</a>
++        {% endif %}
++      </li>
++      {% endfor %}
++    </ul>
++    {% endif %}
++    <p class="projects-more"><a href="{{ url_for('projects_page') }}" class="btn-secondary">╨Т╤Б╨╡ ╨┐╤А╨╛╨╡╨║╤В╤Л</a></p>
+   </section>
+ 
+   {# ╨а╨╡╨╜╨┤╨╡╤А╨╕╨╝ ╤Б╨╡╨║╤Ж╨╕╤О ╨╝╨╡╤А╨╛╨┐╤А╨╕╤П╤В╨╕╨╣ ╤В╨╛╨╗╤М╨║╨╛ ╨╡╤Б╨╗╨╕ ╨╡╤Б╤В╤М ╤Е╨╛╤В╤П ╨▒╤Л ╨╛╨┤╨╜╨╛ ╤Б╨╛╨▒╤Л╤В╨╕╨╡ #}
+@@ -118,10 +155,20 @@
+   </section>
+   {% endif %}
+ 
+-  <!-- ╨С╨╗╨╛╨│ -->
++  <!-- ╨Я╨╛╤Б╨╗╨╡╨┤╨╜╨╕╨╡ ╨╜╨╛╨▓╨╛╤Б╤В╨╕ / ╨С╨╗╨╛╨│ -->
+   <section id="blog" class="blog-section">
+-    <h2>╨С╨╗╨╛╨│</h2>
+-    <p>╨Т ╤А╨░╨╖╤А╨░╨▒╨╛╤В╨║╨╡. ╨б╨║╨╛╤А╨╛ ╨╖╨┤╨╡╤Б╤М ╨┐╨╛╤П╨▓╤П╤В╤Б╤П ╨╜╨╛╨▓╤Л╨╡ ╤Б╤В╨░╤В╤М╨╕!</p>
++    <h2>╨Я╨╛╤Б╨╗╨╡╨┤╨╜╨╕╨╡ ╨╜╨╛╨▓╨╛╤Б╤В╨╕</h2>
++    {% if latest_blog_post %}
++    <article class="blog-latest">
++      <h3><a href="{{ url_for('blog.blog_post', slug=latest_blog_post.slug) }}">{{ latest_blog_post.title }}</a></h3>
++      {% if latest_blog_post.get('excerpt') %}
++      <p class="blog-excerpt">{{ latest_blog_post.excerpt }}</p>
++      {% endif %}
++      <p class="blog-more"><a href="{{ url_for('blog.blog_index') }}">╨Т╤Б╨╡ ╤Б╤В╨░╤В╤М╨╕ ╨▒╨╗╨╛╨│╨░</a></p>
++    </article>
++    {% else %}
++    <p>╨б╨║╨╛╤А╨╛ ╨╖╨┤╨╡╤Б╤М ╨┐╨╛╤П╨▓╤П╤В╤Б╤П ╨╜╨╛╨▓╤Л╨╡ ╤Б╤В╨░╤В╤М╨╕. <a href="{{ url_for('blog.blog_index') }}">╨Я╨╡╤А╨╡╨╣╤В╨╕ ╨▓ ╨▒╨╗╨╛╨│</a>.</p>
++    {% endif %}
+   </section>
+ 
+   <section class="reviews-section">
+diff --git a/templates/shop.html b/templates/shop.html
+index 80658cc6..5a8104c2 100644
+--- a/templates/shop.html
++++ b/templates/shop.html
+@@ -11,6 +11,7 @@
+     <button class="filter-btn" data-category="poncho">╨Я╨╛╨╜╤З╨╛</button>
+     <button class="filter-btn" data-category="boardgame">╨Э╨░╤Б╤В╨╛╨╗╤М╨╜╤Л╨╡&nbsp;╨╕╨│╤А╤Л</button>
+     <button class="filter-btn" data-category="wakesurfpolia">WakeSurfPolia</button>
++    <button class="filter-btn" data-category="certificate">╨б╨╡╤А╤В╨╕╤Д╨╕╨║╨░╤В╤Л</button>
+   </div>
+ 
+   <!-- ╨║╨░╤А╤В╨╛╤З╨║╨╕ -->
+@@ -62,6 +63,22 @@
+       <p class="price">12 500&nbsp;тВ╜</p>
+       <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='balance-board-pro') }}">╨Ъ╤Г╨┐╨╕╤В╤М</a>
+     </div>
++
++    <div class="product-card" data-category="balance-board">
++      <img src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="╨С╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤ NewStyle">
++      <h4>╨С╨░╨╗╨░╨╜╤Б-╨▒╨╛╤А╨┤ NewStyle</h4>
++      <p>╨б╤В╨╕╨╗╤М╨╜╨░╤П ╨╝╨╛╨┤╨╡╨╗╤М ╨┤╨╗╤П ╤В╤А╨╡╨╜╨╕╤А╨╛╨▓╨╛╨║ ╨╕ ╤В╤А╤О╨║╨╛╨▓. ╨Я╨╛╨┤╤Е╨╛╨┤╨╕╤В ╨┤╨╗╤П ╨┤╨╛╨╝╨░ ╨╕ ╨╖╨░╨╗╨░.</p>
++      <p class="price">8 900&nbsp;тВ╜</p>
++      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='balance-board-newstyle') }}">╨Ъ╤Г╨┐╨╕╤В╤М</a>
++    </div>
++
++    <div class="product-card" data-category="certificate">
++      <img src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="╨б╨╡╤А╤В╨╕╤Д╨╕╨║╨░╤В ╨╜╨░ 10 ╨╖╨░╨╜╤П╤В╨╕╨╣">
++      <h4>╨б╨╡╤А╤В╨╕╤Д╨╕╨║╨░╤В ╨╜╨░ 10 ╨╖╨░╨╜╤П╤В╨╕╨╣</h4>
++      <p>╨Ш╨┤╨╡╨░╨╗╤М╨╜╤Л╨╣ ╨┐╨╛╨┤╨░╤А╨╛╨║ тАФ ╨┐╤Г╤В╤М ╨║ ╤Г╨▓╨╡╤А╨╡╨╜╨╜╨╛╨╝╤Г ╤Г╤А╨╛╨▓╨╜╤О ┬л╨░╨╝╨░╤В╨╛╤А┬╗. ╨Я╤А╨╛╨│╤А╨╡╤Б╤Б ╤Д╨╕╨║╤Б╨╕╤А╤Г╨╡╤В╤Б╤П ╨╕ ╨╖╨░╨║╤А╨╡╨┐╨╗╤П╨╡╤В╤Б╤П.</p>
++      <p class="price">30 000&nbsp;тВ╜</p>
++      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='certificate-10') }}">╨Ъ╤Г╨┐╨╕╤В╤М</a>
++    </div>
+   </div>
+ </section>
+   <script src="{{ url_for('static', filename='js/shop-filter.js') }}"></script>

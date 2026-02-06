@@ -2,13 +2,20 @@
 
 {% block content %}
 <section class="product-page container">
-  <div class="product-card">
-    <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.title }}" loading="lazy">
+  <div class="product-card{% if product.get('dev_only') %} product-card--dev{% endif %}">
+    {% if product.get('dev_only') %}
+    <span class="product-badge product-badge--dev">В разработке</span>
+    {% endif %}
+        <img src="{{ url_for('static', filename=product.image or 'images/Place1Logo.png') }}" alt="{{ product.title }}" loading="lazy" decoding="async" width="800" height="500" data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
     <h2>{{ product.title }}</h2>
     <p class="price">{{ product.price }}</p>
     <p>{{ product.description }}</p>
     <div class="actions">
+      {% if product.get('dev_only') %}
+      <span class="btn btn-primary-lg btn--disabled">Скоро</span>
+      {% else %}
       <a class="btn btn-primary-lg" href="#">Купить</a>
+      {% endif %}
       <a class="btn btn-outline" href="{{ url_for('shop.shop_index') }}">Вернуться в магазин</a>
     </div>
   </div>

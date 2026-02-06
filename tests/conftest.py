@@ -4,13 +4,16 @@ import pytest
 
 # Ensure prometheus multiproc dir exists for tests to avoid startup errors
 import tempfile
-PROM_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'prometheus_multiproc'))
+
+PROM_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "prometheus_multiproc")
+)
 os.makedirs(PROM_DIR, exist_ok=True)
-os.environ.setdefault('PROMETHEUS_MULTIPROC_DIR', PROM_DIR)
+os.environ.setdefault("PROMETHEUS_MULTIPROC_DIR", PROM_DIR)
 
 # Ensure repo root is on sys.path so tests can import the `app` package when
 # pytest is executed from different working directories or under CI.
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
@@ -26,13 +29,13 @@ collect_ignore = [
 ]
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def app():
-    app = create_app('testing')
+    app = create_app("testing")
     yield app
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def client(app):
     return app.test_client()
 
@@ -65,5 +68,5 @@ def mocker():
 @pytest.fixture(autouse=True)
 def mock_external_apis(mocker):
     # patch common external integrations
-    mocker.patch('app.services.google_sheets_service.append_record', return_value=True)
-    mocker.patch('app.services.openai_service.ask', return_value='Тестовый ответ')
+    mocker.patch("app.services.google_sheets_service.append_record", return_value=True)
+    mocker.patch("app.services.openai_service.ask", return_value="Тестовый ответ")

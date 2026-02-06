@@ -1,0 +1,53 @@
+{# Лид-формы: Тренер на выезде, Консалтинг, Wake Camp. Класс lead-modal — для скрипта без мигания. #}
+<div id="lead-modal-camp" class="modal lead-modal hidden" aria-labelledby="lead-camp-title" aria-modal="true">
+  <div class="modal-content">
+    <span class="lead-modal-close modal-close" aria-label="Закрыть">&times;</span>
+    <h2 id="lead-camp-title">Запросить программу Wake Camp</h2>
+    <form id="lead-form-camp" class="lead-form">
+      <input type="hidden" name="type" value="camp">
+      <label>Желаемые даты / окно <input type="text" name="dates" placeholder="Например: 15–20 июля или август"></label>
+      <label>Уровень <input type="text" name="level" placeholder="Начинающий / средний / продвинутый"></label>
+      <label>Цель <input type="text" name="goal" placeholder="Техника, трюки, общая подготовка"></label>
+      <label>Бюджетный коридор (опц.) <input type="text" name="budget" placeholder="По запросу / до 20 000 / другое"></label>
+      <label>Контакт (телефон или Telegram) <input type="text" name="contact" placeholder="+7 … или @nick" required></label>
+      <button type="submit" class="btn btn-primary">Отправить заявку</button>
+    </form>
+    <p id="lead-camp-success" class="lead-success hidden">Заявка отправлена. Мы свяжемся с вами в ближайшее время.</p>
+  </div>
+</div>
+<div id="lead-modal-coach-trip" class="modal lead-modal hidden" aria-labelledby="lead-coach-title" aria-modal="true">
+  <div class="modal-content">
+    <span class="lead-modal-close modal-close" aria-label="Закрыть">&times;</span>
+    <h2 id="lead-coach-title">Запросить выезд тренера</h2>
+    <form id="lead-form-coach-trip" class="lead-form">
+      <input type="hidden" name="type" value="coach_trip">
+      <label>Город / локация <input type="text" name="location" placeholder="Город или водоём" required></label>
+      <label>Даты (диапазон) <input type="text" name="dates" placeholder="Например: 15–20 июля"></label>
+      <label>Формат
+        <select name="format">
+          <option value="individual">Индивидуально</option>
+          <option value="group">Группа</option>
+        </select>
+      </label>
+      <label>Уровень <input type="text" name="level" placeholder="Начинающий / средний / продвинутый"></label>
+      <label>Есть катер/оборудование? <input type="text" name="equipment" placeholder="Да / Нет / Частично"></label>
+      <label>Контакт (телефон или Telegram) <input type="text" name="contact" placeholder="+7 … или @nick" required></label>
+      <button type="submit" class="btn btn-primary">Отправить заявку</button>
+    </form>
+    <p id="lead-coach-success" class="lead-success hidden">Заявка отправлена. Мы свяжемся с вами в ближайшее время.</p>
+  </div>
+</div>
+<div id="lead-modal-consulting" class="modal lead-modal hidden" aria-labelledby="lead-consulting-title" aria-modal="true">
+  <div class="modal-content">
+    <span class="lead-modal-close modal-close" aria-label="Закрыть">&times;</span>
+    <h2 id="lead-consulting-title">Обсудить запуск</h2>
+    <form id="lead-form-consulting" class="lead-form">
+      <input type="hidden" name="type" value="consulting">
+      <label>Тема <input type="text" name="topic" placeholder="Организация соревнований / оборудование / методика" required></label>
+      <label>Кратко задача <textarea name="task" rows="3" placeholder="Опишите задачу"></textarea></label>
+      <label>Контакт <input type="text" name="contact" placeholder="Телефон или Telegram" required></label>
+      <button type="submit" class="btn btn-primary">Отправить</button>
+    </form>
+    <p id="lead-consulting-success" class="lead-success hidden">Заявка отправлена. Мы свяжемся с вами.</p>
+  </div>
+</div>

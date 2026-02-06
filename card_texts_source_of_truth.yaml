@@ -1,0 +1,32 @@
+/: []
+/projects:
+- alt: MyWave Camp Ruza — обложка проекта
+  last_tag: h2
+  texts:
+  - 'MyWave Camp Ruza14 дней на Рузе: вода за Wakeflot, команда, результатРузаcampsummerkidsteens170
+    000 – 250 000 ₽уровень: allПодробнее'
+  type: project
+- alt: Летний лагерь — обложка проекта
+  last_tag: h2
+  texts:
+  - 'Летний лагерьЛетние интенсивы и лагеря по вейксерфингу для детей и взрослыхcampsummerпо
+    запросууровень: allПодробнее'
+  type: project
+- alt: Индустрия Wake — обложка проекта
+  last_tag: h2
+  texts:
+  - Индустрия WakeРесурсы и материалы для развития индустрии вейксерфингаindustrywakeПодробнее
+  type: project
+- alt: WakeSurf Safari — превью 2
+  last_tag: h2
+  texts:
+  - 'WakeSurf SafariЭкспедиционный тур по Волге с тренировками и проживаниемСамараsafaripremiumitinerarypro-coachesот
+    180 000 ₽уровень: intermediateПодробнее'
+  type: project
+- alt: WSC 2026 (WakeSurf Coach Challenge) — обложка проекта
+  last_tag: h2
+  texts:
+  - 'WSC 2026 (WakeSurf Coach Challenge)Соревнования и образовательная программа для
+    тренеров и райдеровchallengecoachingуровень: allПодробнее'
+  type: project
+/shop: []

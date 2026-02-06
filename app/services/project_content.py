@@ -2,18 +2,21 @@
 Загрузчик контента для страниц проектов.
 Поддерживает Markdown, JSON, YAML файлы.
 """
+
 import json
 from pathlib import Path
 from typing import Dict, Any, Optional
 
 try:
     import yaml
+
     YAML_AVAILABLE = True
 except ImportError:
     YAML_AVAILABLE = False
 
 try:
     import markdown as md
+
     MARKDOWN_AVAILABLE = True
 except ImportError:
     MARKDOWN_AVAILABLE = False
@@ -68,49 +71,55 @@ def render_markdown(markdown_text: str) -> str:
 def load_safari_bundle() -> Dict[str, Any]:
     """
     Загружает весь контент для страницы Wake Surf Safari 2026.
-    
+
     Returns:
         Словарь с ключами: html, meta, schema_event, menu, partner_packages, forms
     """
     base = project_base_dir() / "safari2026"
-    
+
     # Загружаем файлы с fallback на пустые значения
     index_md = load_text(base / "index.md")
-    meta = load_json(base / "meta.json", {
-        "title": "Wake Surf Safari 2026",
-        "description": "Экспедиционный вейксерф-тур по Волге",
-        "og": {
-            "type": "website",
+    meta = load_json(
+        base / "meta.json",
+        {
             "title": "Wake Surf Safari 2026",
             "description": "Экспедиционный вейксерф-тур по Волге",
-            "image": "",
-            "url": ""
+            "og": {
+                "type": "website",
+                "title": "Wake Surf Safari 2026",
+                "description": "Экспедиционный вейксерф-тур по Волге",
+                "image": "",
+                "url": "",
+            },
+            "twitter": {
+                "card": "summary_large_image",
+                "title": "Wake Surf Safari 2026",
+                "description": "Экспедиционный вейксерф-тур по Волге",
+                "image": "",
+            },
         },
-        "twitter": {
-            "card": "summary_large_image",
-            "title": "Wake Surf Safari 2026",
-            "description": "Экспедиционный вейксерф-тур по Волге",
-            "image": ""
-        }
-    })
-    schema_event = load_json(base / "schema-event.jsonld", {
-        "@context": "https://schema.org",
-        "@type": "SportsEvent",
-        "name": "Wake Surf Safari 2026"
-    })
+    )
+    schema_event = load_json(
+        base / "schema-event.jsonld",
+        {
+            "@context": "https://schema.org",
+            "@type": "SportsEvent",
+            "name": "Wake Surf Safari 2026",
+        },
+    )
     menu = load_json(base / "menu.json", [])
-    partner_packages = load_json(base / "partner_packages.json", {
-        "packages": [],
-        "contact": {
-            "email": "Y.Valeev@gmail.com",
-            "phone": "+7 916 011 71 79"
-        }
-    })
+    partner_packages = load_json(
+        base / "partner_packages.json",
+        {
+            "packages": [],
+            "contact": {"email": "Y.Valeev@gmail.com", "phone": "+7 916 011 71 79"},
+        },
+    )
     forms = load_yaml(base / "forms.yaml", {})
-    
+
     # Конвертируем markdown в HTML
     html = render_markdown(index_md) if index_md else ""
-    
+
     return {
         "html": html,
         "meta": meta,
@@ -119,4 +128,3 @@ def load_safari_bundle() -> Dict[str, Any]:
         "partner_packages": partner_packages,
         "forms": forms,
     }
-

@@ -4,7 +4,9 @@ import logging
 from app.ai.core_gateway import create_default_gateway
 from app.services.google_sheets_analytics import log_analytics_event
 
-safari_concierge_bp = Blueprint("safari_concierge", __name__, url_prefix="/api/ai/safari")
+safari_concierge_bp = Blueprint(
+    "safari_concierge", __name__, url_prefix="/api/ai/safari"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -48,5 +50,3 @@ def safari_chat():
         logger.warning("[Safari concierge] analytics logging failed: %s", e)
 
     return jsonify(reply)
-
-

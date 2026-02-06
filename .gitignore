@@ -65,12 +65,12 @@ token.json
 # OS
 .DS_Store
 Thumbs.db
-EOF
-# Secrets
+
+# Secrets (без маркера EOF и без *.json — иначе игнорируется package.json и конфиги)
 tmp_token.txt
 client_secret*.json
 configs/service_account.json
-*.json
 knowledge_base/*
 !knowledge_base/**/
 !knowledge_base/**/*.py
+logs/

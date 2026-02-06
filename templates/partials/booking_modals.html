@@ -1,51 +1,52 @@
-<div id="bookingDateModal" class="modal hidden">
+{# ID приведены к селекторам в booking.js: modalCalendar, bookingDateInput, modalSlots, modalContact, modalConfirm #}
+<div id="modalCalendar" class="modal hidden" aria-labelledby="booking-date-title" aria-modal="true">
   <div class="modal-content">
-      <span class="close-modal" data-modal-close>&times;</span>
-      <h2>Выберите дату</h2>
-      <p class="booking-service-hint">Услуга: <strong id="bookingServiceBadge">Зал</strong></p>
-      <p class="progress-info">Шаг 1 / 3</p>
-      <div class="date-input-container">
-          <input type="text" id="bookingDatePickr" placeholder="Выберите дату" readonly>
-          <i id="dateIcon" class="fas fa-calendar-alt"></i>
-      </div>
-      <p id="selectedDateDisplay">Дата не выбрана</p>
-      <button id="confirmDateBtn" class="btn btn-primary">Далее</button>
+    <span class="close-modal" data-modal-close aria-label="Закрыть">&times;</span>
+    <h2 id="booking-date-title">Выберите дату</h2>
+    <p class="booking-service-hint">Услуга: <strong id="bookingServiceBadge">Зал</strong></p>
+    <p class="progress-info">Шаг 1 / 3</p>
+    <div class="date-input-container">
+      <input type="text" id="bookingDateInput" placeholder="Выберите дату" readonly aria-label="Дата занятия">
+      <i id="dateIcon" class="fas fa-calendar-alt" aria-hidden="true"></i>
+    </div>
+    <p id="selectedDateDisplay">Дата не выбрана</p>
+    <button id="confirmDateBtn" class="btn btn-primary">Далее</button>
   </div>
 </div>
-<div id="bookingTimeModal" class="modal hidden">
+<div id="modalSlots" class="modal hidden" aria-labelledby="booking-time-title" aria-modal="true">
   <div class="modal-content">
-    <h3>Выберите время</h3>
+    <h3 id="booking-time-title">Выберите время</h3>
     <p class="progress-info">Шаг 2 / 3</p>
     <div id="slotButtonsContainer"></div>
     <input type="hidden" id="selectedSlot" />
-    <button id="confirmTimeBtn" disabled>Далее</button>
-    <button id="backToTimeBtn" class="close-modal">Назад</button>
+    <button id="confirmSlotBtn" disabled class="btn btn-primary">Далее</button>
+    <button type="button" id="backToTimeBtn" class="close-modal">Назад</button>
   </div>
 </div>
-<div id="bookingContactModal" class="modal hidden">
+<div id="modalContact" class="modal hidden" aria-labelledby="booking-contact-title" aria-modal="true">
   <div class="modal-content">
-    <h3>Ваши данные</h3>
+    <h3 id="booking-contact-title">Ваши данные</h3>
     <p class="progress-info">Шаг 3 / 3</p>
     <form id="bookingContactForm">
-      <input type="text" id="bookingName" placeholder="Имя" required />
-      <input type="text" id="bookingPhone" placeholder="Телефон" required />
+      <input type="text" id="bookingName" name="name" placeholder="Имя" required autocomplete="name" />
+      <input type="text" id="bookingPhone" name="phone" placeholder="Телефон или Telegram" required autocomplete="tel" />
       <input type="hidden" id="bookingServiceType" name="service_type" value="gym">
-      <button type="submit">Отправить</button>
+      <button type="submit" id="confirmContactBtn" class="btn btn-primary">Отправить</button>
     </form>
-    <button id="backToTimeBtn2" class="close-modal">Назад</button>
+    <button type="button" id="backToTimeBtn2" class="close-modal">Назад</button>
   </div>
 </div>
-<div id="bookingSuccessModal" class="modal hidden">
+<div id="modalConfirm" class="modal hidden" aria-labelledby="booking-success-title" aria-modal="true">
   <div class="modal-content">
-    <button class="close-modal" id="closeSuccessModal" data-modal-close>&times;</button>
-    <h2>Подтверждение записи</h2>
+    <button type="button" class="close-modal" id="closeSuccessModal" data-modal-close aria-label="Закрыть">&times;</button>
+    <h2 id="booking-success-title">Подтверждение записи</h2>
     <p id="successMessage"></p>
     <p class="pay-hint">
-      💳 Оплата производится на месте после тренировки. 
+      💳 Оплата производится на месте после тренировки.
       Мы пока не принимаем онлайн-оплату.
     </p>
   </div>
 </div>
-<div id="bookingToast" class="toast"></div>
-<input type="hidden" id="bookingDate">
-<input type="hidden" id="bookingTime">
+<div id="bookingToast" class="toast" role="status" aria-live="polite"></div>
+<input type="hidden" id="bookingDate" name="booking_date">
+<input type="hidden" id="bookingTime" name="booking_time">

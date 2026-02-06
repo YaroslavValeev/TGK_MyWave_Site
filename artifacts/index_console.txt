@@ -1,0 +1,10 @@
+[error] Failed to load resource: net::ERR_NETWORK_CHANGED
+[error] Failed to load resource: net::ERR_NETWORK_CHANGED
+[error] Failed to load resource: net::ERR_NETWORK_CHANGED
+[error] Failed to load resource: net::ERR_NETWORK_CHANGED
+[error] Failed to load resource: net::ERR_NETWORK_CHANGED
+[error] Failed to load resource: net::ERR_NETWORK_CHANGED
+[error] Failed to load resource: net::ERR_NETWORK_CHANGED
+[error] Failed to load resource: net::ERR_NETWORK_CHANGED
+[error] Failed to load resource: net::ERR_NETWORK_CHANGED
+[debug] [CSP Monitor] Инициализирован (sessionId: 2e7aeafd...)

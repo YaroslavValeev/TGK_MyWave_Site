@@ -1,0 +1,728 @@
+/**
+ * MyWave Camp Ruza — премиум-кино стиль, акцент #35C0CD, мотив траектории/линии.
+ */
+
+:root {
+  --camp-accent: #35C0CD;
+  --camp-accent-dark: #2ca8b4;
+  --camp-track: rgba(53, 192, 205, 0.35);
+  --camp-bg: #0a0e12;
+  --camp-card-bg: rgba(255, 255, 255, 0.96);
+  --camp-text: #1a1d22;
+  --camp-text-muted: #5a6169;
+}
+
+/* --- Hero --- */
+.camp-ruza-hero {
+  position: relative;
+  min-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem 4rem;
+  overflow: hidden;
+}
+
+.camp-ruza-hero__bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+  background-image: url("../images/Project/SummerCamp/SummerCampKids1.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.camp-ruza-hero__bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 14, 18, 0.75) 0%,
+    rgba(10, 14, 18, 0.5) 40%,
+    rgba(10, 14, 18, 0.85) 100%
+  );
+  pointer-events: none;
+}
+
+.camp-ruza-hero__track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--camp-accent) 20%,
+    var(--camp-accent) 80%,
+    transparent 100%
+  );
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.camp-ruza-hero__content {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  text-align: center;
+}
+
+.camp-ruza-hero__title {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 24px rgba(0, 0, 0, 0.4);
+  margin: 0 0 1rem;
+}
+
+.camp-ruza-hero__subtitle {
+  font-size: clamp(1rem, 2.2vw, 1.15rem);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  margin: 0 0 1.5rem;
+}
+
+.camp-ruza-hero__bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem;
+  text-align: left;
+  display: inline-block;
+}
+
+.camp-ruza-hero__bullets li {
+  position: relative;
+  padding-left: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  font-size: 0.95rem;
+}
+
+.camp-ruza-hero__bullets li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 6px;
+  height: 6px;
+  background: var(--camp-accent);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--camp-accent);
+}
+
+.camp-ruza-hero__badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.camp-ruza-hero__badges span {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--camp-accent);
+  background: rgba(53, 192, 205, 0.15);
+  border: 1px solid rgba(53, 192, 205, 0.4);
+  border-radius: 6px;
+}
+
+.camp-ruza-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.camp-ruza-hero__cta-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.camp-ruza-hero__cta-hint {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+.camp-ruza-hero__disclaimer {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+}
+
+/* Кнопки на странице Camp Ruza */
+.camp-ruza-hero .btn-primary,
+.camp-ruza-final .btn-primary {
+  background: var(--camp-accent);
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.camp-ruza-hero .btn-primary:hover,
+.camp-ruza-final .btn-primary:hover {
+  background: var(--camp-accent-dark);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--camp-accent);
+  color: #fff;
+}
+
+/* --- Sticky CTA --- */
+.camp-ruza-sticky-cta {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: rgba(10, 14, 18, 0.97);
+  border-top: 2px solid var(--camp-accent);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+}
+
+.camp-ruza-sticky-cta.is-visible {
+  transform: translateY(0);
+}
+
+.camp-ruza-sticky-cta__inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.camp-ruza-sticky-cta .btn-primary {
+  background: var(--camp-accent);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.camp-ruza-sticky-cta .btn-secondary.btn-ghost {
+  background: transparent;
+  color: var(--camp-accent);
+  border: 1px solid var(--camp-accent);
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+@media (min-width: 768px) {
+  .camp-ruza-sticky-cta {
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* --- Main content --- */
+.camp-ruza-main {
+  background: #f6f8fa;
+}
+
+.camp-ruza-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.camp-ruza-section {
+  padding: 3rem 0;
+}
+
+.camp-ruza-section + .camp-ruza-section {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.camp-ruza-h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--camp-text);
+  margin: 0 0 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--camp-track);
+}
+
+.camp-ruza-h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--camp-text);
+  margin: 0 0 0.5rem;
+}
+
+.camp-ruza-card {
+  background: var(--camp-card-bg);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border-left: 4px solid var(--camp-accent);
+}
+
+.camp-ruza-prose p {
+  margin: 0 0 0.75rem;
+  line-height: 1.6;
+  color: var(--camp-text);
+}
+
+.camp-ruza-prose p:last-child {
+  margin-bottom: 0;
+}
+
+.camp-ruza-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .camp-ruza-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.camp-ruza-ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  line-height: 1.6;
+  color: var(--camp-text);
+}
+
+.camp-ruza-results {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.camp-ruza-results li {
+  position: relative;
+  padding: 0.6rem 0 0.6rem 2rem;
+  border-bottom: 1px solid rgba(53, 192, 205, 0.2);
+  color: var(--camp-text);
+  font-size: 1rem;
+}
+
+.camp-ruza-results li:last-child {
+  border-bottom: none;
+}
+
+.camp-ruza-results li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1rem;
+  width: 8px;
+  height: 8px;
+  background: var(--camp-accent);
+  border-radius: 50%;
+}
+
+.camp-ruza-section--accent .camp-ruza-card {
+  background: rgba(53, 192, 205, 0.08);
+  border-left-color: var(--camp-accent);
+}
+
+.camp-ruza-lead {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--camp-text);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Pricing */
+.camp-ruza-pricing {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 640px) {
+  .camp-ruza-pricing {
+    grid-template-columns: 1fr;
+  }
+}
+
+.camp-ruza-package {
+  background: var(--camp-card-bg);
+  border-radius: 12px;
+  padding: 1.25rem;
+  border-left: 4px solid var(--camp-accent);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.camp-ruza-package--pro {
+  border-left-color: var(--camp-accent-dark);
+}
+
+.camp-ruza-price {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--camp-accent);
+  margin: 0.5rem 0 0.75rem;
+}
+
+.camp-ruza-trust,
+.camp-ruza-legal {
+  font-size: 0.9rem;
+  color: var(--camp-text-muted);
+  margin: 0.5rem 0 0;
+}
+
+/* Documents */
+.camp-ruza-docs {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+
+.camp-ruza-docs li {
+  margin-bottom: 0.5rem;
+}
+
+.camp-ruza-doc-link {
+  color: var(--camp-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.camp-ruza-doc-link:hover {
+  text-decoration: underline;
+  color: var(--camp-accent-dark);
+}
+
+/* FAQ */
+.camp-ruza-faq {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.camp-ruza-faq-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.camp-ruza-faq-q {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--camp-text);
+  background: var(--camp-card-bg);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.camp-ruza-faq-q:hover {
+  background: rgba(53, 192, 205, 0.08);
+}
+
+.camp-ruza-faq-q::after {
+  content: "+";
+  font-size: 1.25rem;
+  color: var(--camp-accent);
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+
+.camp-ruza-faq-q[aria-expanded="true"]::after {
+  content: "−";
+}
+
+.camp-ruza-faq-a {
+  padding: 0 1.25rem 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--camp-text-muted);
+  background: rgba(53, 192, 205, 0.04);
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+}
+
+.camp-ruza-faq-item.is-open .camp-ruza-faq-a {
+  max-height: 300px;
+}
+
+/* Final section */
+.camp-ruza-final {
+  text-align: center;
+  padding: 4rem 0;
+  background: linear-gradient(180deg, #f6f8fa 0%, rgba(53, 192, 205, 0.08) 100%);
+}
+
+.camp-ruza-final__title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: var(--camp-text);
+  text-shadow: none;
+  margin-bottom: 0.75rem;
+}
+
+.camp-ruza-final__subtitle {
+  color: var(--camp-text-muted);
+  text-shadow: none;
+  margin-bottom: 1.5rem;
+}
+
+/* Footer */
+.camp-ruza-footer {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  background: var(--camp-bg);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+}
+
+.camp-ruza-footer a {
+  color: var(--camp-accent);
+  text-decoration: none;
+}
+
+.camp-ruza-footer a:hover {
+  text-decoration: underline;
+}
+
+/* --- Modal --- */
+.camp-ruza-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.camp-ruza-modal.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.camp-ruza-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+}
+
+.camp-ruza-modal__box {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 1.5rem 1.75rem;
+  border-top: 4px solid var(--camp-accent);
+}
+
+.camp-ruza-modal__close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 36px;
+  height: 36px;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--camp-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.camp-ruza-modal__close:hover {
+  color: var(--camp-text);
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.camp-ruza-modal__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--camp-text);
+  margin: 0 2rem 0 0;
+  padding-right: 2rem;
+}
+
+.camp-ruza-modal__subtitle {
+  font-size: 0.9rem;
+  color: var(--camp-text-muted);
+  margin: 0.5rem 0 1rem;
+}
+
+/* Form */
+.camp-ruza-form .camp-ruza-field {
+  margin-bottom: 1rem;
+}
+
+.camp-ruza-form label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--camp-text);
+  margin-bottom: 0.35rem;
+}
+
+.camp-ruza-form input[type="text"],
+.camp-ruza-form input[type="tel"],
+.camp-ruza-form input[type="email"],
+.camp-ruza-form input[type="date"],
+.camp-ruza-form select,
+.camp-ruza-form textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.camp-ruza-form input:focus,
+.camp-ruza-form select:focus,
+.camp-ruza-form textarea:focus {
+  outline: none;
+  border-color: var(--camp-accent);
+  box-shadow: 0 0 0 3px rgba(53, 192, 205, 0.2);
+}
+
+.camp-ruza-fieldset {
+  margin-bottom: 1rem;
+  padding: 0;
+  border: none;
+}
+
+.camp-ruza-fieldset legend {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.camp-ruza-fieldset label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: 1rem;
+  font-weight: normal;
+}
+
+.camp-ruza-checkbox {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-weight: normal !important;
+}
+
+.camp-ruza-checkbox input {
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+}
+
+.camp-ruza-field--health-detail.hidden {
+  display: none !important;
+}
+
+.camp-ruza-form__actions {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.camp-ruza-form__actions .btn-primary {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--camp-accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.camp-ruza-form__actions .btn-primary:hover {
+  background: var(--camp-accent-dark);
+}
+
+.camp-ruza-form__actions .btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.camp-ruza-form__contacts {
+  font-size: 0.85rem;
+  color: var(--camp-text-muted);
+  margin-top: 1rem;
+}
+
+.camp-ruza-form__contacts a {
+  color: var(--camp-accent);
+  text-decoration: none;
+}
+
+.camp-ruza-modal__success {
+  padding: 1rem 0;
+}
+
+.camp-ruza-modal__success.hidden {
+  display: none !important;
+}
+
+.camp-ruza-modal__success p {
+  margin: 0 0 0.5rem;
+  line-height: 1.5;
+  color: var(--camp-text);
+}
+
+.camp-ruza-modal__success a {
+  color: var(--camp-accent);
+  text-decoration: none;
+}
+
+.required {
+  color: #c53030;
+}

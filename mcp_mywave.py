@@ -68,7 +68,9 @@ def _check_required_envs() -> bool:
         print("❌ Missing required environment variables for mcp_mywave:")
         for m in missing:
             print("  -", m)
-        print("\nSet these variables in your environment or provide a .env file. Example (PowerShell):")
+        print(
+            "\nSet these variables in your environment or provide a .env file. Example (PowerShell):"
+        )
         print("  $env:GOOGLE_SHEETS_CREDENTIALS='instance/service_account.json'")
         print("  $env:SPREADSHEET_ID='your_spreadsheet_id'")
         print("  $env:GOOGLE_CALENDAR_ID='your_calendar_id'")
@@ -99,6 +101,7 @@ def register_tool(name: str | None = None):
     Tries several registration APIs in order and falls back to attaching the
     function to server._registered_tools for later inspection.
     """
+
     def decorator(fn):
         # If server provides the same decorator API used in examples
         try:
@@ -328,7 +331,8 @@ if __name__ == "__main__":
         # 1) Try stdio helper: mcp.server.stdio.stdio_server
         try:
             from mcp.server import stdio as _mcp_stdio
-            if hasattr(_mcp_stdio, 'stdio_server'):
+
+            if hasattr(_mcp_stdio, "stdio_server"):
                 # stdio_server is a convenience transport that uses the current
                 # process' stdin/stdout. It will create and run the Server as needed.
                 _run_callable(_mcp_stdio.stdio_server)
@@ -339,14 +343,17 @@ if __name__ == "__main__":
 
         # 2) If Server.run accepts MemoryObject streams, try to use them.
         try:
-            from mcp.server.stdio import MemoryObjectReceiveStream, MemoryObjectSendStream
+            from mcp.server.stdio import (
+                MemoryObjectReceiveStream,
+                MemoryObjectSendStream,
+            )
             import sys as _sys
 
             # create stream wrappers around stdio buffers
             recv = MemoryObjectReceiveStream()
             send = MemoryObjectSendStream()
 
-            run_callable = getattr(server, 'run')
+            run_callable = getattr(server, "run")
             # server.create_initialization_options may or may not exist
             try:
                 init_opts = server.create_initialization_options()
@@ -364,24 +371,27 @@ if __name__ == "__main__":
             pass
 
         # 3) Final fallback: call Server.run with sys.stdin.buffer/sys.stdout.buffer
-        if hasattr(server, 'run'):
+        if hasattr(server, "run"):
             import sys as _sys
-            run_callable = getattr(server, 'run')
+
+            run_callable = getattr(server, "run")
             try:
                 init_opts = server.create_initialization_options()
             except Exception:
                 init_opts = {}
             if _inspect.iscoroutinefunction(run_callable):
-                asyncio.run(run_callable(_sys.stdin.buffer, _sys.stdout.buffer, init_opts))
+                asyncio.run(
+                    run_callable(_sys.stdin.buffer, _sys.stdout.buffer, init_opts)
+                )
             else:
                 run_callable(_sys.stdin.buffer, _sys.stdout.buffer, init_opts)
         else:
-            print('No run method found on Server instance (expected stdio_server or run)')
+            print(
+                "No run method found on Server instance (expected stdio_server or run)"
+            )
             raise SystemExit(1)
     except SystemExit:
         raise
     except Exception as e:
-        print('Error while starting MCP server:', e)
+        print("Error while starting MCP server:", e)
         raise
-
-

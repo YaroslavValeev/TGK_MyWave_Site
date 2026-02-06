@@ -38,7 +38,7 @@ function initializeBooking() {
     contactModal: document.getElementById("modalContact"),
     confirmModal: document.getElementById("modalConfirm"),
     modalCloseButtons: document.querySelectorAll(".close-modal"),
-    openBookingButtons: document.querySelectorAll("#openBookingBtn, .book-now, .btn-book"),
+    openBookingButtons: document.querySelectorAll("[data-modal='booking']"),
     toast: document.getElementById("toast"),
     stepIndicator: document.getElementById("step-indicator")
   };
@@ -61,13 +61,19 @@ function initializeBooking() {
 
   if (!UI.bookingDateInput || !UI.slotButtonsContainer) {
     console.warn("⚠️ Предупреждение: отсутствуют некоторые модальные элементы (это нормально, если они подгружаются позже).");
-    // NOTE: We do NOT return here anymore - this allows booking buttons to work even if modals aren't ready yet
   }
 
-  // Проверяем инициализацию кнопок бронирования
-  if (!UI.openBookingButtons || UI.openBookingButtons.length === 0) {
-    console.warn("⚠️ Не найдены кнопки для бронирования - попытаемся продолжить");
-    // NOTE: We do NOT return here - let booking initialization continue
+  // Quick detection: if the page doesn't contain any booking UI, bail out quietly
+  const bookingContactForm = document.getElementById("bookingContactForm");
+  const hasBookingUi = (UI.openBookingButtons && UI.openBookingButtons.length > 0)
+    || UI.bookingDateInput || UI.slotButtonsContainer
+    || UI.calendarModal || UI.slotsModal || UI.contactModal || UI.confirmModal
+    || bookingContactForm;
+
+  if (!hasBookingUi) {
+    console.info('[booking.js] Booking UI not detected on this page — skipping booking initialization.');
+    window.bookingStatus.initialized = false;
+    return; // prevent noisy errors on pages without booking widgets
   }
 
 
@@ -100,9 +106,10 @@ function initializeBooking() {
     });
   }
 
-  // Закрытие модального окна по клику вне его
+  // Закрытие только модалок бронирования по клику вне (не трогаем лид-модалки)
+  const bookingModals = [UI.calendarModal, UI.slotsModal, UI.contactModal, UI.confirmModal].filter(Boolean);
   document.addEventListener("click", (e) => {
-    if (e.target.classList.contains("modal")) {
+    if (e.target.classList && e.target.classList.contains("modal") && bookingModals.includes(e.target)) {
       hideAllModals();
     }
   });
@@ -621,7 +628,7 @@ function initializeBooking() {
       if (response.ok) {
         console.log("✅ УСПЕШНОЕ БРОНИРОВАНИЕ! Статус 200-299");
         console.log("   Результат:", result);
-        
+        hideAllModals();
         // Показываем локальный success-модал вместо перехода на внешнюю страницу
         try {
           // Человеко-понятные названия услуг
@@ -901,10 +908,12 @@ function initializeBooking() {
         return;
       }
 
-      // Устанавливаем текущий сервис (если есть)
+      // Устанавливаем текущий сервис (если есть) и бейдж в модалке
       if (serviceType) {
         currentService = serviceType;
         console.log(`[booking.js] Установлен тип сервиса: ${currentService}`);
+        const badge = document.getElementById("bookingServiceBadge");
+        if (badge) badge.textContent = serviceType === "gym" ? "Зал" : serviceType === "boat" ? "Катер" : serviceType;
       }
 
       // Настраиваем календарь в зависимости от типа услуги
@@ -921,8 +930,8 @@ function initializeBooking() {
         if (UI.stepIndicator) UI.stepIndicator.textContent = 'Шаг 1/4 - Выбор даты катания';
       }
 
-      // Определяем целевое модальное окно: либо по id из data-modal, либо дефолтное календарное модальное окно
-      const targetModal = modalId ? document.getElementById(modalId) : UI.calendarModal;
+      // data-modal="booking" → открываем первый шаг (календарь); иначе — модалка по id
+      const targetModal = (modalId === 'booking' || !modalId) ? UI.calendarModal : document.getElementById(modalId);
       console.log('[booking.js] 📍 Поиск модали:', {
         modalId: modalId,
         targetModal: targetModal ? targetModal.id : 'NOT FOUND'
@@ -958,8 +967,13 @@ function initializeBooking() {
     });
   }
 
-  if (UI.confirmContactBtn) {
-    UI.confirmContactBtn.addEventListener("click", () => {
+  const bookingContactForm = document.getElementById("bookingContactForm");
+  if (bookingContactForm) {
+    bookingContactForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      // mark form as validated to reveal field errors visually
+      bookingContactForm.classList.add('was-validated');
+      if (!UI.bookingName || !UI.bookingPhone) return;
       if (!UI.bookingName.value.trim() || !UI.bookingPhone.value.trim()) {
         showToast('❌ Заполните все поля');
         return;
@@ -968,14 +982,9 @@ function initializeBooking() {
         showToast('❌ Введите корректный номер телефона');
         return;
       }
-      showModal(UI.confirmModal);
-      // Переход к шагу подтверждения + скролл
-      setTimeout(() => {
-        UI.confirmModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
+      submitBooking();
     });
   }
-
   if (UI.finalConfirmBtn) {
     UI.finalConfirmBtn.addEventListener("click", () => {
       submitBooking();
@@ -1051,11 +1060,13 @@ function initializeBooking() {
     if (e.key === "Escape") hideAllModals();
   });
 
-  // Закрытие по клику вне модального окна
-  document.querySelectorAll(".modal").forEach((modal) => {
-    modal.addEventListener("mousedown", (e) => {
-      if (e.target === modal) hideAllModals();
-    });
+  // Закрытие по клику вне модального окна — только модалки бронирования (не лид-модалки)
+  bookingModals.forEach((modal) => {
+    if (modal) {
+      modal.addEventListener("mousedown", (e) => {
+        if (e.target === modal) hideAllModals();
+      });
+    }
   });
 
   // Enter = "Далее" (ищем первую .btn-primary в видимой модалке)
@@ -1148,7 +1159,8 @@ window.addEventListener('load', () => {
 });
 
 function openModal() {
-  document.getElementById("modalCalendar").classList.remove("hidden");
+  const el = document.getElementById("modalCalendar");
+  if (el) el.classList.remove("hidden");
 }
 
 // Пример: после выбора даты и времени

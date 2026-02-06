@@ -38,8 +38,7 @@ def log_site_booking_event(
         payload: Dict[str, Any] = {
             "event": "booking_created",
             "context": "site_booking",
-            "user_key": booking_data.get("client_id")
-            or booking_data.get("phone", ""),
+            "user_key": booking_data.get("client_id") or booking_data.get("phone", ""),
             "rule_id": booking_data.get("service_type", ""),
             "item_id": booking_data.get("workout_id", ""),
             "type": booking_data.get("source", "site"),

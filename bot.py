@@ -5,9 +5,10 @@ This module used to print on import; wrap the behavior behind a main
 guard so importing the module doesn't produce output.
 """
 
+
 def main() -> None:
-	print("Bot started...")
+    print("Bot started...")
 
 
 if __name__ == "__main__":
-	main()
+    main()

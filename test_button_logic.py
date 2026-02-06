@@ -23,17 +23,19 @@ if resp.status_code != 200:
     exit(1)
 
 html = resp.text
-soup = BeautifulSoup(html, 'html.parser')
+soup = BeautifulSoup(html, "html.parser")
 
 print("✅ Main page loaded\n")
 
 # 2. Проверяем наличие кнопок
 print("2️⃣  Checking for booking buttons...")
-buttons = soup.select('#openBookingBtn, .book-now, .btn-book')
+buttons = soup.select("#openBookingBtn, .book-now, .btn-book")
 print(f"Found {len(buttons)} booking buttons")
 
 for i, btn in enumerate(buttons[:5]):  # Show first 5
-    print(f"  Button {i+1}: {btn.get('class')} href={btn.get('href')} data-service={btn.get('data-service')}")
+    print(
+        f"  Button {i+1}: {btn.get('class')} href={btn.get('href')} data-service={btn.get('data-service')}"
+    )
 
 if len(buttons) == 0:
     print("❌ No booking buttons found!")
@@ -43,7 +45,7 @@ print("✅ Buttons found\n")
 
 # 3. Проверяем наличие модальных окон
 print("3️⃣  Checking for modal windows...")
-modals = soup.select('#modalCalendar, #modalSlots, #modalContact, #modalConfirm')
+modals = soup.select("#modalCalendar, #modalSlots, #modalContact, #modalConfirm")
 print(f"Found {len(modals)} modal windows")
 for modal in modals:
     print(f"  - {modal.get('id')}: classes={modal.get('class')}")
@@ -56,11 +58,11 @@ print("✅ Modals found\n")
 
 # 4. Проверяем наличие booking.js
 print("4️⃣  Checking for booking.js script...")
-scripts = soup.find_all('script', src=True)
+scripts = soup.find_all("script", src=True)
 booking_js_found = False
 for script in scripts:
-    src = script.get('src', '')
-    if 'booking.js' in src:
+    src = script.get("src", "")
+    if "booking.js" in src:
         print(f"  Found: {src}")
         booking_js_found = True
 
@@ -72,11 +74,11 @@ print("✅ booking.js found\n")
 
 # 5. Проверяем, что кнопки не имеют href на реальные страницы
 print("5️⃣  Checking button href values...")
-book_now_buttons = soup.select('.book-now')
+book_now_buttons = soup.select(".book-now")
 for btn in book_now_buttons:
-    href = btn.get('href', '')
-    data_service = btn.get('data-service', '')
-    if href and href != '#':
+    href = btn.get("href", "")
+    data_service = btn.get("data-service", "")
+    if href and href != "#":
         print(f"  ⚠️  Button with href='{href}' (should be '#')")
     else:
         print(f"  ✅ Button OK: href='{href}', data-service='{data_service}'")

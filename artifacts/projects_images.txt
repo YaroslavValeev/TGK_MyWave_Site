@@ -1,0 +1,7 @@
+/static/images/Project/SummerCamp/SummerCampKids1.png
+/static/images/hero-wakesurf.webp
+/static/images/hero-wakesurf.webp
+/static/images/Place1Logo.png
+/static/images/projects/wakesurfsafari/stage-1.webp
+/static/images/projects/wakesurfsafari/stage-2.webp
+/static/images/hero-wakesurf.webp
