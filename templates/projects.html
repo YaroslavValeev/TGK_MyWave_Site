@@ -6,7 +6,7 @@
 
   <ul class="projects-grid">
     {% for p in projects %}
-      <li class="project-card">
+      <li class="project-card mw-card" tabindex="0">
         {% if p.cover %}
         <img class="card__media card__image"
           src="{{ url_for('static', filename=p.cover) }}"
@@ -20,15 +20,15 @@
           loading="lazy" width="1200" height="800"
           data-fallback="{{ url_for('static', filename='images/Place1Logo.png') }}">
         {% endif %}
-        <div class="project-card__body">
+        <div class="card__body">
           {% if p.badges %}
           <p class="project-card__badges">
             {% for b in p.badges %}<span class="badge">{{ b }}</span>{% if not loop.last %} · {% endif %}{% endfor %}
           </p>
           {% endif %}
-          <h2 class="project-card__title">{{ p.name }}</h2>
-          <p class="project-card__summary">{{ p.summary }}</p>
-          <p class="project-card__meta">
+          <h2 class="card__title">{{ p.name }}</h2>
+          <p class="card__text">{{ p.summary }}</p>
+          <p class="card__meta">
             <span class="city">{{ p.city }}</span>
             {% if p.tags %}
               <span class="tags">
@@ -55,10 +55,11 @@
             {% endfor %}
           </div>
           {% endif %}
-
-          {% if p.cta_url or p.url %}
-            <a class="btn btn-primary" href="{{ p.cta_url or p.url }}">Подробнее</a>
-          {% endif %}
+          <div class="card__actions">
+            {% if p.cta_url or p.url %}
+              <a class="btn btn-primary" href="{{ p.cta_url or p.url }}">Подробнее</a>
+            {% endif %}
+          </div>
         </div>
       </li>
     {% endfor %}

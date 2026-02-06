@@ -104,5 +104,22 @@ if __name__ == "__main__":
         )
     except Exception as e:
         print(f"⚠️ SocketIO run failed: {e}")
-        print("Falling back to standard Flask run...")
-        app.run(host="0.0.0.0", port=5000, debug=False, use_reloader=False)
+        print("Falling back to standard Flask run... attempting to bind a free port (5000-5010)")
+        bound = False
+        # Try a range of ports to avoid 'address already in use' errors
+        for port in range(5000, 5011):
+            try:
+                print(f"Trying Flask run on port {port}...")
+                app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
+                bound = True
+                break
+            except OSError as oe:
+                print(f"Port {port} unavailable: {oe}")
+                continue
+            except Exception as ex:
+                print(f"Failed to run Flask on port {port}: {ex}")
+                continue
+
+        if not bound:
+            print("ERROR: could not bind Flask to any port in range 5000-5010. Exiting.")
+            raise SystemExit(1)

@@ -1,0 +1,11 @@
+/static/images/hero-wakesurf.webp
+/static/images/hero-wakesurf-dark.webp
+/static/images/balans_trick_trening1.jpg
+/static/images/balans_trick_trening.jpg
+/static/images/balans_trick_trening1.jpg
+/static/images/hero-wakesurf.png
+/static/images/01.jpg
+/static/images/hero-wakesurf.png
+/static/images/hero-wakesurf.webp
+/static/images/Place1Logo.png
+/static/images/Project/SummerCamp/SummerCampKids1.png

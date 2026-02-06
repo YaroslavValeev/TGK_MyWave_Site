@@ -196,7 +196,7 @@
   <script src="{{ url_for('static', filename='js/preloader.js') }}"></script>
   <script src="{{ url_for('static', filename='js/image-effects.js') }}"></script>
 
-  <script defer src="{{ url_for('static', filename='js/image-fallbacks.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/image-fallbacks.js') }}" nonce="{{ g.csp_nonce }}"></script>
 
   <!-- Recommendations client script (loads recommendation widgets & analytics pings) -->
   <script type="module" src="{{ url_for('static', filename='js/reco.js') }}" nonce="{{ g.csp_nonce }}"></script>
