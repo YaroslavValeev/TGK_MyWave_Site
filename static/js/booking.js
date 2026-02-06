@@ -45,6 +45,7 @@ function initializeBooking() {
 
   let currentStep = 1;
   let currentService = 'boat'; // По умолчанию используем лодку
+  window.currentService = currentService;
 
   // Логируем инициализацию UI элементов
   console.log('[booking.js] ✅ ПОИСК UI ЭЛЕМЕНТОВ:');
@@ -236,10 +237,12 @@ function initializeBooking() {
       
       // Получаем свежий CSRF токен для запроса
       const token = await getFreshCsrfToken();
-      // Определяем тип услуги для запроса слотов
-      const serviceParam = currentService
-        ? `?service=${encodeURIComponent(currentService)}`
+
+      // Подставляем тип услуги (boat / gym / ...)
+      const serviceParam = window.currentService
+        ? `?service=${encodeURIComponent(window.currentService)}`
         : '';
+
       const fetchUrl = `/api/calendar/slots/${dateStr}${serviceParam}`;
       console.log(`[booking.js] 🔄 Запрос слотов к URL: ${fetchUrl}`);
       
@@ -904,6 +907,7 @@ function initializeBooking() {
       // Устанавливаем текущий сервис (если есть)
       if (serviceType) {
         currentService = serviceType;
+        window.currentService = currentService;
         console.log(`[booking.js] Установлен тип сервиса: ${currentService}`);
       }
 
