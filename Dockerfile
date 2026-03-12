@@ -52,7 +52,7 @@ USER appuser
 
 # Health check - verify Flask app responds and DB is accessible
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:5000/api/metrics/health || exit 1
+    CMD curl -f http://localhost:5000/metrics/health || exit 1
 
 # Expose ports
 EXPOSE 5000 5001 9090

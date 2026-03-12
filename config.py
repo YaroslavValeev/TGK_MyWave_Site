@@ -3,7 +3,8 @@ from datetime import timedelta
 
 class Config:
     """Основная конфигурация для приложения."""
-    SECRET_KEY = os.getenv('SECRET_KEY') or 'hard-to-guess-string'
+    # SECRET_KEY обязателен в production; в development — желателен
+    SECRET_KEY = os.getenv('SECRET_KEY')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
     GOOGLE_CALENDAR_ID = os.environ.get('GOOGLE_CALENDAR_ID')
@@ -62,6 +63,8 @@ class Config:
 
 class DevelopmentConfig(Config):
     """Конфигурация для разработки."""
+    # В development допустим fallback для удобства; в production — обязательно из .env
+    SECRET_KEY = os.getenv('SECRET_KEY') or 'dev-secret-key-change-in-production'
     DEBUG = os.getenv('FLASK_DEBUG', 'False') == 'True'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
         'sqlite:///dev-app.db'
@@ -126,12 +129,20 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     """Конфигурация для тестирования."""
     TESTING = True
+    SECRET_KEY = os.getenv('SECRET_KEY') or 'test-secret-key-for-unit-tests'
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'  # In-memory database для быстрых тестов
     SQLALCHEMY_ECHO = False
     WTF_CSRF_ENABLED = False  # Отключаем CSRF для тестов
 
 class ProductionConfig(Config):
     """Конфигурация для продакшн."""
+    _secret = os.getenv('SECRET_KEY')
+    if not _secret or len(_secret) < 16:
+        raise ValueError(
+            "SECRET_KEY must be set in production (min 16 chars). "
+            "Set it in .env or environment."
+        )
+    SECRET_KEY = _secret
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///app.db'
     SQLALCHEMY_ECHO = False  # Отключаем вывод SQL-запросов в продакшн

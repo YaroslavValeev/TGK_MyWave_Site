@@ -129,11 +129,13 @@ document.addEventListener("DOMContentLoaded", () => {
         chatMessages: document.getElementById("chat-messages")
     };
 
-    // Инициализация защищенного WebSocket подключения
+    // Инициализация WebSocket: current origin, polling+websocket, без хардкода порта
     const socket = new SecureSocketIO(window.location.origin, {
-        transports: ["websocket"],
+        path: '/socket.io',
+        transports: ['polling', 'websocket'],
+        timeout: 8000,
+        reconnectionAttempts: 3,
         autoConnect: false,
-        reconnectionAttempts: 5,
         onCSRFError: () => {
             // Показываем сообщение об ошибке и перенаправляем на страницу логина
             appendMessage("Ошибка валидации безопасности. Необходимо войти заново.", "bot");
@@ -147,14 +149,10 @@ document.addEventListener("DOMContentLoaded", () => {
         appendMessage("О чём я могу тебя спросить?", "bot");
     });
 
-    // Обработка ошибок подключения
+    // Обработка ошибок подключения: логируем info, не ломаем страницу
     socket.on("connect_error", (error) => {
-        console.error("WebSocket ошибка подключения:", error);
-        if (error.message.includes("CSRF")) {
-            appendMessage("Ошибка валидации безопасности. Пожалуйста, подождите...", "bot");
-        } else {
-            appendMessage("Ошибка подключения к серверу. Пожалуйста, попробуйте позже.", "bot");
-        }
+        console.info("[Chat] WebSocket connect_error (не критично):", error?.message || error);
+        // Чат остаётся "offline", без спама сообщений в UI
     });
 
     // Обработка сообщений
@@ -421,6 +419,25 @@ window.getCSRFToken = window.getCSRFToken || function () {
     return document.querySelector('meta[name="csrf-token"]')?.content 
         || document.querySelector('input[name="csrf_token"]')?.value;
 };
+
+// WebSocket для слотов календаря (request_slots); AI-чат использует HTTP fetch
+function setupWebSocket() {
+    try {
+        if (typeof SecureSocketIO === 'undefined' || !document.getElementById('chat-container-fixed')) return;
+        // Сокет опционален; основные ответы чата идут через /chat/api
+    } catch (e) {
+        console.debug('[Chat] setupWebSocket skipped:', e);
+    }
+}
+
+// Дополнительная инициализация формы чата (основная логика в DOMContentLoaded ниже)
+function initChatForm() {
+    try {
+        // Формы chatForm, chat-input-form уже обрабатываются в DOMContentLoaded
+    } catch (e) {
+        console.debug('[Chat] initChatForm skipped:', e);
+    }
+}
 
 // Инициализация чата
 function initChat() {

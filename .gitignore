@@ -8,6 +8,7 @@ __pycache__/
 
 # Environment
 .env
+.env.local
 *.env
 credentials.json
 # Virtual environments
@@ -18,6 +19,13 @@ config/service_account.json
 # IDE
 .vscode/
 .idea/
+
+# Logs and local artifacts
+logs/
+*.log
+
+# SSH/keys (do not commit)
+SHA256*
 
 # OS
 .DS_Store

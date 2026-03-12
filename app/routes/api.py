@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify, render_template, current_app
+from app.extensions import csrf
 import os
 from app.modules.booking_utils import handle_booking as real_book_slot
 from app.routes.files import upload_file as real_upload_file
@@ -27,12 +28,22 @@ booking_model = api_ns.model('Booking', {
     'date': fields.String(required=True, description='Дата бронирования'),
 })
 
+@api_bp.route('/csp-violations', methods=['POST'])
+@csrf.exempt
+def csp_violations():
+    """Приём отчётов CSP — всегда 204, чтобы не засорять консоль 404."""
+    try:
+        request.get_json(silent=True)
+    except Exception:
+        pass
+    return '', 204
+
+
 @api_bp.route("/chat", methods=["POST"])
 def chat():
-    data = request.get_json()
-    message = data.get("message", "")
-    # Имитация ответа эксперта
-    return jsonify(reply=f"Вы сказали: {message}")
+    """Прокси к основному чату /chat/api (legacy endpoint для обратной совместимости)."""
+    from app.routes.chat import chat_handler
+    return chat_handler()
 
 @api_bp.route("/upload", methods=["POST"])
 def upload():

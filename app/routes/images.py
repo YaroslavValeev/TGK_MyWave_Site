@@ -4,6 +4,7 @@
 import os
 from io import BytesIO
 from flask import Blueprint, send_file, request, current_app, abort, make_response
+from flask_login import login_required
 from werkzeug.utils import secure_filename
 from app.utils.image_cache import (
     cache_image, resize_image, optimize_image, get_image_info,
@@ -107,9 +108,10 @@ def serve_image(filename):
         abort(500)
 
 @images.route('/admin/images/clear-cache', methods=['POST'])
+@login_required
 def clear_image_cache():
     """
-    Очищает кэш изображений
+    Очищает кэш изображений. Требует авторизации админа.
     """
     try:
         if clean_image_cache():
