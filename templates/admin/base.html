@@ -30,24 +30,24 @@
                            href="{{ url_for('admin.index') }}">
                             <i class="fas fa-home"></i> Главная
                         </a>
-                        <a class="nav-link {% if request.endpoint.startswith('admin_blog') %}active{% endif %}" 
-                           href="{{ url_for('admin_blog.index') }}">
+                        <a class="nav-link {% if request.endpoint == 'admin.index' %}active{% endif %}" 
+                           href="{{ url_for('admin.index') }}" title="В разработке">
                             <i class="fas fa-blog"></i> Блог
                         </a>
-                        <a class="nav-link {% if request.endpoint.startswith('admin_events') %}active{% endif %}" 
-                           href="{{ url_for('admin_events.index') }}">
+                        <a class="nav-link {% if request.endpoint == 'admin.index' %}active{% endif %}" 
+                           href="{{ url_for('admin.index') }}" title="В разработке">
                             <i class="fas fa-calendar"></i> События
                         </a>
                         <a class="nav-link {% if request.endpoint.startswith('admin_images') %}active{% endif %}" 
                            href="{{ url_for('admin_images.index') }}">
                             <i class="fas fa-images"></i> Изображения
                         </a>
-                        <a class="nav-link {% if request.endpoint.startswith('admin_users') %}active{% endif %}" 
-                           href="{{ url_for('admin_users.index') }}">
+                        <a class="nav-link {% if request.endpoint == 'admin.index' %}active{% endif %}" 
+                           href="{{ url_for('admin.index') }}" title="В разработке">
                             <i class="fas fa-users"></i> Пользователи
                         </a>
-                        <a class="nav-link {% if request.endpoint.startswith('admin_settings') %}active{% endif %}" 
-                           href="{{ url_for('admin_settings.index') }}">
+                        <a class="nav-link {% if request.endpoint == 'admin.index' %}active{% endif %}" 
+                           href="{{ url_for('admin.index') }}" title="В разработке">
                             <i class="fas fa-cog"></i> Настройки
                         </a>
                     </nav>

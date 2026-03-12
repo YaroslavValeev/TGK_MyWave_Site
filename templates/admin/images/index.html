@@ -33,8 +33,9 @@
                             <i class="fas fa-edit"></i>
                         </a>
                         <button type="button" 
-                                class="btn btn-sm btn-outline-danger"
-                                onclick="confirmDelete({{ image.id }}, '{{ image.title or image.orig_filename }}')">
+                                class="btn btn-sm btn-outline-danger btn-delete-image"
+                                data-image-id="{{ image.id }}"
+                                data-image-name="{{ (image.title or image.orig_filename) | e }}">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -93,10 +94,16 @@
 
 {% block scripts %}
 <script>
-function confirmDelete(id, name) {
-    document.getElementById('deleteImageName').textContent = name;
-    document.getElementById('deleteForm').action = "{{ url_for('admin_images.delete', id=0) }}".replace('0', id);
-    new bootstrap.Modal(document.getElementById('deleteModal')).show();
-}
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector('.container').addEventListener('click', function(e) {
+        var btn = e.target.closest('.btn-delete-image');
+        if (!btn) return;
+        var id = btn.dataset.imageId;
+        var name = btn.dataset.imageName || '';
+        document.getElementById('deleteImageName').textContent = name;
+        document.getElementById('deleteForm').action = "{{ url_for('admin_images.delete', id=0) }}".replace('0', id);
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    });
+});
 </script>
 {% endblock %}

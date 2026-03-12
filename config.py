@@ -133,6 +133,8 @@ class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'  # In-memory database для быстрых тестов
     SQLALCHEMY_ECHO = False
     WTF_CSRF_ENABLED = False  # Отключаем CSRF для тестов
+    # Отключаем Google Sheets/Calendar в тестах — используем локальную БД
+    SPREADSHEET_ID = os.getenv('TEST_SPREADSHEET_ID') or ''
 
 class ProductionConfig(Config):
     """Конфигурация для продакшн."""

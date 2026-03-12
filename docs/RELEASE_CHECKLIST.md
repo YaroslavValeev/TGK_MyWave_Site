@@ -50,6 +50,8 @@
 
 - [ ] Smoke-тесты проходят: `pytest tests/smoke/ -v`
 - [ ] Integration-тесты проходят: `pytest tests/integration/ -v`
+- [ ] E2E (опционально): `pytest tests/e2e/test_critical_paths.py -v` (требует `playwright install`)
+- [ ] См. `docs/RUNNING.md` — запуск без Google
 - [ ] Фиксация baseline: зафиксирован commit/tag перед деплоем
   - Commit: _______________
   - Tag (если есть): _______________
@@ -60,3 +62,4 @@
 
 - Google Sheets — главный источник истины для бронирований. Ошибка Google Calendar не откатывает успешную бронь.
 - При partial failure Calendar ошибка логируется с контекстом (date, time, phone, name).
+- Тесты без Google: `ENABLE_GOOGLE_SERVICES=0`, в TestingConfig `SPREADSHEET_ID` пустой. См. `docs/RUNNING.md`.

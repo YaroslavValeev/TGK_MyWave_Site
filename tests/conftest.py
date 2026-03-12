@@ -14,6 +14,9 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
+# All tests: disable Google services by default for reproducibility
+os.environ.setdefault('ENABLE_GOOGLE_SERVICES', '0')
+
 from app import create_app
 import unittest.mock as umock
 
