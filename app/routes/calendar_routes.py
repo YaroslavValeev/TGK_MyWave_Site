@@ -793,8 +793,12 @@ def _book_slot_internal():
             )
             current_app.logger.info(f"Добавление события в календарь вернуло: {created}")
         except Exception as e:
-            current_app.logger.error(f"Ошибка создания события в календаре: {str(e)}")
-            # Не прерываем процесс, так как это некритичная ошибка
+            current_app.logger.error(
+                "Ошибка создания события в Google Calendar (бронь сохранена в Sheets): "
+                f"service=calendar date={data.get('date')} time={data.get('time')} "
+                f"phone={data.get('phone')} name={data.get('name')} error={e!r}"
+            )
+            # Не прерываем процесс: Sheets — главный результат, Calendar — best-effort
 
         # 6. Логирование события бронирования в аналитику (best-effort)
         try:

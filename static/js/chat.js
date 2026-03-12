@@ -3,6 +3,9 @@ let bookingData = { date: null, slot: null, name: "", phone: "" };
 let socket = null;
 let chatContext = [];
 
+/** Канонический endpoint чата (основной контракт). Legacy /api/chat оставлен только как compatibility на backend. */
+const CHAT_API_URL = '/chat/api';
+
 // Safe helpers to avoid ReferenceError during chat send
 function updateContext(role, content) {
     try {
@@ -277,11 +280,11 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log('Отправка сообщения:', message);
             const endpoint = (function(){
                 const t = String(message || '').toLowerCase().trim();
-                if (!t) return '/chat/api';
+                if (!t) return CHAT_API_URL;
                 if (/^\s*\d{1,2}:\d{2}\s*$/.test(t)) return '/api/booking';
                 if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return '/api/booking'; 
                 if (/(сегодня|завтра|послезавтра|запис|трениров|слот|время)/i.test(t)) return '/api/booking';
-                return '/chat/api';
+                return CHAT_API_URL;
             })();
             const response = await fetch(endpoint, {
                 method: 'POST',
@@ -525,9 +528,9 @@ window.StoreFilter = window.StoreFilter || {
     }
 };
 
-// Исправленный пример fetch для чата
+// Утилита отправки сообщения в чат (канонический endpoint CHAT_API_URL)
 function sendMessage(text) {
-    fetch('/api/chat', {
+    fetch(CHAT_API_URL, {
         method: 'POST',
         headers: Utils.getHeaders(),
         body: JSON.stringify({ message: text })
@@ -636,12 +639,12 @@ if (chatForm) {
         appendMessage('user', text);
         input.value = '';
         showTypingIndicator();
-        // Отправка запроса к серверу
+        // Отправка запроса к серверу (канонический chat endpoint)
         try {
-            const response = await fetch('/api/assistant/', {
+            const response = await fetch(CHAT_API_URL, {
                 method: 'POST',
                 headers: Utils.getHeaders(),
-                body: JSON.stringify({ prompt: text })
+                body: JSON.stringify({ message: text })
             });
             const data = await response.json();
             hideTypingIndicator();
@@ -670,15 +673,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const message = chatInput.value.trim();
       if (!message) return;
       sendBtn.disabled = true;
-      // Отправляем сообщение на /chat/api
       try {
         const endpoint = (function(){
             const t = String(message || '').toLowerCase().trim();
-            if (!t) return '/chat/api';
+            if (!t) return CHAT_API_URL;
             if (/^\s*\d{1,2}:\d{2}\s*$/.test(t)) return '/api/booking';
             if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return '/api/booking';
             if (/(сегодня|завтра|послезавтра|запис|трениров|слот|время)/i.test(t)) return '/api/booking';
-            return '/chat/api';
+            return CHAT_API_URL;
         })();
     const response = await fetch(endpoint, {
           method: "POST",

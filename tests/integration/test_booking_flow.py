@@ -388,6 +388,76 @@ class TestErrorHandling:
         assert response.status_code in [400, 422]
 
 
+class TestCalendarBookingDuplicateProtection:
+    """Test duplicate booking protection for /api/calendar/book (phone+date+time)."""
+
+    @pytest.fixture
+    def mock_sheets_state(self):
+        """Stateful mock for Sheets: tracks clients and bookings."""
+        state = {
+            'clients': [],
+            'bookings': [],
+        }
+
+        def read_records(spreadsheet_id, sheet_name):
+            if sheet_name == 'Clients':
+                return list(state['clients'])
+            if sheet_name == 'Client_Workouts':
+                return list(state['bookings'])
+            if sheet_name == 'Workouts':
+                return [{'workout_id': 'w1', 'date': '2026-03-15', 'time': '10:00', 'current_capacity': '0'}]
+            return []
+
+        def append_dict_to_sheet(sheet_name, data):
+            if sheet_name == 'Clients':
+                state['clients'].append(dict(data))
+            elif sheet_name == 'Client_Workouts':
+                state['bookings'].append(dict(data))
+
+        slots = [{'time': '10:00', 'available': True, 'remaining': 1}]
+
+        def get_available_slots(date_str):
+            return slots
+
+        return state, read_records, append_dict_to_sheet, get_available_slots
+
+    def test_first_booking_succeeds_second_identical_rejected(
+        self, app, mock_sheets_state
+    ):
+        """First booking with phone+date+time succeeds; second identical is rejected."""
+        state, read_records, append_dict_to_sheet, get_available_slots = mock_sheets_state
+        app.config['SPREADSHEET_ID'] = 'test-sheet-id'
+
+        payload = {
+            'date': '2026-03-15',
+            'time': '10:00',
+            'name': 'Test User',
+            'phone': '+79001234567',
+        }
+        headers = {'Content-Type': 'application/json'}
+
+        with patch('app.routes.calendar_routes.read_records', read_records), \
+             patch('app.routes.calendar_routes.get_available_slots', get_available_slots), \
+             patch('app.routes.calendar_routes.add_event_to_calendar', return_value=True), \
+             patch('app.routes.calendar_routes.get_google_services', return_value=(None, None, None)), \
+             patch('app.modules.sheets_access.append_dict_to_sheet', append_dict_to_sheet), \
+             patch('app.services.csrf.check_csrf', return_value=True), \
+             patch('app.services.google_sheets_service.update_record', return_value=True):
+            client = app.test_client()
+
+            # First booking: should succeed (201 Created)
+            r1 = client.post('/api/calendar/book', json=payload, headers=headers)
+            assert r1.status_code in (200, 201), f"First booking failed: {r1.get_json()}"
+            d1 = r1.get_json()
+            assert d1.get('status') == 'success' or 'message' in d1 or 'success' in str(d1).lower()
+
+            # Second booking (same phone, date, time): should be rejected as duplicate
+            r2 = client.post('/api/calendar/book', json=payload, headers=headers)
+            assert r2.status_code == 400, f"Duplicate should be rejected with 400, got {r2.status_code}"
+            d2 = r2.get_json()
+            assert 'error' in d2 or 'duplicate' in str(d2).lower() or 'уже записан' in str(d2)
+
+
 # Smoke test functions
 
 def test_app_startup(app):
