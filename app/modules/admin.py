@@ -1,3 +1,4 @@
+import os
 from flask import Blueprint, request, redirect, url_for, render_template, flash
 from flask_login import UserMixin, login_user, logout_user, login_required, current_user
 
@@ -13,11 +14,15 @@ class User(UserMixin):
 # Страница входа
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    admin_username = os.environ.get('ADMIN_USERNAME')
+    admin_password = os.environ.get('ADMIN_PASSWORD')
+    if not admin_username or not admin_password:
+        flash('Админ-панель не настроена (ADMIN_USERNAME/ADMIN_PASSWORD не заданы).')
+        return render_template('login.html')
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        # Временная проверка учетных данных (в production используйте базу данных и безопасное хранение паролей)
-        if username == 'admin' and password == 'password':
+        username = request.form.get('username', '')
+        password = request.form.get('password', '')
+        if username == admin_username and password == admin_password:
             user = User(username)
             login_user(user)
             return redirect(url_for('admin_panel.dashboard'))

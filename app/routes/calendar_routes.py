@@ -655,6 +655,28 @@ def _book_slot_internal():
             f"date={data.get('date')} time={data.get('time')}"
         )
 
+        # 3.5. Проверка дубликата: тот же phone на тот же date+time
+        spreadsheet_id = current_app.config['SPREADSHEET_ID']
+        clients = read_records(spreadsheet_id, 'Clients')
+        client_id_for_phone = next(
+            (c.get('client_id') for c in clients if c.get('phone') == data['phone']),
+            None
+        )
+        if client_id_for_phone:
+            bookings = read_records(spreadsheet_id, 'Client_Workouts')
+            duplicate = any(
+                b.get('client_id') == client_id_for_phone
+                and b.get('date') == data['date']
+                and b.get('time') == data['time']
+                for b in bookings
+            )
+            if duplicate:
+                current_app.logger.warning(f"    ❌ Дубликат брони: phone={data['phone']} date={data['date']} time={data['time']}")
+                return jsonify({
+                    'status': 'error',
+                    'error': 'Вы уже записаны на это время. Один слот — одна запись.'
+                }), 400
+
         # 4. Проверяем доступность слота (учитываем опциональный service_type)
         current_app.logger.info(f"  4️⃣ Проверяю слот {data['date']} {data['time']}... (service={service_type_from_payload})")
         if service_type_from_payload == 'boat':

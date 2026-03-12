@@ -73,7 +73,7 @@ docker-compose ps
 docker-compose logs -f web
 
 # Test health endpoint
-curl http://localhost:5000/api/metrics/health
+curl http://localhost:5000/metrics/health
 ```
 
 ### 4. Initialize Database
@@ -165,7 +165,7 @@ Max Requests: 1000 (worker recycling for memory management)
 **Health Check**:
 
 ```bash
-curl http://localhost:5000/api/metrics/health
+curl http://localhost:5000/metrics/health
 ```
 
 Endpoint response:
@@ -289,7 +289,7 @@ docker-compose exec db psql -U mywave_user -d mywave_safari -c 'SELECT datname, 
 
 ```bash
 # Health status
-curl http://localhost:5000/api/metrics/health
+curl http://localhost:5000/metrics/health
 
 # Prometheus metrics
 curl http://localhost:9090/metrics
@@ -459,7 +459,7 @@ docker system prune -a
 docker-compose ps
 
 # Manual health check
-docker-compose exec web curl -s http://localhost:5000/api/metrics/health | jq
+docker-compose exec web curl -s http://localhost:5000/metrics/health | jq
 ```
 
 ### Prometheus Integration
