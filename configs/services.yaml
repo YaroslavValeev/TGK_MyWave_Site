@@ -1,0 +1,44 @@
+# Маппинг услуг: папка изображений → карточка
+# Папки лежат в static/images/Services/{folder}/
+# Документация: docs/SERVICES_SECTION_ANALYSIS.md
+
+services:
+  - service_id: gym
+    name: "Запись на тренировку (Зал)"
+    description: "Тренировка на авторских тренажёрах по методике вейксерфинга (1.5 часа). Развиваем баланс, координацию и биомеханику для уверенного прогресса на воде."
+    price: "3 500 ₽"
+    image_folder: "images/Services/Gym"
+    modal_id: modalCalendar
+    button_text: "Подробнее / Записаться"
+
+  - service_id: boat
+    name: "Запись на катер"
+    description: "1 сет — 25 минут за катером с тренером. Количество сетов подбирается под задачу и уровень ученика."
+    price: "10 000 ₽"
+    image_folder: "images/Services/Boat"
+    modal_id: modalCalendar
+    button_text: "Подробнее / Записаться"
+
+  - service_id: camp
+    name: "Camp"
+    description: "Прогресс и перезагрузка. Уезжаем из рутины и возвращаемся с новым уровнем катания — без перегруза, но с результатом."
+    price: "от 15 000 ₽"
+    image_folder: "images/Services/Camp"
+    modal_id: modalCamp
+    button_text: "Подробнее / Оставить заявку"
+
+  - service_id: coach_triper
+    name: "Тренер на выезде"
+    description: "Приезжаю к вам: катер/локация/клуб. Ставим технику, выстраиваем систему тренировок и быстрый прогресс."
+    price: "по запросу"
+    image_folder: "images/Services/CoachTriper"
+    modal_id: modalCoachTriper
+    button_text: "Подробнее / Оставить заявку"
+
+  - service_id: consulting
+    name: "Консалтинг"
+    description: "Построение клуба с нуля: чек-лист успешного запуска, обучение персонала, внедрение систем и методик. Операционная и тренировочная модель под ключ."
+    price: "по запросу"
+    image_folder: "images/Services/Consalting"
+    modal_id: modalConsulting
+    button_text: "Подробнее / Получить консультацию"
