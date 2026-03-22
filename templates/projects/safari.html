@@ -1,44 +1,46 @@
 {% extends "base.html" %}
-
 {% block title %}{{ meta.title }}{% endblock %}
-
 {% block extra_head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}">
   <link rel="canonical" href="{{ meta.og.url or request.url }}">
-
   <meta name="description" content="{{ meta.description }}">
-
   <meta property="og:type" content="{{ meta.og.type or 'website' }}">
   <meta property="og:title" content="{{ meta.og.title or meta.title }}">
   <meta property="og:description" content="{{ meta.og.description or meta.description }}">
   <meta property="og:image" content="{{ meta.og.image }}">
   <meta property="og:url" content="{{ meta.og.url or request.url }}">
-
   <meta name="twitter:card" content="{{ meta.twitter.card or 'summary_large_image' }}">
   <meta name="twitter:title" content="{{ meta.twitter.title or meta.title }}">
   <meta name="twitter:description" content="{{ meta.twitter.description or meta.description }}">
   <meta name="twitter:image" content="{{ meta.twitter.image or meta.og.image }}">
-
   <script type="application/ld+json">{{ schema_event | tojson | safe }}</script>
 {% endblock %}
-
 {% block content %}
-
+<main class="safari-page">
+{# Блок 1. Hero #}
 <section class="mw-section mw-hero safari-hero" id="top">
   <div class="mw-container">
-    <div class="safari-hero__badge">Premium Experience • 10.07.2026 — 18.07.2026</div>
-    <h1 class="safari-hero__title">Wake Surf Safari 2026</h1>
+    <div class="safari-hero__badges">
+      <span class="safari-hero__badge">8 дней / 7 ночей</span>
+      <span class="safari-hero__badge">Москва → Волгоград</span>
+      <span class="safari-hero__badge">Вейксерфинг + travel + lifestyle</span>
+      <span class="safari-hero__badge">Для новичков и опытных</span>
+    </div>
+    <h1 class="safari-hero__title">WakeSurf Safari</h1>
     <p class="safari-hero__subtitle">
-      Экспедиционный вейксерф-тур по Волге: волны, маршрут, комьюнити, медиа. Без соревнований — только прогресс и свобода.
+      Вейксерф-путешествие по Волге, где спорт, стиль и приключение становятся одним маршрутом
     </p>
-
+    <p class="safari-hero__lead">
+      Многодневный премиальный маршрут с тренировками по вейксерфингу, культурными остановками, гастрономией, комьюнити, медиа-контентом и финальным событием.
+    </p>
     <div class="safari-hero__actions">
       <a class="btn-primary" href="#join">Стать участником</a>
+      <a class="btn-secondary btn-ghost" href="#program">Запросить детали</a>
       <a class="btn-secondary btn-ghost" href="#partner-form">Стать партнёром</a>
     </div>
   </div>
 </section>
 
-<!-- Sticky subnav -->
 <div class="mw-subnav" id="mw-subnav">
   <div class="mw-container mw-subnav__inner">
     <nav class="mw-subnav__links" aria-label="Навигация по странице">
@@ -52,48 +54,469 @@
         {% endif %}
       {% endfor %}
     </nav>
-
     <div class="mw-subnav__cta">
       <a class="btn-primary mw-subnav__btn" href="#join">Записаться</a>
     </div>
   </div>
 </div>
 
-<!-- Контент из index.md -->
-<section class="mw-section" id="content">
+{# Блок 2. О проекте #}
+<section class="mw-section" id="about">
   <div class="mw-container">
-    <div class="mw-card safari-md">
-      {{ html | safe }}
+    <div class="mw-card safari-about-card">
+      <h2>О проекте</h2>
+      <p class="safari-about__subtitle">Флагманский формат MyWave</p>
+      <p>WakeSurf Safari — это не просто поездка и не просто спортивное событие. Это <strong>флагманский формат MyWave</strong>, где участник проходит путь <strong>от впечатления к трансформации</strong>: вода, катание, новые города, новые люди, новые навыки, контент о себе и сильная эмоциональная память.</p>
+      <p>Проект строится вокруг <strong>Волги как большой оси маршрута</strong>. Каждый день — новая локация и новый ритм. Можно учиться с нуля или усиливать текущий уровень. Важны не только тренировки, но и атмосфера, сообщество, эстетика, культурная часть.</p>
+      <p>Проект создаёт не только впечатления, но и <strong>медиа-результат</strong>. Это <strong>редкий формат</strong>, который сочетает опыт, прогресс и красивую историю.</p>
     </div>
   </div>
 </section>
 
-<!-- Партнёрские пакеты -->
-<section class="mw-section mw-surface" id="for-partners">
+{# Блок 3. Почему уникален #}
+<section class="mw-section" id="unique">
   <div class="mw-container">
     <div class="mw-card">
-      <h2>Партнёрские пакеты</h2>
+      <h2>Почему этот проект уникален</h2>
+      <div class="safari-unique-grid">
+        <div class="safari-unique-item">
+          <h3>Уникальный маршрут</h3>
+          <p>Волга как большая сцена путешествия.</p>
+        </div>
+        <div class="safari-unique-item">
+          <h3>Вейксерфинг для разного уровня</h3>
+          <p>От новичка до уверенного райдера.</p>
+        </div>
+        <div class="safari-unique-item">
+          <h3>Спорт + культура + гастрономия</h3>
+          <p>Не только катание, но и полноценный опыт.</p>
+        </div>
+        <div class="safari-unique-item">
+          <h3>Персональный контент</h3>
+          <p>Фото, видео, истории, личный бренд.</p>
+        </div>
+        <div class="safari-unique-item">
+          <h3>Комьюнити и связи</h3>
+          <p>Знакомства, обмен опытом, атмосфера единой волны.</p>
+        </div>
+        <div class="safari-unique-item">
+          <h3>Финальная кульминация</h3>
+          <p>Fun contest / шоукейсы / финальный день.</p>
+        </div>
+        <div class="safari-unique-item">
+          <h3>Жизнь на борту</h3>
+          <p>Не фон, а часть впечатления и атмосферы проекта.</p>
+        </div>
+        <div class="safari-unique-item">
+          <h3>Редкость формата</h3>
+          <p>Сильный авторский опыт MyWave, а не массовый продукт.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-      <div class="cards-grid">
-        {% for p in partner_packages.packages %}
-          <div class="mw-card safari-package">
-            <div class="safari-package__top">
-              <h3>{{ p.name }}</h3>
-              <div class="safari-package__price">{{ "{:,}".format(p.price).replace(",", " ") }} {{ p.currency or '₽' }}</div>
-            </div>
-            <ul class="safari-package__ul">
-              {% for b in p.benefits %}
-                <li>{{ b }}</li>
-              {% endfor %}
-            </ul>
-          </div>
+{# Блок 4. Маршрут #}
+<section class="mw-section" id="route">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Маршрут</h2>
+      <p class="safari-route-line">Москва → Ярославль → Нижний Новгород → Казань → Тольятти → Волгоград</p>
+      <p class="safari-route-note">Каждая остановка — это не просто город, а отдельная часть опыта: катание, локальная атмосфера, экскурсии, новый ритм дня и новые впечатления.</p>
+    </div>
+  </div>
+</section>
+
+{# Блок 5. Программа по дням #}
+<section class="mw-section" id="program">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Программа по дням</h2>
+      <div class="safari-program">
+        {% for day in (showcase.itinerary if showcase else []) %}
+        <details class="safari-program-day">
+          <summary><strong>День {{ day.day }}</strong> — {{ day.city }}: {{ day.title }}</summary>
+          <p>{{ day.description }}</p>
+        </details>
+        {% else %}
+        <details class="safari-program-day">
+          <summary><strong>День 1</strong> — Москва: Старт</summary>
+          <p>Знакомство, вводная по проекту, безопасность, базовая техника, распределение на группы, приветственный ужин.</p>
+        </details>
+        <details class="safari-program-day">
+          <summary><strong>День 2</strong> — Ярославль</summary>
+          <p>Тренировка. Йога / стретчинг, катание, экскурсия, воркшоп, вечер на борту.</p>
+        </details>
+        <details class="safari-program-day">
+          <summary><strong>День 3</strong> — Нижний Новгород</summary>
+          <p>Тренировка. Баланс-борд / батут, город, показательное выступление, образовательная сессия.</p>
+        </details>
+        <details class="safari-program-day">
+          <summary><strong>День 4</strong> — Казань</summary>
+          <p>Тренировка. Скейт-пул / памп-трек, катание, город, тематический вечер, воркшоп.</p>
+        </details>
+        <details class="safari-program-day">
+          <summary><strong>День 5</strong> — Казань (продолжение)</summary>
+          <p>Тренировка. Техника, судейский семинар, школа пилотов.</p>
+        </details>
+        <details class="safari-program-day">
+          <summary><strong>День 6</strong> — Тольятти</summary>
+          <p>Тренировка. Вода, батут, балансборд, дополнительный активный день, вечерняя программа.</p>
+        </details>
+        <details class="safari-program-day">
+          <summary><strong>День 7</strong> — Волгоград (подготовка)</summary>
+          <p>Тренировка. Подготовка к финалу, отдых, стратегия, воркшоп.</p>
+        </details>
+        <details class="safari-program-day">
+          <summary><strong>День 8</strong> — Волгоград (финал)</summary>
+          <p>Fun contest, награждение, закрытие проекта.</p>
+        </details>
         {% endfor %}
       </div>
+    </div>
+  </div>
+</section>
 
-      <p class="safari-contacts">
-        Контакты: <a href="mailto:{{ partner_packages.contact.email }}">{{ partner_packages.contact.email }}</a> ·
-        <a href="tel:+79160117179">{{ partner_packages.contact.phone }}</a>
-      </p>
+{# Блок 6. Что входит #}
+<section class="mw-section" id="included">
+  <div class="mw-container">
+    <div class="mw-card safari-two-cols">
+      <h2>Что входит в проект</h2>
+      <div class="safari-cols">
+        <div>
+          <h3>Включено</h3>
+          <ul>
+            <li>участие в программе сафари</li>
+            <li>тренировочный формат по вейксерфингу</li>
+            <li>доступ к воркшопам и образовательным сессиям</li>
+            <li>культурные и вечерние активности</li>
+            <li>комьюнити-формат</li>
+            <li>фото/видео-покрытие проекта</li>
+            <li>финальный день / формат Fun contest</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Уточняется отдельно</h3>
+          <ul>
+            <li>тип размещения</li>
+            <li>пакет участия</li>
+            <li>личный премиум-контент</li>
+            <li>трансферы</li>
+            <li>спец-активности</li>
+            <li>индивидуальные опции</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# Блок 7. Активности на борту #}
+<section class="mw-section" id="activities">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Активности на борту и вне воды</h2>
+      <ul class="safari-activity-list">
+        <li>мастер-классы от тренеров</li>
+        <li>йога и стретчинг</li>
+        <li>кинопоказы</li>
+        <li>судейский семинар</li>
+        <li>школа пилотов</li>
+        <li>тесты досок / шоу-румы</li>
+        <li>живая музыка</li>
+        <li>интерактивные воркшопы</li>
+        <li>дружеский Fun contest</li>
+        <li>гастрономические вечера</li>
+        <li>специальные гости и спикеры</li>
+        <li>фото- и видеоконкурсы</li>
+        <li>тематические дни по стилям катания</li>
+        <li>скейт-пул / памп-трек</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{# Блок 8. Воркшопы #}
+<section class="mw-section" id="workshops">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Воркшопы и образовательная программа</h2>
+      <p>Это не только отдых, но и полноценная интеллектуально-образовательная составляющая.</p>
+      <h3>Темы</h3>
+      <ul>
+        <li>основы вейксерфинга</li>
+        <li>продвинутые техники</li>
+        <li>психология спорта</li>
+        <li>физподготовка</li>
+        <li>питание и восстановление</li>
+        <li>экология</li>
+        <li>фото/видео в спорте</li>
+        <li>стратегия Fun contest</li>
+        <li>личный бренд спортсмена</li>
+        <li>открытый диалог с экспертами</li>
+      </ul>
+      <h3>Результат для участника</h3>
+      <ul>
+        <li>новые знания и практические навыки</li>
+        <li>мотивация и нетворкинг</li>
+        <li>обмен опытом</li>
+        <li>усиление уверенности</li>
+        <li>осмысленный спортивный рост</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{# Блок 9. Медиа и контент #}
+<section class="mw-section" id="media">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Медиа и контент</h2>
+      <p>Человек получает не только опыт, но и оформленный медиа-результат, который можно сохранить, публиковать и использовать для личного образа, архива и бренда.</p>
+      <ul>
+        <li>персональные видео и фото для участников</li>
+        <li>интервью и истории участников</li>
+        <li>ежедневные видео-дневники</li>
+        <li>прямые трансляции ключевых моментов</li>
+        <li>обучающий контент</li>
+        <li>партнёрский контент</li>
+        <li>памятные пост-путешественные материалы</li>
+        <li>aftermovie / highlights / reels / stories</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{# Блок 10. Для кого #}
+<section class="mw-section" id="for-whom">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Для кого проект</h2>
+      <div class="safari-roles-grid">
+        <div class="safari-role-card">
+          <h3>Активный участник</h3>
+          <p>Полноценное участие в программе</p>
+        </div>
+        <div class="safari-role-card">
+          <h3>Гость / зритель</h3>
+          <p>Наблюдение и присутствие</p>
+        </div>
+        <div class="safari-role-card">
+          <h3>Партнёр / спонсор</h3>
+          <p>Бренд-интеграция</p>
+        </div>
+        <div class="safari-role-card">
+          <h3>Волонтёр / ассистент</h3>
+          <p>Помощь в организации</p>
+        </div>
+      </div>
+      <p>Подходит новичкам, продолжающим, опытным райдерам и тем, кому важны стиль, движение, красивые путешествия и сильное окружение.</p>
+    </div>
+  </div>
+</section>
+
+{# Блок 11. Польза #}
+<section class="mw-section" id="benefits">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Польза для участника</h2>
+      <ul>
+        <li>развитие навыков и физическая активность</li>
+        <li>психологическая перезагрузка</li>
+        <li>новые знакомства</li>
+        <li>культурное обогащение</li>
+        <li>сильные эмоции</li>
+        <li>контент и воспоминания</li>
+        <li>участие в уникальном формате</li>
+        <li>чувство принадлежности к сильному комьюнити</li>
+        <li>возможность выйти из рутины в более живой и красивый сценарий</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{# Блок 12. FAQ #}
+<section class="mw-section" id="faq">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Частые вопросы</h2>
+      <div class="safari-faq">
+        <details class="safari-faq-item">
+          <summary>Подойдёт ли мне, если я новичок?</summary>
+          <p>Да, программа рассчитана на любой уровень — от нуля до продвинутого.</p>
+        </details>
+        <details class="safari-faq-item">
+          <summary>Будет ли интересно, если я уже катаюсь?</summary>
+          <p>Да, опытные райдеры смогут отточить технику и участвовать в продвинутых активностях.</p>
+        </details>
+        <details class="safari-faq-item">
+          <summary>Насколько это безопасно?</summary>
+          <p>Организаторы уделяют особое внимание безопасности: инструктажи, сопровождение, резервные планы.</p>
+        </details>
+        <details class="safari-faq-item">
+          <summary>Что если испортится погода?</summary>
+          <p>Есть резервные планы: активности на суше, воркшопы, культурная программа.</p>
+        </details>
+        <details class="safari-faq-item">
+          <summary>Есть ли время на отдых?</summary>
+          <p>Да, программа сбалансирована: активные блоки чередуются с отдыхом и свободным временем.</p>
+        </details>
+        <details class="safari-faq-item">
+          <summary>Что входит в стоимость?</summary>
+          <p>Детали уточняются при подаче заявки в зависимости от выбранного пакета.</p>
+        </details>
+        <details class="safari-faq-item">
+          <summary>Какие условия отмены и возврата?</summary>
+          <p>Условия прописываются в договоре при подтверждении участия.</p>
+        </details>
+        <details class="safari-faq-item">
+          <summary>Можно ли участвовать частично?</summary>
+          <p>Да, возможно участие на часть маршрута — уточняйте при подаче заявки.</p>
+        </details>
+        <details class="safari-faq-item">
+          <summary>Можно ли приехать как гость?</summary>
+          <p>Да, гостевой формат предусмотрен — наблюдение и присутствие без спортивной нагрузки.</p>
+        </details>
+        <details class="safari-faq-item">
+          <summary>Подходит ли проект для того, кто едет ради опыта, а не спорта?</summary>
+          <p>Да, это опыт-продукт: культура, гастрономия, комьюнити, путешествие — не только катание.</p>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# Блок 13. Партнёрам #}
+<section class="mw-section" id="partners">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Партнёрам и спонсорам</h2>
+      <p>WakeSurf Safari — это платформа для бренд-интеграций в спорте, путешествиях, lifestyle и медиа.</p>
+      <ul>
+        <li>целевая аудитория проекта</li>
+        <li>форматы присутствия бренда</li>
+        <li>контентные интеграции</li>
+        <li>офлайн- и онлайн-видимость</li>
+        <li>участие в премиальном experiential-продукте</li>
+      </ul>
+      <div class="safari-partner-cta">
+        <a class="btn-primary" href="#partner-form">Стать партнёром</a>
+        <a class="btn-secondary" href="#partner-form">Запросить спонсорскую презентацию</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# Блок 14. Организация и доверие #}
+<section class="mw-section" id="trust">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Организация, безопасность и доверие</h2>
+      <ul>
+        <li>продуманная логистика</li>
+        <li>команда тренеров и организаторов</li>
+        <li>безопасность и управление рисками</li>
+        <li>резервные планы на погоду / технику</li>
+        <li>коммуникация с участниками</li>
+        <li>фото/видео сопровождение</li>
+        <li>гибкая логика сопровождения клиента</li>
+        <li>серьёзное проектирование, а не хаотичный формат</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{# Блок 15. Команда #}
+<section class="mw-section" id="team">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Команда и ядро проекта</h2>
+      <p>MyWave — инициатор и автор концепции. За проектом стоит продуманная структура:</p>
+      <ul>
+        <li>тренерский и образовательный контур</li>
+        <li>организационный и логистический контур</li>
+        <li>медиа-контур</li>
+        <li>партнёрский и городские слои</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{# Блок 16. Финальный CTA #}
+<section class="mw-section safari-final" id="final-cta">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Стань частью WakeSurf Safari</h2>
+      <p>Займи своё место в проекте, где вода, движение, маршрут и люди складываются в одно большое приключение.</p>
+      <div class="safari-final-actions">
+        <a class="btn-primary" href="#join">Оставить заявку</a>
+        <a class="btn-secondary" href="#program">Запросить программу</a>
+        <a class="btn-secondary" href="#partner-form">Стать партнёром</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Форма регистрации участника -->
+<section class="mw-section" id="join">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Стать участником</h2>
+      <p>Оставьте контакты — мы свяжемся и уточним формат участия.</p>
+      <form class="mw-form js-safari-participant" method="post" action="/api/safari/participant">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mw-grid-2">
+          <div class="mw-field">
+            <label>ФИО *</label>
+            <input name="full_name" required maxlength="100">
+          </div>
+          <div class="mw-field">
+            <label>Email *</label>
+            <input type="email" name="email" required>
+          </div>
+          <div class="mw-field">
+            <label>Телефон *</label>
+            <input type="tel" name="phone" required placeholder="+7 (916) 011-71-79">
+          </div>
+          <div class="mw-field">
+            <label>Формат участия</label>
+            <select name="participation_type">
+              <option value="">Выберите формат</option>
+              <option value="full">Полный маршрут (8 дней)</option>
+              <option value="1day">Частично (1 день)</option>
+              <option value="3days">Частично (3 дня)</option>
+              <option value="5days">Частично (5 дней)</option>
+            </select>
+          </div>
+          <div class="mw-field">
+            <label>Уровень катания</label>
+            <select name="skill_level">
+              <option value="">Выберите уровень</option>
+              <option value="beginner">Новичок</option>
+              <option value="intermediate">Средний</option>
+              <option value="advanced">Продвинутый</option>
+            </select>
+          </div>
+        </div>
+        <div class="mw-field">
+          <label>Комментарий</label>
+          <textarea name="comment" rows="3" maxlength="500" placeholder="Вопросы, пожелания"></textarea>
+        </div>
+        <div class="mw-field">
+          <label style="display:flex;align-items:start;gap:8px;cursor:pointer;">
+            <input type="checkbox" name="consent_data" required>
+            <span>Я согласен(а) на обработку персональных данных *</span>
+          </label>
+        </div>
+        <div class="mw-field">
+          <label style="display:flex;align-items:start;gap:8px;cursor:pointer;">
+            <input type="checkbox" name="consent_media" required>
+            <span>Я согласен(а) на использование моих фото/видео в медиаматериалах проекта *</span>
+          </label>
+        </div>
+        <button class="btn-primary" type="submit">Отправить заявку</button>
+        <div class="mw-form-message" id="safari-participant-message"></div>
+      </form>
     </div>
   </div>
 </section>
@@ -103,11 +526,9 @@
   <div class="mw-container">
     <div class="mw-card">
       <h2>Стать партнёром</h2>
-      <p>Заполните форму, и мы свяжемся с вами для обсуждения условий партнёрства.</p>
-
+      <p>Заполните форму — мы свяжемся для обсуждения партнёрства.</p>
       <form class="mw-form js-safari-partner" method="post" action="/api/safari/partner">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        
         <div class="mw-grid-2">
           <div class="mw-field">
             <label>Название компании *</label>
@@ -125,356 +546,67 @@
             <label>Телефон *</label>
             <input type="tel" name="phone" required placeholder="+7 (916) 011-71-79">
           </div>
-          <div class="mw-field">
-            <label>Интересующий пакет</label>
-            <select name="package_interest">
-              <option value="">Выберите пакет</option>
-              {% for p in partner_packages.packages %}
-                <option value="{{ p.name }}">{{ p.name }} ({{ p.tier }})</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="mw-field">
-            <label>Отрасль бизнеса</label>
-            <select name="company_industry">
-              <option value="">Выберите отрасль</option>
-              <option value="sports">Спорт и фитнес</option>
-              <option value="outdoor">Активный отдых</option>
-              <option value="fashion">Мода и стиль</option>
-              <option value="tech">Технологии</option>
-              <option value="food">Еда и напитки</option>
-              <option value="travel">Туризм</option>
-              <option value="media">Медиа и реклама</option>
-              <option value="other">Другое</option>
-            </select>
-          </div>
-          <div class="mw-field">
-            <label>Размер компании</label>
-            <select name="company_size">
-              <option value="">Выберите размер</option>
-              <option value="startup">Стартап (1-10 человек)</option>
-              <option value="small">Малый бизнес (11-50 человек)</option>
-              <option value="medium">Средний бизнес (51-200 человек)</option>
-              <option value="large">Крупный бизнес (200+ человек)</option>
-            </select>
-          </div>
-          <div class="mw-field">
-            <label>Бюджет на партнёрство</label>
-            <select name="budget_range">
-              <option value="">Выберите диапазон</option>
-              <option value="100-300k">100-300 тыс. ₽</option>
-              <option value="300-500k">300-500 тыс. ₽</option>
-              <option value="500k-1m">500 тыс. - 1 млн. ₽</option>
-              <option value="1m+">1 млн. ₽ и более</option>
-            </select>
-          </div>
-          <div class="mw-field">
-            <label>Опыт спонсорства</label>
-            <select name="previous_sponsorship">
-              <option value="">Выберите вариант</option>
-              <option value="yes">Да, есть опыт</option>
-              <option value="no">Нет, первый раз</option>
-            </select>
-          </div>
-          <div class="mw-field">
-            <label>Сроки принятия решения</label>
-            <select name="decision_timeline">
-              <option value="">Выберите срок</option>
-              <option value="immediate">Немедленно</option>
-              <option value="1week">В течение недели</option>
-              <option value="1month">В течение месяца</option>
-              <option value="2-3months">2-3 месяца</option>
-              <option value="longer">Более 3 месяцев</option>
-            </select>
-          </div>
         </div>
-
         <div class="mw-field">
           <label>Ожидания от партнёрства</label>
-          <textarea name="expectations" rows="3" maxlength="500" placeholder="Что вы ожидаете от сотрудничества?"></textarea>
+          <textarea name="expectations" rows="3" maxlength="500"></textarea>
         </div>
-
-        <div class="mw-field">
-          <label>Комментарий</label>
-          <textarea name="comment" rows="4" maxlength="500" placeholder="Дополнительная информация"></textarea>
-        </div>
-
         <button class="btn-primary" type="submit">Отправить заявку</button>
-        
         <div class="mw-form-message" id="safari-partner-message"></div>
       </form>
+      <p class="safari-contacts">
+        Контакты: <a href="mailto:{{ partner_packages.contact.email }}">{{ partner_packages.contact.email }}</a> ·
+        <a href="tel:+79160117179">{{ partner_packages.contact.phone }}</a>
+      </p>
     </div>
   </div>
 </section>
 
-<!-- Форма регистрации участника -->
-<section class="mw-section" id="join">
-  <div class="mw-container">
-    <div class="mw-card">
-      <h2>Стать участником</h2>
-      <p>Форма (MVP): оставьте контакты, мы свяжемся и уточним формат участия.</p>
+</main>
 
-      <form class="mw-form js-safari-participant" method="post" action="/api/safari/participant">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        
-        <div class="mw-grid-2">
-          <div class="mw-field">
-            <label>ФИО *</label>
-            <input name="full_name" required maxlength="100">
-          </div>
-          <div class="mw-field">
-            <label>Email *</label>
-            <input type="email" name="email" required>
-          </div>
-          <div class="mw-field">
-            <label>Телефон *</label>
-            <input type="tel" name="phone" required placeholder="+7 (916) 011-71-79">
-          </div>
-          <div class="mw-field">
-            <label>Возраст</label>
-            <input type="number" name="age" min="16" max="80" placeholder="Лет">
-          </div>
-          <div class="mw-field">
-            <label>Город проживания</label>
-            <input name="city" maxlength="100" placeholder="Москва">
-          </div>
-          <div class="mw-field">
-            <label>Формат участия</label>
-            <select name="participation_type">
-              <option value="">Выберите формат</option>
-              <option value="full">Полный маршрут (9 дней)</option>
-              <option value="1day">Частично (1 день)</option>
-              <option value="3days">Частично (3 дня)</option>
-              <option value="5days">Частично (5 дней)</option>
-              <option value="7days">Частично (7 дней)</option>
-              <option value="online">Онлайн-участие</option>
-            </select>
-          </div>
-          <div class="mw-field">
-            <label>Уровень катания</label>
-            <select name="skill_level">
-              <option value="">Выберите уровень</option>
-              <option value="beginner">Новичок</option>
-              <option value="intermediate">Средний</option>
-              <option value="advanced">Продвинутый</option>
-              <option value="pro">Профессионал</option>
-            </select>
-          </div>
-          <div class="mw-field">
-            <label>Опыт в вейксерфинге (лет)</label>
-            <input type="number" name="experience_years" min="0" max="50" placeholder="0">
-          </div>
-          <div class="mw-field">
-            <label>Откуда узнали о проекте?</label>
-            <select name="source_info">
-              <option value="">Выберите источник</option>
-              <option value="instagram">Instagram</option>
-              <option value="telegram">Telegram</option>
-              <option value="youtube">YouTube</option>
-              <option value="facebook">Facebook</option>
-              <option value="vk">ВКонтакте</option>
-              <option value="friend">От друзей/знакомых</option>
-              <option value="website">Сайт MyWave</option>
-              <option value="search">Поиск в интернете</option>
-              <option value="other">Другое</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="mw-grid-2">
-          <div class="mw-field">
-            <label>Instagram (опционально)</label>
-            <input name="social_instagram" maxlength="200" placeholder="@username">
-          </div>
-          <div class="mw-field">
-            <label>Telegram (опционально)</label>
-            <input name="social_telegram" maxlength="200" placeholder="@username">
-          </div>
-        </div>
-
-        <div class="mw-field">
-          <label>Комментарий</label>
-          <textarea name="comment" rows="4" maxlength="500" placeholder="Дополнительная информация, вопросы, пожелания"></textarea>
-        </div>
-
-        <div class="mw-field">
-          <label style="display: flex; align-items: start; gap: 8px; cursor: pointer;">
-            <input type="checkbox" name="consent_data" required>
-            <span>Я согласен(а) на обработку персональных данных *</span>
-          </label>
-        </div>
-        <div class="mw-field">
-          <label style="display: flex; align-items: start; gap: 8px; cursor: pointer;">
-            <input type="checkbox" name="consent_media" required>
-            <span>Я согласен(а) на использование моих фото/видео в медиаматериалах проекта *</span>
-          </label>
-        </div>
-
-        <button class="btn-primary" type="submit">Отправить заявку</button>
-        
-        <div class="mw-form-message" id="safari-participant-message"></div>
-      </form>
-    </div>
-  </div>
-</section>
-
-<!-- Форма для медиа -->
-<section class="mw-section" id="media-form">
-  <div class="mw-container">
-    <div class="mw-card">
-      <h2>Медиа-партнёрам</h2>
-      <p>Если вы блогер, журналист или медиа-издание, заполните форму для сотрудничества.</p>
-
-      <form class="mw-form js-safari-media" method="post" action="/api/safari/media">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        
-        <div class="mw-grid-2">
-          <div class="mw-field">
-            <label>Название медиа/канала *</label>
-            <input name="media_name" required maxlength="100">
-          </div>
-          <div class="mw-field">
-            <label>Контактное лицо *</label>
-            <input name="contact_name" required maxlength="100">
-          </div>
-          <div class="mw-field">
-            <label>Email *</label>
-            <input type="email" name="email" required>
-          </div>
-          <div class="mw-field">
-            <label>Телефон *</label>
-            <input type="tel" name="phone" required>
-          </div>
-          <div class="mw-field">
-            <label>Тип медиа</label>
-            <select name="media_type">
-              <option value="">Выберите тип</option>
-              <option value="blog">Блог</option>
-              <option value="youtube">YouTube</option>
-              <option value="instagram">Instagram</option>
-              <option value="tiktok">TikTok</option>
-              <option value="media">СМИ</option>
-              <option value="other">Другое</option>
-            </select>
-          </div>
-          <div class="mw-field">
-            <label>Подписчики YouTube</label>
-            <input name="platform_youtube" type="number" min="0" placeholder="0">
-          </div>
-          <div class="mw-field">
-            <label>Подписчики Instagram</label>
-            <input name="platform_instagram" type="number" min="0" placeholder="0">
-          </div>
-          <div class="mw-field">
-            <label>Подписчики TikTok</label>
-            <input name="platform_tiktok" type="number" min="0" placeholder="0">
-          </div>
-          <div class="mw-field">
-            <label>Другие платформы (подписчики)</label>
-            <input name="platform_other" type="number" min="0" placeholder="0">
-          </div>
-          <div class="mw-field">
-            <label>Общая аудитория</label>
-            <input name="audience_total" placeholder="Например: 150K">
-          </div>
-          <div class="mw-field">
-            <label>Средний охват поста</label>
-            <input name="audience_avg_reach" placeholder="Например: 20K">
-          </div>
-          <div class="mw-field">
-            <label>Тип контента</label>
-            <select name="content_type">
-              <option value="">Выберите тип</option>
-              <option value="video">Видео</option>
-              <option value="photo">Фото</option>
-              <option value="stories">Stories/Reels</option>
-              <option value="articles">Статьи</option>
-              <option value="mixed">Смешанный</option>
-            </select>
-          </div>
-          <div class="mw-field">
-            <label>География аудитории</label>
-            <input name="audience_geo" maxlength="200" placeholder="Например: Россия, Москва, СПб">
-          </div>
-        </div>
-
-        <div class="mw-field">
-          <label>Ссылка на портфолио/канал</label>
-          <input type="url" name="portfolio_url" placeholder="https://...">
-        </div>
-
-        <div class="mw-field">
-          <label>Формат сотрудничества</label>
-          <select name="collaboration_type">
-            <option value="">Выберите формат</option>
-            <option value="coverage">Освещение проекта</option>
-            <option value="participation">Участие в экспедиции</option>
-            <option value="content">Создание контента</option>
-            <option value="partnership">Долгосрочное партнёрство</option>
-          </select>
-        </div>
-
-        <div class="mw-field">
-          <label>Комментарий</label>
-          <textarea name="comment" rows="4" maxlength="500"></textarea>
-        </div>
-
-        <button class="btn-primary" type="submit">Отправить заявку</button>
-        
-        <div class="mw-form-message" id="safari-media-message"></div>
-      </form>
-    </div>
-  </div>
-</section>
-
-<!-- Форма фидбека -->
-<section class="mw-section" id="feedback-form">
-  <div class="mw-container">
-    <div class="mw-card">
-      <h2>Обратная связь</h2>
-      <p>Есть вопросы или предложения? Напишите нам!</p>
-
-      <form class="mw-form js-safari-feedback" method="post" action="/api/safari/feedback">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        
-        <div class="mw-grid-2">
-          <div class="mw-field">
-            <label>Ваше имя *</label>
-            <input name="name" required maxlength="100">
-          </div>
-          <div class="mw-field">
-            <label>Email *</label>
-            <input type="email" name="email" required>
-          </div>
-          <div class="mw-field">
-            <label>Тип обращения</label>
-            <select name="feedback_type">
-              <option value="question">Вопрос</option>
-              <option value="suggestion">Предложение</option>
-              <option value="complaint">Жалоба</option>
-              <option value="other">Другое</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="mw-field">
-          <label>Сообщение *</label>
-          <textarea name="message" rows="6" required maxlength="1000" placeholder="Ваше сообщение..."></textarea>
-        </div>
-
-        <button class="btn-primary" type="submit">Отправить</button>
-        
-        <div class="mw-form-message" id="safari-feedback-message"></div>
-      </form>
-    </div>
-  </div>
-</section>
-
+<style>
+/* Уплотнённый вертикальный ритм — только для Safari */
+.safari-page .mw-section { padding: clamp(28px, 3.5vw, 44px) 0; }
+.safari-page .mw-section h2 { margin: 0 0 12px 0; }
+.safari-page .mw-card { padding: 18px !important; }
+.safari-page .safari-hero { padding: clamp(72px, 8vw, 96px) 0 clamp(36px, 4vw, 52px); }
+.safari-page .safari-hero .mw-container { text-align: center; }
+.safari-page .mw-subnav { margin-bottom: 0; }
+.safari-hero__badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 0.75rem; }
+.safari-hero__badges .safari-hero__badge { margin-bottom: 0; }
+.safari-hero__lead { margin: 0.4em 0 0.9em; color: var(--mw-muted, #56606B); font-size: 0.95em; }
+.safari-about__subtitle { font-size: 1.1em; font-weight: 600; color: var(--mw-brand, #35C0CD); margin: -0.4em 0 0.75em; }
+.safari-about-card p { margin-bottom: 0.75em; }
+.safari-about-card p:last-child { margin-bottom: 0; }
+.safari-route-line { font-size: 1.1em; font-weight: 600; margin: 0.4em 0; }
+.safari-route-note { font-size: 0.95em; color: var(--mw-muted, #56606B); margin: 0; }
+.safari-unique-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
+.safari-unique-item { padding: 0.85rem; border: 1px solid var(--mw-border, #eee); border-radius: 12px; }
+.safari-unique-item h3 { font-size: 1em; margin: 0 0 0.35em; }
+.safari-program-day { margin: 0.35em 0; border-bottom: 1px solid var(--mw-border, #eee); }
+.safari-program-day summary { cursor: pointer; padding: 0.6em 0; font-weight: 500; }
+.safari-program-day p { margin: 0 0 0.6em; padding-left: 0; color: var(--mw-muted, #56606B); }
+.safari-two-cols .safari-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 0.75rem; }
+@media (max-width: 700px) { .safari-two-cols .safari-cols { grid-template-columns: 1fr; gap: 1rem; } }
+.safari-activity-list { columns: 2; column-gap: 1.5rem; margin: 0.5em 0; }
+@media (max-width: 600px) { .safari-activity-list { columns: 1; } }
+.safari-roles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.75rem; margin: 0.75rem 0; }
+.safari-role-card { padding: 0.85rem; background: var(--mw-bg, #f6f8fa); border-radius: 8px; }
+.safari-faq-item { margin: 0.35em 0; border-bottom: 1px solid var(--mw-border, #eee); }
+.safari-faq-item summary { cursor: pointer; padding: 0.6em 0; }
+.safari-faq-item p { margin: 0 0 0.6em; color: var(--mw-muted, #56606B); }
+.safari-partner-cta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }
+.safari-final { text-align: center; }
+.safari-final-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; margin-top: 0.75rem; }
+/* Уплотнение форм внутри Safari (только локально) */
+.safari-page .mw-form { margin-top: 14px; }
+.safari-page .mw-grid-2 { gap: 12px; margin-bottom: 12px; }
+</style>
 {% endblock %}
 
 {% block scripts %}
   {{ super() }}
   <script defer src="{{ url_for('static', filename='js/scrollspy_progress.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/mw-subnav-hide.js') }}"></script>
   <script defer src="{{ url_for('static', filename='js/safari-forms.js') }}"></script>
 {% endblock %}
-
