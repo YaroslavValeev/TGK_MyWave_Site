@@ -1,12 +1,10 @@
-/* Styles for horizontal services carousel */
-.services-carousel {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 1em 0;
-}
+/* Styles for horizontal carousel (Services, Products, Projects — единый компонент) */
 .services-carousel .carousel-prev,
-.services-carousel .carousel-next {
+.services-carousel .carousel-next,
+.products-carousel .carousel-prev,
+.products-carousel .carousel-next,
+.projects-carousel .carousel-prev,
+.projects-carousel .carousel-next {
   background: #f0f0f0;
   border: 1px solid #e0e0e0;
   color: #333;
@@ -14,32 +12,333 @@
   padding: 8px 12px;
   border-radius: 8px;
   cursor: pointer;
+  flex-shrink: 0;
+  z-index: 10;
+  pointer-events: auto;
+  position: relative;
 }
 .services-carousel .carousel-prev[disabled],
 .services-carousel .carousel-next[disabled] {
   opacity: 0.4;
   cursor: default;
 }
-.services-carousel .carousel-track {
+.services-carousel .carousel-track,
+.products-carousel .carousel-track,
+.projects-carousel .carousel-track {
   display: flex;
   gap: 16px;
   overflow-x: auto;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   padding: 8px 4px;
+  flex: 1;
+  min-width: 0;
 }
 .services-carousel .carousel-track::-webkit-scrollbar { height: 8px; }
 .services-carousel .carousel-track::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 8px; }
-.services-carousel .service-card {
+.services-carousel,
+.products-carousel,
+.projects-carousel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 1em 0;
+}
+.services-carousel .service-card,
+.products-carousel .product-card,
+.projects-carousel .project-card {
   min-width: 280px;
   max-width: 360px;
   flex: 0 0 auto;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.services-carousel .service-card.is-expanded,
+.products-carousel .product-card.is-expanded,
+.projects-carousel .project-card.is-expanded {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  z-index: 2;
+  outline: 2px solid rgba(0,0,0,0.08);
 }
 .services-carousel .service-card h3,
-.services-carousel .service-card h4 { margin-top: 0; }
-.services-carousel .service-card p { color: #444; }
+.services-carousel .service-card h4,
+.products-carousel .product-card h4,
+.projects-carousel .project-card h4 { margin-top: 0; }
+.services-carousel .service-card p,
+.products-carousel .product-card p,
+.projects-carousel .project-card p { color: #444; }
 .services-carousel .carousel-track.dragging { cursor: grabbing; }
 
+/* Expandable card details (Services, Products, Projects) */
+.service-card .card-details,
+.product-card .card-details,
+.project-card .card-details {
+  display: none;
+  margin-top: 0.5em;
+  padding-top: 0.5em;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+.service-card.is-expanded .card-details,
+.product-card.is-expanded .card-details,
+.project-card.is-expanded .card-details {
+  display: block;
+}
+.service-card .card-details__text,
+.product-card .card-details__text,
+.project-card .card-details__text {
+  font-size: 0.9em;
+  color: #555;
+  margin: 0 0 0.5em;
+}
+.project-card .card-details__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.9em;
+  color: #555;
+}
+.project-card .card-details__list li {
+  margin-bottom: 0.35em;
+}
+.project-card .service-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5em;
+}
+.service-description--short {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.service-card.is-expanded .service-description--short,
+.product-card.is-expanded .service-description--short,
+.project-card.is-expanded .service-description--short {
+  -webkit-line-clamp: unset;
+}
+.service-card .card-body { min-height: 120px; }
+
+/* Зона изображения карточки — единая геометрия (16/9, cover, center) */
+.service-image-container,
+.product-card__image-wrap,
+.project-card .service-image-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  background: #f0f0f0;
+}
+.service-image-container .service-image,
+.service-image-container img,
+.product-card__image-wrap .service-image,
+.product-card__image-wrap img,
+.project-card .service-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Inner card media carousel */
+.card-media-carousel {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+}
+.card-media-carousel .service-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.card-media-carousel .carousel-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 5;
+  pointer-events: auto;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+.card-media-carousel:hover .carousel-nav { opacity: 1; }
+.card-media-carousel .carousel-prev-inner { left: 8px; }
+.card-media-carousel .carousel-next-inner { right: 8px; }
+
 @media (max-width: 900px) {
-  .services-carousel .service-card { min-width: 220px; }
+  .services-carousel .service-card,
+  .products-carousel .product-card,
+  .projects-carousel .project-card { min-width: 220px; }
+}
+
+/* Project cards — единый диапазон ширины */
+.project-card--wake-challenge,
+.project-card--ruza-camp,
+.project-card--wakesurf-safari,
+.project-card--checklist {
+  min-width: 280px;
+  max-width: 360px;
+}
+.project-card--wake-challenge {
+  min-width: 300px;
+  max-width: 420px;
+}
+.project-card--wake-challenge .project-card__subtitle,
+.project-card--ruza-camp .project-card__subtitle,
+.project-card--wakesurf-safari .project-card__subtitle,
+.project-card--checklist .project-card__subtitle {
+  font-size: 0.9em;
+  color: #666;
+  margin: 0.25em 0 0.5em;
+  font-weight: 500;
+}
+.project-card--wake-challenge .project-card__lead {
+  font-size: 0.95em;
+  line-height: 1.4;
+  margin: 0.5em 0;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  display: -webkit-box;
+}
+.project-card--wake-challenge.is-expanded .project-card__lead {
+  -webkit-line-clamp: unset;
+}
+.project-card__microfacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0.5em 0;
+}
+.project-card__badge {
+  font-size: 0.8em;
+  padding: 4px 8px;
+  background: rgba(53, 192, 205, 0.15);
+  color: #0E9FB0;
+  border-radius: 6px;
+  font-weight: 500;
+}
+.project-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0.5em 0;
+  font-size: 0.85em;
+  color: #666;
+}
+.project-card__tag {
+  padding: 2px 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+/* Раскрытая карточка WakeSurf Challenge */
+.project-card__expanded {
+  display: none;
+  margin-top: 1em;
+  padding-top: 1em;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  font-size: 0.9em;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.project-card--wake-challenge.is-expanded .project-card__expanded,
+.project-card--ruza-camp.is-expanded .project-card__expanded,
+.project-card--wakesurf-safari.is-expanded .project-card__expanded,
+.project-card--checklist.is-expanded .project-card__expanded {
+  display: block;
+}
+.project-card__bullets {
+  margin: 0.4em 0;
+  padding-left: 1.2em;
+  font-size: 0.9em;
+  color: #555;
+}
+.project-card__checklist-preview {
+  margin: 0.4em 0;
+  padding-left: 1.2em;
+  font-size: 0.9em;
+  color: #555;
+  list-style: none;
+}
+.project-card__checklist-preview li::before {
+  content: "✓ ";
+  color: var(--primary, #35C0CD);
+  font-weight: 600;
+}
+.project-card__checklist-preview li,
+.project-card__bullets li {
+  margin: 0.2em 0;
+}
+.project-card-expanded__two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 600px) {
+  .project-card-expanded__two-cols {
+    grid-template-columns: 1fr;
+  }
+}
+.project-card-expanded__microtrust {
+  font-size: 0.9em;
+  color: #666;
+}
+.project-card-expanded__block {
+  margin-bottom: 1em;
+}
+.project-card-expanded__block h5 {
+  font-size: 0.95em;
+  margin: 0 0 0.4em;
+  color: #333;
+}
+.project-card-expanded__block ul {
+  margin: 0;
+  padding-left: 1.2em;
+  color: #555;
+}
+.project-card-expanded__block li {
+  margin: 0.2em 0;
+}
+.project-card-expanded__compact-list {
+  list-style: none;
+  padding-left: 0;
+}
+.project-card-expanded__compact-list li::before {
+  content: "• ";
+  color: var(--primary, #35C0CD);
+}
+.project-card-expanded__eval-label {
+  margin: 0.5em 0 0.2em;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+.project-card-expanded__judging {
+  font-size: 0.95em;
+}
+.project-card-expanded__roles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+.project-card-expanded__role {
+  padding: 0.4em 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  font-size: 0.9em;
+}
+.project-card-expanded__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1em;
+  padding-top: 0.5em;
 }

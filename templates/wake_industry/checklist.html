@@ -1,28 +1,123 @@
 {% extends "base.html" %}
 
-{% block title %}Индустрия вейка — Чеклист условий для соревнований{% endblock %}
+{% block title %}Чек-лист для организатора соревнований — MyWave{% endblock %}
 
 {% block extra_head %}
-<meta name="description" content="Подробный чеклист условий для организации профессиональных соревнований по вейксерфингу. Скачайте PDF версию для использования.">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}">
+<meta name="description" content="Готовый чек-лист для организаторов соревнований по вейксерфингу. Структурированный контроль: судьи, документы, тайминг, безопасность. Скачайте PDF.">
 <link rel="canonical" href="{{ request.url }}">
 {% endblock %}
 
 {% block content %}
 
-<section class="mw-section mw-hero wake-industry-hero">
+{# Hero — полноценный проект MyWave #}
+<section class="mw-section mw-hero checklist-hero" id="top">
   <div class="mw-container">
-    <div class="wake-industry-hero__badge">Чеклист</div>
-    <h1 class="wake-industry-hero__title">Индустрия вейка</h1>
-    <p class="wake-industry-hero__subtitle">
-      Необходимые и наилучшие условия для достижения высоких показателей в соревнованиях по вейксерфингу
+    <div class="checklist-hero__badges">
+      <span class="checklist-hero__badge">Чек-лист</span>
+      <span class="checklist-hero__badge">Организаторам</span>
+      <span class="checklist-hero__badge">Бесплатно</span>
+    </div>
+    <h1 class="checklist-hero__title">Чек-лист для организатора</h1>
+    <p class="checklist-hero__subtitle">
+      Готовый чек-лист, чтобы провести соревнование без хаоса и «пожаров»
     </p>
-    <div class="wake-industry-hero__actions">
+    <p class="checklist-hero__lead">
+      Структурированный инструмент для организаторов wake-соревнований: не упустить регистрацию, документы, тайминг, безопасность и судейство.
+    </p>
+    <div class="checklist-hero__actions">
       <a href="{{ url_for('wake_industry.download_checklist_pdf') }}" class="btn-primary" download>
         📄 Скачать PDF
       </a>
-      <button onclick="window.print()" class="btn-secondary btn-ghost">
+      <button type="button" id="checklist-print-btn" class="btn-secondary btn-ghost">
         🖨️ Печать
       </button>
+      <a class="btn-secondary btn-ghost" href="#checklist-content">Смотреть чек-лист</a>
+    </div>
+  </div>
+</section>
+
+{# Что это #}
+<section class="mw-section" id="about">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Что это</h2>
+      <p>Чек-лист условий для соревнований по вейксерфингу — проект MyWave для организаторов. Содержит необходимые и наилучшие условия: от судейства и документов до тайминга и безопасности. Помогает не упустить важные этапы и провести мероприятие на высоком уровне.</p>
+      <p><strong>Для кого:</strong> организаторы соревнований, клубы, федерации, волонтёры и все, кто готовит wake-события.</p>
+    </div>
+  </div>
+</section>
+
+{# Ценность / преимущества #}
+<section class="mw-section" id="value">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Ценность и преимущества</h2>
+      <div class="checklist-value-grid">
+        <div class="checklist-value-item">
+          <h3>Структура</h3>
+          <p>Все ключевые разделы в одном месте: судьи, инфраструктура, документы, тайминг.</p>
+        </div>
+        <div class="checklist-value-item">
+          <h3>Контроль</h3>
+          <p>Отмечайте пункты по ходу подготовки — меньше риска забыть важное.</p>
+        </div>
+        <div class="checklist-value-item">
+          <h3>Профессионализм</h3>
+          <p>Основан на лучших практиках и опыте проведения соревнований.</p>
+        </div>
+        <div class="checklist-value-item">
+          <h3>Удобство</h3>
+          <p>PDF для печати и скачивания — работайте офлайн или в команде.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# Как устроен / разделы #}
+<section class="mw-section" id="structure">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Как устроен чек-лист</h2>
+      <p>Чек-лист разбит на логические разделы. Каждый пункт содержит описание и пояснения, зачем он нужен и как его реализовать.</p>
+      <ul class="checklist-structure-list">
+        <li><strong>1. Судьи</strong> — квалификация, опыт, параметры оценки, онлайн-скоринг</li>
+        <li><strong>2. Инфраструктура и оборудование</strong> — вода, катер, экипировка, зона старта</li>
+        <li><strong>3. Документы и страховка</strong> — регистрация, заявки, договоры, допуски</li>
+        <li><strong>4. Тайминг и расписание</strong> — планирование дня, запас времени</li>
+        <li><strong>5. Безопасность</strong> — спасатели, экипировка, инструктаж</li>
+        <li><strong>6. Протоколы и медиа</strong> — фиксация результатов, видеосъёмка</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{# Что получает организатор #}
+<section class="mw-section" id="get">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Что получает организатор</h2>
+      <ul>
+        <li>Готовый инструмент для подготовки мероприятия</li>
+        <li>Чёткий список требований и рекомендаций</li>
+        <li>Сокращение рисков и «пожаров» в день соревнований</li>
+        <li>Повышение уровня и репутации мероприятия</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{# CTA перед чеклистом #}
+<section class="mw-section checklist-cta">
+  <div class="mw-container">
+    <div class="mw-card mw-card--cta">
+      <h2>Используйте чек-лист</h2>
+      <p>Скачайте PDF или откройте интерактивную версию ниже. Отмечайте пункты по мере выполнения.</p>
+      <div class="checklist-cta__actions">
+        <a href="{{ url_for('wake_industry.download_checklist_pdf') }}" class="btn-primary" download>📄 Скачать PDF</a>
+        <button type="button" class="btn-secondary btn-ghost js-checklist-print">🖨️ Печать</button>
+      </div>
     </div>
   </div>
 </section>
@@ -725,44 +820,62 @@
   </div>
 </section>
 
+<style>
+/* Checklist project page — единый стиль с Ruza/Safari */
+.checklist-hero { padding-top: clamp(72px, 8vw, 96px); padding-bottom: clamp(48px, 6vw, 72px); }
+.checklist-hero__badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
+.checklist-hero__badge { padding: 6px 12px; background: rgba(53,192,205,0.15); color: var(--mw-brand, #35C0CD); border-radius: 8px; font-size: 0.9em; font-weight: 600; }
+.checklist-hero__title { font-size: clamp(28px, 3vw, 42px); margin: 0 0 0.5em; color: var(--mw-text); }
+.checklist-hero__subtitle { font-size: 1.25rem; margin: 0 0 0.5rem; color: var(--mw-text); font-weight: 600; }
+.checklist-hero__lead { font-size: 1rem; margin: 0 0 1.5rem; color: var(--mw-muted, #56606B); max-width: 60ch; }
+.checklist-hero__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.checklist-value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.checklist-value-item { padding: 1rem; border: 1px solid var(--mw-border, #eee); border-radius: 12px; }
+.checklist-value-item h3 { font-size: 1.1rem; margin: 0 0 0.5em; color: var(--mw-text); }
+.checklist-value-item p { font-size: 0.95rem; margin: 0; color: var(--mw-muted); }
+.checklist-structure-list { list-style: none; padding: 0; margin: 1rem 0 0; }
+.checklist-structure-list li { padding: 0.5rem 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+.checklist-structure-list li:last-child { border-bottom: none; }
+.checklist-cta .mw-card--cta { text-align: center; }
+.checklist-cta__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; margin-top: 1rem; }
+@media (max-width: 600px) { .checklist-value-grid { grid-template-columns: 1fr; } .checklist-hero__actions { flex-direction: column; } }
+</style>
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
 <script>
-  // Сохранение состояния чекбоксов в localStorage
   document.addEventListener('DOMContentLoaded', function() {
+    // Печать — оба кнопки
+    document.querySelectorAll('#checklist-print-btn, .js-checklist-print').forEach(function(btn) {
+      if (btn) btn.addEventListener('click', function() { window.print(); });
+    });
     const checkboxes = document.querySelectorAll('.wake-checklist__checkbox');
-    
-    // Загружаем сохраненные состояния
     checkboxes.forEach(checkbox => {
       const saved = localStorage.getItem(checkbox.id);
-      if (saved === 'true') {
-        checkbox.checked = true;
-      }
+      if (saved === 'true') checkbox.checked = true;
     });
-    
-    // Сохраняем при изменении
     checkboxes.forEach(checkbox => {
       checkbox.addEventListener('change', function() {
         localStorage.setItem(checkbox.id, checkbox.checked);
       });
     });
-    
-    // Кнопка сброса всех чекбоксов
-    const resetBtn = document.createElement('button');
-    resetBtn.textContent = 'Сбросить все';
-    resetBtn.className = 'btn-secondary';
-    resetBtn.style.marginTop = '20px';
-    resetBtn.addEventListener('click', function() {
-      if (confirm('Сбросить все отметки?')) {
-        checkboxes.forEach(cb => {
-          cb.checked = false;
-          localStorage.removeItem(cb.id);
-        });
-      }
-    });
-    document.querySelector('.wake-industry-hero__actions').appendChild(resetBtn);
+    var actionsEl = document.querySelector('.checklist-hero__actions');
+    if (actionsEl) {
+      var resetBtn = document.createElement('button');
+      resetBtn.textContent = 'Сбросить все';
+      resetBtn.className = 'btn-secondary btn-ghost';
+      resetBtn.style.marginTop = '12px';
+      resetBtn.addEventListener('click', function() {
+        if (confirm('Сбросить все отметки?')) {
+          checkboxes.forEach(function(cb) {
+            cb.checked = false;
+            localStorage.removeItem(cb.id);
+          });
+        }
+      });
+      actionsEl.appendChild(resetBtn);
+    }
   });
 </script>
 {% endblock %}
