@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Чек-лист организатора соревнований по вейксерфингу</title>
+  <style>
+    /* Базовые стили для PDF */
+    body { 
+      font-family: 'Arial', 'Helvetica', sans-serif; 
+      font-size: 11pt; 
+      line-height: 1.5; 
+      margin: 1.5cm; 
+      color: #333; 
+    }
+    h1 { 
+      font-size: 20pt; 
+      margin-bottom: 0.5em; 
+      color: #000;
+      page-break-after: avoid;
+    }
+    h2 { 
+      font-size: 14pt; 
+      margin-top: 1.2em; 
+      margin-bottom: 0.6em; 
+      border-bottom: 2px solid #ccc; 
+      padding-bottom: 0.3em;
+      page-break-after: avoid;
+    }
+    h3 {
+      font-size: 12pt;
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+      page-break-after: avoid;
+    }
+    .wake-checklist__intro {
+      margin-bottom: 1.5em;
+      padding: 1em;
+      background-color: #f5f5f5;
+      border-left: 4px solid #0066cc;
+    }
+    .wake-checklist__intro-text {
+      margin: 0;
+      font-size: 11pt;
+    }
+    .wake-checklist__section {
+      margin-bottom: 1.5em;
+      page-break-inside: avoid;
+    }
+    .wake-checklist__item {
+      margin-bottom: 0.8em;
+      page-break-inside: avoid;
+    }
+    .wake-checklist__item-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5em;
+      margin-bottom: 0.3em;
+    }
+    .wake-checklist__checkbox {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      margin-top: 3px;
+      border: 1px solid #333;
+    }
+    .wake-checklist__item-title {
+      flex: 1;
+      font-weight: 600;
+      font-size: 11pt;
+    }
+    .wake-checklist__item-description {
+      margin-left: 1.8em;
+      margin-top: 0.4em;
+      font-size: 10pt;
+      color: #555;
+      line-height: 1.4;
+    }
+    .wake-checklist__item-description p {
+      margin: 0.3em 0;
+    }
+    .wake-checklist__item-description ul {
+      margin: 0.5em 0;
+      padding-left: 1.5em;
+    }
+    .wake-checklist__item-description li {
+      margin: 0.3em 0;
+    }
+    .wake-checklist__subsection-title {
+      font-size: 12pt;
+      font-weight: 600;
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+      color: #444;
+    }
+    /* Убираем элементы навигации и кнопки при печати */
+    @media print {
+      body { margin: 1cm; }
+      .wake-industry-hero,
+      .wake-industry-hero__actions,
+      button,
+      .btn-primary,
+      .btn-secondary {
+        display: none !important;
+      }
+    }
+    /* Для WeasyPrint */
+    @page {
+      margin: 1.5cm;
+      size: A4;
+    }
+  </style>
+</head>
+<body>
+  <h1>Чек-лист организатора соревнований по вейксерфингу</h1>
+  <p style="font-size: 12pt; margin-bottom: 1em; color: #666;">
+    Условия для соревнований по вейксерфингу. Данный чеклист содержит необходимые условия и требования для организации профессиональных соревнований. Используйте его как руководство при подготовке мероприятий.
+  </p>
+
+  {% include "projects/contest_org_checklist/_checklist_content.html" %}
+
+  <p style="margin-top: 2em; font-size: 9pt; color: #666; border-top: 1px solid #ddd; padding-top: 1em;">
+    Документ сформирован сайтом MyWave. Полная интерактивная версия доступна на странице проекта «Чек-лист для организатора соревнований» (раздел Проекты).
+  </p>
+</body>
+</html>

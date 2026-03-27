@@ -2980,3 +2980,47 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
     padding: 1rem;
   }
 }
+
+/* Print styles только для страницы чек-листа организатора (изоляция через body.project--contest-org-checklist) */
+@media print {
+  body.project--contest-org-checklist .wake-industry-hero__actions,
+  body.project--contest-org-checklist .wake-industry-hero__badge,
+  body.project--contest-org-checklist .site-header,
+  body.project--contest-org-checklist .site-nav,
+  body.project--contest-org-checklist footer,
+  body.project--contest-org-checklist .theme-toggle,
+  body.project--contest-org-checklist .burger-menu,
+  body.project--contest-org-checklist button,
+  body.project--contest-org-checklist .btn-primary,
+  body.project--contest-org-checklist .btn-secondary {
+    display: none !important;
+  }
+
+  body.project--contest-org-checklist .wake-checklist__section {
+    page-break-inside: avoid;
+    margin-bottom: 1em;
+  }
+
+  body.project--contest-org-checklist .wake-checklist__item {
+    page-break-inside: avoid;
+    margin-bottom: 0.5em;
+  }
+
+  body.project--contest-org-checklist .wake-checklist__item-title {
+    font-weight: 600;
+  }
+
+  body.project--contest-org-checklist .wake-checklist__item-description {
+    margin-left: 1.5em;
+    font-size: 0.9em;
+  }
+
+  body.project--contest-org-checklist {
+    margin: 0;
+  }
+
+  body.project--contest-org-checklist h1,
+  body.project--contest-org-checklist h2 {
+    page-break-after: avoid;
+  }
+}

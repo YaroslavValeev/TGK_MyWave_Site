@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title | default('Ошибка генерации PDF') }}{% endblock %}
+
+{% block content %}
+<section class="mw-section">
+  <div class="mw-container">
+    <div class="mw-card" style="max-width: 600px; margin: 2em auto; text-align: center; padding: 2em;">
+      <h1 style="color: #cc0000; margin-bottom: 1em;">Ошибка генерации PDF</h1>
+      <p style="font-size: 1.1em; margin-bottom: 1.5em; color: #666;">
+        Произошла ошибка при генерации PDF файла. Пожалуйста, попробуйте позже или используйте функцию печати браузера.
+      </p>
+      {% if error_message %}
+      <details style="margin: 1em 0; text-align: left;">
+        <summary style="cursor: pointer; color: #666;">Технические детали</summary>
+        <pre style="background: #f5f5f5; padding: 1em; margin-top: 0.5em; font-size: 0.9em; overflow-x: auto;">{{ error_message }}</pre>
+      </details>
+      {% endif %}
+      <div style="margin-top: 2em;">
+        <a href="{{ url_for('contest_org_checklist.checklist_page') }}" class="btn-primary">
+          Вернуться к чек-листу
+        </a>
+        <button onclick="window.print()" class="btn-secondary" style="margin-left: 1em;">
+          🖨️ Печать страницы
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -54,6 +54,8 @@ from app.services.responses_api import responses_bp
 from app.routes.safari_cms_api import safari_cms_bp
 from app.routes.safari import safari_bp
 from app.routes.shop import shop_bp
+from app.routes.wake_industry import wake_industry_bp
+from app.routes.contest_org_checklist import contest_org_checklist_bp
 try:
     from app.routes.telegram.routes import telegram_bp
 except Exception:
@@ -303,6 +305,8 @@ def create_app(config_name="development"):
     app.register_blueprint(calendar_bp)
     app.register_blueprint(services_bp)
     app.register_blueprint(shop_bp)
+    app.register_blueprint(wake_industry_bp)
+    app.register_blueprint(contest_org_checklist_bp)
     app.register_blueprint(booking_bp)
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(reviews_bp)
