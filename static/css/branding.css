@@ -337,6 +337,7 @@ button.btn-secondary:focus-visible{
   inset: 0;
   z-index: 1;
   background: transparent;
+  pointer-events: none; /* не блокировать клики по кнопкам */
 }
 
 :root[data-theme="dark"] .mw-hero::before{
@@ -663,6 +664,12 @@ Wake Surf Safari 2026 Styles
   border-bottom: 1px solid rgba(0,0,0,0.06);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  transform: translateY(0);
+  transition: transform 0.25s ease-out;
+}
+.mw-subnav.is-hidden{
+  transform: translateY(-100%);
+  pointer-events: none;
 }
 :root[data-theme="dark"] .mw-subnav{
   background: rgba(18,22,27,0.72);
@@ -699,18 +706,18 @@ Wake Surf Safari 2026 Styles
 }
 .mw-subnav__btn{ min-height: 40px; padding: 10px 14px; }
 
-/* Safari hero */
+/* Safari hero — цвет шрифта для читаемости в day mode (фон не меняем) */
 .safari-hero{ 
   padding-top: clamp(84px, 10vw, 112px); 
-  padding-bottom: clamp(56px, 8vw, 96px); 
+  padding-bottom: clamp(56px, 8vw, 96px);
 }
 .safari-hero__badge{
   display:inline-flex; 
   padding:8px 12px; 
   border-radius:999px;
-  background: rgba(255,255,255,0.14); 
-  border:1px solid rgba(255,255,255,0.20);
-  color: rgba(255,255,255,0.92); 
+  background: rgba(53,192,205,0.12); 
+  border:1px solid rgba(53,192,205,0.25);
+  color: var(--mw-text, #12161B); 
   font-weight: 750; 
   margin-bottom: 14px;
 }
@@ -718,15 +725,15 @@ Wake Surf Safari 2026 Styles
   font-size: clamp(34px, 4vw, 60px);
   line-height: 1.02; 
   margin: 0 0 14px 0;
-  color: #fff; 
+  color: var(--mw-text, #12161B); 
   letter-spacing: -0.03em;
-  text-shadow: 0 18px 50px rgba(0,0,0,0.38);
+  text-shadow: none;
 }
 .safari-hero__subtitle{ 
   font-size: clamp(16px, 1.4vw, 20px); 
   max-width: 66ch; 
   margin:0 0 18px 0; 
-  color: rgba(255,255,255,0.88); 
+  color: var(--mw-text, #12161B); 
 }
 .safari-hero__actions{ 
   display:flex; 

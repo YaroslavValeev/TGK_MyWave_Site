@@ -22,6 +22,17 @@ SCOPES = [
 _drive = _sheets = _calendar = None
 
 
+def reset_google_services() -> None:
+    """Сбрасывает кэш Drive/Sheets/Calendar.
+
+    Один общий httplib2.Http под eventlet иногда оставляет «битое» TLS-соединение
+    (BAD_RECORD_MAC / DECRYPTION_FAILED). Следующий вызов get_google_services()
+    создаёт новый HTTP-клиент и заново собирает сервисы.
+    """
+    global _drive, _sheets, _calendar
+    _drive = _sheets = _calendar = None
+
+
 def get_google_services():
     """Лениво инициализирует и кеширует сервисы Google Drive, Sheets и Calendar.
 
@@ -47,14 +58,16 @@ def get_google_services():
 
     try:
         creds = service_account.Credentials.from_service_account_file(creds_path, scopes=SCOPES)
-        # Увеличиваем таймаут для SSL handshake и сетевых операций
-        # Увеличено с 30 до 60 секунд для более стабильной работы при проблемах с сетью
-        http_client = httplib2.Http(timeout=60)
-        http_client.force_exception_to_status_code = True
-        authed_http = AuthorizedHttp(creds, http=http_client)
-        _drive = build("drive", "v3", http=authed_http, cache_discovery=False)
-        _sheets = build("sheets", "v4", http=authed_http, cache_discovery=False)
-        _calendar = build("calendar", "v3", http=authed_http, cache_discovery=False)
+        # Отдельный httplib2.Http на каждый API: один общий пул соединений под eventlet даёт
+        # «Second simultaneous read» / BAD_RECORD_MAC при пересечении запросов к разным хостам.
+        def _authorized_http():
+            http = httplib2.Http(timeout=60)
+            http.force_exception_to_status_code = True
+            return AuthorizedHttp(creds, http=http)
+
+        _drive = build("drive", "v3", http=_authorized_http(), cache_discovery=False)
+        _sheets = build("sheets", "v4", http=_authorized_http(), cache_discovery=False)
+        _calendar = build("calendar", "v3", http=_authorized_http(), cache_discovery=False)
 
         # Optional runtime check (will be mocked in tests)
         try:

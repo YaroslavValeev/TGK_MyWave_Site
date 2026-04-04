@@ -34,9 +34,10 @@ GOOGLE_SHEET_NAME = os.getenv('GOOGLE_SHEET_NAME', 'clients')
 
 # Настройки OpenAI
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-GPTS_MODEL = os.getenv('GPTS_MODEL', 'gpt-4')
-FINE_TUNED_MODEL = os.getenv('FINE_TUNED_MODEL', 'gpt-4')
-FALLBACK_MODEL = os.getenv('FALLBACK_MODEL', 'gpt-4')
+GPTS_MODEL = os.getenv('GPTS_MODEL', 'gpt-4.1-nano')
+FINE_TUNED_MODEL = os.getenv('FINE_TUNED_MODEL', 'gpt-4.1-nano')
+FALLBACK_MODEL = os.getenv('FALLBACK_MODEL', 'gpt-4.1-nano')
+CHAT_BACKEND = (os.getenv("CHAT_BACKEND") or "auto").strip().lower()
 
 # Настройки Telegram
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')

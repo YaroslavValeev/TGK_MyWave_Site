@@ -1,26 +1,31 @@
 """
-Blueprint для страницы проекта Wake Surf Safari 2026.
+Blueprint для страницы проекта WakeSurf Safari.
+Флагманский премиальный experience-продукт MyWave.
 """
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, request, render_template
 
 from app.services.project_content import load_safari_bundle
+from app.services.showcases import get_showcase, load_showcase_configs
 
 projects_safari_bp = Blueprint("projects_safari", __name__)
 
 
 @projects_safari_bp.get("/projects/wakesurf-safari")
 def safari_page():
-    """Главная страница проекта Wake Surf Safari 2026."""
+    # ?nocache=1 сбрасывает кэш showcases (для проверки актуального контента после правок YAML)
+    if request.args.get("nocache"):
+        load_showcase_configs.cache_clear()
     ctx = load_safari_bundle()
+    showcase = get_showcase("wakesurf_safari")
+    ctx["showcase"] = showcase
     return render_template("projects/safari.html", **ctx)
 
 
 @projects_safari_bp.get("/projects/wakesurf-safari-2026")
 def safari_alias_2026():
-    """
-    Алиас для /projects/wakesurf-safari-2026.
-    Пока просто рендерим ту же страницу, позже можно сделать 301 редирект.
-    """
+    """Алиас для /projects/wakesurf-safari-2026."""
     ctx = load_safari_bundle()
+    showcase = get_showcase("wakesurf_safari")
+    ctx["showcase"] = showcase
     return render_template("projects/safari.html", **ctx)
 

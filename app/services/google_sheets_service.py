@@ -3,7 +3,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from datetime import datetime
 import os
-from app.services.google import get_google_services
+from app.services.google import get_google_services, reset_google_services
 from app.config import (
     GOOGLE_SERVICE_ACCOUNT_FILE,
     SPREADSHEET_ID,
@@ -12,6 +12,54 @@ from app.config import (
 
 # Настрой логирование
 logger = logging.getLogger(__name__)
+
+
+def _is_transient_google_transport_error(exc: BaseException) -> bool:
+    """HttpError от googleapiclient при force_exception_to_status_code иногда кладёт SSL в content, а не в __str__."""
+    chunks = [str(exc), repr(exc)]
+    content = getattr(exc, "content", None)
+    if isinstance(content, (bytes, bytearray)):
+        try:
+            chunks.append(content.decode("utf-8", errors="replace"))
+        except Exception:
+            chunks.append(str(content))
+    s = " ".join(chunks).lower()
+    markers = (
+        "bad_record_mac",
+        "decryption_failed",
+        "sslerror",
+        "ssl: ",
+        "_ssl.c",
+        "wrong version number",
+        "connection reset",
+        "broken pipe",
+        "timed out",
+        "timeout",
+        "temporarily unavailable",
+        "eof occurred",
+    )
+    return any(m in s for m in markers)
+
+
+def _run_sheets_op_with_retry(label: str, fn):
+    """Несколько попыток: сброс кэша Google-клиента между ними (TLS/httplib2 под eventlet)."""
+    import time
+
+    for attempt in range(3):
+        try:
+            return fn()
+        except Exception as e:
+            if not _is_transient_google_transport_error(e) or attempt >= 2:
+                raise
+            logger.warning(
+                "%s: транспортная ошибка Google/SSL (попытка %s/3), сбрасываю HTTP-клиент: %s",
+                label,
+                attempt + 1,
+                e,
+            )
+            reset_google_services()
+            time.sleep(0.35)
+
 
 def make_range(sheet_name, cell_range):
     if not sheet_name:
@@ -110,18 +158,16 @@ def save_message(credentials_file, sheet_id, worksheet_name, client_id, message)
 
 def read_records(spreadsheet_id=None, worksheet_name=None):
     """Читает записи из Google Sheets."""
-    try:
+
+    def _read_impl():
         logger.info(f"\n{'='*50}\nЧТЕНИЕ GOOGLE SHEETS\n{'='*50}")
         logger.info(f"Spreadsheet ID: {spreadsheet_id or SPREADSHEET_ID}")
         logger.info(f"Worksheet: {worksheet_name or GOOGLE_SHEET_NAME}")
-        
+
         sheets_service = get_google_services()[1]  # Получаем только sheets сервис
         logger.info("Sheets service получен успешно")
-        
-        range_name = make_range((worksheet_name or GOOGLE_SHEET_NAME), "A1:Z1000")
-        logger.info(f"Запрашиваем диапазон: {range_name}")
-        
-        # Сначала проверим метаданные таблицы
+
+        # Сначала метаданные — чтобы имя листа совпало с таблицей (регистр / опечатки env)
         try:
             metadata = sheets_service.spreadsheets().get(
                 spreadsheetId=spreadsheet_id or SPREADSHEET_ID
@@ -129,21 +175,25 @@ def read_records(spreadsheet_id=None, worksheet_name=None):
             sheets = metadata.get('sheets', [])
             sheet_titles = [sheet['properties']['title'] for sheet in sheets]
             logger.info(f"Доступные листы: {', '.join(sheet_titles)}")
-            
-            if worksheet_name not in sheet_titles:
-                logger.error(f"Лист '{worksheet_name}' не найден в таблице!")
+
+            resolved_ws = _resolve_worksheet_title(sheet_titles, worksheet_name or GOOGLE_SHEET_NAME)
+            if resolved_ws not in sheet_titles:
+                logger.error("Лист %r не найден в таблице (после сопоставления регистра)", worksheet_name)
                 return []
         except Exception as e:
             logger.error(f"Ошибка при проверке метаданных таблицы: {e}")
             raise
-            
+
+        range_name = make_range(resolved_ws, "A1:Z1000")
+        logger.info(f"Запрашиваем диапазон: {range_name}")
+
         # Теперь запрашиваем данные
         result = sheets_service.spreadsheets().values().get(
             spreadsheetId=spreadsheet_id or SPREADSHEET_ID,
             range=range_name
         ).execute()
         logger.info("Запрос к API выполнен успешно")
-        
+
         values = result.get('values', [])
         if not values:
             return []
@@ -156,42 +206,74 @@ def read_records(spreadsheet_id=None, worksheet_name=None):
                     record[headers[i]] = value
             records.append(record)
         return records
+
+    try:
+        return _run_sheets_op_with_retry("read_records", _read_impl)
     except Exception as e:
         logger.error(f"Ошибка чтения из Google Sheets: {e}")
         raise
+
+def _resolve_worksheet_title(titles: list[str], requested: str) -> str:
+    """Точное имя листа: учитываем регистр (Google различает, но дубликаты из-за env ломают create)."""
+    if requested in titles:
+        return requested
+    by_lower = {t.lower(): t for t in titles}
+    if requested.lower() in by_lower:
+        resolved = by_lower[requested.lower()]
+        if resolved != requested:
+            logger.info(
+                "Имя листа приведено к существующему в таблице: %r -> %r",
+                requested,
+                resolved,
+            )
+        return resolved
+    return requested
+
 
 def append_record(spreadsheet_id=None, worksheet_name=None, values=None):
     """Добавляет запись в Google Sheets. Создаёт лист при необходимости."""
     if values is None:
         raise ValueError("Значения для записи не указаны")
-    try:
+
+    def _append_impl():
         sheets_service = get_google_services()[1]
         sheet_id = spreadsheet_id or SPREADSHEET_ID
         sheet_name = worksheet_name or GOOGLE_SHEET_NAME
 
-        # Проверим, существует ли лист; если нет — создадим его
+        titles: list[str] | None = None
         try:
             metadata = sheets_service.spreadsheets().get(spreadsheetId=sheet_id).execute()
-            titles = [s['properties']['title'] for s in metadata.get('sheets', [])]
+            titles = [s["properties"]["title"] for s in metadata.get("sheets", [])]
         except Exception as e:
-            logger.warning(f"Не удалось получить метаданные таблицы: {e}. Попытка продолжить.")
-            titles = []
+            logger.warning(
+                "Не удалось получить метаданные таблицы (append_record): %s. "
+                "Пропуск auto-create; запись с именем из конфига.",
+                e,
+            )
+            titles = None
 
-        if sheet_name not in titles:
-            try:
-                logger.info(f"Лист '{sheet_name}' не найден в {sheet_id}. Создаю его.")
-                requests = [{
-                    'addSheet': {'properties': {'title': sheet_name}}
-                }]
-                sheets_service.spreadsheets().batchUpdate(spreadsheetId=sheet_id, body={'requests': requests}).execute()
-                logger.info(f"Лист '{sheet_name}' успешно создан")
-            except Exception as e:
-                logger.error(f"Не удалось создать лист '{sheet_name}': {e}. Продолжение попытки записи.")
+        actual_name = sheet_name
+        if titles is not None:
+            actual_name = _resolve_worksheet_title(titles, sheet_name)
+            if actual_name not in titles:
+                try:
+                    logger.info("Лист %r не найден среди %s — создаю.", actual_name, titles[:12])
+                    requests = [{"addSheet": {"properties": {"title": actual_name}}}]
+                    sheets_service.spreadsheets().batchUpdate(
+                        spreadsheetId=sheet_id, body={"requests": requests}
+                    ).execute()
+                    logger.info("Лист %r успешно создан", actual_name)
+                except Exception as e:
+                    logger.error(
+                        "Не удалось создать лист %r: %s. Пробую append с этим именем.",
+                        actual_name,
+                        e,
+                    )
 
         body = {
             'values': [values] if not isinstance(values[0], list) else values
         }
-        range_name = make_range(sheet_name, "A1")
+        range_name = make_range(actual_name, "A1")
         logger.debug(f"Appending record to range: {range_name} (sheet_id={sheet_id})")
         result = sheets_service.spreadsheets().values().append(
             spreadsheetId=sheet_id,
@@ -201,6 +283,9 @@ def append_record(spreadsheet_id=None, worksheet_name=None, values=None):
             body=body
         ).execute()
         return result
+
+    try:
+        return _run_sheets_op_with_retry("append_record", _append_impl)
     except Exception as e:
         logger.error(f"Ошибка добавления записи в Google Sheets: {e}")
         raise
@@ -209,7 +294,8 @@ def update_record(spreadsheet_id=None, worksheet_name=None, range_=None, values=
     """Обновляет запись в Google Sheets."""
     if values is None or range_ is None:
         raise ValueError("Не указаны значения или диапазон для обновления")
-    try:
+
+    def _update_impl():
         sheets_service = get_google_services()[1]
         body = {
             'values': [values] if not isinstance(values[0], list) else values
@@ -223,6 +309,9 @@ def update_record(spreadsheet_id=None, worksheet_name=None, range_=None, values=
             body=body
         ).execute()
         return result
+
+    try:
+        return _run_sheets_op_with_retry("update_record", _update_impl)
     except Exception as e:
         logger.error(f"Ошибка обновления записи в Google Sheets: {e}")
         raise

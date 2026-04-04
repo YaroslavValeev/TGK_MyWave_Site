@@ -454,7 +454,8 @@ def get_knowledge(type):
         # FAQ и EMS данные
         files_to_read = [
             ('wakesurfing_tips.txt/FAQБАтут.txt', 'utf-8'),
-            ('wakesurfing_tips.txt/EMS Training.txt', 'utf-8')
+            ('wakesurfing_tips.txt/EMS Training.txt', 'utf-8'),
+            ('wakesurfing_tips.txt/WhatToBring_GymVsBoat.txt', 'utf-8'),
         ]
         
         for file_path, encoding in files_to_read:

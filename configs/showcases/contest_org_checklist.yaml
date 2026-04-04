@@ -1,0 +1,33 @@
+# Чек-лист для организатора соревнований (ТЗ 5.1)
+id: checklist
+slug: checklist-org
+name: "Чек-лист для организатора"
+summary: "Готовый чек-лист, чтобы провести соревнование без хаоса и «пожаров»"
+description: |
+  Структурированный чек-лист для организаторов wake-соревнований. Помогает не упустить
+  важные этапы: регистрация участников, документы, тайминг, безопасность, судейство.
+category: checklist
+kind: resource
+schema_type: Article
+status: active
+city: ""
+country: ""
+start_date: "2025-01-01"
+end_date: "2025-12-31"
+tags:
+  - checklist
+  - organizer
+  - competition
+cover_image: images/Project/CheckList_Competion
+gallery: []
+cta_url: null
+route: /projects
+channels:
+  - projects
+checklist:
+  - Регистрация участников и заявки
+  - Документы и страховка
+  - Тайминг и расписание
+  - Безопасность на воде
+  - Судейство и протоколы
+metadata: {}

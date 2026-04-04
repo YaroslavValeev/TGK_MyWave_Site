@@ -100,11 +100,23 @@
 .project-card .card-details__list li {
   margin-bottom: 0.35em;
 }
+.project-card .service-card-actions,
+.project-card .project-card__actions,
+.project-card .project-card-expanded__cta {
+  position: relative;
+  z-index: 5;
+  pointer-events: auto;
+}
 .project-card .service-card-actions {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
   margin-top: 0.5em;
+}
+.project-card .service-card-actions a,
+.project-card .project-card-expanded__cta a {
+  position: relative;
+  z-index: 6;
 }
 .service-description--short {
   display: -webkit-box;

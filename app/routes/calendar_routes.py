@@ -407,16 +407,23 @@ def get_slots(date_str):
         if date_obj < datetime.now().date():
             return jsonify({"error": "Нельзя выбрать дату в прошлом"}), 400
 
-        # Проверяем, что дата не слишком далеко в будущем (например, +3 месяца)
-        max_future_date = datetime.now().date() + timedelta(days=90)
-        if date_obj > max_future_date:
-            return jsonify({"error": "Дата слишком далеко в будущем. Максимум 3 месяца вперед"}), 400
-
         # Читаем тип услуги (boat, gym, и т.п.)
         service_type = request.args.get('service')
         current_app.logger.info(
             f"Запрос слотов на дату: {date_str}, service={service_type}"
         )
+
+        # Camp (Ruza 2026) — фиксированное окно дат. Для него НЕ применяем лимит +90 дней.
+        if service_type == 'camp':
+            ruza_start = datetime.strptime('2026-08-10', '%Y-%m-%d').date()
+            ruza_end = datetime.strptime('2026-08-23', '%Y-%m-%d').date()
+            if date_obj < ruza_start or date_obj > ruza_end:
+                return jsonify({"error": "Для Ruza Camp доступны даты только 10–23.08.2026"}), 400
+        else:
+            # Проверяем, что дата не слишком далеко в будущем (например, +3 месяца)
+            max_future_date = datetime.now().date() + timedelta(days=90)
+            if date_obj > max_future_date:
+                return jsonify({"error": "Дата слишком далеко в будущем. Максимум 3 месяца вперед"}), 400
 
         # Для катера используем отдельный генератор с 30-минутными слотами
         if service_type == 'boat':
@@ -655,6 +662,23 @@ def _book_slot_internal():
             f"date={data.get('date')} time={data.get('time')}"
         )
 
+        # 3.25 Camp policy (Ruza 2026): только окно 10–23.08.2026 и общий лимит мест
+        if service_type_from_payload == 'camp':
+            try:
+                ruza_start = datetime.strptime('2026-08-10', '%Y-%m-%d').date()
+                ruza_end = datetime.strptime('2026-08-23', '%Y-%m-%d').date()
+                req_date = datetime.strptime(data['date'], '%Y-%m-%d').date()
+                if req_date < ruza_start or req_date > ruza_end:
+                    return jsonify({
+                        'status': 'error',
+                        'error': 'Для Ruza Camp доступны даты только 10–23.08.2026'
+                    }), 400
+            except Exception:
+                return jsonify({
+                    'status': 'error',
+                    'error': 'Некорректная дата для Ruza Camp'
+                }), 400
+
         # 3.5. Проверка дубликата: тот же phone на тот же date+time
         spreadsheet_id = current_app.config['SPREADSHEET_ID']
         clients = read_records(spreadsheet_id, 'Clients')
@@ -672,30 +696,66 @@ def _book_slot_internal():
             )
             if duplicate:
                 current_app.logger.warning(f"    ❌ Дубликат брони: phone={data['phone']} date={data['date']} time={data['time']}")
+                # Ruza Camp: повторная отправка той же анкеты — не ошибка для пользователя
+                if (service_type_from_payload or '').strip().lower() == 'camp':
+                    return jsonify({
+                        'status': 'success',
+                        'message': 'Заявка уже была получена ранее. Мы свяжемся с вами.',
+                        'idempotent': True,
+                    }), 200
                 return jsonify({
                     'status': 'error',
                     'error': 'Вы уже записаны на это время. Один слот — одна запись.'
                 }), 400
 
-        # 4. Проверяем доступность слота (учитываем опциональный service_type)
+        # 4. Проверяем доступность слота / capacity (учитываем опциональный service_type)
         current_app.logger.info(f"  4️⃣ Проверяю слот {data['date']} {data['time']}... (service={service_type_from_payload})")
-        if service_type_from_payload == 'boat':
-            slots = get_boat_slots(data['date'])
+        if service_type_from_payload == 'camp':
+            # Camp — без почасовых слотов, считаем общую вместимость смены.
+            try:
+                ruza_cap = 16
+                bookings = read_records(spreadsheet_id, 'Client_Workouts')
+                ruza_start_s = '2026-08-10'
+                ruza_end_s = '2026-08-23'
+                used = 0
+                for b in bookings:
+                    svc = (b.get('service_type') or '').strip().lower()
+                    if svc != 'camp':
+                        continue
+                    d = (b.get('date') or '').strip()
+                    if not d:
+                        continue
+                    if d < ruza_start_s or d > ruza_end_s:
+                        continue
+                    st = (b.get('status') or '').strip().lower()
+                    if st and st not in ('booked', 'new'):
+                        continue
+                    used += 1
+                if used >= ruza_cap:
+                    return jsonify({
+                        'status': 'error',
+                        'error': 'Мест больше нет. Смена заполнена.'
+                    }), 400
+            except Exception as e:
+                current_app.logger.warning(f"[camp] capacity check failed: {e!r}")
+            current_app.logger.info("    ✅ Camp: capacity OK")
         else:
-            slots = get_available_slots(data['date'])
+            if service_type_from_payload == 'boat':
+                slots = get_boat_slots(data['date'])
+            else:
+                slots = get_available_slots(data['date'])
 
-        available_slot = next(
-            (slot for slot in slots if slot['time'] == data['time'] and slot['available']),
-            None
-        )
-        
-        if not available_slot:
-            current_app.logger.warning(f"    ❌ Слот недоступен")
-            return jsonify({
-                'status': 'error',
-                'error': 'Слот недоступен или уже занят'
-            }), 400
-        current_app.logger.info(f"    ✅ Слот доступен")
+            available_slot = next(
+                (slot for slot in slots if slot['time'] == data['time'] and slot['available']),
+                None
+            )
+            if not available_slot:
+                current_app.logger.warning(f"    ❌ Слот недоступен")
+                return jsonify({
+                    'status': 'error',
+                    'error': 'Слот недоступен или уже занят'
+                }), 400
+            current_app.logger.info(f"    ✅ Слот доступен")
 
         # 5. Создание/поиск клиента
         current_app.logger.info(f"  5️⃣ Создаю/ищу клиента {data['phone']}...")

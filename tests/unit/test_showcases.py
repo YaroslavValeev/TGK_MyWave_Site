@@ -9,6 +9,15 @@ def test_project_cards_have_required_fields(app):
         assert {'name', 'summary', 'slug'}.issubset(card.keys())
 
 
+def test_project_cards_have_valid_cover(app):
+    """Верификация: у каждой карточки есть обложка."""
+    with app.test_request_context():
+        cards = showcases.get_project_cards()
+        for card in cards:
+            cover = card.get('cover')
+            assert cover, f"карточка {card.get('name')} без обложки"
+
+
 def test_projects_graph_structure(app):
     with app.test_request_context():
         graph = showcases.get_projects_graph()

@@ -65,7 +65,7 @@ def main():
             model = raw_model
         else:
             # fallback to a safe default
-            model = 'gpt-4'
+            model = 'gpt-4.1-nano'
         print('Using model:', model)
         try:
             assistant = create_assistant(name=name, instructions=instructions, model=model)

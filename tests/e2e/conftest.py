@@ -52,6 +52,10 @@ def live_server():
     def create_workout(d, t, *a, **k):
         return f"workout_{d}_{t}".replace('-', '_').replace(':', '_')
 
+    def empty_blog_posts(*_a, **_k):
+        """Без сети/Sheets: иначе eventlet + параллельные запросы браузера дают зависания на / и /chat/."""
+        return [], 0
+
     with patch('app.routes.calendar_routes.get_available_slots', mock_slots), \
          patch('app.routes.calendar_routes.add_event_to_calendar', mock_calendar), \
          patch('app.routes.calendar_routes.get_google_services', mock_google), \
@@ -59,7 +63,8 @@ def live_server():
          patch('app.modules.sheets_access.append_dict_to_sheet', append_dict), \
          patch('app.modules.calendar_integration.create_workout_if_not_exists', create_workout), \
          patch('app.services.google_sheets_service.update_record', return_value=True), \
-         patch('app.services.csrf.check_csrf', return_value=True):
+         patch('app.services.csrf.check_csrf', return_value=True), \
+         patch('app.services.blog.store.get_posts', empty_blog_posts):
         app = create_app(config_name='testing')
         app.config['SPREADSHEET_ID'] = 'e2e-test-sheet'
         port = 5012

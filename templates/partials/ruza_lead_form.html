@@ -1,0 +1,146 @@
+{# Квалификационная форма заявки MyWave Ruza Camp #}
+{# Используется на странице проекта и в модалке modalRuzaCamp #}
+<form class="ruza-lead-form js-ruza-lead-form" data-event="ruza_lead" data-showcase-id="mywave_ruza_camp" data-success="Заявка отправлена! Мы свяжемся с вами в течение 24 часов и пришлём программу смены, список вещей и следующий шаг.">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="request_id" value="">
+  <input type="hidden" name="page_url" value="">
+  <input type="hidden" name="source_cta" value="">
+  <input type="hidden" name="camp_time" value="12:00">
+  <input type="hidden" name="utm_source" value="">
+  <input type="hidden" name="utm_medium" value="">
+  <input type="hidden" name="utm_campaign" value="">
+  <input type="hidden" name="utm_content" value="">
+  <input type="hidden" name="utm_term" value="">
+  <input type="hidden" name="referrer" value="">
+  <input type="hidden" name="user_agent" value="">
+
+  <fieldset>
+    <legend>Кто оставляет заявку</legend>
+    <label><input type="radio" name="applicant_type" value="parent" checked> Родитель / законный представитель</label>
+    <label><input type="radio" name="applicant_type" value="participant"> Участник (подросток)</label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Контакты</legend>
+    <div class="input-group">
+      <label>Имя и фамилия родителя *</label>
+      <input type="text" name="parent_name" required maxlength="100" placeholder="Иван Иванов">
+    </div>
+    <div class="input-group">
+      <label>Телефон *</label>
+      <input type="tel" name="phone" required placeholder="+7 (916) 011-71-79">
+    </div>
+    <div class="input-group">
+      <label>Email *</label>
+      <input type="email" name="email" required placeholder="email@example.com">
+    </div>
+    <div class="input-group">
+      <label>Удобный способ связи</label>
+      <select name="contact_prefer">
+        <option value="phone">Телефон</option>
+        <option value="telegram">Telegram</option>
+        <option value="email">Email</option>
+        <option value="whatsapp">WhatsApp</option>
+      </select>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Данные участника</legend>
+    <div class="input-group">
+      <label>ФИО участника *</label>
+      <input type="text" name="participant_name" required maxlength="100">
+    </div>
+    <div class="input-group">
+      <label>Дата участия (только 10–23.08.2026) *</label>
+      <input type="text" name="camp_date" class="js-ruza-camp-date" required readonly placeholder="Выберите дату">
+    </div>
+    <div class="input-group">
+      <label>Дата рождения *</label>
+      <input type="date" name="birthdate" required>
+    </div>
+    <div class="input-group">
+      <label>Возрастная группа *</label>
+      <select name="age_group" required>
+        <option value="">Выберите</option>
+        <option value="10-13">10–13 лет</option>
+        <option value="14-16">14–16 лет</option>
+        <option value="17-20">17–20 лет</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label>Город</label>
+      <input type="text" name="city" maxlength="100" placeholder="Москва">
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Спортивная часть</legend>
+    <div class="input-group">
+      <label>Уровень</label>
+      <select name="level">
+        <option value="">Выберите</option>
+        <option value="novice">Новичок</option>
+        <option value="beginner">Начинающий</option>
+        <option value="intermediate">Средний</option>
+        <option value="advanced">Продвинутый</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label>Цель участия</label>
+      <input type="text" name="goal" maxlength="200" placeholder="Что хотите улучшить?">
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Пакет</legend>
+    <label><input type="radio" name="package" value="outlaw_optimum" checked> Outlaw (Optimum) — ежедневное катание за катером по 25 мин</label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Здоровье</legend>
+    <div class="input-group">
+      <label>Есть ли ограничения / аллергии? *</label>
+      <label><input type="radio" name="has_restrictions" value="no" checked> Нет</label>
+      <label><input type="radio" name="has_restrictions" value="yes"> Да</label>
+    </div>
+    <div class="input-group js-ruza-restrictions-detail" style="display:none;">
+      <label>Опишите ограничения / аллергии *</label>
+      <textarea name="restrictions_detail" rows="3" maxlength="500" placeholder="Опишите подробно" class="js-ruza-restrictions-textarea"></textarea>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Логистика</legend>
+    <label><input type="checkbox" name="logistics_parents" value="1" checked> Родители привозят и забирают</label>
+    <label><input type="checkbox" name="logistics_self" value="1"> Самостоятельное прибытие старшего участника по письменному согласию</label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Подтверждения</legend>
+    <label style="display:flex;align-items:start;gap:8px;cursor:pointer;">
+      <input type="checkbox" name="consent_safety" required>
+      <span>Согласен(а) с правилами безопасности и дисциплины *</span>
+    </label>
+    <label style="display:flex;align-items:start;gap:8px;cursor:pointer;">
+      <input type="checkbox" name="consent_pdn" required>
+      <span>Согласен(а) на обработку персональных данных *</span>
+    </label>
+    <label style="display:flex;align-items:start;gap:8px;cursor:pointer;">
+      <input type="checkbox" name="consent_health_form" required>
+      <span>Подтверждаю, что будет заполнена анкета здоровья и предоставлена медсправка *</span>
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Фото/видео</legend>
+    <label><input type="radio" name="photo_video" value="allow" checked> Разрешаю публикацию</label>
+    <label><input type="radio" name="photo_video" value="family_only"> Только семейный архив</label>
+    <label><input type="radio" name="photo_video" value="disallow"> Не разрешаю</label>
+  </fieldset>
+
+  <p class="ruza-contacts">Контакты: <a href="tel:+79160117179">+7 916 011 71 79</a>, <a href="mailto:MyWaveProject@yandex.ru">MyWaveProject@yandex.ru</a></p>
+
+  <button type="submit" class="btn btn-primary">Отправить заявку</button>
+  <div class="ruza-form-message js-ruza-form-message"></div>
+</form>

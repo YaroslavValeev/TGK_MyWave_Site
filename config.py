@@ -31,10 +31,18 @@ class Config:
     CSP_POLICY = {}
 
     # Настройки для OpenAI и GPT
-    GPTS_MODEL = os.getenv("GPTS_MODEL", "gpt-4")
-    FINE_TUNED_MODEL = os.getenv("FINE_TUNED_MODEL", "gpt-4")
-    FALLBACK_MODEL = os.getenv("FALLBACK_MODEL", "gpt-3.5-turbo")
+    GPTS_MODEL = os.getenv("GPTS_MODEL", "gpt-4.1-nano")
+    FINE_TUNED_MODEL = os.getenv("FINE_TUNED_MODEL", "gpt-4.1-nano")
+    FALLBACK_MODEL = os.getenv("FALLBACK_MODEL", "gpt-4.1-nano")
     ASSISTANT_ID = os.getenv("ASSISTANT_ID")
+    # Публичный чат (ask в openai_service): auto | completions | responses | assistant_only
+    # auto — Assistant API при ASSISTANT_ID, иначе completions; при пустом ответе — fallback completions
+    # completions — только Chat Completions + CHAT_SYSTEM_PROMPT (игнор ASSISTANT_ID)
+    # responses — OpenAI Responses API для обычного public text chat
+    # assistant_only — только Assistant API без fallback на completions (отладка)
+    CHAT_BACKEND = (os.getenv("CHAT_BACKEND") or "auto").strip().lower()
+    # Flask-Limiter: memory:// (локально), production — redis://host:6379/0
+    RATELIMIT_STORAGE_URI = os.getenv("RATELIMIT_STORAGE_URI", "memory://")
 
     # Настройки для Telegram
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")

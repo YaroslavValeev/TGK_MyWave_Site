@@ -1,17 +1,230 @@
 import logging
+import os
+import time
+from datetime import datetime
+
 from openai import OpenAI
 from flask import current_app, session, has_app_context
+
 from app.services.rules import ChatMode
 from app.services.google_sheets_service import append_record
-from datetime import datetime
-import time
+from app.services.openai_runtime_config import (
+    log_openai_chat_config_first_request,
+    resolve_chat_models_from_config,
+)
 
 logger = logging.getLogger(__name__)
 
 client = None  # OpenAI client будет инициализирован при первом вызове
 # Default model names used by the code and tests
-DEFAULT_MODEL = "gpt-4"
-FALLBACK_MODEL = "gpt-3.5-turbo"
+DEFAULT_MODEL = "gpt-4.1-nano"
+FALLBACK_MODEL = "gpt-4.1-nano"
+
+# Внутренний маркер: ассистент не вернул текст (режим auto → fallback completions)
+_ASSISTANT_EMPTY_REPLY = "Извините, ассистент не дал ответа."
+
+# Сообщение пользователю при CHAT_BACKEND=assistant_only и пустом ответе (без fallback)
+_USER_ASSISTANT_UNAVAILABLE = (
+    "Сейчас не удалось получить ответ ассистента. Попробуйте ещё раз чуть позже."
+)
+
+
+def _chat_backend(cfg: dict) -> str:
+    raw = (cfg.get("CHAT_BACKEND") or os.getenv("CHAT_BACKEND") or "auto").strip().lower()
+    if raw in ("auto", "completions", "assistant_only", "responses"):
+        return raw
+    return "auto"
+
+def _is_model_not_found_error(exc: Exception) -> bool:
+    s = str(exc).lower()
+    return ("model_not_found" in s) or ("does not exist" in s) or ("do not have access" in s)
+
+
+def _is_insufficient_quota_error(exc: Exception) -> bool:
+    """429 / billing: повтор с другой моделью обычно бессмысленен (тот же ключ/проект)."""
+    s = str(exc).lower()
+    if "insufficient_quota" in s:
+        return True
+    if "429" in s and ("quota" in s or "billing" in s):
+        return True
+    name = type(exc).__name__
+    if "RateLimit" in name and "quota" in s:
+        return True
+    return False
+
+
+def _user_friendly_openai_error(exc: Exception, *, cfg: dict | None = None) -> str:
+    """
+    Превращает “сырой” текст ошибки OpenAI в релизно-понятное сообщение для UI.
+    Не раскрывает внутренние детали/токены/большие payload.
+    """
+    if _is_model_not_found_error(exc):
+        gpts = (cfg or {}).get("GPTS_MODEL") if cfg else None
+        fb = (cfg or {}).get("FALLBACK_MODEL") if cfg else None
+        return (
+            "Сейчас не удалось получить ответ: модель недоступна (нет доступа или неверное имя). "
+            f"Проверьте переменные окружения GPTS_MODEL{f'={gpts}' if gpts else ''} "
+            f"и FALLBACK_MODEL{f'={fb}' if fb else ''}."
+        )
+    if _is_insufficient_quota_error(exc):
+        return (
+            "Сейчас не удалось получить ответ: исчерпана квота API OpenAI для этого ключа. "
+            "Проверьте биллинг и пополнение баланса в кабинете OpenAI (тот же проект, что и API key)."
+        )
+    return "Сейчас не удалось получить ответ. Попробуйте ещё раз чуть позже."
+
+
+def _response_input_text(text: str) -> dict:
+    return {"type": "input_text", "text": text}
+
+
+def _history_to_responses_input(history: list | None, prompt: str) -> list[dict]:
+    items: list[dict] = []
+    if history:
+        if not isinstance(history, list):
+            raise ValueError("history must be a list of messages")
+        for msg in history:
+            if not isinstance(msg, dict):
+                continue
+            role = str(msg.get("role") or "user").strip().lower()
+            if role not in ("user", "assistant", "system", "developer"):
+                role = "user"
+            content = msg.get("content")
+            if content is None:
+                continue
+            items.append({"role": role, "content": [_response_input_text(str(content))]})
+    items.append({"role": "user", "content": [_response_input_text(prompt)]})
+    return items
+
+
+def _extract_responses_text(resp) -> str | None:
+    text = getattr(resp, "output_text", None)
+    if text and str(text).strip():
+        return str(text).strip()
+
+    output = getattr(resp, "output", None) or []
+    for item in output:
+        if getattr(item, "type", None) != "message":
+            continue
+        content = getattr(item, "content", None) or []
+        parts: list[str] = []
+        for block in content:
+            btype = getattr(block, "type", None)
+            if btype in ("output_text", "text"):
+                val = getattr(block, "text", None)
+                if isinstance(val, str) and val.strip():
+                    parts.append(val.strip())
+                    continue
+                text_obj = getattr(block, "text", None)
+                val2 = getattr(text_obj, "value", None) if text_obj is not None else None
+                if val2 and str(val2).strip():
+                    parts.append(str(val2).strip())
+        if parts:
+            return "\n".join(parts).strip()
+    return None
+
+
+def _msg_created_at(msg) -> int:
+    v = getattr(msg, "created_at", None)
+    try:
+        return int(v) if v is not None else 0
+    except (TypeError, ValueError):
+        return 0
+
+
+def _extract_assistant_text(msg) -> str | None:
+    """Достаёт текст из сообщения assistant (разные форматы content в Threads API)."""
+    if not msg or getattr(msg, "role", None) != "assistant":
+        return None
+    parts = getattr(msg, "content", None) or []
+    for block in parts:
+        btype = getattr(block, "type", None)
+        if btype == "text":
+            t = getattr(block, "text", None)
+            if t is not None:
+                val = getattr(t, "value", None)
+                if val and str(val).strip():
+                    return str(val).strip()
+    try:
+        return msg.content[0].text.value.strip()
+    except (IndexError, AttributeError):
+        return None
+
+
+def _extract_reply_for_current_run(
+    client: OpenAI,
+    thread_id: str,
+    run_id: str,
+    user_message_created_at: int,
+    assistant_id: str,
+) -> tuple[str | None, str]:
+    """
+    Текст ответа именно для данного run — не «последний assistant в thread».
+
+    Порядок: list(run_id=…) → сообщения с msg.run_id == run_id → самый ранний assistant
+    с created_at > user_message_created_at (ответ на этот ход диалога).
+    """
+    # 1) Фильтр API по run_id
+    try:
+        resp = client.beta.threads.messages.list(
+            thread_id=thread_id,
+            run_id=run_id,
+            order="desc",
+            limit=15,
+        )
+        for msg in resp.data:
+            if msg.role == "assistant":
+                text = _extract_assistant_text(msg)
+                if text:
+                    return text, "run_id_query"
+    except TypeError:
+        logger.debug("[chat-assistant] messages.list(run_id=) not supported by client")
+    except Exception as e:
+        logger.warning("[chat-assistant] messages.list(run_id=%s) failed: %s", run_id, e)
+
+    # 2) Явное поле run_id на сообщении (надёжнее, чем «первый assistant сверху»)
+    try:
+        resp = client.beta.threads.messages.list(thread_id=thread_id, order="desc", limit=50)
+        for msg in resp.data:
+            if msg.role != "assistant":
+                continue
+            if getattr(msg, "run_id", None) != run_id:
+                continue
+            text = _extract_assistant_text(msg)
+            if text:
+                return text, "run_id_on_message"
+    except Exception as e:
+        logger.warning("[chat-assistant] run_id scan on thread failed: %s", e)
+
+    # 3) Последний по времени assistant строго после user-сообщения (финальный ответ хода;
+    #    при tool-цепочках может быть несколько assistant — берём самый новый).
+    try:
+        resp = client.beta.threads.messages.list(thread_id=thread_id, order="asc", limit=100)
+        best_ts = -1
+        best_text = None
+        for msg in resp.data:
+            if msg.role != "assistant":
+                continue
+            ts = _msg_created_at(msg)
+            if ts <= user_message_created_at:
+                continue
+            text = _extract_assistant_text(msg)
+            if text and ts > best_ts:
+                best_ts = ts
+                best_text = text
+        if best_text:
+            return best_text, "latest_assistant_after_user"
+    except Exception as e:
+        logger.warning("[chat-assistant] latest-assistant-after-user failed: %s", e)
+
+    logger.warning(
+        "[chat-assistant] extract_reply_for_run exhausted run_id=%s thread_id=%s assistant_id=%s",
+        run_id,
+        thread_id,
+        assistant_id,
+    )
+    return None, "none"
+
 
 def log_dialog(client_id, source, message, reply):
     """
@@ -30,7 +243,7 @@ def log_dialog(client_id, source, message, reply):
     except Exception as e:
         logger.error(f"Ошибка записи диалога: {str(e)}")
 
-def ask_with_assistant(prompt, client_id=None):
+def ask_with_assistant(prompt, client_id=None, source: str = "web"):
     """
     Общение с OpenAI Assistant API (база знаний).
     Хранит thread_id в flask session по client_id.
@@ -54,12 +267,13 @@ def ask_with_assistant(prompt, client_id=None):
         thread_id = thread.id
         session[thread_key] = thread_id
 
-    # Отправляем сообщение пользователя
-    client.beta.threads.messages.create(
+    # Отправляем сообщение пользователя (нужен created_at для fallback привязки к ходу)
+    user_message = client.beta.threads.messages.create(
         thread_id=thread_id,
         role="user",
-        content=prompt
+        content=prompt,
     )
+    user_created_at = _msg_created_at(user_message)
 
     # Запускаем ассистента
     run = client.beta.threads.runs.create(
@@ -67,19 +281,277 @@ def ask_with_assistant(prompt, client_id=None):
         assistant_id=assistant_id
     )
 
+    logger.info(
+        "[chat-assistant] phase=start assistant_id=%s thread_id=%s run_id=%s",
+        assistant_id,
+        thread_id,
+        run.id,
+    )
+
     # Ожидаем завершения run
+    run_status = None
     for _ in range(60):  # максимум 60 секунд ожидания
         run_status = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
-        if run_status.status in ["completed", "failed", "cancelled"]:
+        if run_status.status in ["completed", "failed", "cancelled", "expired"]:
             break
         time.sleep(1)
 
-    # Получаем последнее сообщение ассистента
-    messages = client.beta.threads.messages.list(thread_id=thread_id)
-    for msg in reversed(messages.data):
-        if msg.role == "assistant":
-            return msg.content[0].text.value
-    return "Извините, ассистент не дал ответа."
+    last_err = None
+    if run_status:
+        err = getattr(run_status, "last_error", None)
+        last_err = getattr(err, "message", None) if err else None
+        logger.info(
+            "[chat-assistant] phase=run_done assistant_id=%s thread_id=%s run_id=%s "
+            "final_status=%s last_error=%s",
+            assistant_id,
+            thread_id,
+            run.id,
+            run_status.status,
+            last_err,
+        )
+
+    if run_status and run_status.status != "completed":
+        logger.warning(
+            "[chat-assistant] phase=run_not_completed assistant_id=%s thread_id=%s run_id=%s "
+            "status=%s last_error=%s",
+            assistant_id,
+            thread_id,
+            run.id,
+            run_status.status,
+            last_err,
+        )
+
+    # Ответ появляется с задержкой — несколько попыток; извлечение привязано к run / ходу диалога
+    for attempt in range(6):
+        text, how = _extract_reply_for_current_run(
+            client,
+            thread_id,
+            run.id,
+            user_created_at,
+            assistant_id,
+        )
+        if text:
+            ln = len(text)
+            logger.info(
+                "[chat-assistant] phase=extract_ok assistant_id=%s thread_id=%s run_id=%s "
+                "attempt=%s extract=%s text_len=%s",
+                assistant_id,
+                thread_id,
+                run.id,
+                attempt,
+                how,
+                ln,
+            )
+            if client_id and str(os.getenv("CHAT_SHEETS_LOG_ASSISTANT", "1")).lower() not in (
+                "0",
+                "false",
+                "no",
+            ):
+                log_dialog(client_id, source, prompt, text)
+            return text
+        if attempt < 5:
+            time.sleep(0.45)
+
+    logger.warning(
+        "[chat-assistant] phase=extract_fail assistant_id=%s thread_id=%s run_id=%s "
+        "run_status=%s assistant_msg_found=0 text_len=0 reason=no_assistant_text",
+        assistant_id,
+        thread_id,
+        run.id,
+        getattr(run_status, "status", None) if run_status else None,
+    )
+    return _ASSISTANT_EMPTY_REPLY
+
+
+def _chat_completions_reply(
+    cfg: dict,
+    prompt: str,
+    mode: ChatMode,
+    history: list | None,
+    client_id: str | None,
+    source: str,
+    temperature: float | None,
+    max_tokens: int | None,
+    model: str | None,
+    system_prompt_override: str | None = None,
+) -> str:
+    """Один запрос к Chat Completions с CHAT_SYSTEM_PROMPT и историей (ветка без Assistant API)."""
+    global client
+    if client is None:
+        api_key = cfg.get("OPENAI_API_KEY") if cfg else None
+        if not api_key:
+            raise RuntimeError("OPENAI_API_KEY is not set in Flask config")
+        client = OpenAI(api_key=api_key)
+
+    log_openai_chat_config_first_request(logger, cfg)
+
+    g_norm, f_norm, _ = resolve_chat_models_from_config(cfg)
+    if model is not None:
+        chosen_model = model
+    else:
+        if mode == ChatMode.CHAT_API:
+            chosen_model = g_norm or (cfg.get("GPTS_MODEL") if cfg else None)
+        else:
+            chosen_model = g_norm or DEFAULT_MODEL
+    fallback_model = f_norm or FALLBACK_MODEL
+
+    system_prompt = (
+        system_prompt_override
+        if system_prompt_override is not None
+        else cfg.get("CHAT_SYSTEM_PROMPT", "You are a helpful assistant.")
+    )
+    messages = []
+    if mode == ChatMode.CHAT_API:
+        messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+    else:
+        messages.append({"role": "system", "content": system_prompt})
+        if history:
+            if not isinstance(history, list):
+                raise ValueError("history must be a list of messages")
+            messages.extend(history)
+        messages.append({"role": "user", "content": prompt})
+
+    params = {
+        "model": chosen_model,
+        "messages": messages,
+    }
+    if temperature is not None:
+        params["temperature"] = temperature
+    if max_tokens is not None:
+        params["max_tokens"] = max_tokens
+
+    try:
+        resp = client.chat.completions.create(**params)
+    except Exception as e:
+        # При исчерпании квоты повтор с другой моделью не помогает — не делаем лишний запрос.
+        if _is_insufficient_quota_error(e):
+            logger.warning(
+                "[OpenAI] insufficient_quota model=%s — skip fallback retry (same key/project)",
+                chosen_model,
+            )
+            raise
+        # Если основной GPTS_MODEL не найден/недоступен — пробуем FALLBACK_MODEL (если отличается).
+        if _is_model_not_found_error(e) and fallback_model and fallback_model != chosen_model:
+            logger.warning(
+                "[OpenAI] model_not_found for model=%s; retrying with fallback_model=%s",
+                chosen_model,
+                fallback_model,
+            )
+            params["model"] = fallback_model
+            try:
+                resp = client.chat.completions.create(**params)
+            except Exception as e2:
+                if _is_insufficient_quota_error(e2):
+                    logger.warning(
+                        "[OpenAI] fallback_model=%s also failed: insufficient_quota",
+                        fallback_model,
+                    )
+                raise
+        else:
+            raise
+
+    reply = resp.choices[0].message.content.strip() if resp.choices else None
+    if not reply:
+        raise RuntimeError("Empty response from OpenAI")
+    if client_id:
+        log_dialog(client_id, source, prompt, reply)
+    logger.info(f"[OpenAI] mode={mode} client_id={client_id} success (chat completions)")
+    return reply
+
+
+def _responses_api_reply(
+    cfg: dict,
+    prompt: str,
+    mode: ChatMode,
+    history: list | None,
+    client_id: str | None,
+    source: str,
+    temperature: float | None,
+    max_tokens: int | None,
+    model: str | None,
+    instructions: str | None = None,
+) -> str:
+    """Один запрос к OpenAI Responses API с тем же внешним контрактом, что и completions."""
+    global client
+    if client is None:
+        api_key = cfg.get("OPENAI_API_KEY") if cfg else None
+        if not api_key:
+            raise RuntimeError("OPENAI_API_KEY is not set in Flask config")
+        client = OpenAI(api_key=api_key)
+
+    log_openai_chat_config_first_request(logger, cfg)
+
+    g_norm, f_norm, _ = resolve_chat_models_from_config(cfg)
+    chosen_model = model or g_norm or DEFAULT_MODEL
+    fallback_model = f_norm or FALLBACK_MODEL
+    system_prompt = instructions or cfg.get("CHAT_SYSTEM_PROMPT", "You are a helpful assistant.")
+
+    params = {
+        "model": chosen_model,
+        "instructions": system_prompt,
+        "input": _history_to_responses_input(history, prompt),
+    }
+    if temperature is not None:
+        params["temperature"] = temperature
+    if max_tokens is not None:
+        params["max_output_tokens"] = max_tokens
+
+    try:
+        resp = client.responses.create(**params)
+    except Exception as e:
+        if _is_insufficient_quota_error(e):
+            logger.warning(
+                "[OpenAI] insufficient_quota model=%s — skip fallback retry for responses (same key/project)",
+                chosen_model,
+            )
+            raise
+        if _is_model_not_found_error(e) and fallback_model and fallback_model != chosen_model:
+            logger.warning(
+                "[OpenAI] responses model_not_found for model=%s; retrying with fallback_model=%s",
+                chosen_model,
+                fallback_model,
+            )
+            params["model"] = fallback_model
+            resp = client.responses.create(**params)
+        else:
+            raise
+
+    reply = _extract_responses_text(resp)
+    if not reply:
+        raise RuntimeError("Empty response from OpenAI Responses API")
+    if client_id:
+        log_dialog(client_id, source, prompt, reply)
+    logger.info(f"[OpenAI] mode={mode} client_id={client_id} success (responses api)")
+    return reply
+
+
+def responses_text_reply(
+    prompt: str,
+    *,
+    history: list | None = None,
+    client_id: str | None = None,
+    source: str = "web",
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+    model: str | None = None,
+    instructions: str | None = None,
+) -> str:
+    """Публичная обёртка для Responses API без Assistant fallback."""
+    cfg = current_app.config if has_app_context() else {}
+    return _responses_api_reply(
+        cfg,
+        prompt,
+        ChatMode.RESPONSES_API,
+        history,
+        client_id,
+        source,
+        temperature,
+        max_tokens,
+        model,
+        instructions=instructions,
+    )
+
 
 def ask(
     prompt,
@@ -90,66 +562,128 @@ def ask(
     temperature: float = None,
     max_tokens: int = None,
     model: str | None = None,
+    page_context: dict | None = None,
 ) -> str:
     """
     Унифицированный интерфейс для обращения к OpenAI.
+    page_context — контекст страницы/записи (mw_chat_context), см. chat_page_context.
     """
     if not isinstance(prompt, str) or not prompt.strip():
         raise ValueError("Prompt must be a non-empty string")
     try:
-        # If running inside Flask, read config; otherwise use safe defaults
         cfg = current_app.config if has_app_context() else {}
-        assistant_id = cfg.get('ASSISTANT_ID') if cfg else None
-        if assistant_id:
-            return ask_with_assistant(prompt, client_id=client_id)
-        # Fallback: обычная модель
-        global client
-        if client is None:
-            api_key = cfg.get('OPENAI_API_KEY') if cfg else None
-            if not api_key:
-                raise RuntimeError("OPENAI_API_KEY is not set in Flask config")
-            client = OpenAI(api_key=api_key)
+        from app.services.chat_page_context import merge_chat_system_prompt
 
-        if model is not None:
-            chosen_model = model
-        else:
-            if mode == ChatMode.CHAT_API:
-                chosen_model = cfg.get('GPTS_MODEL') if cfg else None
-            else:
-                chosen_model = cfg.get('GPTS_MODEL') if cfg else None or DEFAULT_MODEL
+        sys_prompt = merge_chat_system_prompt(cfg, page_context)
+        backend = _chat_backend(cfg)
 
-        system_prompt = current_app.config.get('CHAT_SYSTEM_PROMPT', "You are a helpful assistant.")
-        messages = []
-        if mode == ChatMode.CHAT_API:
-            messages.append({"role": "system", "content": system_prompt})
-            messages.append({"role": "user", "content": prompt})
-        else:
-            if history:
-                if not isinstance(history, list):
-                    raise ValueError("history must be a list of messages")
-                messages.extend(history)
-            messages.append({"role": "user", "content": prompt})
+        if backend == "completions":
+            logger.info(
+                "[chat-assistant] path=completions_only reason=CHAT_BACKEND=completions"
+            )
+            return _chat_completions_reply(
+                cfg,
+                prompt,
+                mode,
+                history,
+                client_id,
+                source,
+                temperature,
+                max_tokens,
+                model,
+                system_prompt_override=sys_prompt,
+            )
 
-        params = {
-            "model": chosen_model,
-            "messages": messages
-        }
-        if temperature is not None:
-            params["temperature"] = temperature
-        if max_tokens is not None:
-            params["max_tokens"] = max_tokens
+        if backend == "responses":
+            logger.info(
+                "[chat-responses] path=responses_only reason=CHAT_BACKEND=responses"
+            )
+            return _responses_api_reply(
+                cfg,
+                prompt,
+                mode,
+                history,
+                client_id,
+                source,
+                temperature,
+                max_tokens,
+                model,
+                instructions=sys_prompt,
+            )
 
-        resp = client.chat.completions.create(**params)
-        reply = resp.choices[0].message.content.strip() if resp.choices else None
-        if not reply:
-            raise RuntimeError("Empty response from OpenAI")
-        if client_id:
-            log_dialog(client_id, source, prompt, reply)
-        logger.info(f"[OpenAI] mode={mode} client_id={client_id} success")
-        return reply
+        assistant_id = cfg.get("ASSISTANT_ID") if cfg else None
+        if backend == "assistant_only" and not assistant_id:
+            logger.warning(
+                "[chat-assistant] CHAT_BACKEND=assistant_only but ASSISTANT_ID unset; "
+                "using Chat Completions"
+            )
+            return _chat_completions_reply(
+                cfg,
+                prompt,
+                mode,
+                history,
+                client_id,
+                source,
+                temperature,
+                max_tokens,
+                model,
+                system_prompt_override=sys_prompt,
+            )
+
+        use_assistant = bool(assistant_id) and backend in ("auto", "assistant_only")
+
+        if use_assistant:
+            reply = ask_with_assistant(prompt, client_id=client_id, source=source)
+            empty = reply == _ASSISTANT_EMPTY_REPLY or not (reply or "").strip()
+
+            if empty and backend == "assistant_only":
+                logger.error(
+                    "[chat-assistant] path=assistant_only_failed fallback=none "
+                    "reason=empty_or_placeholder"
+                )
+                return _USER_ASSISTANT_UNAVAILABLE
+
+            if empty:
+                logger.warning(
+                    "[chat-assistant] path=fallback_completions reason=assistant_empty_or_placeholder "
+                    "detail=CHAT_BACKEND_auto"
+                )
+                return _chat_completions_reply(
+                    cfg,
+                    prompt,
+                    mode,
+                    history,
+                    client_id,
+                    source,
+                    temperature,
+                    max_tokens,
+                    model,
+                    system_prompt_override=sys_prompt,
+                )
+            logger.info(
+                "[chat-assistant] path=assistant_ok backend=%s text_len=%s",
+                backend,
+                len(reply or ""),
+            )
+            return reply
+
+        return _chat_completions_reply(
+            cfg,
+            prompt,
+            mode,
+            history,
+            client_id,
+            source,
+            temperature,
+            max_tokens,
+            model,
+            system_prompt_override=sys_prompt,
+        )
     except Exception as e:
-        logger.error(f"[OpenAI] mode={mode} client_id={client_id} error: {e}")
-        return f"Извините, не удалось получить ответ: {e}"
+        cfg = current_app.config if has_app_context() else {}
+        # В лог — полная причина; в UI — короткое сообщение.
+        logger.error("[OpenAI] mode=%s client_id=%s error=%s", mode, client_id, e, exc_info=True)
+        return _user_friendly_openai_error(e, cfg=cfg)
 
 def smart_gpt_response(message, context=None):
     try:
@@ -167,7 +701,7 @@ def process_chat_message(message, context=None):
 
 get_response = ask
 
-def create_assistant(name, instructions, model="gpt-4-turbo"):
+def create_assistant(name, instructions, model="gpt-4.1-nano"):
     try:
         global client
         if client is None:
@@ -213,7 +747,7 @@ def respond_structured(prompt: str, state: dict | None = None, tools: list | Non
 
     _ensure_client()
 
-    model = current_app.config.get('GPTS_MODEL') or "gpt-4o-mini"
+    model = current_app.config.get('GPTS_MODEL') or "gpt-4.1-nano"
     system_prompt = (
         "Ты оркестратор записи на тренировку. Определи intent пользователя "
         "('book','provide_date','provide_time','confirm','cancel','other'), выдели сущности "

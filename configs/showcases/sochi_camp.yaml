@@ -1,7 +1,7 @@
 id: sochi_camp
 slug: sochi-camp
-name: "Тренировочный кемп в Сочи"
-summary: "Зимний интенсив в горах: бассейн с буксиром, ОФП и анализ ошибок"
+name: "Summer Camp"
+summary: "Летний кэмп: тренировки + восстановление + тёплая локация"
 description: |
   Закрытый недельный лагерь в горах Сочи. Утренние катания на волне, днём —
   сухая подготовка и видеоанализ. Адаптирован для райдеров с уровнем от
@@ -21,14 +21,19 @@ tags:
 level: all
 price_from: "от 95 000 ₽"
 capacity: 20
-cover_image: images/projects/wsc/cover.webp
+cover_image: images/Project/SummerCamp
+checklist:
+  - Тренировки в бассейне с буксиром
+  - ОФП и видеоанализ
+  - Проживание и питание
+  - 7 дней интенсива
 gallery:
   - images/projects/wsc/wsc-preview-1.webp
   - images/projects/wsc/wsc-preview-2.webp
 cta_url: "/book?s=sochi-camp"
-route: "/events"
+route: "/projects"
+# Скрыт из проектов: объединён с MyWave Ruza Camp
 channels:
-  - projects
   - events
 metadata:
   season: winter

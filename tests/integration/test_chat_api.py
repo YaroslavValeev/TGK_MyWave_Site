@@ -5,6 +5,8 @@ Ensures:
 - /chat/api is the canonical endpoint and responds correctly
 - /api/chat (legacy compatibility layer) proxies to the same handler
 - Both return expected JSON format without hitting real OpenAI
+- GET /chat/ отдаёт страницу с виджетом
+- Сценарий брони обрабатывается через тот же POST /chat/api (server-first)
 """
 
 import json
@@ -99,3 +101,125 @@ def test_chat_api_rejects_empty_message(client):
     assert response.status_code == 400
     data = response.get_json()
     assert data is not None and ('error' in data or 'message' in str(data).lower())
+
+
+def test_chat_page_get_returns_200(client):
+    """Страница чата доступна и содержит плавающий виджет."""
+    response = client.get('/chat/')
+    assert response.status_code == 200
+    text = response.get_data(as_text=True)
+    assert 'chat-widget' in text or 'floating-chat' in text
+    assert 'csrf_token' in text or 'csrf-token' in text
+
+
+def test_chat_page_without_trailing_slash_returns_200(client):
+    """GET /chat (без слэша) не даёт 404 — strict_slashes=False у blueprint чата."""
+    response = client.get('/chat')
+    assert response.status_code == 200
+    text = response.get_data(as_text=True)
+    assert 'chat-widget' in text or 'floating-chat' in text
+
+
+def test_booking_intent_handled_via_chat_api(client):
+    """Ключевое слово записи обрабатывается внутри /chat/api (без отдельного вызова /api/booking с клиента)."""
+    with patch('app.services.booking_orchestrator.orchestrate') as orch:
+        orch.return_value = ('Выберите дату', {'step': 'ask_date'})
+        response = client.post(
+            '/chat/api',
+            data=json.dumps({'message': 'хочу записаться завтра'}),
+            content_type='application/json',
+        )
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data.get('response')
+    assert data.get('state', {}).get('step') == 'ask_date'
+    orch.assert_called_once()
+
+
+def test_chat_context_from_body_stored_in_session(client):
+    """Поле context в теле запроса сохраняется в сессии для связи чата с разделом сайта."""
+    with patch('app.routes.chat.ask', side_effect=_mock_ask), \
+         patch('app.services.responses_api.get_response_with_knowledge', return_value=None):
+        client.post(
+            '/chat/api',
+            data=json.dumps({
+                'message': 'Привет',
+                'context': {'entry': 'shop', 'kind': 'section', 'title': 'Магазин', 'id': ''},
+            }),
+            content_type='application/json',
+        )
+    with client.session_transaction() as sess:
+        ctx = sess.get('mw_chat_context') or {}
+        assert ctx.get('entry') == 'shop'
+        assert 'Магазин' in (ctx.get('title') or '')
+
+
+def test_mw_context_merged_into_booking_state_for_orchestrator(client):
+    """При сценарии брони в orchestrate передаётся mw_context из сессии."""
+    with client.session_transaction() as sess:
+        sess['mw_chat_context'] = {
+            'entry': 'services',
+            'kind': 'service',
+            'id': 'gym',
+            'title': 'Зал',
+        }
+    with patch('app.services.booking_orchestrator.orchestrate') as orch:
+        orch.return_value = ('Выберите дату', {'step': 'ask_date'})
+        client.post(
+            '/chat/api',
+            data=json.dumps({'message': 'хочу записаться'}),
+            content_type='application/json',
+        )
+    orch.assert_called_once()
+    _msg, state_in = orch.call_args[0]
+    assert state_in.get('mw_context', {}).get('id') == 'gym'
+
+
+def test_booking_branch_persists_chat_turn(client):
+    """После ответа сценария брони вызывается сохранение пары реплик в БД."""
+    with patch('app.services.booking_orchestrator.orchestrate') as orch, \
+         patch('app.routes.chat._save_chat_turn') as save_turn:
+        orch.return_value = ('Выберите дату', {'step': 'ask_date'})
+        client.post(
+            '/chat/api',
+            data=json.dumps({'message': 'запишите меня завтра'}),
+            content_type='application/json',
+        )
+    save_turn.assert_called_once()
+
+
+def test_chat_api_responses_backend_keeps_contract(client, app):
+    """При CHAT_BACKEND=responses контракт /chat/api не меняется."""
+    import app.services.openai_service as oa
+
+    old_client = oa.client
+    try:
+        oa.client = MagicMock()
+        oa.client.responses.create.return_value = MagicMock(output_text="Ответ через Responses API")
+        app.config["CHAT_BACKEND"] = "responses"
+        app.config["OPENAI_API_KEY"] = "test-openai-key"
+        response = client.post(
+            '/chat/api',
+            data=json.dumps({'message': 'Привет через responses'}),
+            content_type='application/json',
+        )
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data["status"] == "success"
+        assert "Responses API" in data["response"]
+        oa.client.responses.create.assert_called_once()
+    finally:
+        oa.client = old_client
+
+
+def test_chat_api_asks_disambiguation_for_general_what_to_bring(client):
+    """Если контекст не задан и вопрос про «что взять», чат сначала уточняет: зал или катер."""
+    response = client.post(
+        '/chat/api',
+        data=json.dumps({'message': 'Что нужно с собой взять?'}),
+        content_type='application/json',
+    )
+    assert response.status_code == 200
+    data = response.get_json() or {}
+    text = (data.get('response') or '').lower()
+    assert 'зал' in text and 'катер' in text

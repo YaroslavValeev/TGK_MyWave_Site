@@ -243,7 +243,24 @@ def orchestrate(user_text: str, state: Dict[str, Any] | None = None) -> Tuple[st
     if not reply_chunks:
         step = updated.get("step") or "ask_date"
         if step == "ask_date":
-            reply_chunks.append("Выберите дату (сегодня/завтра или YYYY-MM-DD).")
+            ctx = updated.get("mw_context") or state.get("mw_context") or {}
+            title = (ctx.get("title") or "").strip()
+            entry = (ctx.get("entry") or "").strip().lower()
+            prefix_parts = []
+            if title:
+                prefix_parts.append(f"«{title}»")
+            elif entry == "shop":
+                prefix_parts.append("магазин")
+            elif entry == "projects":
+                prefix_parts.append("проекты")
+            elif entry == "services":
+                prefix_parts.append("услуги")
+            prefix = (
+                f"Оформляем запись (контекст: {', '.join(prefix_parts)}). "
+                if prefix_parts
+                else ""
+            )
+            reply_chunks.append(prefix + "Выберите дату (сегодня/завтра или YYYY-MM-DD).")
         elif step == "ask_time":
             # If date known, offer slots
             try:

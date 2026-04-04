@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block body_attrs %} data-mw-chat-context='{{ {"entry":"services","kind":"section","title":"Услуги MyWave"}|tojson }}'{% endblock %}
+
 {% block title %}Услуги — MyWave{% endblock %}
 
 {% block meta %}

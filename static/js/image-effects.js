@@ -46,12 +46,24 @@ document.addEventListener('DOMContentLoaded', () => {
         return container;
     }
     
+    // Функция для отображения уже загруженного изображения
+    function markAsLoaded(img, container, placeholder) {
+        container.classList.add('image-loaded');
+        img.classList.add('loaded');
+        if (placeholder) {
+            placeholder.style.opacity = '0';
+            setTimeout(() => placeholder.remove(), 300);
+        }
+        img.style.opacity = '1';
+        img.style.transform = 'scale(1) translateY(0)';
+    }
+    
     // Функция для загрузки изображения
     function loadImage(img) {
         const container = setupImageContainer(img);
         const placeholder = container.querySelector('.image-placeholder');
         
-        // Устанавливаем реальный src из data-src
+        // Устанавливаем реальный src из data-src (если используется lazy)
         if (img.dataset.src) {
             img.src = img.dataset.src;
         }
@@ -60,22 +72,15 @@ document.addEventListener('DOMContentLoaded', () => {
             img.srcset = img.dataset.srcset;
         }
         
+        // Если изображение уже загружено (src в HTML, скрипт выполнился позже)
+        if (img.complete && img.naturalWidth > 0) {
+            markAsLoaded(img, container, placeholder);
+            return;
+        }
+        
         // Обработчик успешной загрузки
         img.onload = () => {
-            container.classList.add('image-loaded');
-            img.classList.add('loaded');
-            
-            // Плавно скрываем плейсхолдер
-            if (placeholder) {
-                placeholder.style.opacity = '0';
-                setTimeout(() => placeholder.remove(), 300);
-            }
-            
-            // Включаем анимацию появления
-            requestAnimationFrame(() => {
-                img.style.opacity = '1';
-                img.style.transform = 'scale(1)';
-            });
+            markAsLoaded(img, container, placeholder);
         };
         
         // Обработчик ошибки загрузки

@@ -431,6 +431,55 @@ h1, h2, h3, h4, p {
   margin-bottom: 2rem;
 }
 
+/* Главная: превью блога (карточки как у услуг/проектов) */
+.blog-section a.blog-home-card {
+  text-decoration: none;
+  color: inherit;
+}
+.blog-home-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.blog-home-card {
+  margin: 0;
+  min-width: 0;
+}
+.blog-home-card .service-image {
+  height: 160px;
+  object-fit: cover;
+}
+.blog-home-card .service-description {
+  min-height: 44px;
+}
+.blog-home-meta {
+  margin: 0 1em 1em;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+.blog-section-empty {
+  margin-bottom: 0.5rem;
+}
+.btn-outline-brand {
+  background: #f2f4f5;
+  color: #333;
+  border: 1px solid #40cfd0;
+}
+.btn-outline-brand:hover {
+  background: #e9eff0;
+  border-color: #2fbdbf;
+}
+@media (max-width: 1100px) {
+  .blog-home-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 680px) {
+  .blog-home-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Обновленные карточки */
 .service-card,
 .product-card,
@@ -956,6 +1005,18 @@ input:invalid {
   border-radius: 8px;
   font-family: 'Inter', sans-serif;
 }
+/* Unified product card layout */
+.store-list--unified { gap: 24px; }
+.product-card--unified { display: flex; flex-direction: column; }
+.product-card--unified .product-card__image-wrap {
+  overflow: hidden; border-radius: 8px 8px 0 0;
+}
+.product-card--unified .product-card__image-wrap img {
+  width: 100%; height: 200px; object-fit: cover;
+}
+.product-card--unified .product-card__body { flex: 1; display: flex; flex-direction: column; padding: 16px; min-height: 140px; }
+.product-card--unified .product-card__body .price { white-space: nowrap; font-size: 1.2em; }
+
 .store-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -1004,6 +1065,7 @@ input:invalid {
   color: #00BCD4;
   font-weight: 600;
   margin: 10px 0;
+  white-space: nowrap;
 }
 .product-card .btn-secondary {
   width: 100%;
@@ -2024,12 +2086,7 @@ chatWindow {
   display: none;
 }
 
-@font-face {
-  font-family: 'Pangolin';
-  src: url('/static/fonts/pangolin.woff2') format('woff2');
-  font-weight: normal;
-  font-style: normal;
-}
+/* Pangolin загружается из Google Fonts (base.html) — локальный woff2 не используется */
 .toast {
   position: fixed;
   bottom: 30px;
@@ -2409,6 +2466,7 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
 .price {
   font-weight: bold;
   margin: 12px 0;
+  white-space: nowrap;
 }
 
 .reviews-slider,
@@ -2962,6 +3020,19 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
 [data-theme="dark"] .hero-subtitle {
   color: #fff !important;
   text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+}
+
+.project-card__checklist {
+  list-style: none; padding: 0; margin: 8px 0; font-size: 0.95em;
+}
+.project-card__checklist li { margin: 4px 0; }
+.project-card__checklist .fa-check { color: var(--color-primary, #00BCD4); margin-right: 6px; }
+
+.project-card__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
 }
 
 @media (max-width: 700px) {

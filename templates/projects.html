@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block body_attrs %} data-mw-chat-context='{{ {"entry":"projects","kind":"section","title":"Проекты MyWave"}|tojson }}'{% endblock %}
 {% block title %}Проекты — MyWave{% endblock %}
 {% block content %}
 <section class="container projects">

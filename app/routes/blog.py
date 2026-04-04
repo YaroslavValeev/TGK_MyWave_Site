@@ -17,19 +17,36 @@ def blog_index():
     page = int(request.args.get("page", 1))
     per_page = int(request.args.get("per_page", 12))
     tag = (request.args.get("tag") or "").strip().lower()
+    query = (request.args.get("q") or "").strip()
     # Можно добавить ?db_only=1 для принудительного использования БД
     prefer_sheets = request.args.get("db_only") != "1"
 
     try:
-        items, total = get_posts(page=page, limit=per_page, prefer_sheets=prefer_sheets)
+        # Получаем расширенный набор, чтобы корректно фильтровать перед пагинацией.
+        items, _ = get_posts(page=1, limit=1000, prefer_sheets=prefer_sheets)
     except Exception as e:
         logger.error(f"blog: ошибка загрузки постов: {e}")
-        items, total = [], 0
+        items = []
 
     # Фильтр по тегу (если задан)
     if tag and items:
         items = [p for p in items if tag.lower() in [t.lower() for t in (p.get("tags") or [])]]
-        total = len(items)
+
+    # Поиск по заголовку, excerpt и контенту.
+    if query and items:
+        q = query.lower()
+        items = [
+            p for p in items
+            if q in str(p.get("title") or "").lower()
+            or q in str(p.get("excerpt") or "").lower()
+            or q in str(p.get("content_md") or "").lower()
+            or q in str(p.get("content_html") or "").lower()
+        ]
+
+    total = len(items)
+    start = (page - 1) * per_page
+    end = start + per_page
+    items = items[start:end]
 
     # Простая пагинация
     has_next = (page * per_page) < total
@@ -44,6 +61,7 @@ def blog_index():
         has_next=has_next,
         has_prev=has_prev,
         tag=tag,
+        q=query,
     )
 
 

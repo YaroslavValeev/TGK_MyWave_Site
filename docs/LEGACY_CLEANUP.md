@@ -12,6 +12,7 @@ _Пока ничего не удалено агрессивно._
 |-----------|--------|---------|
 | `server.js` | **Legacy** | Node/Express прокси для чата. Основное приложение — Flask (`main.py`). Использовать только если нужен отдельный chat-proxy. |
 | `/api/chat` | **Deprecated** | Compatibility layer. Основной endpoint — `/chat/api`. Оставлен для обратной совместимости. |
+| `GET /chat/` | **Актуально** | Лендинг «Чат с экспертом» + тот же плавающий виджет из `base.html` (раньше ссылка вела в 404). |
 | `app/modules/admin.py` | **Не используется** | Blueprint `admin_panel` не зарегистрирован. Активная админка — `app/routes/admin/` и `admin_images`. |
 | `admin_events`, `admin_blog`, `admin_users`, `admin_settings` | **Ссылки убраны** | Blueprint'ы не существуют. Ссылки в админке заменены на `admin.index` (в разработке). |
 

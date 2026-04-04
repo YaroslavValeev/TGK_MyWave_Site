@@ -1,9 +1,12 @@
 {% extends "base.html" %}
 
+{% block body_attrs %} data-mw-chat-context='{{ {"entry":"shop","kind":"product","id":slug,"title":product.title}|tojson }}'{% endblock %}
+
 {% block content %}
 <section class="product-page container">
   <div class="product-card">
-    <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.title }}" loading="lazy">
+    <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.title }}" loading="lazy"
+     data-fallback="{{ url_for('static', filename='images/sample-product.jpg') }}">
     <h2>{{ product.title }}</h2>
     <p class="price">{{ product.price }}</p>
     <p>{{ product.description }}</p>

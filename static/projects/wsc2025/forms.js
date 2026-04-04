@@ -5,10 +5,16 @@
 (function() {
     'use strict';
     
-    // Получение CSRF токена
-    function getCSRFToken() {
-        const meta = document.querySelector('meta[name="csrf-token"]');
-        return meta ? meta.getAttribute('content') : '';
+    // Получение CSRF токена: перед POST запрашиваем свежий через API,
+    // чтобы сессия на сервере гарантированно содержала токен (решает "session token is missing")
+    async function getCSRFToken() {
+        try {
+            const r = await fetch('/api/csrf-token', { credentials: 'same-origin' });
+            const d = await r.json();
+            return (d && d.csrf_token) || document.querySelector('meta[name="csrf-token"]')?.content || '';
+        } catch {
+            return document.querySelector('meta[name="csrf-token"]')?.content || '';
+        }
     }
     
     // Переключение табов
@@ -61,12 +67,15 @@
             
             // Сбор данных формы
             const formData = new FormData(form);
+            const csrfToken = await getCSRFToken();
+            formData.set('csrf_token', csrfToken);
             
             try {
                 const response = await fetch('/projects/wakesurf-challenge-2025/api/participants/register', {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: {
-                        'X-CSRFToken': getCSRFToken()
+                        'X-CSRFToken': csrfToken
                     },
                     body: formData
                 });
@@ -137,12 +146,15 @@
             
             // Сбор данных формы
             const formData = new FormData(form);
+            const csrfToken = await getCSRFToken();
+            formData.set('csrf_token', csrfToken);
             
             try {
                 const response = await fetch('/projects/wakesurf-challenge-2025/api/coaches/register', {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: {
-                        'X-CSRFToken': getCSRFToken()
+                        'X-CSRFToken': csrfToken
                     },
                     body: formData
                 });

@@ -38,6 +38,7 @@ pytest tests/ -v --ignore=tests/e2e
 ```
 
 В testing-режиме:
+
 - `SPREADSHEET_ID` пустой — booking API использует локальную БД
 - `ENABLE_GOOGLE_SERVICES=0` — инициализация Google отключена
 - Integration conftest подменяет вызовы Google Sheets/Calendar
@@ -63,9 +64,10 @@ E2E поднимают локальный сервер с моками для ca
 ## 4. Обязательные env-переменные
 
 | Переменная | Когда нужна |
-|------------|-------------|
+| ---------- | ------------- |
 | `SECRET_KEY` | Всегда (production) |
 | `OPENAI_API_KEY` | Чат |
+| `CHAT_BACKEND` | Выбор OpenAI runtime: `completions` (stable rollback) или `responses` (migration path) |
 | `SPREADSHEET_ID` | Бронирование (Sheets) |
 | `GOOGLE_CALENDAR_ID` | События в календаре |
 | `GOOGLE_SERVICE_ACCOUNT_FILE` | Доступ к Sheets/Calendar |
@@ -75,13 +77,18 @@ E2E поднимают локальный сервер с моками для ca
 
 Для локальной разработки достаточно `SECRET_KEY` и `OPENAI_API_KEY`.
 
+Для managed rollout чата:
+
+- `CHAT_BACKEND=completions` — текущий стабильный режим.
+- `CHAT_BACKEND=responses` — первая итерация перехода public text chat на OpenAI Responses API.
+
 ---
 
 ## 5. Как понять, что стенд поднят корректно
 
 1. `curl http://localhost:5000/health` — 200, `"status": "ok"`
 2. Главная страница открывается: `http://localhost:5000/`
-3. Чат открывается и отправляет сообщение
+3. Чат: виджет на любой странице с шаблоном `base.html` или страница `http://localhost:5000/chat/` (открывает тот же виджет); отправка сообщения идёт в `POST /chat/api` (HTTP, не WebSocket)
 4. Бронирование: кнопка «Записаться» → дата → слот → форма → успех
 5. `/admin/` открывается без 500
 

@@ -79,6 +79,84 @@
   border-color: #4CAF50;
 }
 
+/* Ruza Camp lead form (modal + page) */
+.ruza-lead-form fieldset {
+  margin: 1.5em 0;
+  padding: 1em;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+}
+.ruza-lead-form legend {
+  font-weight: 600;
+  padding: 0 0.5em;
+}
+.ruza-lead-form .input-group {
+  margin: 0.75em 0;
+}
+.ruza-lead-form .input-group label {
+  display: block;
+  margin-bottom: 0.25em;
+  font-weight: 500;
+}
+.ruza-lead-form input[type="text"],
+.ruza-lead-form input[type="email"],
+.ruza-lead-form input[type="tel"],
+.ruza-lead-form input[type="date"],
+.ruza-lead-form select,
+.ruza-lead-form textarea {
+  width: 100%;
+  padding: 0.5em;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+.ruza-lead-form label input[type="radio"],
+.ruza-lead-form label input[type="checkbox"] {
+  margin-right: 0.5em;
+}
+.ruza-contacts {
+  margin: 1em 0;
+  font-size: 0.9em;
+}
+
+/* Чеклист в полных модалках Camp/CoachTriper/Consulting */
+.modal-checklist {
+  list-style: none;
+  padding-left: 0;
+  margin: 1em 0;
+}
+.modal-checklist li {
+  padding: 0.35em 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+.modal-checklist .fa-check {
+  color: #4CAF50;
+  flex-shrink: 0;
+}
+.modal-content--full {
+  max-width: 560px;
+}
+
+.modal-lead-form {
+  margin: 1em 0;
+  padding: 1em 0;
+  border-top: 1px solid #eee;
+}
+.modal-lead-form input,
+.modal-lead-form textarea {
+  display: block;
+  width: 100%;
+  margin: 0.5em 0;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+}
+.modal-lead-form button[type="submit"] {
+  margin-top: 0.5em;
+}
+
 .slot-btn:disabled {
   background-color: #f5f5f5;
   color: #999;

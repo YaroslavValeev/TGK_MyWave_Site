@@ -2,6 +2,7 @@ import eventlet
 eventlet.monkey_patch()
 
 import os
+import errno
 
 # Загружаем .env файл ПЕРЕД импортом приложения
 try:
@@ -24,12 +25,12 @@ os.environ['ENABLE_GOOGLE_SERVICES'] = 'True'
 
 app = create_app()
 
-# Ensure SocketIO is initialized with eventlet async mode after monkey patching
+# Повторный init_app: в create_app() уже вызван init_websocket() → socketio.init_app(app).
+# Здесь — явное указание eventlet после monkey_patch; второй «Server initialized» в логах
+# ожидаем (не баг), пока оба вызова согласованы.
 try:
-    # socketio is provided by the app package (from app.extensions)
     socketio.init_app(app, async_mode='eventlet', logger=True, engineio_logger=True)
 except Exception:
-    # If socketio was already initialized inside create_app(), ignore
     pass
 
 # [CSP/nonce] вставить сразу после строки: app = create_app()
@@ -85,10 +86,31 @@ def analytics_event():
 # To avoid duplicate endpoint registration we rely on the implementation there.
 
 if __name__ == '__main__':
-    # Run with eventlet; disable the Flask reloader to avoid multiple processes
-    try:
-        socketio.run(app, host='0.0.0.0', port=5000, debug=False, use_reloader=False, log_output=True)
-    except Exception as e:
-        print(f"⚠️ SocketIO run failed: {e}")
-        print("Falling back to standard Flask run...")
-        app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+    host = '0.0.0.0'
+    for port in range(5000, 5011):
+        try:
+            print(f"[main] Пробуем порт {port}...")
+            socketio.run(
+                app,
+                host=host,
+                port=port,
+                debug=False,
+                use_reloader=False,
+                log_output=True,
+                allow_unsafe_werkzeug=True,
+            )
+            break
+        except OSError as e:
+            # Windows: WinError 10048 (WSAEADDRINUSE); локализованное сообщение не совпадает с EN-текстом.
+            addr_in_use = (
+                e.errno == errno.EADDRINUSE
+                or getattr(e, "winerror", None) == 10048
+                or "address already in use" in str(e).lower()
+                or "уже используется" in str(e).lower()
+            )
+            if addr_in_use:
+                print(f"[main] Порт {port} занят, пробуем следующий...")
+            else:
+                raise
+    else:
+        print("[main] Все порты 5000-5010 заняты. Освободите порт и перезапустите.")

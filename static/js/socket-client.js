@@ -7,13 +7,14 @@ class SecureSocketIO {
             throw new Error('CSRF token not found');
         }
 
-        // Базовые настройки
+        // Базовые настройки: polling первым для совместимости при разных портах
         const defaultOptions = {
-            transports: ['websocket', 'polling'],
-            autoConnect: false,
-            reconnectionAttempts: 5,
+            path: '/socket.io',
+            transports: ['polling', 'websocket'],
+            timeout: 8000,
+            reconnectionAttempts: 3,
             reconnectionDelay: 1000,
-            timeout: 10000
+            autoConnect: false
         };
 
         // Объединяем с пользовательскими настройками
@@ -45,10 +46,10 @@ class SecureSocketIO {
             this.socket.emit('message', { csrf_token: this.csrfToken });
         });
 
-        // Обработка ошибок
+        // Обработка ошибок: info, не ломаем страницу
         this.socket.on('connect_error', (error) => {
-            console.error('❌ WebSocket connection error:', error);
-            if (error.message && error.message.includes('CSRF')) {
+            console.info('[Chat] WebSocket connect_error (не критично):', error?.message || error);
+            if (error?.message && error.message.includes('CSRF')) {
                 // Пробуем обновить CSRF токен
                 this.csrfToken = this._getCSRFToken();
                 if (this.csrfToken) {

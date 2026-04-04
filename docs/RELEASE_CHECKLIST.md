@@ -10,6 +10,7 @@
 - [ ] `ADMIN_USERNAME` задан (если используется админка)
 - [ ] `ADMIN_PASSWORD` задан и достаточно сложный
 - [ ] `OPENAI_API_KEY` задан (для чата)
+- [ ] `CHAT_BACKEND` зафиксирован для релиза (`completions` как rollback или `responses` для controlled rollout)
 - [ ] `SPREADSHEET_ID` задан (Google Sheets)
 - [ ] `GOOGLE_CALENDAR_ID` задан (Google Calendar)
 - [ ] `REDIS_URL` задан (если используется)
@@ -39,8 +40,10 @@
 ## 4. Booking
 
 - [ ] Чат открывается и отправляет сообщение
-- [ ] В Network чат ходит в `/chat/api` (основной endpoint)
+- [ ] В Network чат ходит в `/chat/api` (основной endpoint; ответы AI только по HTTP, не по WebSocket)
 - [ ] `/api/chat` работает как compatibility route (не ломается)
+- [ ] Выбранный OpenAI backend подтверждён в логах (`[openai-chat-config]` и `path=completions_only` / `path=responses_only`)
+- [ ] Если используется `responses`, обычный вопрос и info-intent возвращают осмысленный текст без деградации JSON-контракта
 - [ ] Первая бронь проходит успешно
 - [ ] Повторная идентичная бронь (phone + date + time) отклоняется с сообщением об ошибке
 

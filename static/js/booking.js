@@ -909,7 +909,16 @@ function initializeBooking() {
         console.log(`[booking.js] Установлен тип сервиса: ${currentService}`);
         const badge = document.getElementById('bookingServiceBadge');
         const labels = { gym: 'Запись на тренировку (Зал)', boat: 'Запись на катер', camp: 'Camp', coach_triper: 'CoachTriper', consulting: 'Consulting' };
-        if (badge) badge.textContent = labels[serviceType] || serviceType;
+        const labelText = labels[serviceType] || serviceType;
+        if (badge) badge.textContent = labelText;
+        // Плавающий чат: только контекст услуги. Сценарий «запиши меня» в чате — server-first через POST /chat/api; модалка брони — отдельные API календаря.
+        if (typeof window.syncChatContextFromBooking === 'function') {
+          try {
+            window.syncChatContextFromBooking(serviceType, labelText);
+          } catch (e) {
+            console.debug('[booking.js] syncChatContextFromBooking:', e);
+          }
+        }
       }
 
       // Настраиваем календарь в зависимости от типа услуги
@@ -935,7 +944,11 @@ function initializeBooking() {
       if (targetModal) {
         console.log('[booking.js] ✅ Открываем модальное окно:', targetModal.id || 'calendarModal');
         showModal(targetModal);
-        goToStep(1);
+        // Только для потока записи в календарь (катер/зал и т.д.). Для data-modal=modalRuzaCamp,
+        // modalCamp и др. goToStep(1) подменяет окно на modalCalendar и ломает сценарий (ошибка слотов).
+        if (targetModal.id === 'modalCalendar') {
+          goToStep(1);
+        }
       } else {
         console.error('[booking.js] ❌ ОШИБКА: модальное окно не найдено!');
       }

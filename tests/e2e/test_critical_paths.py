@@ -9,7 +9,7 @@ Covers:
 5. Admin light opens without 500
 6. /health and /metrics/health accessible
 """
-import time
+import json
 import pytest
 
 
@@ -25,29 +25,29 @@ def test_home_page_opens(live_server):
 
 def test_chat_opens_and_sends_message(live_server, page):
     """Чат открывается и отправляет сообщение через актуальный endpoint."""
-    chat_api_called = []
-    def on_request(req):
-        if '/chat/api' in req.url:
-            chat_api_called.append(req.url)
+    import os
 
-    page.on('request', on_request)
-    page.goto(live_server + '/', wait_until='commit', timeout=30000)
+    if os.environ.get("E2E_PLAYWRIGHT", "").strip().lower() not in ("1", "true", "yes"):
+        pytest.skip("Браузерный e2e чата: E2E_PLAYWRIGHT=1 или см. test_chat_section_http")
+    page.add_init_script("localStorage.removeItem('mw_chat_welcome_v1');")
+    page.route(
+        '**/chat/api',
+        lambda route: route.fulfill(
+            status=200,
+            content_type='application/json',
+            body=json.dumps({'response': 'E2E ответ мок', 'status': 'success'}, ensure_ascii=False),
+        ),
+    )
+    # Чат: лендинг легче главной; канон см. tests/e2e/test_chat_section.py
+    page.goto(live_server + '/chat/', wait_until='domcontentloaded', timeout=90000)
 
-    # Ищем и открываем чат
-    chat_toggle = page.locator('#chat-toggle, .chat-toggle, [data-chat-toggle], .chat-widget, .chat-container')
-    if chat_toggle.count() > 0:
-        chat_toggle.first.click()
-        time.sleep(0.5)
-
-    input_el = page.locator('#chat-input, .chat-input, input[placeholder*="сообщение" i], input[placeholder*="Сообщение"], textarea')
-    send_btn = page.locator('#chat-send, .chat-send, button[type="submit"], [data-send]')
-    if input_el.count() > 0 and send_btn.count() > 0:
-        input_el.first.fill('Привет')
-        send_btn.first.click()
-        time.sleep(3)
-        assert any('/chat/api' in u for u in chat_api_called), 'Чат должен ходить в /chat/api'
-    else:
-        pytest.skip('Chat UI elements not found')
+    page.wait_for_selector('#chat-input', state='visible', timeout=10000)
+    page.locator('#chat-input').fill('Привет')
+    page.locator('#chat-form').locator('button[type="submit"]').click()
+    page.wait_for_function(
+        "() => document.getElementById('chat-messages')?.innerText.includes('E2E ответ')",
+        timeout=8000,
+    )
 
 
 def test_booking_happy_path(live_server, page):

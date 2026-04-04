@@ -8,8 +8,27 @@
   <div class="mw-container">
     <div class="mw-card">
       <h1>Блог</h1>
+      <form method="get" action="{{ url_for('blog.blog_index') }}" style="display:flex; gap:8px; flex-wrap:wrap; margin: 0 0 16px 0;">
+        <input
+          type="search"
+          name="q"
+          value="{{ q or '' }}"
+          placeholder="Поиск по публикациям"
+          style="flex:1; min-width: 240px; padding:10px 12px; border-radius:10px; border:1px solid rgba(0,0,0,.15);"
+        >
+        {% if tag %}
+          <input type="hidden" name="tag" value="{{ tag }}">
+        {% endif %}
+        <button type="submit" class="btn-primary">Найти</button>
+        {% if q %}
+          <a class="btn-secondary" href="{{ url_for('blog.blog_index', tag=tag) if tag else url_for('blog.blog_index') }}">Сбросить</a>
+        {% endif %}
+      </form>
       {% if tag %}
         <p style="opacity: .8; margin: 0 0 16px 0;">Фильтр по тегу: <strong>#{{ tag }}</strong></p>
+      {% endif %}
+      {% if q %}
+        <p style="opacity: .8; margin: 0 0 16px 0;">Поиск: <strong>{{ q }}</strong></p>
       {% endif %}
 
       {% if posts %}
@@ -19,7 +38,7 @@
               <a href="{{ url_for('blog.blog_post', slug=p.slug) }}" style="text-decoration: none; color: inherit;">
                 <h3 style="margin: 0 0 8px 0; font-size: 18px; line-height: 1.25;">{{ p.title }}</h3>
                 {% if p.excerpt %}
-                  <p style="margin: 0 0 10px 0; opacity: .85;">{{ p.excerpt }}</p>
+                <p style="margin: 0 0 10px 0; opacity: .85;">{{ p.excerpt }}</p>
                 {% endif %}
                 <div style="display:flex; gap:10px; flex-wrap:wrap; font-size: 13px; opacity:.75;">
                   {% if p.source_name %}<span>Источник: {{ p.source_name }}</span>{% endif %}
@@ -42,11 +61,11 @@
       {% if total > per_page %}
       <div style="display:flex; gap:10px; justify-content:center; padding: 18px 0;">
         {% if has_prev %}
-          <a class="btn-secondary" href="{{ url_for('blog.blog_index', page=page-1, per_page=per_page) }}{% if tag %}&tag={{ tag }}{% endif %}">← Назад</a>
+          <a class="btn-secondary" href="{{ url_for('blog.blog_index', page=page-1, per_page=per_page, tag=tag or None, q=q or None) }}">← Назад</a>
         {% endif %}
         <span style="opacity:.75;">Стр. {{ page }} (всего: {{ total }})</span>
         {% if has_next %}
-          <a class="btn-secondary" href="{{ url_for('blog.blog_index', page=page+1, per_page=per_page) }}{% if tag %}&tag={{ tag }}{% endif %}">Вперёд →</a>
+          <a class="btn-secondary" href="{{ url_for('blog.blog_index', page=page+1, per_page=per_page, tag=tag or None, q=q or None) }}">Вперёд →</a>
         {% endif %}
       </div>
       {% endif %}
