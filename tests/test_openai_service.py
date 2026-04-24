@@ -68,3 +68,20 @@ def test_responses_backend_fallback_on_model_not_found(mock_getenv, mock_client)
     res = get_response("Hello fallback", model="missing-model")
     assert res == "Fallback OK"
     assert mock_client.responses.create.call_count == 2
+
+
+@patch("app.services.openai_service.client")
+@patch("app.services.openai_service.os.getenv")
+def test_responses_backend_fallback_on_bad_request(mock_getenv, mock_client):
+    """При 400 от Responses API — откат на Chat Completions (тот же промпт/история)."""
+    mock_getenv.side_effect = lambda key, default=None: {
+        "CHAT_BACKEND": "responses",
+    }.get(key, default)
+    _BadRequest = type("BadRequestError", (Exception,), {"status_code": 400})
+    mock_client.responses.create.side_effect = _BadRequest("param rejected")
+    mock_resp = MagicMock(choices=[MagicMock(message=MagicMock(content="Через completions"))])
+    mock_client.chat.completions.create.return_value = mock_resp
+
+    assert get_response("Привет") == "Через completions"
+    mock_client.responses.create.assert_called_once()
+    mock_client.chat.completions.create.assert_called_once()

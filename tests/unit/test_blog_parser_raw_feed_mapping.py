@@ -1,8 +1,11 @@
 from app.services.blog.publishability import is_publishable_row
 from app.services.blog.store import (
     _card_excerpt_from_sources,
+    _clean_title_noise,
     _detect_parser_header_row,
+    _extract_cover_image,
     _extract_first_media,
+    _is_image_like_url,
     _extract_title_from_markdown,
     _make_excerpt_from_content,
     _normalize_row_from_sheets,
@@ -15,6 +18,26 @@ from app.services.blog.sync import _as_bool, _normalize_to_naive_utc
 def test_extract_title_from_markdown_prefers_h1():
     md = "# Заголовок\n\nТекст"
     assert _extract_title_from_markdown(md) == "Заголовок"
+
+
+def test_clean_title_noise_strips_issue_suffix_and_trailing_emoji():
+    assert _clean_title_noise("Пост из WakeDivision #519") == "Пост из WakeDivision"
+    assert _clean_title_noise("Пост из WakeDivision №520") == "Пост из WakeDivision"
+    assert _clean_title_noise("Пост из Wakediary 🚤 🛥️ #1877") == "Пост из Wakediary"
+    assert _clean_title_noise("BRISBANE 2032 something") == "BRISBANE 2032 something"
+
+
+def test_is_image_like_url_rejects_telegram_post_link():
+    assert not _is_image_like_url("https://t.me/wakedivision/520")
+    assert _is_image_like_url("https://telegra.ph/file/abc123.jpg")
+
+
+def test_extract_cover_image_prefers_media_when_image_url_is_post_link():
+    row = {
+        "image_url": "https://t.me/wakedivision/520",
+        "raw_media": '[{"type":"image","thumbnail_url":"https://cdn.example.com/photos/520.webp"}]',
+    }
+    assert _extract_cover_image(row) == "https://cdn.example.com/photos/520.webp"
 
 
 def test_detect_parser_header_row_finds_real_header():

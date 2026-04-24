@@ -1,0 +1,85 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "showHeader": true },
+      "title": "HTTP latency p95 (flask_http_request_duration_seconds)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(flask_http_request_duration_seconds_bucket[5m])) by (le, path))",
+          "refId": "A",
+          "legendFormat": "{{path}}"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "options": { "showHeader": true },
+      "title": "HTTP RPS (flask_http_request_total)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum(rate(flask_http_request_total[5m])) by (path, method, status)",
+          "refId": "A",
+          "legendFormat": "{{method}} {{path}} {{status}}"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 8 },
+      "id": 3,
+      "options": { "colorMode": "value", "graphMode": "area" },
+      "title": "Uptime (mywave_uptime_seconds)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "mywave_uptime_seconds",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 6, "w": 16, "x": 8, "y": 8 },
+      "id": 4,
+      "options": { "showHeader": true },
+      "title": "HTTP exceptions rate (flask_http_request_exceptions_total)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum(rate(flask_http_request_exceptions_total[5m])) by (path, method, status)",
+          "refId": "A",
+          "legendFormat": "{{method}} {{path}} {{status}}"
+        }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["mywave"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "MyWave — Web (Prometheus)",
+  "uid": "mywave-web",
+  "version": 1
+}

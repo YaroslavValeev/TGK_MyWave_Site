@@ -6,6 +6,28 @@
 const CHAT_API_URL = '/chat/api';
 const CHAT_WELCOME_STORAGE_KEY = 'mw_chat_welcome_v1';
 
+/**
+ * Синхронизирует сессию Flask с подписанным CSRF-токеном (meta).
+ * Нужно после перезапуска сервера, смены SECRET_KEY или долгой вкладки:
+ * иначе на сервере нет session['csrf_token'], а в заголовке — старый токен → 400.
+ */
+async function ensureCsrfToken() {
+    try {
+        const r = await fetch('/api/csrf-token', {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+        if (!r.ok) return;
+        const d = await r.json();
+        if (d && d.csrf_token) {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            if (meta) meta.setAttribute('content', d.csrf_token);
+        }
+    } catch (e) {
+        console.debug('ensureCsrfToken skipped:', e);
+    }
+}
+
 let chatContext = [];
 /** Контекст с текущей страницы (услуги / магазин / проекты) или из бронирования. */
 let _pageChatContext = null;
@@ -260,6 +282,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    ensureCsrfToken();
+
     _pageChatContext = _pageChatContext || _parseBodyDatasetContext();
 
     document.addEventListener('click', (e) => {
@@ -297,24 +321,27 @@ document.addEventListener('DOMContentLoaded', () => {
         chatWidget?.classList.add('hidden');
     });
 
-    async function sendMessageToServer(message) {
+    async function sendMessageToServer(message, isCsrfRetry = false) {
         if (!message) {
             console.error('Пустое сообщение');
             return;
         }
-        updateContext('user', message);
+        if (!isCsrfRetry) {
+            updateContext('user', message);
+        }
         setTypingIndicator(chatMessages, true);
         updateChatState('loading');
         try {
+            await ensureCsrfToken();
             const response = await fetch(CHAT_API_URL, {
                 method: 'POST',
                 headers: ChatWidgetUtils.getHeaders(),
+                credentials: 'same-origin',
                 body: JSON.stringify(_buildChatRequestBody(message))
             });
 
-            setTypingIndicator(chatMessages, false);
-
             if (response.status === 429) {
+                setTypingIndicator(chatMessages, false);
                 let msg = 'Слишком много запросов. Подождите немного.';
                 try {
                     const d = await response.json();
@@ -324,14 +351,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateChatState('rate_limited');
                 return;
             }
-            
+
             if (!response.ok) {
-                if (response.status === 403) {
-                    throw new Error('Ошибка валидации CSRF-токена. Пожалуйста, обновите страницу.');
+                let errPayload = {};
+                try {
+                    errPayload = await response.json();
+                } catch (e) { /* ignore */ }
+                const errText = String(errPayload.error || '');
+                const isCsrf =
+                    response.status === 400 &&
+                    /csrf/i.test(errText) &&
+                    !isCsrfRetry;
+                if (isCsrf) {
+                    await ensureCsrfToken();
+                    return sendMessageToServer(message, true);
+                }
+                setTypingIndicator(chatMessages, false);
+                if (response.status === 400 || response.status === 403) {
+                    appendChatBubble(
+                        chatMessages,
+                        'Сессия устарела. Обновите страницу (F5) и отправьте сообщение снова.',
+                        'bot'
+                    );
+                    updateChatState('error');
+                    return;
                 }
                 throw new Error('Ошибка сети');
             }
 
+            setTypingIndicator(chatMessages, false);
             const data = await response.json();
             
             if (data.response) {
@@ -412,11 +460,15 @@ window.syncChatContextFromBooking = syncChatContextFromBooking;
 /** Внешняя отправка в чат (канонический endpoint). */
 function sendMessage(text) {
     if (!text) return;
-    fetch(CHAT_API_URL, {
-        method: 'POST',
-        headers: ChatWidgetUtils.getHeaders(),
-        body: JSON.stringify(_buildChatRequestBody(text))
-    })
+    ensureCsrfToken()
+        .then(() =>
+            fetch(CHAT_API_URL, {
+                method: 'POST',
+                headers: ChatWidgetUtils.getHeaders(),
+                credentials: 'same-origin',
+                body: JSON.stringify(_buildChatRequestBody(text))
+            })
+        )
         .then((r) => r.json())
         .catch((err) => console.error('sendMessage:', err));
 }

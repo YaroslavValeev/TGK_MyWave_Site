@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: mywave-web
+    metrics_path: /metrics
+    static_configs:
+      # Docker Compose: hostname сервиса = web. На хосте заменить на 127.0.0.1:5000
+      - targets:
+          - web:5000
+    relabel_configs:
+      - target_label: service
+        replacement: mywave
+
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["cadvisor:8080"]

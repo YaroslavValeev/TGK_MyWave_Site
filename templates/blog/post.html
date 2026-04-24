@@ -6,8 +6,8 @@
   <link rel="canonical" href="{{ request.url }}">
   <meta property="og:title" content="{{ post.title }}">
   <meta property="og:description" content="{{ post.excerpt or post.title }}">
-  {% if post.cover_image_url %}
-    <meta property="og:image" content="{{ post.cover_image_url }}">
+  {% if post.video_poster_url or post.cover_image_url %}
+    <meta property="og:image" content="{{ post.video_poster_url or post.cover_image_url }}">
   {% endif %}
   <meta property="og:type" content="article">
   {% if post.published_at %}
@@ -26,49 +26,86 @@
 {% endblock %}
 
 {% block content %}
-<section class="mw-section">
-  <div class="mw-container">
-    <div class="mw-card">
-      <a href="{{ url_for('blog.blog_index') }}" style="opacity:.8;">← назад в блог</a>
+<section class="blog-post-page">
+  <div class="blog-post-shell">
+    <article class="blog-post-card">
+      <a href="{{ url_for('blog.blog_index') }}" class="blog-post-back-link">← назад в блог</a>
 
-      <h1 style="margin: 10px 0 8px 0; line-height: 1.15;">{{ post.title }}</h1>
-
-      <div style="display:flex; gap:10px; flex-wrap:wrap; font-size: 13px; opacity:.75; margin-bottom: 16px;">
-        {% if post.source_name %}<span>Источник: {{ post.source_name }}</span>{% endif %}
-        {% if post.published_at %}
-          {% if post.published_at.strftime %}
-            <span>{{ post.published_at.strftime("%d.%m.%Y") }}</span>
-          {% else %}
-            <span>{{ post.published_at[:10] if post.published_at|length > 10 else post.published_at }}</span>
+      <header class="blog-post-header">
+        <h1 class="blog-post-title">{{ post.title }}</h1>
+        <div class="blog-post-meta">
+          {% if post.source_name %}<span>Источник: {{ post.source_name }}</span>{% endif %}
+          {% if post.published_at %}
+            {% if post.published_at.strftime %}
+              <span>{{ post.published_at.strftime("%d.%m.%Y") }}</span>
+            {% else %}
+              <span>{{ post.published_at[:10] if post.published_at|length > 10 else post.published_at }}</span>
+            {% endif %}
           {% endif %}
-        {% endif %}
-      </div>
+        </div>
+      </header>
 
       {% if tags and tags|length > 0 %}
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 14px;">
+        <div class="blog-post-tags">
           {% for t in tags %}
-            <a href="{{ url_for('blog.blog_index', tag=t|lower) }}" style="font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(0,0,0,.1); text-decoration:none;">
+            <a href="{{ url_for('blog.blog_index', tag=t|lower) }}" class="blog-post-tag-link">
               #{{ t }}
             </a>
           {% endfor %}
         </div>
       {% endif %}
 
-      {% if post.cover_image_url %}
-        <img src="{{ post.cover_image_url }}" alt="" style="width:100%; border-radius: 14px; margin: 8px 0 18px 0;">
+      {% if post.video_iframe_src %}
+        <div class="blog-post-video-embed">
+          <iframe
+            class="blog-post-video-iframe"
+            src="{{ post.video_iframe_src }}"
+            title="{{ post.title|e }}"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+          ></iframe>
+        </div>
+      {% elif post.video_direct_file_url %}
+        <div class="blog-post-video-file">
+          <video
+            class="blog-post-video-element"
+            src="{{ post.video_direct_file_url }}"
+            controls
+            playsinline
+            preload="metadata"
+            {% if post.video_poster_url %}poster="{{ post.video_poster_url }}"{% endif %}
+          ></video>
+        </div>
+      {% elif post.video_open_url %}
+        <div class="blog-post-video-link">
+          {% if post.video_poster_url %}
+            <a href="{{ post.video_open_url }}" target="_blank" rel="noopener noreferrer" class="blog-post-video-poster-link">
+              <img src="{{ post.video_poster_url }}" alt="" class="blog-post-cover">
+            </a>
+          {% endif %}
+          <p>
+            <a class="btn btn-outline-brand" href="{{ post.video_open_url }}" target="_blank" rel="noopener noreferrer">Смотреть видео</a>
+          </p>
+        </div>
+      {% elif post.cover_image_url %}
+        <figure class="blog-post-cover-wrap">
+          <img src="{{ post.cover_image_url }}" alt="" class="blog-post-cover">
+        </figure>
       {% endif %}
 
-      <article style="line-height: 1.65; font-size: 16px;">
+      <div class="blog-post-content">
         {{ (post.content_html or post.content)|safe }}
-      </article>
+      </div>
 
       {% if post.source_url %}
-        <hr style="margin: 22px 0;">
-        <p style="opacity:.85; font-size: 13px;">
-          Источник: <a href="{{ post.source_url }}" target="_blank" rel="noopener noreferrer">{{ post.source_url }}</a>
-        </p>
+        <footer class="blog-post-source">
+          Источник:
+          <a href="{{ post.source_url }}" target="_blank" rel="noopener noreferrer">{{ post.source_url }}</a>
+        </footer>
       {% endif %}
-    </div>
+    </article>
   </div>
 </section>
 {% endblock %}

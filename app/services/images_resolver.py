@@ -13,6 +13,22 @@ _IMG_EXT = frozenset({'.jpg', '.jpeg', '.png', '.gif', '.webp'})
 FALLBACK = 'images/Place1Logo.png'
 
 
+def rotate_images_to_cover_index(images: list[str], cover_index: int = 0) -> list[str]:
+    """
+    Делает images[cover_index] первым (обложка карточки и старт внутренней карусели).
+    cover_index — 0-based. При выходе за границы или 0 список не меняется.
+    """
+    if not images:
+        return []
+    try:
+        idx = int(cover_index)
+    except (TypeError, ValueError):
+        idx = 0
+    if idx <= 0 or idx >= len(images):
+        return list(images)
+    return images[idx:] + images[:idx]
+
+
 def scan_folder_images(rel_folder: str) -> list[str]:
     """Сканирует папку и возвращает список относительных путей к изображениям (для static/)."""
     norm = rel_folder.replace('\\', '/').strip().rstrip('/')

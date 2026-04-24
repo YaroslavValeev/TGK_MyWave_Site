@@ -121,20 +121,33 @@ _SERVICES_RAW = _load_services_config
 def services_list():
     """Страница списка всех услуг. P0-1: images[]/cover/fallback из скана папки."""
     try:
-        from app.services.images_resolver import resolve_card_images, FALLBACK as FALLBACK_IMG
+        from app.services.images_resolver import (
+            resolve_card_images,
+            rotate_images_to_cover_index,
+            FALLBACK as FALLBACK_IMG,
+        )
         services = []
+        _svc_skip = frozenset({'image_folder', 'cover_index'})
         for s in _load_services_config():
             folder = s.get('image_folder', '')
             resolved = resolve_card_images(folder, fallback=FALLBACK_IMG)
-            if not resolved.get('images'):
+            imgs = resolved.get('images') or []
+            if not imgs:
                 logger.warning("Пустая папка изображений для услуги %s: %s", s.get('service_id'), folder)
-            image_urls = [url_for('static', filename=p) for p in resolved['images']]
+            try:
+                ci = int(s.get('cover_index') or 0)
+            except (TypeError, ValueError):
+                ci = 0
+            imgs = rotate_images_to_cover_index(imgs, ci)
+            if not imgs:
+                imgs = [resolved['cover']]
+            image_urls = [url_for('static', filename=p) for p in imgs]
             services.append({
-                **{k: v for k, v in s.items() if k != 'image_folder'},
-                'image_url': resolved['cover'],
-                'images': resolved['images'],
+                **{k: v for k, v in s.items() if k not in _svc_skip},
+                'image_url': imgs[0],
+                'images': imgs,
                 'image_urls': image_urls,
-                'cover': resolved['cover'],
+                'cover': imgs[0],
                 'fallback': resolved['fallback'],
             })
         return render_template("services.html", services=services)

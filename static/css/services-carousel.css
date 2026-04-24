@@ -53,12 +53,58 @@
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+
+/* Проекты: как «Товары» (белая карточка, скругления), тень сильнее витрины товаров */
+.projects-carousel .project-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow:
+    0 6px 22px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 12px 16px 16px;
+}
+.projects-carousel .project-card > .service-image-container:first-child {
+  margin: -12px -16px 12px -16px;
+  width: calc(100% + 32px);
+  max-width: none;
+  border-radius: 12px 12px 0 0;
+}
+.projects-carousel .project-card:hover:not(.is-expanded) {
+  transform: translateY(-4px);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.14),
+    0 6px 16px rgba(0, 0, 0, 0.09);
+}
+[data-theme="dark"] .projects-carousel .project-card {
+  background: var(--color-white, #222);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.55),
+    0 2px 10px rgba(0, 0, 0, 0.35);
+}
+[data-theme="dark"] .projects-carousel .project-card:hover:not(.is-expanded) {
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.6),
+    0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
 .services-carousel .service-card.is-expanded,
 .products-carousel .product-card.is-expanded,
 .projects-carousel .project-card.is-expanded {
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.16),
+    0 8px 20px rgba(0, 0, 0, 0.1);
   z-index: 2;
-  outline: 2px solid rgba(0,0,0,0.08);
+  outline: 2px solid rgba(0, 0, 0, 0.08);
+}
+[data-theme="dark"] .projects-carousel .project-card.is-expanded {
+  outline-color: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 22px 56px rgba(0, 0, 0, 0.65),
+    0 10px 24px rgba(0, 0, 0, 0.45);
 }
 .services-carousel .service-card h3,
 .services-carousel .service-card h4,

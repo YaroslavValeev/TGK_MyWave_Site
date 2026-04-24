@@ -19,6 +19,8 @@ class Config:
     AB_CONTROL_GROUP_SIZE = int(os.getenv('AB_CONTROL_GROUP_SIZE', '2'))
     # Recommendation cache time-to-live (seconds)
     RECO_CACHE_TTL = int(os.getenv('RECO_CACHE_TTL', '300'))
+    # In-memory кэш строк raw_feed (Sheets) для витрины блога; 0 = всегда перечитывать
+    BLOG_SHEETS_CACHE_TTL = int(os.getenv("BLOG_SHEETS_CACHE_TTL", "120"))
     # CSP toggle — allow enabling/disabling strict CSP rules via env
     CSP_ENABLED = os.getenv('CSP_ENABLED', 'True') in ('1', 'true', 'True')
     # Sitemap build timestamp (optional override)
@@ -60,6 +62,15 @@ class Config:
     
     GOOGLE_SERVICE_ACCOUNT_FILE = os.path.abspath(os.path.join(CONFIG_DIR, "service_account.json"))
     GOOGLE_WORKSHEET_NAME = "Dialog_History"
+
+    # Public media upload (for parser -> site image publishing)
+    SITE_BASE_URL = (os.getenv("SITE_BASE_URL") or "").rstrip("/")
+    MEDIA_UPLOAD_TOKEN = os.getenv("MEDIA_UPLOAD_TOKEN", "")
+    MEDIA_UPLOAD_SUBDIR = os.getenv("MEDIA_UPLOAD_SUBDIR", "uploads/review_media")
+    MEDIA_UPLOAD_MAX_BYTES = int(os.getenv("MEDIA_UPLOAD_MAX_BYTES", "10485760"))
+    # Optional absolute root for uploaded media (tests/local override).
+    # If empty, uploads go to <static_folder>/<MEDIA_UPLOAD_SUBDIR>.
+    MEDIA_UPLOAD_ROOT = os.getenv("MEDIA_UPLOAD_ROOT", "")
 
     # Настройки уведомлений
     NOTIFICATION_BOT_TOKEN = os.getenv("NOTIFICATION_BOT_TOKEN")

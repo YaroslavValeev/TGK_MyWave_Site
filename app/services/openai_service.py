@@ -1,4 +1,3 @@
-import logging
 import os
 import time
 from datetime import datetime
@@ -6,6 +5,7 @@ from datetime import datetime
 from openai import OpenAI
 from flask import current_app, session, has_app_context
 
+from app.modules.logger import get_logger
 from app.services.rules import ChatMode
 from app.services.google_sheets_service import append_record
 from app.services.openai_runtime_config import (
@@ -13,7 +13,7 @@ from app.services.openai_runtime_config import (
     resolve_chat_models_from_config,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 client = None  # OpenAI client будет инициализирован при первом вызове
 # Default model names used by the code and tests
@@ -40,6 +40,13 @@ def _is_model_not_found_error(exc: Exception) -> bool:
     return ("model_not_found" in s) or ("does not exist" in s) or ("do not have access" in s)
 
 
+def _is_bad_request_error(exc: Exception) -> bool:
+    """400 от API: часто несовместимые параметры Responses (temperature, формат input) или модель."""
+    if type(exc).__name__ == "BadRequestError":
+        return True
+    return getattr(exc, "status_code", None) == 400
+
+
 def _is_insufficient_quota_error(exc: Exception) -> bool:
     """429 / billing: повтор с другой моделью обычно бессмысленен (тот же ключ/проект)."""
     s = str(exc).lower()
@@ -58,6 +65,52 @@ def _user_friendly_openai_error(exc: Exception, *, cfg: dict | None = None) -> s
     Превращает “сырой” текст ошибки OpenAI в релизно-понятное сообщение для UI.
     Не раскрывает внутренние детали/токены/большие payload.
     """
+    ename = type(exc).__name__
+    s_lower = str(exc).lower()
+
+    # Конфиг / ключ (до запроса к API)
+    if isinstance(exc, RuntimeError) and "OPENAI_API_KEY" in str(exc):
+        return (
+            "Чат не настроен: не задан OPENAI_API_KEY. "
+            "Укажите ключ в .env (или переменных окружения) и перезапустите сервер."
+        )
+
+    # Типичные классы исключений SDK OpenAI (имена стабильны между версиями)
+    if ename == "AuthenticationError" or (
+        "invalid" in s_lower and "api" in s_lower and "key" in s_lower
+    ):
+        return (
+            "Ошибка авторизации OpenAI: проверьте, что OPENAI_API_KEY указан верно и ключ не отозван."
+        )
+    if ename in ("APIConnectionError", "ConnectError", "ConnectionError"):
+        return (
+            "Не удалось подключиться к серверам OpenAI. Проверьте интернет, VPN и доступность api.openai.com."
+        )
+    if ename in ("APITimeoutError", "Timeout") or "timeout" in s_lower:
+        return "Запрос к OpenAI занял слишком много времени. Попробуйте ещё раз через минуту."
+
+    status = getattr(exc, "status_code", None)
+    if ename == "BadRequestError" or status == 400:
+        return (
+            "Сейчас не удалось получить ответ: запрос отклонён API (параметры или модель). "
+            "Проверьте GPTS_MODEL и CHAT_BACKEND; для проверки можно временно задать CHAT_BACKEND=completions. "
+            "Подробности — в логах сервера (строка с BadRequest / 400)."
+        )
+    if _is_insufficient_quota_error(exc):
+        return (
+            "Сейчас не удалось получить ответ: исчерпана квота API OpenAI для этого ключа. "
+            "Проверьте биллинг и пополнение баланса в кабинете OpenAI (тот же проект, что и API key)."
+        )
+    if ename == "RateLimitError" or (status == 429 and not _is_insufficient_quota_error(exc)):
+        return (
+            "Слишком много запросов к OpenAI (лимит скорости). Подождите около минуты и попробуйте снова."
+        )
+    if "empty response" in s_lower:
+        return (
+            "Сейчас не удалось получить ответ: модель вернула пустой текст. "
+            "Попробуйте ещё раз или временно задайте CHAT_BACKEND=completions."
+        )
+
     if _is_model_not_found_error(exc):
         gpts = (cfg or {}).get("GPTS_MODEL") if cfg else None
         fb = (cfg or {}).get("FALLBACK_MODEL") if cfg else None
@@ -65,11 +118,6 @@ def _user_friendly_openai_error(exc: Exception, *, cfg: dict | None = None) -> s
             "Сейчас не удалось получить ответ: модель недоступна (нет доступа или неверное имя). "
             f"Проверьте переменные окружения GPTS_MODEL{f'={gpts}' if gpts else ''} "
             f"и FALLBACK_MODEL{f'={fb}' if fb else ''}."
-        )
-    if _is_insufficient_quota_error(exc):
-        return (
-            "Сейчас не удалось получить ответ: исчерпана квота API OpenAI для этого ключа. "
-            "Проверьте биллинг и пополнение баланса в кабинете OpenAI (тот же проект, что и API key)."
         )
     return "Сейчас не удалось получить ответ. Попробуйте ещё раз чуть позже."
 
@@ -482,6 +530,12 @@ def _responses_api_reply(
 
     log_openai_chat_config_first_request(logger, cfg)
 
+    if not hasattr(client, "responses"):
+        raise RuntimeError(
+            "Для Responses API нужен пакет openai>=1.70 с атрибутом client.responses. "
+            "Обновите зависимости: pip install -r requirements.txt"
+        )
+
     g_norm, f_norm, _ = resolve_chat_models_from_config(cfg)
     chosen_model = model or g_norm or DEFAULT_MODEL
     fallback_model = f_norm or FALLBACK_MODEL
@@ -513,7 +567,49 @@ def _responses_api_reply(
                 fallback_model,
             )
             params["model"] = fallback_model
-            resp = client.responses.create(**params)
+            try:
+                resp = client.responses.create(**params)
+            except Exception as e2:
+                if _is_insufficient_quota_error(e2):
+                    raise
+                if _is_bad_request_error(e2):
+                    logger.warning(
+                        "[OpenAI] responses.create BadRequest after model retry; "
+                        "falling back to chat completions model=%s",
+                        params.get("model"),
+                        exc_info=True,
+                    )
+                    return _chat_completions_reply(
+                        cfg,
+                        prompt,
+                        mode,
+                        history,
+                        client_id,
+                        source,
+                        temperature,
+                        max_tokens,
+                        model,
+                        system_prompt_override=system_prompt,
+                    )
+                raise
+        elif _is_bad_request_error(e):
+            logger.warning(
+                "[OpenAI] responses.create BadRequest; falling back to chat completions model=%s",
+                chosen_model,
+                exc_info=True,
+            )
+            return _chat_completions_reply(
+                cfg,
+                prompt,
+                mode,
+                history,
+                client_id,
+                source,
+                temperature,
+                max_tokens,
+                model,
+                system_prompt_override=system_prompt,
+            )
         else:
             raise
 
@@ -665,7 +761,7 @@ def ask(
                 backend,
                 len(reply or ""),
             )
-            return reply
+        return reply
 
         return _chat_completions_reply(
             cfg,
@@ -683,6 +779,15 @@ def ask(
         cfg = current_app.config if has_app_context() else {}
         # В лог — полная причина; в UI — короткое сообщение.
         logger.error("[OpenAI] mode=%s client_id=%s error=%s", mode, client_id, e, exc_info=True)
+        if has_app_context():
+            try:
+                current_app.logger.exception(
+                    "[chat-openai] ask() failed; client_id=%s mode=%s",
+                    client_id,
+                    mode,
+                )
+            except Exception:
+                pass
         return _user_friendly_openai_error(e, cfg=cfg)
 
 def smart_gpt_response(message, context=None):

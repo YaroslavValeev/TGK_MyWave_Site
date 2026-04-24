@@ -34,6 +34,13 @@ def _collect_knowledge_snippets(
         'польз': 'training',
         'зал': 'training',
         'техник': 'tricks',
+        'проект': 'projects',
+        'мероприят': 'projects',
+        'соревнован': 'projects',
+        'чемпионат': 'projects',
+        'safari': 'projects',
+        'sufari': 'projects',
+        'challenge': 'projects',
     }
     relevant_types = set()
     for key, knowledge_type in keywords.items():
@@ -41,11 +48,16 @@ def _collect_knowledge_snippets(
             relevant_types.add(knowledge_type)
     if mw_chat_context and isinstance(mw_chat_context, dict):
         sid = str(mw_chat_context.get("id") or "").lower().strip()
+        entry = str(mw_chat_context.get("entry") or "").lower().strip()
         title_lc = str(mw_chat_context.get("title") or "").lower()
         if sid == "gym" or "зал" in title_lc:
             relevant_types.add("training")
         if sid == "boat" or "катер" in title_lc:
             relevant_types.add("training")
+        if entry == "projects" or sid in ("safari", "challenge", "wake_industry"):
+            relevant_types.add("projects")
+        if "safari" in title_lc or "соревн" in title_lc or "проект" in title_lc:
+            relevant_types.add("projects")
     out: list[str] = []
     for knowledge_type in relevant_types:
         response = get_knowledge(knowledge_type)
@@ -117,7 +129,9 @@ def get_response_with_knowledge(prompt, context=None, *, mw_chat_context=None):
         system_content = (
             f"{base_prompt}\n\n"
             "Используй при ответе только релевантные факты из базы знаний ниже. "
-            "Если фактов недостаточно, скажи об этом кратко.\n\n"
+            "Если фактов недостаточно, скажи об этом кратко. "
+            "Пиши простым человеческим языком, без markdown-разметки, без символов ** и #, "
+            "без заголовков и служебных меток.\n\n"
             f"{kb_block}"
         )
 

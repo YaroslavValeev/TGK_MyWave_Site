@@ -8,13 +8,13 @@
   <div class="mw-container">
     <div class="mw-card">
       <h1>Блог</h1>
-      <form method="get" action="{{ url_for('blog.blog_index') }}" style="display:flex; gap:8px; flex-wrap:wrap; margin: 0 0 16px 0;">
+      <form method="get" action="{{ url_for('blog.blog_index') }}" class="blog-search-form">
         <input
           type="search"
           name="q"
           value="{{ q or '' }}"
           placeholder="Поиск по публикациям"
-          style="flex:1; min-width: 240px; padding:10px 12px; border-radius:10px; border:1px solid rgba(0,0,0,.15);"
+          class="blog-search-form__input"
         >
         {% if tag %}
           <input type="hidden" name="tag" value="{{ tag }}">
@@ -31,16 +31,20 @@
         <p style="opacity: .8; margin: 0 0 16px 0;">Поиск: <strong>{{ q }}</strong></p>
       {% endif %}
 
+      {% set blog_cover_fallback = url_for('static', filename='images/Place1Logo.png') %}
       {% if posts %}
-        <div class="cards-grid">
+        <div class="cards-grid blog-index-grid">
           {% for p in posts %}
-            <article class="mw-card blog-card">
-              <a href="{{ url_for('blog.blog_post', slug=p.slug) }}" style="text-decoration: none; color: inherit;">
-                <h3 style="margin: 0 0 8px 0; font-size: 18px; line-height: 1.25;">{{ p.title }}</h3>
+            <article class="mw-card blog-card blog-card--listing">
+              <a class="blog-card-link" href="{{ url_for('blog.blog_post', slug=p.slug) }}">
+                <div class="service-image-container blog-card-cover">
+                  <img class="service-image" src="{{ p.card_image_url or p.cover_image_url or p.image_url or p.cover or blog_cover_fallback }}" alt="" loading="lazy" decoding="async" data-fallback="{{ blog_cover_fallback }}">
+                </div>
+                <h3 class="blog-card-title">{{ p.title }}</h3>
                 {% if p.excerpt %}
-                <p style="margin: 0 0 10px 0; opacity: .85;">{{ p.excerpt }}</p>
+                <p class="blog-card-excerpt">{{ p.excerpt }}</p>
                 {% endif %}
-                <div style="display:flex; gap:10px; flex-wrap:wrap; font-size: 13px; opacity:.75;">
+                <div class="blog-card-meta" aria-label="Источник и дата">
                   {% if p.source_name %}<span>Источник: {{ p.source_name }}</span>{% endif %}
                   {% if p.published_at %}
                     {% if p.published_at.strftime %}

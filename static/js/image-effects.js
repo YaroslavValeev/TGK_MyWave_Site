@@ -1,22 +1,42 @@
 // Управление эффектами изображений
 document.addEventListener('DOMContentLoaded', () => {
     const images = document.querySelectorAll('.service-image');
-    
+
+    function clearStallTimer(imageContainer) {
+        const tid = imageContainer._imageEffectsStallTimer;
+        if (tid != null) {
+            clearTimeout(tid);
+            imageContainer._imageEffectsStallTimer = null;
+        }
+    }
+
     // Функция для отображения ошибки загрузки
     function showError(imageContainer) {
+        clearStallTimer(imageContainer);
         imageContainer.classList.add('error');
+        const ph = imageContainer.querySelector('.image-placeholder');
+        if (ph) {
+            ph.remove();
+        }
         const img = imageContainer.querySelector('img');
+        if (!img) {
+            return;
+        }
         const fallbackUrl = img.dataset.fallback;
-        if (fallbackUrl) {
+        if (fallbackUrl && !img.dataset.fallbackTried) {
+            img.dataset.fallbackTried = '1';
+            img.classList.remove('loaded');
             img.src = fallbackUrl;
             img.removeAttribute('srcset');
+            return;
         }
-        
-        // Показываем сообщение об ошибке
-        const errorMessage = document.createElement('div');
-        errorMessage.className = 'image-error-message';
-        errorMessage.textContent = 'Не удалось загрузить изображение';
-        imageContainer.appendChild(errorMessage);
+
+        if (!imageContainer.querySelector('.image-error-message')) {
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'image-error-message';
+            errorMessage.textContent = 'Не удалось загрузить изображение';
+            imageContainer.appendChild(errorMessage);
+        }
     }
     
     // Функция для создания структуры контейнера изображения
@@ -48,7 +68,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Функция для отображения уже загруженного изображения
     function markAsLoaded(img, container, placeholder) {
+        clearStallTimer(container);
         container.classList.add('image-loaded');
+        container.classList.remove('error');
+        const errorMessage = container.querySelector('.image-error-message');
+        if (errorMessage) {
+            errorMessage.remove();
+        }
         img.classList.add('loaded');
         if (placeholder) {
             placeholder.style.opacity = '0';
@@ -62,34 +88,62 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadImage(img) {
         const container = setupImageContainer(img);
         const placeholder = container.querySelector('.image-placeholder');
-        
+
         // Устанавливаем реальный src из data-src (если используется lazy)
         if (img.dataset.src) {
             img.src = img.dataset.src;
         }
-        
+
         if (img.dataset.srcset) {
             img.srcset = img.dataset.srcset;
         }
-        
+
         // Если изображение уже загружено (src в HTML, скрипт выполнился позже)
         if (img.complete && img.naturalWidth > 0) {
             markAsLoaded(img, container, placeholder);
             return;
         }
-        
+
+        const srcAttr = (img.getAttribute('src') || '').trim();
+        if (!srcAttr && !img.dataset.src) {
+            showError(container);
+            return;
+        }
+
         // Обработчик успешной загрузки
         img.onload = () => {
             markAsLoaded(img, container, placeholder);
         };
-        
+
         // Обработчик ошибки загрузки
         img.onerror = () => {
             showError(container);
-            if (placeholder) {
-                placeholder.remove();
-            }
         };
+
+        // «Тихая» поломка: complete, но декодировать нечего — onerror иногда не приходит вовремя
+        requestAnimationFrame(() => {
+            if (container.classList.contains('image-loaded') || container.classList.contains('error')) {
+                return;
+            }
+            if (img.complete && img.naturalWidth === 0 && img.naturalHeight === 0 && srcAttr) {
+                showError(container);
+            }
+        });
+
+        // Зависшая загрузка: снять skeleton (после таймаута — показать картинку или сработает showError по битому src)
+        clearStallTimer(container);
+        container._imageEffectsStallTimer = setTimeout(() => {
+            container._imageEffectsStallTimer = null;
+            if (container.classList.contains('image-loaded') || container.classList.contains('error')) {
+                return;
+            }
+            if (img.complete && img.naturalWidth === 0) {
+                showError(container);
+                return;
+            }
+            const ph = container.querySelector('.image-placeholder');
+            markAsLoaded(img, container, ph);
+        }, 20000);
     }
     
     // Используем Intersection Observer для ленивой загрузки

@@ -83,7 +83,7 @@ def create_app(config_name="development"):
     @app.route('/api/csrf-token', methods=['GET'])
     def get_csrf_token():
         from flask_wtf.csrf import generate_csrf
-        print('CSRF endpoint registered')
+        app.logger.debug("csrf-token issued")
         return jsonify({'csrf_token': generate_csrf()})
     
     # CSRF: один экземпляр — app.extensions.csrf (init в init_extensions).
@@ -93,15 +93,17 @@ def create_app(config_name="development"):
     # Обработчик CSRF ошибок
     @app.errorhandler(400)
     def handle_csrf_error(e):
-        import traceback
         from flask import request
-        print("=== CSRF DEBUG ===")
-        print("Request headers:", dict(request.headers))
-        print("Request cookies:", request.cookies)
-        print("Request data:", request.get_data())
-        print("Exception:", e)
-        print(traceback.format_exc())
-        print("==================")
+        if app.config.get("DEBUG") or (os.getenv("CSRF_ERROR_VERBOSE") or "").strip() in ("1", "true", "yes"):
+            import traceback
+            app.logger.warning(
+                "CSRF/400: headers=%s cookies=%s data=%r exc=%r\n%s",
+                dict(request.headers),
+                dict(request.cookies),
+                request.get_data(),
+                e,
+                traceback.format_exc(),
+            )
         if 'CSRF' in str(e):
             return jsonify(error="CSRF token missing or invalid"), 400
         return jsonify(error=str(e)), 400
@@ -132,7 +134,11 @@ def create_app(config_name="development"):
     def home():
         months = {'Июнь': [], 'Июль': [], 'Август': [], 'Сентябрь': [], 'Октябрь': []}
         from app.services.showcases import get_project_cards
-        from app.services.images_resolver import resolve_card_images, FALLBACK as FALLBACK_IMG
+        from app.services.images_resolver import (
+            resolve_card_images,
+            rotate_images_to_cover_index,
+            FALLBACK as FALLBACK_IMG,
+        )
         from app.routes.shop import _products_with_resolved_images
 
         try:
@@ -149,13 +155,19 @@ def create_app(config_name="development"):
             ]
 
         services = []
+        _svc_skip = frozenset({'image_folder', 'cover_index'})
         for s in services_config:
             folder = s.get('image_folder', '')
             resolved = resolve_card_images(folder, fallback=FALLBACK_IMG)
             imgs = resolved.get('images') or [resolved['cover']]
+            try:
+                ci = int(s.get('cover_index') or 0)
+            except (TypeError, ValueError):
+                ci = 0
+            imgs = rotate_images_to_cover_index(imgs, ci)
             services.append({
-                **{k: v for k, v in s.items() if k != 'image_folder'},
-                'cover': resolved['cover'],
+                **{k: v for k, v in s.items() if k not in _svc_skip},
+                'cover': imgs[0],
                 'fallback': resolved['fallback'],
                 'images': imgs,
                 'image_urls': [url_for('static', filename=p) for p in imgs],

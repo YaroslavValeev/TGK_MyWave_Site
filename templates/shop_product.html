@@ -11,7 +11,11 @@
     <p class="price">{{ product.price }}</p>
     <p>{{ product.description }}</p>
     <div class="actions">
+      {% if product.buy_url %}
+      <a class="btn btn-primary-lg" href="{{ product.buy_url }}" target="_blank" rel="noopener noreferrer">Купить</a>
+      {% else %}
       <a class="btn btn-primary-lg" href="#">Купить</a>
+      {% endif %}
       <a class="btn btn-outline" href="{{ url_for('shop.shop_index') }}">Вернуться в магазин</a>
     </div>
   </div>

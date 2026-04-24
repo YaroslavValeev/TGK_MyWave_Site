@@ -600,16 +600,11 @@
 </main>
 
 <style>
-/* Уплотнённый вертикальный ритм — только для Safari */
-.safari-page .mw-section { padding: clamp(28px, 3.5vw, 44px) 0; }
+/* Уплотнённый вертикальный ритм — блоки ниже hero (hero: branding.css) */
+.safari-page .mw-section:not(.safari-hero) { padding: clamp(28px, 3.5vw, 44px) 0; }
 .safari-page .mw-section h2 { margin: 0 0 12px 0; }
 .safari-page .mw-card { padding: 18px !important; }
-.safari-page .safari-hero { padding: clamp(72px, 8vw, 96px) 0 clamp(36px, 4vw, 52px); }
-.safari-page .safari-hero .mw-container { text-align: center; }
 .safari-page .mw-subnav { margin-bottom: 0; }
-.safari-hero__badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 0.75rem; }
-.safari-hero__badges .safari-hero__badge { margin-bottom: 0; }
-.safari-hero__lead { margin: 0.4em 0 0.9em; color: var(--mw-muted, #56606B); font-size: 0.95em; }
 .safari-about__subtitle { font-size: 1.1em; font-weight: 600; color: var(--mw-brand, #35C0CD); margin: -0.4em 0 0.75em; }
 .safari-about-card p { margin-bottom: 0.75em; }
 .safari-about-card p:last-child { margin-bottom: 0; }

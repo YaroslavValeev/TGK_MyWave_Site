@@ -2,7 +2,7 @@
 {% block body_attrs %} data-mw-chat-context='{{ {"entry":"projects","kind":"section","title":"Проекты MyWave"}|tojson }}'{% endblock %}
 {% block title %}Проекты — MyWave{% endblock %}
 {% block content %}
-<section class="container projects">
+<section class="container projects projects-section">
   <h1 class="section-title">Проекты</h1>
 
   <div class="projects-carousel">
@@ -25,9 +25,6 @@
     <button class="carousel-next" aria-label="Следующие проекты">▶</button>
   </div>
 </section>
-
-{% set context = 'projects' %}
-{% include 'partials/reco_block.html' %}
 
 {% if showcase_graph %}
 <script type="application/ld+json" nonce="{{ csp_nonce }}">

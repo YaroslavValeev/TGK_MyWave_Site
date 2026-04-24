@@ -1,0 +1,19 @@
+[Unit]
+Description=MyWave Telegram control bot
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/mywave
+EnvironmentFile=-/var/www/mywave/.env
+ExecStart=/var/www/mywave/venv/bin/python /var/www/mywave/telegram_bot.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mywave-tg-bot
+
+[Install]
+WantedBy=multi-user.target

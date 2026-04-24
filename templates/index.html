@@ -103,7 +103,8 @@
           <p class="service-description service-description--short">{{ product.description }}</p>
           <p class="price">{{ product.price }}</p>
           <div class="card-details"><p class="card-details__text">{{ product.description }}</p></div>
-          <a class="btn btn-secondary" href="{{ url_for('shop.product', slug=slug) }}">Купить</a>
+          {% set buy_href = product.buy_url if product.buy_url else url_for('shop.product', slug=slug) %}
+          <a class="btn btn-secondary" href="{{ buy_href }}"{% if product.buy_url %} target="_blank" rel="noopener noreferrer"{% endif %}>Купить</a>
         </div>
         {% endfor %}
       </div>
@@ -163,16 +164,13 @@
   <!-- Блог: 4 последние публикации -->
   <section id="blog" class="blog-section">
     <h2>Блог</h2>
+    {% set blog_cover_fallback = url_for('static', filename='images/Place1Logo.png') %}
     {% if blog_preview_posts and blog_preview_posts|length > 0 %}
       <div class="blog-home-grid">
         {% for post in blog_preview_posts %}
         <a href="{{ url_for('blog.blog_post', slug=post.slug) }}" class="service-card blog-home-card">
           <div class="service-image-container">
-            {% if post.cover_image_url %}
-            <img class="service-image" src="{{ post.cover_image_url }}" alt="" loading="lazy">
-            {% else %}
-            <img class="service-image" src="{{ url_for('static', filename='images/Place1Logo.png') }}" alt="" loading="lazy">
-            {% endif %}
+            <img class="service-image" src="{{ post.card_image_url or post.cover_image_url or blog_cover_fallback }}" alt="" loading="lazy" decoding="async" data-fallback="{{ blog_cover_fallback }}">
           </div>
           <h4>{{ post.title }}</h4>
           {% if post.excerpt %}
@@ -199,19 +197,20 @@
 
   <section class="reviews-section">
     <h2>Отзывы учеников</h2>
+    {% set review_photo_fallback = url_for('static', filename='images/Place1Logo.png') %}
     <div class="reviews-slider">
       <div class="review">
-        <div class="review-avatar-fallback" aria-hidden="true">Э</div>
+        <img src="{{ url_for('static', filename='images/students/Elya_Vesnina.jpg') }}" alt="Эля Веснина" width="60" height="60" loading="lazy" decoding="async" data-fallback="{{ review_photo_fallback }}">
         <p>"Очень понравились тренировки! Тренер — супер!"</p>
         <strong>Эля Веснина</strong>
       </div>
       <div class="review">
-        <div class="review-avatar-fallback" aria-hidden="true">Ю</div>
+        <img src="{{ url_for('static', filename='images/students/Elupova.jpg') }}" alt="Юля Елупова" width="60" height="60" loading="lazy" decoding="async" data-fallback="{{ review_photo_fallback }}">
         <p>"Было весело и эффективно, всем советую!"</p>
         <strong>Юля Елупова</strong>
       </div>
       <div class="review">
-        <div class="review-avatar-fallback" aria-hidden="true">А</div>
+        <img src="{{ url_for('static', filename='images/students/Alya_Lapina.jpg') }}" alt="Алина Лапина" width="60" height="60" loading="lazy" decoding="async" data-fallback="{{ review_photo_fallback }}">
         <p>"Прекрасный подход к детям и взрослым!"</p>
         <strong>Алина Лапина</strong>
       </div>
@@ -251,6 +250,4 @@
   </section>
 
   <a href="{{ url_for('chat.chat_page') }}" class="btn-secondary chat-margin">Чат с тренером</a>
-
-  {% include 'partials/reco_block.html' %}
 {% endblock %}

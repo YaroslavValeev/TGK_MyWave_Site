@@ -41,6 +41,7 @@ PRODUCTS = {
         'price': '5 000 ₽',
         'description': 'Комплект для тренировок на воде: страховочные элементы и аксессуары.',
         'image_folder': 'images/Shop/WakeSurfPolia',
+        'buy_url': 'https://joys-brand.com/aksessuary/nastolnaya-igra-wakesurfopolie1',
     },
     'wave-cards': {
         'title': 'Wave Cards',

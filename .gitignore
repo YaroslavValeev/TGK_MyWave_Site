@@ -13,6 +13,8 @@ __pycache__/
 credentials.json
 # Virtual environments
 venv/
+venv_backup_*/
+venv_broken_to_delete/
 .venv/
 env/
 config/service_account.json
@@ -78,7 +80,11 @@ EOF
 tmp_token.txt
 client_secret*.json
 configs/service_account.json
-*.json
+# Не игнорировать все JSON-файлы репозитория — только чувствительные шаблоны:
+token.json
+client_secret.json
+*secret*.json
+*credentials*.json
 knowledge_base/*
 !knowledge_base/**/
 !knowledge_base/**/*.py

@@ -11,3 +11,4 @@ def test_shop_page_and_product_links():
     # Ensure at least one product link to product pages is present
     assert '/shop/product/balance-board' in html
     assert '/shop/product/poncho' in html
+    assert 'joys-brand.com/aksessuary/nastolnaya-igra-wakesurfopolie1' in html

@@ -3,6 +3,7 @@
 Checks database, cache (Redis), Sentry configuration, and optionally AI gateway.
 """
 from flask import Blueprint, jsonify, current_app
+from sqlalchemy import text
 import os
 import time
 
@@ -33,7 +34,7 @@ def health_check():
             try:
                 from app.extensions import db
                 # simple lightweight query
-                res = db.session.execute('SELECT 1')
+                res = db.session.execute(text("SELECT 1"))
                 _ = res.fetchall()
                 checks['database'] = {'ok': True}
             except Exception as e:

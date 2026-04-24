@@ -10,7 +10,7 @@
   - `/api/blog/latest`
   - `/api/blog/posts`
 - Данные читаются из Google Sheets как primary source, при ошибке/пустом результате fallback в локальную БД (`app/services/blog/store.py`).
-- Внутри процесса есть in-memory cache для Sheets с TTL (`BLOG_SHEETS_CACHE_TTL`).
+- Внутри процесса есть in-memory cache для Sheets с TTL (`BLOG_SHEETS_CACHE_TTL`, по умолчанию 120 с). Сброс без рестарта: `POST /api/blog/cache/invalidate` с тем же токеном, что и для загрузки медиа (`MEDIA_UPLOAD_TOKEN` — `Authorization: Bearer …` или заголовок `X-Media-Upload-Token`).
 - Markdown -> HTML + sanitize реализованы в `app/services/blog/render.py` через `markdown` + `bleach` (с allowlist и безопасными ссылками).
 - Модель `BlogPost` (`app/database/models.py`) содержит поля: `title`, `slug`, `excerpt`, `content_md`, `content_html`, `content`, `cover_image_url`, `tags_json`, `status`, `published_at`, `created_at`, `updated_at`, `source_*` и др.
 - На главной `templates/index.html` секция `#blog` пока статическая заглушка; последний пост туда не подставляется.

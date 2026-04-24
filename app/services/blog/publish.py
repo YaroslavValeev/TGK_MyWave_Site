@@ -954,11 +954,15 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
                     # Синхронизируем (создаём или обновляем)
                     # Используем упрощённую версию логики из sync_blog_from_parser_tab
                     from app.services.blog.render import safe_render_markdown
+                    from app.services.blog.display_text import plain_title_for_display
                     from app.services.blog.sync import _parse_tags, _slugify
                     
                     title = str(row.get("title") or row.get("raw_title") or "").strip()
                     if not title:
                         title = f"Материал {sheet_id}"
+                    title_display = plain_title_for_display(title)
+                    if not title_display:
+                        title_display = f"Материал {sheet_id}"
                     
                     final_posts = str(row.get("final_posts") or row.get("text") or "").strip()
                     content_md = final_posts
@@ -989,8 +993,8 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
                     if not post:
                         post = BlogPost(
                             id=sheet_id,
-                            title=title,
-                            slug=_slugify(title, sheet_id),
+                            title=title_display,
+                            slug=_slugify(title_display, sheet_id),
                         )
                     else:
                         # Обновляем существующий
@@ -999,13 +1003,13 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
                     post.source_type = str(row.get("source_type") or "").strip() or None
                     post.source_name = str(row.get("source_name") or "").strip() or None
                     post.source_url = str(row.get("source_url") or "").strip() or None
-                    post.title = title
+                    post.title = title_display
                     
                     sheet_slug = str(row.get("slug") or "").strip()
                     if sheet_slug:
                         post.slug = sheet_slug
                     elif not post.slug:
-                        post.slug = _slugify(title, sheet_id)
+                        post.slug = _slugify(title_display, sheet_id)
                     
                     post.excerpt = excerpt
                     post.content_md = content_md

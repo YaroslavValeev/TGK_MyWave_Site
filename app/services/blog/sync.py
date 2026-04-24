@@ -16,6 +16,7 @@ except ImportError:
 
 from app.services.parser_news_sheet import fetch_parser_news_rows
 from app.services.blog.render import safe_render_markdown
+from app.services.blog.display_text import plain_title_for_display
 from app.services.blog.publishability import is_publishable_row
 from app.database.models import BlogPost, db
 
@@ -157,6 +158,9 @@ def sync_blog_from_parser_tab(db_session, logger=None) -> Dict[str, int]:
         title = str(row.get("title") or row.get("raw_title") or "").strip()
         if not title:
             title = f"Материал {sheet_id}"
+        title_display = plain_title_for_display(title)
+        if not title_display:
+            title_display = f"Материал {sheet_id}"
 
         checksum = _stable_checksum(row)
 
@@ -182,8 +186,8 @@ def sync_blog_from_parser_tab(db_session, logger=None) -> Dict[str, int]:
         if not post:
             post = BlogPost(
                 id=sheet_id,
-                title=title,
-                slug=_slugify(title, sheet_id),
+                title=title_display,
+                slug=_slugify(title_display, sheet_id),
             )
             created += 1
         else:
@@ -193,13 +197,13 @@ def sync_blog_from_parser_tab(db_session, logger=None) -> Dict[str, int]:
         post.source_name = str(row.get("source_name") or "").strip() or None
         post.source_url = str(row.get("source_url") or "").strip() or None
 
-        post.title = title
+        post.title = title_display
         # slug: если в Sheets есть поле slug — уважаем его
         sheet_slug = str(row.get("slug") or "").strip()
         if sheet_slug:
             post.slug = sheet_slug
         elif not post.slug:
-            post.slug = _slugify(title, sheet_id)
+            post.slug = _slugify(title_display, sheet_id)
 
         post.excerpt = excerpt
         post.content_md = content_md

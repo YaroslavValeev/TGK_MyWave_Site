@@ -4,7 +4,7 @@
 
 **Реализация в коде:** `app/services/blog/publishability.py` (`is_publishable_row`, `has_publishable_content`, `is_publishable_blog_post_record`).
 
-**Связанные документы:** маппинг полей витрины — `docs/architecture/BLOG_CANONICAL_MAPPING.md`.
+**Связанные документы:** маппинг полей витрины — `docs/architecture/BLOG_CANONICAL_MAPPING.md`. Редакционный чек-лист перед публикацией — `docs/BLOG_EDITORIAL_CHECKLIST.md`.
 
 ---
 

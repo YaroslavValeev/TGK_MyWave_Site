@@ -110,6 +110,19 @@ def _clean_assistant_text(text: str) -> str:
         for pat in patterns:
             import re
             cleaned = re.sub(pat, "", cleaned, flags=re.IGNORECASE)
+        # Remove markdown artifacts that look unnatural in chat bubbles.
+        cleaned = re.sub(r"\*\*(.*?)\*\*", r"\1", cleaned, flags=re.DOTALL)
+        cleaned = re.sub(r"^#{1,6}\s*", "", cleaned, flags=re.MULTILINE)
+        cleaned = re.sub(r"`{1,3}", "", cleaned)
+        cleaned = re.sub(r"\[(.*?)\]\((.*?)\)", r"\1", cleaned)
+        cleaned = re.sub(r"^\s*\d+\)\s*", "", cleaned, flags=re.MULTILINE)
+        cleaned = re.sub(r"^\s*\d+\.\s*", "", cleaned, flags=re.MULTILINE)
+        cleaned = re.sub(
+            r"(?i)\b(как\s+ии|как\s+искусственный\s+интеллект|я\s+не\s+могу\s+гарантировать)\b.*?[.!?]",
+            "",
+            cleaned,
+            flags=re.MULTILINE,
+        )
         # Remove leading bullets
         cleaned = re.sub(r"^[\-•]\s*", "", cleaned, flags=re.MULTILINE)
         # Collapse excess blank lines

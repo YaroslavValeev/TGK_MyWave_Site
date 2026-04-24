@@ -46,7 +46,11 @@ def safe_render_markdown(md: str) -> str:
         return ""
     
     if MARKDOWN_AVAILABLE:
-        html = markdown(md or "", extensions=["extra", "tables", "fenced_code"])
+        # nl2br: одиночные переносы внутри абзаца → <br>, текст читается лучше
+        html = markdown(
+            md or "",
+            extensions=["extra", "tables", "fenced_code", "nl2br"],
+        )
     else:
         # Fallback: простой текст с экранированием
         html = escape(md).replace("\n\n", "</p><p>").replace("\n", "<br>")

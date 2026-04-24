@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify, render_template, current_app
 from app.extensions import csrf
 import os
+import hmac
+import secrets
 from app.modules.booking_utils import handle_booking as real_book_slot
 from app.routes.files import upload_file as real_upload_file
 from app.routes.ai_router import route_message as real_handle_message
@@ -16,6 +18,7 @@ from googleapiclient.errors import HttpError
 from app.services.google_sheets_service import read_records, append_record, update_record
 from app.services.google import get_google_services, add_event_to_calendar
 from app.schemas import BookingSchema
+from werkzeug.utils import secure_filename
 
 api_bp = Blueprint('api', __name__)
 logger = logging.getLogger(__name__)
@@ -54,6 +57,87 @@ def upload():
     file_path = os.path.join("uploads", file.filename)
     file.save(file_path)
     return jsonify(file_id=file.filename)
+
+
+def _media_upload_token_from_request() -> str:
+    auth = request.headers.get("Authorization", "").strip()
+    if auth.lower().startswith("bearer "):
+        return auth[7:].strip()
+    return (
+        request.headers.get("X-Media-Upload-Token", "").strip()
+        or (request.form.get("media_upload_token", "").strip() if request.form else "")
+    )
+
+
+def _resolve_media_upload_dir() -> str:
+    root = (current_app.config.get("MEDIA_UPLOAD_ROOT") or "").strip()
+    if root:
+        upload_root = root
+    else:
+        upload_root = current_app.static_folder or os.path.join(current_app.root_path, "..", "static")
+    subdir = str(current_app.config.get("MEDIA_UPLOAD_SUBDIR") or "uploads/review_media").strip().strip("/\\")
+    return os.path.join(upload_root, subdir)
+
+
+def _build_public_media_url(filename: str) -> str:
+    base_url = (current_app.config.get("SITE_BASE_URL") or "").strip().rstrip("/")
+    if not base_url:
+        base_url = request.host_url.rstrip("/")
+    subdir = str(current_app.config.get("MEDIA_UPLOAD_SUBDIR") or "uploads/review_media").strip().strip("/\\")
+    return f"{base_url}/static/{subdir}/{filename}"
+
+
+@api_bp.route("/media/upload", methods=["POST"])
+@api_bp.route("/blog/media/upload", methods=["POST"])
+@csrf.exempt
+def media_upload():
+    """Upload image for blog covers and return public URL."""
+    expected_token = (current_app.config.get("MEDIA_UPLOAD_TOKEN") or "").strip()
+    if not expected_token:
+        return jsonify(error="media upload is not configured"), 503
+
+    provided_token = _media_upload_token_from_request()
+    if not provided_token or not hmac.compare_digest(provided_token, expected_token):
+        return jsonify(error="unauthorized"), 401
+
+    media_file = request.files.get("file")
+    if not media_file:
+        return jsonify(error="file is required"), 400
+
+    mime = (media_file.mimetype or "").lower()
+    if mime not in {"image/jpeg", "image/png", "image/webp", "image/gif"}:
+        return jsonify(error="unsupported file type"), 415
+
+    original_name = secure_filename(media_file.filename or "upload")
+    _, ext = os.path.splitext(original_name)
+    ext = ext.lower()
+    if ext not in {".jpg", ".jpeg", ".png", ".webp", ".gif"}:
+        ext = ".jpg"
+
+    media_file.stream.seek(0, os.SEEK_END)
+    size = media_file.stream.tell()
+    media_file.stream.seek(0)
+    max_bytes = int(current_app.config.get("MEDIA_UPLOAD_MAX_BYTES") or 10485760)
+    if size > max_bytes:
+        return jsonify(error=f"file too large (>{max_bytes} bytes)"), 413
+
+    upload_dir = _resolve_media_upload_dir()
+    os.makedirs(upload_dir, exist_ok=True)
+    filename = f"review_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{secrets.token_hex(6)}{ext}"
+    save_path = os.path.join(upload_dir, filename)
+    media_file.save(save_path)
+
+    public_url = _build_public_media_url(filename)
+    return jsonify(
+        ok=True,
+        public_url=public_url,
+        # Алиасы для Parser/клиентов, ожидающих разные имена поля
+        url=public_url,
+        cover_image_url=public_url,
+        image_url=public_url,
+        filename=filename,
+        bytes=size,
+    ), 201
 
 
 # Minimal JSON API for authentication to satisfy smoke tests

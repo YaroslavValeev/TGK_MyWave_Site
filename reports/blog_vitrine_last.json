@@ -1,0 +1,87 @@
+{
+  "worksheet_name": "raw_feed",
+  "detected_header_row_index": 194,
+  "header_detection": {
+    "matched_columns": [
+      "id",
+      "source_type",
+      "source_name",
+      "source_url",
+      "created_at",
+      "ingest_status",
+      "raw_title",
+      "final_posts",
+      "summary",
+      "status",
+      "slug",
+      "published_at"
+    ],
+    "matched_indices": {
+      "id": 0,
+      "source_type": 1,
+      "source_name": 2,
+      "source_url": 3,
+      "created_at": 4,
+      "ingest_status": 5,
+      "raw_title": 6,
+      "final_posts": 21,
+      "summary": 23,
+      "status": 30,
+      "slug": 47,
+      "published_at": 34
+    },
+    "dense_present": [
+      "id",
+      "source_type",
+      "source_name",
+      "source_url",
+      "created_at",
+      "ingest_status",
+      "raw_title"
+    ],
+    "dense_span": 6,
+    "matched_span_all": 47,
+    "reason": "Строка принята как header row: совпало колонок=12, плотный span по dense=6, порядок dense-колонок соблюдён, подозрительных контентных ячеек не обнаружено.",
+    "score": 11941,
+    "non_empty_cells": 70
+  },
+  "total_scanned_rows": 389,
+  "usable_rows_after_header": 194,
+  "normalized_rows_count": 2,
+  "publishable_rows_count": 2,
+  "empty_status_count": 192,
+  "empty_status_share": 0.989691,
+  "status_distribution": {
+    "READY_TO_PUBLISH": 2,
+    "(empty)": 192
+  },
+  "vitrine_quality": {
+    "status_buckets": {
+      "DRAFT": 0,
+      "APPROVED": 0,
+      "READY_TO_PUBLISH": 2,
+      "PUBLISHED": 0,
+      "ARCHIVED": 0,
+      "REVIEW": 0,
+      "(empty)": 192,
+      "OTHER": 0
+    },
+    "rows_total": 194,
+    "rows_with_meaningful_content": 2,
+    "publishable_v1": 2,
+    "has_content_not_publishable_v1": 0,
+    "has_content_status_draft_or_approved": 0
+  },
+  "sample_entries": [
+    {
+      "title": "P0 test",
+      "slug": "p0-test-20260128_104728",
+      "published_at": "2026-03-26 05:54:15.204423"
+    },
+    {
+      "title": "P0 test",
+      "slug": "p0-test-missing-rn-20260128_104742",
+      "published_at": "2026-03-26 05:54:15.209358"
+    }
+  ]
+}

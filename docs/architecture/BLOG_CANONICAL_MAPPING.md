@@ -48,6 +48,8 @@
 - `raw_media` -> `cover_image_url` (fallback второго уровня)
 - `raw_tags`/`tags`/`ne` -> `tags`
 
+**Медиа из парсера в Sheet:** публичный URL файла изображения (не ссылка на пост Telegram, не локальный путь Parser-машины) — подробно в [PARSER_DEVELOPER_MEDIA_LETTER.md](../integrations/PARSER_DEVELOPER_MEDIA_LETTER.md).
+
 ## 4. Publish rules (current)
 
 Пост считается публикуемым (видимым в витрине), если выполняется одно из условий:

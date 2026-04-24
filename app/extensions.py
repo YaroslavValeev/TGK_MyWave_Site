@@ -26,18 +26,44 @@ try:
 except ImportError:
     limiter = None
 
-socketio = SocketIO(
-    cors_allowed_origins=[
+def _socketio_cors_origins() -> list[str]:
+    """Те же хосты, что и в main.py при переборе портов 5000–5010 — иначе Engine.IO режет Origin."""
+    out = [
         "https://mywavetreaning.ru",
         "https://www.mywave.ru",
-        "http://127.0.0.1:5000",
-        "http://localhost:5000"
-    ],
-    async_mode='eventlet',
-    logger=True,
-    engineio_logger=True,
-    ping_timeout=60
-)
+    ]
+    for port in range(5000, 5012):
+        out.append(f"http://127.0.0.1:{port}")
+        out.append(f"http://localhost:{port}")
+    extra = (os.getenv("SOCKETIO_CORS_EXTRA_ORIGINS") or "").strip()
+    for part in extra.split(","):
+        p = part.strip()
+        if p and p not in out:
+            out.append(p)
+    return out
+
+
+def _make_socketio() -> SocketIO:
+    _si_debug = (os.getenv("SOCKETIO_LOG_VERBOSE") or "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+    )
+    _kwargs: dict = {
+        "cors_allowed_origins": _socketio_cors_origins(),
+        "async_mode": "eventlet",
+        "logger": _si_debug,
+        "engineio_logger": _si_debug,
+        "ping_timeout": 60,
+    }
+    # Multi-worker / horizontal scaling: задать SOCKETIO_MESSAGE_QUEUE=redis://...
+    _mq = (os.getenv("SOCKETIO_MESSAGE_QUEUE") or "").strip()
+    if _mq:
+        _kwargs["message_queue"] = _mq
+    return SocketIO(**_kwargs)
+
+
+socketio = _make_socketio()
 csrf = CSRFProtect()
 migrate = Migrate()
 api = Api(doc='/swagger/')
@@ -130,17 +156,24 @@ def init_extensions(app, db=None):
         cache.init_app(app, config={'CACHE_TYPE': 'SimpleCache'})
         app.app = app  # Fix for cache.app attribute
     
-    # Инициализация Prometheus метрик
+    # Инициализация Prometheus: HTTP-метрики, endpoint /metrics отдаёт app/routes/metrics_api.py
+    # (два route на /metrics ломают отдачу — auto-path отключаем).
     try:
-        metrics = PrometheusMetrics(app)
+        metrics = PrometheusMetrics(
+            app,
+            path=None,
+            export_defaults=True,
+        )
     except ValueError as ve:
         # This typically says PROMETHEUS_MULTIPROC_DIR must be set
         app.logger.warning(f"Prometheus multiprocess not configured: {ve}")
         try:
-            # Attempt a non-multiprocess fallback (single-process metrics)
-            metrics = PrometheusMetrics(app, export_defaults=False)
+            metrics = PrometheusMetrics(
+                app,
+                path=None,
+                export_defaults=True,
+            )
         except Exception:
-            # As a last resort, skip metrics but continue startup
             app.logger.exception("Failed to initialize PrometheusMetrics; continuing without metrics")
             metrics = None
 
@@ -169,11 +202,8 @@ def init_extensions(app, db=None):
     # Инициализация базы данных
     if db is not None:
         migrate.init_app(app, db)
-        try:
-            from prometheus_flask_exporter.multiprocess import GunicornPrometheusMetrics
-            GunicornPrometheusMetrics(app, group_by='endpoint')
-        except ImportError:
-            pass
+    # Gunicorn multi-worker + PROMETHEUS_MULTIPROC_DIR: при необходимости подключить
+    # GunicornInternalPrometheusMetrics (см. docs в prometheus_flask_exporter), не дублируя PrometheusMetrics.
     
     # Настройка заголовков кэширования
     @app.after_request

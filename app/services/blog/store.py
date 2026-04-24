@@ -12,6 +12,7 @@ import re
 import time
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
+from urllib.parse import urlparse
 
 from flask import current_app
 
@@ -21,6 +22,7 @@ from app.services.parser_news_sheet import fetch_parser_news_rows
 from app.services.google import get_google_services
 from app.services.parser_news_sheet import resolve_parser_source
 from app.services.blog.render import safe_render_markdown
+from app.services.blog.display_text import plain_title_for_display
 from app.services.blog.sync import (
     _safe_dt,
     _slugify,
@@ -31,6 +33,7 @@ from app.services.blog.publishability import (
     is_publishable_blog_post_record,
     is_publishable_row,
 )
+from app.services.blog.video_embed import attach_video_display_fields
 
 logger = get_logger(__name__)
 
@@ -260,6 +263,31 @@ def _extract_title_from_markdown(text: str) -> str:
     return first_line[:120]
 
 
+def _clean_title_noise(title: str) -> str:
+    """
+    Убирает служебный шум из конца заголовка:
+    - хвосты вида #1234 / №1234
+    - оставшиеся в конце одиночные эмодзи/символы после удаления номера
+    """
+    if not title:
+        return ""
+
+    s = str(title).strip()
+
+    # Убираем хвост вида "#1234" или "№1234" только в конце строки
+    s = re.sub(r"\s*[#№]\s*\d+\s*$", "", s).strip()
+
+    # Убираем висящие в конце эмодзи/символьные токены без букв и цифр
+    tokens = s.split()
+    while tokens and not re.search(r"[A-Za-zА-Яа-яЁё0-9]", tokens[-1]):
+        tokens.pop()
+
+    s = " ".join(tokens).strip()
+    s = re.sub(r"\s+", " ", s)
+
+    return s
+
+
 def _make_excerpt_from_content(text: str, limit: int = 220) -> str:
     if not text:
         return ""
@@ -348,6 +376,184 @@ def _extract_first_media(raw_media: str) -> str:
     return text
 
 
+_IMAGE_FIELD_KEYS = (
+    "cover_image_url",
+    "image_url",
+    "thumbnail_url",
+    "thumb_url",
+    "poster_url",
+    "poster",
+    "image",
+    "cover",
+    "preview_image_url",
+)
+
+
+def _normalize_media_url(value: object) -> str:
+    s = "" if value is None else str(value).strip()
+    if not s:
+        return ""
+    if s.startswith("//"):
+        return f"https:{s}"
+    return s
+
+
+def _is_image_like_url(url: str) -> bool:
+    s = _normalize_media_url(url)
+    if not s:
+        return False
+    if s.startswith("/"):
+        return True
+    if s.startswith("data:image/") or s.startswith("blob:"):
+        return True
+
+    try:
+        p = urlparse(s)
+    except Exception:
+        return False
+
+    host = (p.netloc or "").lower()
+    path = p.path or ""
+    path_lower = path.lower()
+
+    # Ссылки на Telegram-посты (t.me/channel/123) — это HTML-страницы, не image asset.
+    if host in ("t.me", "telegram.me", "www.t.me", "www.telegram.me"):
+        parts = [part for part in path.split("/") if part]
+        if len(parts) == 2 and parts[1].isdigit():
+            return False
+
+    if re.search(r"\.(png|jpe?g|webp|gif|avif|bmp|svg)$", path_lower):
+        return True
+
+    # Для CDN/resize-ссылок без расширения допускаем известные media/path-маркеры.
+    if any(token in path_lower for token in ("/file/", "/photo/", "/media/", "/images/", "/img/")):
+        return True
+
+    return False
+
+
+def _extract_media_candidate(item: object) -> str:
+    if isinstance(item, str):
+        candidate = _normalize_media_url(item)
+        return candidate if _is_image_like_url(candidate) else ""
+
+    if isinstance(item, dict):
+        for key in (
+            "cover_image_url",
+            "image_url",
+            "thumbnail_url",
+            "thumb_url",
+            "poster_url",
+            "poster",
+            "secure_url",
+            "url",
+            "src",
+            "path",
+            "file_url",
+        ):
+            candidate = _normalize_media_url(item.get(key))
+            if candidate and _is_image_like_url(candidate):
+                return candidate
+
+    return ""
+
+
+def _extract_cover_image(row: Dict) -> str:
+    # 1. Сначала ищем прямые поля строки
+    for key in _IMAGE_FIELD_KEYS:
+        candidate = _normalize_media_url(row.get(key))
+        if candidate and _is_image_like_url(candidate):
+            return candidate
+
+    # 2. Затем пытаемся распарсить media-поля
+    for raw_key in ("media_json", "raw_media", "media", "attachments"):
+        raw_val = row.get(raw_key)
+        if not raw_val:
+            continue
+
+        data = None
+
+        if isinstance(raw_val, (list, dict)):
+            data = raw_val
+        else:
+            text = str(raw_val).strip()
+            if not text:
+                continue
+
+            if text.startswith("[") or text.startswith("{"):
+                try:
+                    data = json.loads(text)
+                except Exception:
+                    data = None
+            else:
+                data = text
+
+        if isinstance(data, list):
+            for item in data:
+                if isinstance(item, dict) and str(item.get("type") or "").lower() == "image":
+                    candidate = _extract_media_candidate(item)
+                    if candidate:
+                        return candidate
+
+            for item in data:
+                candidate = _extract_media_candidate(item)
+                if candidate:
+                    return candidate
+
+        elif isinstance(data, dict):
+            candidate = _extract_media_candidate(data)
+            if candidate:
+                return candidate
+
+            nested = data.get("items") or data.get("media") or data.get("attachments")
+            if isinstance(nested, list):
+                for item in nested:
+                    candidate = _extract_media_candidate(item)
+                    if candidate:
+                        return candidate
+
+        elif isinstance(data, str):
+            candidate = _normalize_media_url(data)
+            if candidate and _is_image_like_url(candidate):
+                return candidate
+
+    return "/static/images/Place1Logo.png"
+
+
+def _extract_video_urls_from_row(row: Dict) -> Tuple[str, str, str]:
+    """
+    (video_url, embed_url, video_poster_url) из raw_feed.
+    См. docs/architecture/BLOG_RUNTIME_CANON.md — video_url, video_embed_url, video_preview_image_url.
+    """
+    video_url = _normalize_media_url(
+        row.get("video_url")
+        or row.get("video")
+        or row.get("Video_URL")
+        or ""
+    )
+    embed_url = _normalize_media_url(
+        row.get("embed_url")
+        or row.get("video_embed_url")
+        or row.get("embed")
+        or row.get("Video_Embed_Url")
+        or ""
+    )
+    poster = ""
+    for key in (
+        "video_preview_image_url",
+        "video_poster_url",
+        "video_poster",
+        "poster_url",
+        "thumbnail_url",
+        "thumb_url",
+    ):
+        c = _normalize_media_url(row.get(key))
+        if c and _is_image_like_url(c):
+            poster = c
+            break
+    return video_url, embed_url, poster
+
+
 def _normalize_row_from_sheets(row: Dict) -> Optional[Dict]:
     """Нормализует строку из Sheets в формат поста."""
     if not is_publishable_row(row):
@@ -366,7 +572,14 @@ def _normalize_row_from_sheets(row: Dict) -> Optional[Dict]:
     ).strip()
     if not title:
         title = f"Материал {sheet_id}"
-    
+
+    title = _clean_title_noise(title)
+    title_display = plain_title_for_display(title)
+    title_display = _clean_title_noise(title_display)
+
+    if not title_display:
+        title_display = f"Материал {sheet_id}"
+
     # Контент
     content_md = str(
         row.get("final_posts")
@@ -386,7 +599,7 @@ def _normalize_row_from_sheets(row: Dict) -> Optional[Dict]:
     
     # Slug
     sheet_slug = str(row.get("slug") or "").strip()
-    slug = sheet_slug if sheet_slug else _slugify(title, sheet_id)
+    slug = sheet_slug if sheet_slug else _slugify(title_display, sheet_id)
     
     # Tags
     tags = _parse_tags(row.get("raw_tags") or row.get("tags"), row.get("ne"))
@@ -395,11 +608,9 @@ def _normalize_row_from_sheets(row: Dict) -> Optional[Dict]:
     published_at = _safe_dt(row.get("published_at")) or _safe_dt(row.get("updated_at")) or _safe_dt(row.get("created_at")) or datetime.utcnow()
     
     # Cover image
-    cover = str(row.get("cover_image_url") or row.get("image_url") or "").strip()
-    if not cover:
-        cover = _extract_first_media(row.get("raw_media"))
-    if not cover:
-        cover = "/static/images/Place1Logo.png"
+    cover = _extract_cover_image(row)
+    video_url, embed_url, video_poster = _extract_video_urls_from_row(row)
+    card_image = video_poster or cover
 
     if _blog_excerpt_trace_enabled():
         logger.info(
@@ -419,14 +630,21 @@ def _normalize_row_from_sheets(row: Dict) -> Optional[Dict]:
             },
         )
 
-    return {
+    result: Dict = {
         "id": sheet_id,
-        "title": title,
+        "title": title_display,
         "slug": slug,
         "excerpt": excerpt,
         "content_md": content_md,
         "content_html": content_html,
         "cover_image_url": cover,
+        "image_url": cover,
+        "cover": cover,
+        "poster_image_url": cover,
+        "card_image_url": card_image,
+        "video_url": video_url or None,
+        "embed_url": embed_url or None,
+        "video_poster_url": video_poster or None,
         "tags": tags,
         "tags_json": json.dumps(tags, ensure_ascii=False) if tags else None,
         "published_at": published_at,
@@ -437,6 +655,8 @@ def _normalize_row_from_sheets(row: Dict) -> Optional[Dict]:
         "status": str(row.get("status") or "").strip() or None,
         "author": str(row.get("author") or "").strip() or None,
     }
+    attach_video_display_fields(result)
+    return result
 
 
 def _load_records_parser_aware() -> Tuple[List[Dict], List[str]]:
@@ -550,10 +770,12 @@ def _load_from_db() -> List[Dict]:
                     tags = json.loads(p.tags_json)
                 except Exception:
                     pass
-            
-            result.append({
+
+            cover = p.cover_image_url or "/static/images/Place1Logo.png"
+
+            rec: Dict = {
                 "id": p.id,
-                "title": p.title,
+                "title": _clean_title_noise(plain_title_for_display(p.title)),
                 "slug": p.slug,
                 "excerpt": _card_excerpt_from_sources(
                     p.excerpt,
@@ -564,7 +786,14 @@ def _load_from_db() -> List[Dict]:
                 ),
                 "content_md": p.content_md,
                 "content_html": p.content_html or p.content,
-                "cover_image_url": p.cover_image_url,
+                "cover_image_url": cover,
+                "image_url": cover,
+                "cover": cover,
+                "poster_image_url": cover,
+                "card_image_url": cover,
+                "video_url": None,
+                "embed_url": None,
+                "video_poster_url": None,
                 "tags": tags,
                 "tags_json": p.tags_json,
                 "published_at": p.published_at,
@@ -572,7 +801,9 @@ def _load_from_db() -> List[Dict]:
                 "source_name": p.source_name,
                 "source_url": p.source_url,
                 "status": p.status,
-            })
+            }
+            attach_video_display_fields(rec)
+            result.append(rec)
         
         logger.info(f"[blog-store] Загружено {len(result)} постов из БД (резерв)")
         return result
@@ -634,10 +865,12 @@ def get_post_by_slug(slug: str, prefer_sheets: bool = True) -> Optional[Dict]:
                     tags = json.loads(post.tags_json)
                 except Exception:
                     pass
-            
-            return {
+
+            cover = post.cover_image_url or "/static/images/Place1Logo.png"
+
+            out: Dict = {
                 "id": post.id,
-                "title": post.title,
+                "title": _clean_title_noise(plain_title_for_display(post.title)),
                 "slug": post.slug,
                 "excerpt": _card_excerpt_from_sources(
                     post.excerpt,
@@ -648,7 +881,14 @@ def get_post_by_slug(slug: str, prefer_sheets: bool = True) -> Optional[Dict]:
                 ),
                 "content_md": post.content_md,
                 "content_html": post.content_html or post.content,
-                "cover_image_url": post.cover_image_url,
+                "cover_image_url": cover,
+                "image_url": cover,
+                "cover": cover,
+                "poster_image_url": cover,
+                "card_image_url": cover,
+                "video_url": None,
+                "embed_url": None,
+                "video_poster_url": None,
                 "tags": tags,
                 "tags_json": post.tags_json,
                 "published_at": post.published_at,
@@ -657,6 +897,8 @@ def get_post_by_slug(slug: str, prefer_sheets: bool = True) -> Optional[Dict]:
                 "source_url": post.source_url,
                 "status": post.status,
             }
+            attach_video_display_fields(out)
+            return out
     except Exception as e:
         logger.error(f"[blog-store] Ошибка поиска в БД: {e}")
     
