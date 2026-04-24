@@ -75,7 +75,10 @@ token.json
 # OS
 .DS_Store
 Thumbs.db
-EOF
+
+# Сервисные ролики: GitHub отклоняет файлы > 100 MB — хранить на сервере/CDN или Git LFS
+static/images/Services/Gym/Батут.mp4
+
 # Secrets
 tmp_token.txt
 client_secret*.json
