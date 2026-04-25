@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block body_attrs %} data-mw-chat-context='{{ {"entry":"home","kind":"section","title":"Чат с экспертом"}|tojson }}'{% endblock %}
+{% block title %}Чат с экспертом — MyWave{% endblock %}
+{% block content %}
+<section class="chat-landing" style="min-height: 45vh; padding: 2rem 1.25rem; max-width: 42rem; margin: 0 auto;">
+  <h1 style="margin-bottom: 0.75rem;">Чат с экспертом по вейку</h1>
+  <p style="line-height: 1.5; color: var(--text-muted, #555);">
+    Окно чата открыто справа внизу. Если его не видно — нажмите круглую кнопку с иконкой сообщений.
+    Здесь можно спросить про тренировки, трюки и запись на занятие.
+  </p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script nonce="{{ g.csp_nonce }}">
+(function () {
+  function openChatWidget() {
+    var toggle = document.getElementById('chat-toggle');
+    /* Клик по кнопке запускает ту же логику, что и в chat.js (приветствие, фокус). */
+    if (toggle) {
+      toggle.click();
+      return;
+    }
+    var widget = document.getElementById('chat-widget');
+    if (widget) widget.classList.remove('hidden');
+    var inp = document.getElementById('chat-input');
+    if (inp) inp.focus();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', openChatWidget);
+  } else {
+    openChatWidget();
+  }
+})();
+</script>
+{% endblock %}

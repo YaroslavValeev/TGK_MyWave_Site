@@ -1,12 +1,50 @@
-import json
-from flask import Blueprint, abort, jsonify, render_template, request
+from flask import Blueprint, abort, current_app, jsonify, render_template, request
 
+from app.extensions import csrf
 from app.modules.logger import get_logger
-from app.services.blog.store import get_posts, get_post_by_slug, get_latest_post
+from app.services.blog.store import (
+    get_posts,
+    get_post_by_slug,
+    get_latest_post,
+    invalidate_blog_sheets_cache,
+)
 
 logger = get_logger(__name__)
 
 blog_bp = Blueprint("blog", __name__, template_folder="../templates")
+
+
+def _blog_cache_invalidate_token_ok() -> bool:
+    """Тот же секрет, что и для media upload — без отдельного ключа."""
+    auth = (request.headers.get("Authorization") or "").strip()
+    token = ""
+    if auth.lower().startswith("bearer "):
+        token = auth[7:].strip()
+    if not token:
+        token = (request.headers.get("X-Media-Upload-Token") or "").strip()
+    expected = (current_app.config.get("MEDIA_UPLOAD_TOKEN") or "").strip()
+    if not expected:
+        return False
+    return token == expected
+
+
+def _api_item_payload(p: dict) -> dict:
+    cover = p.get("cover_image_url")
+    card = p.get("card_image_url") or cover
+    return {
+        "title": p["title"],
+        "lead": p.get("excerpt"),
+        "slug": p["slug"],
+        "published_at": p["published_at"].isoformat() if p.get("published_at") else None,
+        "tags": p.get("tags", []),
+        "cover_image_url": cover,
+        "image_url": p.get("image_url") or cover,
+        "cover": p.get("cover") or cover,
+        "card_image_url": card,
+        "video_url": p.get("video_url"),
+        "embed_url": p.get("embed_url"),
+        "video_poster_url": p.get("video_poster_url"),
+    }
 
 
 @blog_bp.get("/blog")
@@ -17,19 +55,36 @@ def blog_index():
     page = int(request.args.get("page", 1))
     per_page = int(request.args.get("per_page", 12))
     tag = (request.args.get("tag") or "").strip().lower()
+    query = (request.args.get("q") or "").strip()
     # Можно добавить ?db_only=1 для принудительного использования БД
     prefer_sheets = request.args.get("db_only") != "1"
 
     try:
-        items, total = get_posts(page=page, limit=per_page, prefer_sheets=prefer_sheets)
+        # Получаем расширенный набор, чтобы корректно фильтровать перед пагинацией.
+        items, _ = get_posts(page=1, limit=1000, prefer_sheets=prefer_sheets)
     except Exception as e:
         logger.error(f"blog: ошибка загрузки постов: {e}")
-        items, total = [], 0
+        items = []
 
     # Фильтр по тегу (если задан)
     if tag and items:
         items = [p for p in items if tag.lower() in [t.lower() for t in (p.get("tags") or [])]]
-        total = len(items)
+
+    # Поиск по заголовку, excerpt и контенту.
+    if query and items:
+        q = query.lower()
+        items = [
+            p for p in items
+            if q in str(p.get("title") or "").lower()
+            or q in str(p.get("excerpt") or "").lower()
+            or q in str(p.get("content_md") or "").lower()
+            or q in str(p.get("content_html") or "").lower()
+        ]
+
+    total = len(items)
+    start = (page - 1) * per_page
+    end = start + per_page
+    items = items[start:end]
 
     # Простая пагинация
     has_next = (page * per_page) < total
@@ -44,6 +99,7 @@ def blog_index():
         has_next=has_next,
         has_prev=has_prev,
         tag=tag,
+        q=query,
     )
 
 
@@ -71,14 +127,9 @@ def api_blog_latest():
         post = get_latest_post(prefer_sheets=prefer_sheets)
         if not post:
             return jsonify({"error": "no posts"}), 404
-        
-        return jsonify({
-            "title": post["title"],
-            "lead": post.get("excerpt"),
-            "slug": post["slug"],
-            "published_at": post["published_at"].isoformat() if post.get("published_at") else None,
-            "tags": post.get("tags", []),
-        })
+
+        # Те же правила, что в items[] у /api/blog/posts
+        return jsonify(_api_item_payload(post))
     except Exception as e:
         logger.error("blog: ошибка api latest: %s", e)
         return jsonify({"error": "unavailable"}), 503
@@ -98,18 +149,18 @@ def api_blog_posts():
             "page": page,
             "limit": limit,
             "total": total,
-            "items": [
-                {
-                    "title": p["title"],
-                    "lead": p.get("excerpt"),
-                    "slug": p["slug"],
-                    "published_at": p["published_at"].isoformat() if p.get("published_at") else None,
-                    "tags": p.get("tags", []),
-                    "image_url": p.get("cover_image_url"),
-                }
-                for p in items
-            ],
+            "items": [_api_item_payload(p) for p in items],
         })
     except Exception as e:
         logger.error("blog: ошибка api posts: %s", e)
         return jsonify({"error": "unavailable"}), 503
+
+
+@blog_bp.post("/api/blog/cache/invalidate")
+@csrf.exempt
+def api_blog_cache_invalidate():
+    """Сброс in-memory кэша Sheets (следующий запрос перечитает raw_feed)."""
+    if not _blog_cache_invalidate_token_ok():
+        return jsonify({"error": "forbidden"}), 403
+    invalidate_blog_sheets_cache()
+    return jsonify({"ok": True, "message": "blog sheets cache invalidated"})

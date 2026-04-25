@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => preloader.remove(), 500);
     });
 
-    // Image lazy loading with preloader
-    const images = document.querySelectorAll('img[loading="lazy"]');
+    // Image lazy loading with preloader (обложки проектов не оборачиваем)
+    const images = document.querySelectorAll('img[loading="lazy"]:not(.project-card__cover)');
     
     const imageObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {

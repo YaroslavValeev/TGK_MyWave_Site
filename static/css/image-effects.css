@@ -1,18 +1,10 @@
-/* Эффекты для изображений */
+/* Эффекты для изображений — без opacity/scale, чтобы картинка была резкой */
 .service-image {
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: scale(0.98) translateY(10px);
-    will-change: opacity, transform;
+    transition: opacity 0.2s ease;
     position: relative;
     width: 100%;
     height: auto;
     border-radius: 8px;
-}
-
-.service-image.loaded {
-    opacity: 1;
-    transform: scale(1) translateY(0);
 }
 
 /* Контейнер для изображения */

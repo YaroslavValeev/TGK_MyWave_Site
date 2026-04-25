@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 
+{% block body_attrs %} data-mw-chat-context='{{ {"entry":"services","kind":"section","title":"Услуги MyWave"}|tojson }}'{% endblock %}
+
 {% block title %}Услуги — MyWave{% endblock %}
 
 {% block meta %}
   <meta name="description" content="MyWave — тренировки по вейксерфингу, занятия за катером и авторская методика. Запишитесь на тренировку прямо сейчас!">
-  <meta name="keywords" content="вейксерфинг, тренировки, катер, wake discovery, wake camp, обучение, mywave">
+  <meta name="keywords" content="вейксерфинг, тренировки, катер, camp, обучение, mywave">
 {% endblock %}
 
 {% block content %}
@@ -14,40 +16,51 @@
       <button class="carousel-prev" aria-label="Предыдущие услуги">◀</button>
       <div class="carousel-track">
         {% for service in services %}
-        <div class="service-card">
+        <div class="service-card js-expandable-card" data-service="{{ service.service_id }}">
           <div class="service-image-container">
-            <div class="image-placeholder"></div>
-            <img class="service-image" 
-                 src="{{ url_for('static', filename='images/' + service.image_url) }}"
-                 srcset="
-                    {{ url_for('static', filename='images/small/' + service.image_url) }} 300w,
-                    {{ url_for('static', filename='images/medium/' + service.image_url) }} 600w,
-                    {{ url_for('static', filename='images/large/' + service.image_url) }} 1200w
-                 "
-                 sizes="(max-width: 300px) 300px,
-                        (max-width: 600px) 600px,
-                        1200px"
-                 loading="lazy" 
-                 alt="{{ service.name }}" 
-                 data-fallback="{{ url_for('static', filename='images/sample-product.jpg') }}">
+            {% if service.images and service.images|length > 1 %}
+            <div class="card-media-carousel" data-images="{{ service.images|join(',') }}" data-image-urls="{{ service.image_urls|default([])|join(',') }}">
+              <button type="button" class="carousel-nav carousel-prev-inner" aria-label="Предыдущее">‹</button>
+              <img class="service-image"
+                   src="{{ url_for('static', filename=service.cover) }}"
+                   loading="lazy"
+                   alt="{{ service.name }}"
+                   data-fallback="{{ url_for('static', filename=service.fallback) }}">
+              <button type="button" class="carousel-nav carousel-next-inner" aria-label="Следующее">›</button>
+            </div>
+            {% else %}
+            <img class="service-image"
+                 src="{{ url_for('static', filename=service.cover) }}"
+                 loading="lazy"
+                 alt="{{ service.name }}"
+                 data-fallback="{{ url_for('static', filename=service.fallback) }}">
+            {% endif %}
           </div>
           <h3>{{ service.name }}</h3>
-          <p>{{ service.description }}</p>
+          <p class="service-description service-description--short">{{ service.description }}</p>
           <p class="price">Цена: {{ service.price }}</p>
-          {% if service.modal_id %}
-          <!-- Для услуг с модальным окном бронирования -->
-          <button class="btn btn-primary-lg book-now" 
-                  data-service="{{ service.service_id }}"
-                  data-modal="{{ service.modal_id }}">
-            {{ service.button_text }}
-          </button>
-          {% else %}
-          <!-- Для информационных страниц услуг -->
-          <a class="btn btn-ghost"
-             href="{{ service.book_url }}">
-            {{ service.button_text }}
-          </a>
-          {% endif %}
+          <div class="card-details">
+            {% if service.service_id == 'gym' %}
+            <p class="card-details__text">Тренировка по авторской методике: индивидуально или мини-группа. Развитие баланса, координации и биомеханики для уверенного прогресса на воде. Кому подходит: новичкам и тем, кто хочет быстрее прогрессировать. Длительность: 1.5 часа.</p>
+            {% elif service.service_id == 'boat' %}
+            <p class="card-details__text">1 сет — 25 минут за катером с тренером. Количество сетов подбирается под задачу и уровень ученика. Баланс-борд перед стартом, постановка техники, корректировки по ходу.</p>
+            {% elif service.service_id == 'camp' %}
+            <p class="card-details__text">В базу входит: проживание, тренировки, сопровождение, базовая программа, разбор техники, фото/видео, экипировка. Отдельно могут оплачиваться: трансфер, индивидуальные тренировки, доп. катание, аренда снаряжения, одноместное размещение, экскурсии, питание вне пакета.</p>
+            {% elif service.service_id == 'coach_triper' %}
+            <p class="card-details__text">Формат: 1–3 дня или серия тренировок. Для кого: частные райдеры, клубы, команды. Результат: план занятий + корректировки техники + понятные упражнения.</p>
+            {% elif service.service_id == 'consulting' %}
+            <p class="card-details__text">Построение клуба с нуля: чек-лист запуска, обучение персонала, внедрение систем и методик. Операционная и тренировочная модель под ключ.</p>
+            {% endif %}
+          </div>
+          <div class="service-card-actions">
+            {% if service.modal_id %}
+            <button class="btn btn-primary-lg book-now"
+                    data-service="{{ service.service_id }}"
+                    data-modal="{{ service.modal_id }}">
+              {{ service.button_text }}
+            </button>
+            {% endif %}
+          </div>
         </div>
         {% endfor %}
       </div>
@@ -55,16 +68,8 @@
     </div>
   </section>
 
-  <!-- Модальные окна для бронирования -->
-  {% include 'partials/booking_modals.html' %}
-  {% include 'partials/reco_block.html' with context='services' %}
-
 {% endblock %}
 
 {% block scripts %}
-  <!-- Подключаем скрипт для бронирования -->
-  <script src="{{ url_for('static', filename='js/booking.js') }}" defer></script>
-  <!-- Подключаем скрипт для эффектов изображений -->
   <script src="{{ url_for('static', filename='js/image-effects.js') }}" defer></script>
 {% endblock %}
-

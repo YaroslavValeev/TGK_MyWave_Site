@@ -1,0 +1,27 @@
+{
+  "worksheet_name": "raw_feed",
+  "detected_header_row_index": 0,
+  "total_scanned_rows": 345,
+  "usable_rows_after_header": 344,
+  "normalized_rows_count": 2,
+  "publishable_rows_count": 2,
+  "empty_status_count": 196,
+  "empty_status_share": 0.569767,
+  "status_distribution": {
+    "(empty)": 196,
+    "READY_TO_PUBLISH": 2,
+    "DRAFT": 146
+  },
+  "sample_entries": [
+    {
+      "title": "P0 test",
+      "slug": "p0-test-20260128_105337",
+      "published_at": "2026-03-25 15:11:12.168338"
+    },
+    {
+      "title": "P0 test",
+      "slug": "p0-test-missing-rn-20260128_105342",
+      "published_at": "2026-03-25 15:11:12.171342"
+    }
+  ]
+}

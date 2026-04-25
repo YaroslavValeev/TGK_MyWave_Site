@@ -77,7 +77,7 @@
     </div>
   </noscript>
 
-  <link rel="preload" href="/static/fonts/pangolin.woff2" as="font" type="font/woff2" crossorigin>
+  {% block extra_head %}{% endblock %}
   {% block critical_css %}
   <style>
       body { 
@@ -95,7 +95,7 @@
   {% block head %}{% endblock %}
 </head>
 
-<body>
+<body{% block body_attrs %}{% endblock %}>
   <!-- Шапка -->
   <header class="site-header" id="site-header">
     <div class="header-inner">
@@ -104,11 +104,11 @@
       </div>
       <nav class="site-nav" id="site-nav">
         <ul>
-          <li><a href="#hero">Главная</a></li>
-          <li><a href="#services">Услуги</a></li>
-          <li><a href="#events">Мероприятия</a></li>
-          <li><a href="#blog">Блог</a></li>
-          <li><a href="#contacts">Контакты</a></li>
+          <li><a href="{{ url_for('services.services_list') }}">Услуги</a></li>
+          <li><a href="{{ url_for('shop.shop_index') }}">Товары</a></li>
+          <li><a href="{{ url_for('projects_page') }}">Проекты</a></li>
+          <li><a href="{{ url_for('blog.blog_index') }}">Блог</a></li>
+          <li><a href="{{ url_for('index') }}#contacts">Контакты</a></li>
         </ul>
       </nav>
       <button id="dark-mode-toggle" class="theme-toggle" aria-label="Переключить тему">🌙</button>
@@ -124,6 +124,7 @@
   <div id="progress-bar" class="progress-bar">
     <div id="progress-fill"></div>
   </div>
+  {% block fixed_indicators %}{% endblock %}
 
   <!-- Контент -->
   <main>
@@ -177,9 +178,11 @@
   <script type="module" nonce="{{ g.csp_nonce }}">
     import { SocketStatus } from '/static/js/socket-status.js';
     const socket = new SecureSocketIO(window.location.origin, {
-      transports: ['websocket'],
+      path: '/socket.io',
+      transports: ['polling', 'websocket'],
+      timeout: 8000,
+      reconnectionAttempts: 3,
       autoConnect: false,
-      reconnectionAttempts: 5,
       onCSRFError: () => {
         document.getElementById('socket-status-indicator').textContent = 'Ошибка безопасности';
         setTimeout(() => window.location.reload(), 3000);
@@ -189,16 +192,22 @@
     socket.connect();
   </script>
   {% block scripts %}{% endblock %}
-  <script src="{{ url_for('static', filename='js/services-carousel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/carousel-arrows.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/services-expand.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/card-gallery.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/image-fallback.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/inline.js') }}"></script>
   <script src="{{ url_for('static', filename='js/preloader.js') }}"></script>
   <script src="{{ url_for('static', filename='js/image-effects.js') }}"></script>
 
-  <!-- Recommendations client script (loads recommendation widgets & analytics pings) -->
-  <script type="module" src="{{ url_for('static', filename='js/reco.js') }}" nonce="{{ g.csp_nonce }}"></script>
+  <!-- Модальные окна бронирования (modalCalendar, modalSlots и т.д.) — нужны для booking.js -->
+  {% include 'partials/booking_modals.html' %}
 
-  <!-- booking.js должен быть после блока content и всех модалок -->
+  <!-- booking.js, modals-close.js (надёжное закрытие Camp/CoachTriper/Consulting) и формы заявок -->
   <script defer src="{{ url_for('static', filename='js/booking.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/modals-close.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/modal-lead-forms.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/ruza-lead-form.js') }}"></script>
 
   <!-- Контейнер для success-view partial (подгружается динамически) -->
   <div id="success-modal" class="modal success-modal hidden" aria-hidden="true">

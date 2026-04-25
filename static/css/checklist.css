@@ -1,0 +1,303 @@
+/**
+ * Checklist project — карточный UI, приоритеты, прогресс
+ * Соответствует финальному согласованному виду
+ */
+
+/* ========== Hero & верхние секции — компактный ритм (без пустых пространств) ========== */
+/* Переопределяем глобальные отступы mw-section только для страницы чек-листа */
+.mw-section {
+  padding: clamp(16px, 2vw, 28px) 0;
+  margin-bottom: 0;
+}
+.mw-section + .mw-section { margin-top: 0; }
+.mw-section .mw-card { padding: 1rem 1.25rem !important; }
+.mw-section h2 { margin: 0 0 0.5rem 0 !important; }
+.mw-section h3 { margin: 0 0 0.4rem 0 !important; }
+.mw-section p { margin: 0 0 0.5em 0; }
+.mw-section p:last-child { margin-bottom: 0; }
+
+/* mw-hero не используем — его ::before блокирует клики; checklist-hero самодостаточен */
+.checklist-hero {
+  position: relative;
+  padding-top: clamp(32px, 4vw, 48px);
+  padding-bottom: clamp(20px, 2.5vw, 32px);
+}
+.checklist-hero .mw-container { position: relative; z-index: 1; }
+.checklist-hero__badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 0.5rem; }
+.checklist-hero__badge { padding: 5px 10px; background: rgba(53,192,205,0.15); color: var(--mw-brand, #35C0CD); border-radius: 8px; font-size: 0.85em; font-weight: 600; }
+.checklist-hero__title { font-size: clamp(26px, 2.8vw, 38px); margin: 0 0 0.25em; color: var(--mw-text); }
+.checklist-hero__subtitle { font-size: 1.15rem; margin: 0 0 0.2rem; color: var(--mw-text); font-weight: 600; }
+.checklist-hero__lead { font-size: 0.95rem; margin: 0 0 0.6rem; color: var(--mw-muted, #56606B); max-width: 60ch; }
+.checklist-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  margin-top: 0.5rem;
+}
+.checklist-hero__actions a,
+.checklist-hero__actions button {
+  cursor: pointer;
+  pointer-events: auto;
+}
+.checklist-value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.65rem; margin-top: 0.5rem; }
+.checklist-value-item { padding: 0.7rem; border: 1px solid var(--mw-border, #eee); border-radius: 12px; }
+.checklist-value-item h3 { font-size: 1.05rem; margin: 0 0 0.25em; color: var(--mw-text); }
+.checklist-value-item p { font-size: 0.9rem; margin: 0; color: var(--mw-muted); }
+.checklist-structure-list { list-style: none; padding: 0; margin: 0.5rem 0 0; }
+.checklist-structure-list li { padding: 0.3rem 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+.checklist-structure-list li:last-child { border-bottom: none; }
+.checklist-cta { padding-top: clamp(12px, 1.5vw, 20px) !important; padding-bottom: clamp(12px, 1.5vw, 20px) !important; }
+.checklist-cta .mw-card--cta { text-align: center; padding: 1rem 1.25rem !important; }
+.checklist-cta__actions { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; margin-top: 0.5rem; }
+#checklist-content { padding-top: clamp(12px, 1.5vw, 20px) !important; }
+#checklist-content .mw-card.wake-checklist { padding: 1rem 1.25rem !important; }
+@media (max-width: 600px) { .checklist-value-grid { grid-template-columns: 1fr; } .checklist-hero__actions { flex-direction: column; } }
+
+/* ========== Intro чек-листа ========== */
+.wake-checklist__intro { margin-bottom: 0.75rem; }
+.wake-checklist__intro-text { margin: 0; color: var(--mw-muted); font-size: 0.95rem; }
+
+/* ========== Cover card — главная карточка с изображением ========== */
+.wake-checklist__cover-card {
+  position: relative;
+  border-radius: var(--mw-radius-lg, 16px);
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+  min-height: 180px;
+  background: linear-gradient(135deg, var(--mw-brand) 0%, var(--mw-brand-dark) 100%);
+}
+.wake-checklist__cover-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.wake-checklist__cover-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 50%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1rem 1.25rem 1.25rem;
+}
+.wake-checklist__cover-card-title {
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+.wake-checklist__cover-card-subtitle {
+  color: rgba(255,255,255,0.9);
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* ========== Секции чек-листа ========== */
+.wake-checklist__section { margin-bottom: 1rem; }
+.wake-checklist__section-title {
+  font-size: 1.3rem;
+  margin: 0 0 0.5rem;
+  color: var(--mw-text);
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid var(--mw-border);
+}
+.wake-checklist__subsection-title { font-size: 1.05rem; margin: 0.5rem 0 0.3rem; color: var(--mw-muted); }
+
+/* ========== Grid карточек ========== */
+.wake-checklist__cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+@media (max-width: 900px) {
+  .wake-checklist__cards { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .wake-checklist__cards { grid-template-columns: 1fr; }
+}
+
+/* ========== Карточка ========== */
+.wake-checklist__card {
+  background: var(--mw-surface, #fff);
+  border-radius: var(--mw-radius-md, 12px);
+  box-shadow: 0 4px 16px rgba(18,22,27,0.08);
+  border: 1px solid var(--mw-border);
+  padding: 0.9rem 1.1rem;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  display: flex;
+  flex-direction: column;
+  min-height: 130px;
+}
+.wake-checklist__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(18,22,27,0.14);
+}
+/* Priority shadows — усиленная подсветка (≈+25% opacity, больше spread/blur) */
+.wake-checklist__card[data-priority="critical"] {
+  box-shadow: 0 4px 18px 2px rgba(220, 53, 69, 0.32);
+}
+.wake-checklist__card[data-priority="critical"]:hover {
+  box-shadow: 0 8px 26px 4px rgba(220, 53, 69, 0.38);
+}
+.wake-checklist__card[data-priority="base"] {
+  box-shadow: 0 4px 18px 2px rgba(13, 110, 253, 0.26);
+}
+.wake-checklist__card[data-priority="base"]:hover {
+  box-shadow: 0 8px 26px 4px rgba(13, 110, 253, 0.35);
+}
+.wake-checklist__card[data-priority="recommended"] {
+  box-shadow: 0 4px 18px 2px rgba(25, 135, 84, 0.26);
+}
+.wake-checklist__card[data-priority="recommended"]:hover {
+  box-shadow: 0 8px 26px 4px rgba(25, 135, 84, 0.35);
+}
+/* Completed state — приоритетная тень сохраняется */
+.wake-checklist__card--completed {
+  background: rgba(25, 135, 84, 0.06);
+  border-color: rgba(25, 135, 84, 0.3);
+}
+.wake-checklist__card--completed[data-priority="critical"] { box-shadow: 0 4px 18px 2px rgba(220, 53, 69, 0.2); }
+.wake-checklist__card--completed[data-priority="base"] { box-shadow: 0 4px 18px 2px rgba(13, 110, 253, 0.18); }
+.wake-checklist__card--completed[data-priority="recommended"] { box-shadow: 0 4px 18px 2px rgba(25, 135, 84, 0.25); }
+
+.wake-checklist__card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-bottom: 0.35rem;
+}
+.wake-checklist__card-header .wake-checklist__checkbox {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.2rem;
+  cursor: pointer;
+}
+.wake-checklist__card-title {
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.3;
+  color: var(--mw-text);
+  margin: 0;
+}
+.wake-checklist__card-media {
+  min-height: 52px;
+  margin: 0.35rem 0;
+  border-radius: 8px;
+  background: var(--mw-bg, #f6f8fa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wake-checklist__card-media img {
+  max-width: 100%;
+  max-height: 80px;
+  object-fit: contain;
+}
+.wake-checklist__card-media:empty::before {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 40px;
+  background: var(--mw-border);
+  border-radius: 50%;
+  opacity: 0.5;
+}
+.wake-checklist__card-body {
+  font-size: 0.9rem;
+  color: var(--mw-muted);
+  line-height: 1.5;
+  margin-top: auto;
+}
+.wake-checklist__card-body p { margin: 0 0 0.5em; }
+.wake-checklist__card-body p:last-child { margin-bottom: 0; }
+.wake-checklist__card-body ul { margin: 0.5em 0; padding-left: 1.25em; }
+
+/* Родительский .mw-card не должен получать transform на hover — иначе шкала прогресса скрывается */
+.wake-checklist.mw-card:hover {
+  transform: none !important;
+  box-shadow: var(--mw-shadow-1) !important;
+  border-color: var(--mw-border) !important;
+}
+
+/* ========== Progress bar — фиксированная панель под шапкой ========== */
+.wake-checklist__progress-bar {
+  display: none;
+  position: fixed;
+  top: calc(var(--mw-header-h, 60px) + 3px); /* ниже header и scroll-progress */
+  left: 0;
+  right: 0;
+  z-index: 1001; /* выше header (1000), чтобы шкала не перекрывалась при hover на карточках */
+  height: 36px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--mw-border);
+  box-shadow: 0 2px 12px rgba(18, 22, 27, 0.06);
+  padding: 0 1rem;
+  align-items: center;
+  gap: 1rem;
+  animation: checklistProgressFadeIn 0.3s ease;
+}
+.wake-checklist__progress-bar--visible {
+  display: flex !important;
+}
+@keyframes checklistProgressFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.wake-checklist__progress-bar-inner {
+  flex: 1;
+  min-width: 0;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.wake-checklist__progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--mw-brand), var(--mw-brand-dark));
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+.wake-checklist__progress-percent {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--mw-text);
+  min-width: 2.5em;
+}
+.wake-checklist__progress-hint {
+  font-size: 0.75rem;
+  color: var(--mw-muted);
+  white-space: nowrap;
+}
+.wake-checklist__progress-hint .breakdown-critical { color: #dc3545; }
+.wake-checklist__progress-hint .breakdown-base { color: #0d6efd; }
+.wake-checklist__progress-hint .breakdown-recommended { color: #198754; }
+
+/* ========== Print mode ========== */
+@media print {
+  .checklist-hero__actions,
+  .checklist-cta,
+  .js-checklist-print,
+  #checklist-print-btn,
+  .js-checklist-reset,
+  .wake-checklist__cover-card img,
+  .wake-checklist__card-media img,
+  .wake-checklist__progress-bar {
+    display: none !important;
+  }
+  .wake-checklist__card {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    break-inside: avoid;
+  }
+  .wake-checklist__card-media:empty { min-height: 0; }
+  .wake-checklist__card-media:empty::before { display: none; }
+}

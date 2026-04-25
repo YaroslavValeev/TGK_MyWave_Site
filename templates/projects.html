@@ -1,58 +1,30 @@
 {% extends "base.html" %}
+{% block body_attrs %} data-mw-chat-context='{{ {"entry":"projects","kind":"section","title":"Проекты MyWave"}|tojson }}'{% endblock %}
 {% block title %}Проекты — MyWave{% endblock %}
 {% block content %}
-<section class="container projects">
+<section class="container projects projects-section">
   <h1 class="section-title">Проекты</h1>
 
-  <ul class="projects-grid">
-    {% for p in projects %}
-      <li class="project-card">
-        {% if p.cover %}
-        <img
-          src="{{ url_for('static', filename=p.cover) }}"
-          alt="{{ p.name }} — обложка проекта"
-          loading="lazy" width="1200" height="800">
+  <div class="projects-carousel">
+    <button class="carousel-prev" aria-label="Предыдущие проекты">◀</button>
+    <div class="carousel-track">
+      {% for p in projects %}
+        {% if p.id == 'wake_challenge' %}
+        {% include 'partials/project_card_wake_challenge.html' %}
+        {% elif p.id == 'mywave_ruza_camp' %}
+        {% include 'partials/project_card_ruza_camp.html' %}
+        {% elif p.id == 'wakesurf_safari' %}
+        {% include 'partials/project_card_wakesurf_safari.html' %}
+        {% elif p.id == 'checklist' %}
+        {% include 'partials/project_card_checklist.html' %}
+        {% else %}
+        {% include 'partials/project_card.html' %}
         {% endif %}
-        <div class="project-card__body">
-          <h2 class="project-card__title">{{ p.name }}</h2>
-          <p class="project-card__summary">{{ p.summary }}</p>
-          <p class="project-card__meta">
-            <span class="city">{{ p.city }}</span>
-            {% if p.tags %}
-              <span class="tags">
-                {% for t in p.tags %}
-                  <span class="tag">{{ t }}</span>
-                {% endfor %}
-              </span>
-            {% endif %}
-          </p>
-          {% if p.price_from or p.level %}
-            <p class="project-card__pricing">
-              {% if p.price_from %}<span class="price">{{ p.price_from }}</span>{% endif %}
-              {% if p.level %}<span class="level">уровень: {{ p.level }}</span>{% endif %}
-            </p>
-          {% endif %}
-
-          {% if p.images %}
-          <div class="project-card__gallery" aria-label="Превью галереи">
-            {% for img in p.images %}
-              <img src="{{ url_for('static', filename=img) }}"
-                   alt="{{ p.name }} — превью {{ loop.index }}"
-                   loading="lazy" width="400" height="266">
-            {% endfor %}
-          </div>
-          {% endif %}
-
-          {% if p.cta_url %}
-            <a class="btn btn-primary" href="{{ p.cta_url }}">Записаться</a>
-          {% endif %}
-        </div>
-      </li>
-    {% endfor %}
-  </ul>
+      {% endfor %}
+    </div>
+    <button class="carousel-next" aria-label="Следующие проекты">▶</button>
+  </div>
 </section>
-
-{% include 'partials/reco_block.html' with context='projects' %}
 
 {% if showcase_graph %}
 <script type="application/ld+json" nonce="{{ csp_nonce }}">

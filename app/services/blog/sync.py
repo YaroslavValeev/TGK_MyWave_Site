@@ -1,9 +1,11 @@
 """
 Синхронизация блога из Google Sheets (PARSER_TAB) в локальную БД.
+
+Publishable v1: docs/BLOG_CONTRACT_v1.md (is_publishable_row из publishability).
 """
 import json
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 try:
@@ -14,11 +16,11 @@ except ImportError:
 
 from app.services.parser_news_sheet import fetch_parser_news_rows
 from app.services.blog.render import safe_render_markdown
+from app.services.blog.display_text import plain_title_for_display
+from app.services.blog.publishability import is_publishable_row
 from app.database.models import BlogPost, db
 
 # --- helpers ---
-
-PUBLISHABLE_STATUSES = {"READY_TO_PUBLISH", "PUBLISHED", "published"}
 
 
 def _as_bool(v: Any) -> bool:
@@ -49,6 +51,18 @@ def _safe_dt(v: Any) -> Optional[datetime]:
         except Exception:
             continue
     return None
+
+
+def _normalize_to_naive_utc(dt: Optional[datetime]) -> Optional[datetime]:
+    """
+    Приводит datetime к naive UTC для сравнения с datetime.utcnow() в publish pipeline.
+    Naive вход трактуем как уже UTC (как часто отдаёт Sheets без таймзоны).
+    """
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt
+    return dt.astimezone(timezone.utc).replace(tzinfo=None)
 
 
 def _stable_checksum(row: Dict[str, Any]) -> str:
@@ -113,21 +127,6 @@ def _parse_tags(raw_tags: Any, ne: Any) -> List[str]:
     return out
 
 
-def _is_publishable(row: Dict[str, Any]) -> bool:
-    """Проверяет, можно ли публиковать строку."""
-    status = str(row.get("status") or "").strip().upper()
-    published_posts = _as_bool(row.get("published_posts"))
-    final_posts = str(row.get("final_posts") or "").strip()
-    
-    # Если есть news_articles с готовыми полями
-    if row.get("title") and row.get("text"):
-        status_lower = status.lower()
-        return status_lower in PUBLISHABLE_STATUSES or published_posts
-    
-    # Для raw_feed: нужен final_posts
-    return bool(final_posts) and (status in PUBLISHABLE_STATUSES or published_posts)
-
-
 def sync_blog_from_parser_tab(db_session, logger=None) -> Dict[str, int]:
     """
     Синхронизирует блог из PARSER_TAB в локальную БД.
@@ -151,7 +150,7 @@ def sync_blog_from_parser_tab(db_session, logger=None) -> Dict[str, int]:
             skipped += 1
             continue
 
-        publishable = _is_publishable(row)
+        publishable = is_publishable_row(row)
         if not publishable:
             hidden += 1
             continue
@@ -159,6 +158,9 @@ def sync_blog_from_parser_tab(db_session, logger=None) -> Dict[str, int]:
         title = str(row.get("title") or row.get("raw_title") or "").strip()
         if not title:
             title = f"Материал {sheet_id}"
+        title_display = plain_title_for_display(title)
+        if not title_display:
+            title_display = f"Материал {sheet_id}"
 
         checksum = _stable_checksum(row)
 
@@ -184,8 +186,8 @@ def sync_blog_from_parser_tab(db_session, logger=None) -> Dict[str, int]:
         if not post:
             post = BlogPost(
                 id=sheet_id,
-                title=title,
-                slug=_slugify(title, sheet_id),
+                title=title_display,
+                slug=_slugify(title_display, sheet_id),
             )
             created += 1
         else:
@@ -195,13 +197,13 @@ def sync_blog_from_parser_tab(db_session, logger=None) -> Dict[str, int]:
         post.source_name = str(row.get("source_name") or "").strip() or None
         post.source_url = str(row.get("source_url") or "").strip() or None
 
-        post.title = title
+        post.title = title_display
         # slug: если в Sheets есть поле slug — уважаем его
         sheet_slug = str(row.get("slug") or "").strip()
         if sheet_slug:
             post.slug = sheet_slug
         elif not post.slug:
-            post.slug = _slugify(title, sheet_id)
+            post.slug = _slugify(title_display, sheet_id)
 
         post.excerpt = excerpt
         post.content_md = content_md

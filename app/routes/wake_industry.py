@@ -15,9 +15,10 @@ except ImportError:
 
 
 @wake_industry_bp.get("/wake-industry")
-def wake_industry_page():
-    """Страница с чеклистом условий для достижения высоких показателей."""
-    return render_template("wake_industry/checklist.html")
+def wake_industry_redirect():
+    """Legacy: редирект на канонический URL чеклиста."""
+    from flask import redirect
+    return redirect('/projects/checklist-org', code=301)
 
 
 @wake_industry_bp.get("/wake-industry/download")

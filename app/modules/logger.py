@@ -1,14 +1,16 @@
 import logging
-from logging.handlers import TimedRotatingFileHandler
 import os
+from logging.handlers import TimedRotatingFileHandler
 
-# Helper: on Windows convert long Unicode paths to short 8.3 paths to
-# avoid potential filesystem encoding/permission issues when some
-# Python runtimes or libraries mis-handle non-ASCII characters in
-# filenames. This is a safe, platform-specific fallback used only for
-# the log file path.
+# Один общий файловый handler на root: иначе каждый вызов get_logger(name)
+# добавлял свой TimedRotatingFileHandler на тот же logs/app.log — на Windows
+# при rollover несколько дескрипторов держали файл → WinError 32.
+
+_root_logging_configured = False
+
+
 def _shortpath(path: str) -> str:
-    if os.name == 'nt':
+    if os.name == "nt":
         try:
             import ctypes
 
@@ -19,42 +21,67 @@ def _shortpath(path: str) -> str:
             if res:
                 return buf.value
         except Exception:
-            # If anything goes wrong, fall back to the original path
             pass
     return path
 
-def get_logger(name):
-    logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
 
-    if not logger.handlers:
-        # Создаём директорию logs, если нет
-        if not os.path.exists('logs'):
-            os.makedirs('logs')
+def _use_timed_rotation() -> bool:
+    """На Windows по умолчанию без rollover (FileHandler). На POSIX — суточная ротация."""
+    v = (os.getenv("LOG_USE_TIMED_ROTATION") or "").strip().lower()
+    if v in ("1", "true", "yes"):
+        return True
+    if v in ("0", "false", "no"):
+        return False
+    return os.name != "nt"
 
-        handler = TimedRotatingFileHandler(
-            filename=_shortpath('logs/app.log'),
-            when='midnight',
+
+def _configure_root_logging_once() -> None:
+    global _root_logging_configured
+    if _root_logging_configured:
+        return
+    _root_logging_configured = True
+
+    if not os.path.exists("logs"):
+        os.makedirs("logs")
+
+    log_file = _shortpath(os.path.join("logs", "app.log"))
+    fmt = logging.Formatter("[%(asctime)s] %(levelname)s in %(module)s: %(message)s")
+
+    root = logging.getLogger()
+    if root.level == logging.NOTSET:
+        root.setLevel(logging.INFO)
+
+    if _use_timed_rotation():
+        fh: logging.Handler = TimedRotatingFileHandler(
+            filename=log_file,
+            when="midnight",
             interval=1,
             backupCount=7,
-            encoding='utf-8'
+            encoding="utf-8",
         )
-        formatter = logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
-        handler.setFormatter(formatter)
-        handler.setLevel(logging.INFO)
-        logger.addHandler(handler)
+    else:
+        fh = logging.FileHandler(log_file, encoding="utf-8")
 
-        # Консольный логгер для разработки
-        console = logging.StreamHandler()
-        console.setLevel(logging.DEBUG)
-        console.setFormatter(formatter)
-        logger.addHandler(console)
+    fh.setLevel(logging.INFO)
+    fh.setFormatter(fmt)
+    root.addHandler(fh)
 
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    ch.setFormatter(fmt)
+    root.addHandler(ch)
+
+
+def get_logger(name):
+    _configure_root_logging_once()
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
     return logger
+
 
 def log_event(event):
     lg = get_logger(__name__)
-    lg.info(f"Событие: {event}")
+    lg.info("Событие: %s", event)
 
-# Глобальный логгер для импорта
+
 logger = get_logger(__name__)

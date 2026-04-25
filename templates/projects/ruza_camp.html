@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+{% block title %}MyWave Ruza Camp — 14 дней на Рузе{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}">
+  <meta name="description" content="Спортивно-развивающая 14-дневная смена на Рузском водохранилище: вода за Wakeflot, проживание, питание. 10–23 августа 2026, 10–20 лет.">
+  <link rel="canonical" href="{{ request.url }}">
+{% endblock %}
+{% block content %}
+
+<div class="ruza-page">
+{# Блок 1. Hero #}
+<section class="mw-section mw-hero ruza-hero" id="top">
+  <div class="mw-container">
+    <div class="ruza-hero__badges">
+      <span class="ruza-hero__badge">10–20 лет</span>
+      <span class="ruza-hero__badge">10–23 августа 2026</span>
+      <span class="ruza-hero__badge">12–16 мест</span>
+    </div>
+    <h1 class="ruza-hero__title">MyWave Ruza Camp</h1>
+    <p class="ruza-hero__subtitle">14 дней на Рузе: вода, команда, результат</p>
+    <ul class="ruza-hero__bullets">
+      <li>1–2 водные сессии в день + подготовка на суше</li>
+      <li>Группы по возрасту и уровню</li>
+      <li>Контроль, экипировка, допуск, сопровождение</li>
+    </ul>
+    <div class="ruza-hero__actions">
+      <button type="button" class="btn-primary btn-book" data-modal="modalRuzaCamp" data-source-cta="hero">Запросить программу и места</button>
+      <a class="btn-secondary btn-ghost" href="#register">Оставить заявку</a>
+    </div>
+    <p class="ruza-hero__disclaimer">Участие по анкете здоровья и медсправке. Допуск к воде после инструктажа и проверки готовности.</p>
+  </div>
+</section>
+
+{# Блок 2. Описание лагеря для родителей #}
+<section class="mw-section" id="description">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Описание лагеря (для родителей)</h2>
+      <p>Это не «детский досуг» и не «лагерь с анимацией». Это спортивно-развивающая 14-дневная смена с проживанием, где ребёнок живёт рядом с водой, тренируется за катером Wakeflot, проходит подготовку на суше и движется по понятной траектории прогресса.</p>
+      <p>Ключевые слова: режим, безопасность, прогресс, команда, ответственность. Программа подходит и новичкам, и продолжающим. Прогнозируемый результат и спокойный, понятный процесс без хаоса.</p>
+    </div>
+  </div>
+</section>
+
+{# Блок 3. Кому подойдёт / не подойдёт #}
+<section class="mw-section" id="suits">
+  <div class="mw-container">
+    <div class="mw-card ruza-two-cols">
+      <h2>Кому подойдёт / не подойдёт</h2>
+      <div class="ruza-cols">
+        <div>
+          <h3>Подойдёт, если</h3>
+          <ul>
+            <li>Любит воду</li>
+            <li>Готов к регулярным тренировкам</li>
+            <li>Нужен режим</li>
+            <li>Есть цель прогресса</li>
+            <li>Есть мотивация быть частью команды</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Не подойдёт, если</h3>
+          <ul>
+            <li>Нужен аниматорский формат</li>
+            <li>Нет готовности к дисциплине</li>
+            <li>Есть ограничения по здоровью, исключающие водные нагрузки</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# Блок 4. Что изменится за 14 дней #}
+<section class="mw-section" id="results">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Что изменится за 14 дней</h2>
+      <ul>
+        <li>Уверенность на воде и в себе</li>
+        <li>Навык следовать правилам и режиму</li>
+        <li>Физический прогресс</li>
+        <li>Опыт команды и ответственности</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{# Блок 5. Это НЕ… #}
+<section class="mw-section" id="not">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Это НЕ…</h2>
+      <p>Не санаторий, не аниматорский формат, не место для телефона. Это лагерь для тех, кто готов двигаться, учиться и быть частью команды.</p>
+    </div>
+  </div>
+</section>
+
+{# Блок 6. Программа и формат #}
+<section class="mw-section" id="program">
+  <div class="mw-container">
+    <div class="mw-card ruza-two-cols">
+      <h2>Программа и формат</h2>
+      <div class="ruza-cols">
+        <div>
+          <h3>Основная смена — 14 дней</h3>
+          <p>10–23 августа 2026. Полный цикл: вода, суша, режим, команда.</p>
+        </div>
+        <div>
+          <h3>Camp Weekend</h3>
+          <p>По запросу — укороченный формат выходного дня.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# Блок 7. Wakeflot и водные активности #}
+<section class="mw-section" id="wakeflot">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Wakeflot и водные активности</h2>
+      <ul>
+        <li>Wakesurf за катером Wakeflot</li>
+        <li>Прогрессия от новичка до уверенного уровня</li>
+        <li>Уровни и обратная связь после сессии</li>
+        <li>Перенос в сушу при плохой погоде</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{# Блок 8. Безопасность и сопровождение #}
+<section class="mw-section" id="safety">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Безопасность и сопровождение</h2>
+      <ul>
+        <li>Политика безопасности</li>
+        <li>Инструктаж перед допуском к воде</li>
+        <li>Команда инструкторов и сопровождающих</li>
+        <li>Базовая экипировка включена</li>
+        <li>Дозирование нагрузки по возрасту</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{# Блок 9. Проживание / питание / логистика #}
+<section class="mw-section" id="logistics">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Проживание, питание, логистика</h2>
+      <ul>
+        <li>Проживание на территории отеля на берегу Рузского водохранилища</li>
+        <li>Питание с учётом ограничений</li>
+        <li>Привоз и забор родителями</li>
+        <li>Самостоятельное прибытие старших по согласию</li>
+        <li>Чёткий режим дня</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{# Блок 10. Стоимость и пакеты #}
+<section class="mw-section" id="price">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Стоимость и пакеты</h2>
+      <div class="ruza-packages">
+        <div class="ruza-package">
+          <h3>Outlaw (Optimum)</h3>
+          <p class="ruza-package__price">170 000–210 000 ₽</p>
+          <p><strong>Ежедневное катание за катером по 25 мин</strong> + проживание, питание, вода, суша, сопровождение, экипировка.</p>
+        </div>
+      </div>
+      <p class="ruza-trust">Оформление по договору. Возврат — 14 рабочих дней после расчёта фактических расходов.</p>
+    </div>
+  </div>
+</section>
+
+{# Блок 11. Документы #}
+<section class="mw-section" id="documents">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Документы</h2>
+      <div class="ruza-docs">
+        <a href="{{ url_for('static', filename='files/MyWave_Ruza_Camp_Contract.pdf') }}" class="btn-primary" id="ruza-doc-contract" target="_blank" rel="noopener">Договор (PDF)</a>
+        <a href="{{ url_for('static', filename='files/MyWave_Ruza_Camp_Contract_Attachments.pdf') }}" class="btn-secondary" id="ruza-doc-attachments" target="_blank" rel="noopener">Приложения к договору (PDF)</a>
+      </div>
+      <p>Исполнитель: MyWave. Информация о возврате — в договоре.</p>
+    </div>
+  </div>
+</section>
+
+{# Блок 12. Партнёрства #}
+<section class="mw-section" id="partners">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Партнёрства</h2>
+      <p>Проект продаётся не только родителям, но и как медиаплощадка и бренд-площадка. Возможности для партнёров: интеграция, контент, охват целевой аудитории.</p>
+      <p>Контакты: <a href="mailto:MyWaveProject@yandex.ru">MyWaveProject@yandex.ru</a>, <a href="tel:+79160117179">+7 916 011 71 79</a></p>
+    </div>
+  </div>
+</section>
+
+{# Блок 13. FAQ #}
+<section class="mw-section" id="faq">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Частые вопросы</h2>
+      <div class="ruza-faq">
+        <details class="ruza-faq__item">
+          <summary>Какой уровень нужен?</summary>
+          <p>Подходит новичкам и продолжающим. Группы формируются по возрасту и уровню.</p>
+        </details>
+        <details class="ruza-faq__item">
+          <summary>Можно ли без опыта?</summary>
+          <p>Да, программа рассчитана и на новичков.</p>
+        </details>
+        <details class="ruza-faq__item">
+          <summary>Сколько человек в группе?</summary>
+          <p>12–16 участников, группы 10–13 / 14–16 / 17–20 лет.</p>
+        </details>
+        <details class="ruza-faq__item">
+          <summary>Как с дисциплиной?</summary>
+          <p>Чёткий режим, правила поведения, ограничения гаджетов. Допуск к воде после инструктажа.</p>
+        </details>
+        <details class="ruza-faq__item">
+          <summary>Медконтроль?</summary>
+          <p>Анкета здоровья и медсправка обязательны. Дозирование нагрузки по возрасту.</p>
+        </details>
+        <details class="ruza-faq__item">
+          <summary>Плохая погода?</summary>
+          <p>Расписание может меняться. Программа переносится на сушу (ОФП, координация, анализ).</p>
+        </details>
+        <details class="ruza-faq__item">
+          <summary>Режим дня?</summary>
+          <p>Утро — вода и техника; день — ОФП, восстановление; вечер — анализ, режим, командные задачи.</p>
+        </details>
+        <details class="ruza-faq__item">
+          <summary>Как выбрать пакет?</summary>
+          <p>Эконом/Оптимум — базовый. Pro — для тех, кто хочет персональные разборы и контент-пакет.</p>
+        </details>
+        <details class="ruza-faq__item">
+          <summary>Нужна ли своя доска?</summary>
+          <p>Базовая экипировка включена. Свою доску можно взять по желанию.</p>
+        </details>
+        <details class="ruza-faq__item">
+          <summary>Можно ли забрать раньше?</summary>
+          <p>Условия досрочного выезда — в договоре.</p>
+        </details>
+        <details class="ruza-faq__item">
+          <summary>Связь с родителями?</summary>
+          <p>Экстренная связь предусмотрена. Режим гаджетов — в правилах.</p>
+        </details>
+        <details class="ruza-faq__item">
+          <summary>Camp Weekend?</summary>
+          <p>Укороченный формат по запросу. Детали уточняйте.</p>
+        </details>
+        <details class="ruza-faq__item">
+          <summary>Логистика?</summary>
+          <p>Привоз и забор родителями. Самостоятельное прибытие старших — по письменному согласию.</p>
+        </details>
+        <details class="ruza-faq__item">
+          <summary>Список вещей?</summary>
+          <p>Выдаётся после подтверждения заявки вместе с программой.</p>
+        </details>
+        <details class="ruza-faq__item">
+          <summary>Когда подтверждаются места?</summary>
+          <p>В течение 24 часов после заявки мы связываемся и уточняем детали.</p>
+        </details>
+        <details class="ruza-faq__item">
+          <summary>Возможна ли рассрочка?</summary>
+          <p>Уточняйте при подаче заявки.</p>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# Блок 14. Финальный экран #}
+<section class="mw-section ruza-final" id="register">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Лето, которое запомнится не фотографиями, а результатом</h2>
+      <p>Оставьте заявку — мы свяжемся в течение 24 часов и пришлём программу смены, список вещей и следующий шаг.</p>
+      <button type="button" class="btn-primary btn-book" data-modal="modalRuzaCamp" data-source-cta="page_final">Запросить программу и места</button>
+    </div>
+  </div>
+</section>
+
+{# Форма заявки на странице #}
+<section class="mw-section" id="ruza-form-section">
+  <div class="mw-container">
+    <div class="mw-card">
+      <h2>Заявка на участие</h2>
+      {% include 'partials/ruza_lead_form.html' %}
+    </div>
+  </div>
+</section>
+
+<style>
+.ruza-page .mw-section{
+  padding: clamp(28px, 3.5vw, 56px) 0;
+}
+.ruza-page .mw-card{
+  padding: 18px !important;
+}
+.ruza-page .mw-section h2{
+  margin: 0 0 12px 0;
+}
+.ruza-page .mw-section p{
+  margin: 0 0 0.65em 0;
+}
+.ruza-page .mw-section p:last-child{
+  margin-bottom: 0;
+}
+.ruza-allowed-day{
+  box-shadow: inset 0 0 0 2px rgba(53,192,205,0.35);
+  border-radius: 6px;
+}
+.ruza-hero__badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
+.ruza-hero__badge { padding: 6px 12px; background: rgba(53,192,205,0.15); color: var(--mw-brand, #35C0CD); border-radius: 8px; font-size: 0.9em; font-weight: 600; }
+.ruza-hero__title { font-size: clamp(28px, 3vw, 42px); margin: 0 0 0.5em; }
+.ruza-hero__subtitle { font-size: 1.25rem; margin: 0 0 1rem; color: var(--mw-muted, #56606B); }
+.ruza-hero__bullets { margin: 0 0 1.5rem; padding-left: 1.5em; }
+.ruza-hero__bullets li { margin: 0.4em 0; }
+.ruza-hero__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; }
+.ruza-hero__disclaimer { font-size: 0.9em; color: var(--mw-muted, #56606B); margin: 0; }
+.ruza-two-cols .ruza-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem; }
+@media (max-width: 700px) { .ruza-two-cols .ruza-cols { grid-template-columns: 1fr; } }
+.ruza-packages { display: grid; grid-template-columns: 1fr; gap: 1rem; margin: 1rem 0; }
+@media (max-width: 600px) { .ruza-packages { grid-template-columns: 1fr; } }
+.ruza-package { padding: 1rem; border: 1px solid var(--mw-border, #eee); border-radius: 12px; }
+.ruza-package__price { font-size: 1.25rem; font-weight: 700; color: var(--mw-brand, #35C0CD); margin: 0.5em 0; }
+.ruza-trust { font-size: 0.9em; margin-top: 1rem; color: var(--mw-muted, #56606B); }
+.ruza-docs { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0; }
+.ruza-faq__item { margin: 0.5em 0; border-bottom: 1px solid var(--mw-border, #eee); }
+.ruza-faq__item summary { cursor: pointer; padding: 0.75em 0; font-weight: 600; }
+.ruza-faq__item p { margin: 0 0 0.75em; padding-left: 0; color: var(--mw-muted, #56606B); }
+.ruza-final { text-align: center; }
+.ruza-final h2 { margin-bottom: 0.5em; }
+</style>
+</div>
+{% endblock %}

@@ -43,6 +43,7 @@ class ShowcaseConfig:
     metadata: dict[str, Any] = field(default_factory=dict)
     itinerary: list[dict[str, Any]] = field(default_factory=list)
     leaderboard: list[dict[str, Any]] = field(default_factory=list)
+    checklist: list[str] = field(default_factory=list)
 
     @property
     def url(self) -> str:
@@ -66,6 +67,7 @@ class ShowcaseConfig:
             'category': self.category,
             'level': self.level,
             'price_from': self.price_from,
+            'checklist': self.checklist,
         }
 
     def as_schema_payload(self, base_route: str) -> dict[str, Any]:
@@ -106,12 +108,72 @@ def get_showcase(showcase_id: str) -> ShowcaseConfig | None:
     return configs.get(showcase_id)
 
 
+from app.services.images_resolver import resolve_card_images, FALLBACK as FALLBACK_IMG
+
+
+def _ensure_images_resolved(cards: list[dict[str, Any]]) -> None:
+    """P0-1: карточка получает images[], cover=images[0], fallback=Place1Logo.png.
+    Источник — скан папки. src всегда файл, не папка."""
+    for card in cards:
+        raw = (card.get('cover') or '').strip()
+        if not raw or raw.startswith('http'):
+            card['cover'] = FALLBACK_IMG
+            card['images'] = [FALLBACK_IMG]
+            card['fallback'] = FALLBACK_IMG
+            continue
+        rel = raw.replace('/static/', '').replace('static/', '').lstrip('/')
+        resolved = resolve_card_images(rel, fallback=FALLBACK_IMG)
+        card['cover'] = resolved['cover']
+        card['images'] = resolved['images']
+        card['fallback'] = resolved['fallback']
+
+
+# Канонический порядок проектов на витрине
+_PROJECT_ORDER = ['wake_challenge', 'wakesurf_safari', 'checklist', 'mywave_ruza_camp']
+
+
 def get_project_cards() -> list[dict[str, Any]]:
+    showcases = list_showcases(channel='projects')
+    by_id = {sc.id: sc for sc in showcases}
+    ordered = []
+    for pid in _PROJECT_ORDER:
+        if pid in by_id:
+            ordered.append(by_id[pid])
+    for sc in showcases:
+        if sc.id not in _PROJECT_ORDER:
+            ordered.append(sc)
     cards = []
-    for sc in list_showcases(channel='projects'):
+    for sc in ordered:
         card = sc.as_card()
-        card['url'] = sc.url
+        # WakeSurf Challenge: ссылка на полную страницу проекта
+        if sc.id == 'wake_challenge':
+            card['url'] = '/projects/wakesurf-challenge-2025'
+            meta = sc.metadata or {}
+            card['lead'] = meta.get('lead', '')
+            card['microfacts'] = meta.get('microfacts', [])
+            card['expanded'] = meta.get('expanded', {})
+        elif sc.id == 'mywave_ruza_camp':
+            card['url'] = '/projects/mywave-ruza-camp'
+            meta = sc.metadata or {}
+            card['lead'] = meta.get('lead', '')
+            card['microfacts'] = meta.get('microfacts', [])
+            card['bullets'] = meta.get('bullets', [])
+            card['expanded'] = meta.get('expanded', {})
+        elif sc.id == 'wakesurf_safari':
+            card['url'] = '/projects/wakesurf-safari'
+            meta = sc.metadata or {}
+            card['lead'] = meta.get('lead', '')
+            card['microfacts'] = meta.get('microfacts', [])
+            card['bullets'] = meta.get('bullets', [])
+            card['expanded'] = meta.get('expanded', {})
+        elif sc.id == 'checklist':
+            card['url'] = '/projects/checklist-org'
+            meta = sc.metadata or {}
+            card['expanded'] = meta.get('expanded', {})
+        else:
+            card['url'] = f"/projects/{sc.slug}"
         cards.append(card)
+    _ensure_images_resolved(cards)
     return cards
 
 

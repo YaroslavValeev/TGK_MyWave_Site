@@ -1,6 +1,8 @@
 """
 Модуль для публикации новостей с обратной записью в Google Sheets (ack).
 
+Контракт publishable v1 для проверки строк: docs/BLOG_CONTRACT_v1.md
+
 Обеспечивает:
 - Lock-механизм для предотвращения гонок
 - Автоматическую публикацию записей со статусом READY_TO_PUBLISH
@@ -745,7 +747,12 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
     if logger is None:
         logger = get_logger(__name__)
     
-    from app.services.blog.sync import sync_blog_from_parser_tab, _is_publishable, _safe_dt
+    from app.services.blog.sync import (
+        sync_blog_from_parser_tab,
+        _safe_dt,
+        _normalize_to_naive_utc,
+    )
+    from app.services.blog.publishability import is_publishable_row
     from app.database.models import BlogPost
     
     stats = {"published": 0, "failed": 0, "locked": 0, "skipped": 0}
@@ -864,8 +871,6 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
             
             # Проверяем scheduled_at
             scheduled_at_raw = _safe_dt(row.get("scheduled_at"))
-            # Нормализуем к naive UTC для безопасного сравнения
-            from app.services.blog.sync import _normalize_to_naive_utc
             scheduled_at = _normalize_to_naive_utc(scheduled_at_raw)
             if scheduled_at and scheduled_at > now:
                 debug_stats["scheduled_future"] += 1
@@ -890,7 +895,7 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
                 continue
             
             # Проверяем публикуемость (должна быть True для READY_TO_PUBLISH)
-            if not _is_publishable(row):
+            if not is_publishable_row(row):
                 debug_stats["not_publishable"] += 1
                 stats["skipped"] += 1
                 # Детальная диагностика почему не публикуется
@@ -949,11 +954,15 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
                     # Синхронизируем (создаём или обновляем)
                     # Используем упрощённую версию логики из sync_blog_from_parser_tab
                     from app.services.blog.render import safe_render_markdown
+                    from app.services.blog.display_text import plain_title_for_display
                     from app.services.blog.sync import _parse_tags, _slugify
                     
                     title = str(row.get("title") or row.get("raw_title") or "").strip()
                     if not title:
                         title = f"Материал {sheet_id}"
+                    title_display = plain_title_for_display(title)
+                    if not title_display:
+                        title_display = f"Материал {sheet_id}"
                     
                     final_posts = str(row.get("final_posts") or row.get("text") or "").strip()
                     content_md = final_posts
@@ -984,8 +993,8 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
                     if not post:
                         post = BlogPost(
                             id=sheet_id,
-                            title=title,
-                            slug=_slugify(title, sheet_id),
+                            title=title_display,
+                            slug=_slugify(title_display, sheet_id),
                         )
                     else:
                         # Обновляем существующий
@@ -994,13 +1003,13 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
                     post.source_type = str(row.get("source_type") or "").strip() or None
                     post.source_name = str(row.get("source_name") or "").strip() or None
                     post.source_url = str(row.get("source_url") or "").strip() or None
-                    post.title = title
+                    post.title = title_display
                     
                     sheet_slug = str(row.get("slug") or "").strip()
                     if sheet_slug:
                         post.slug = sheet_slug
                     elif not post.slug:
-                        post.slug = _slugify(title, sheet_id)
+                        post.slug = _slugify(title_display, sheet_id)
                     
                     post.excerpt = excerpt
                     post.content_md = content_md

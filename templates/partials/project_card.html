@@ -1,0 +1,39 @@
+{# Карточка проекта — единый формат с Услугами и Товарами #}
+{% set _fallback_img = url_for('static', filename=(p.fallback or 'images/Place1Logo.png')) %}
+{% set cover_src = _fallback_img if not p.cover else (p.cover if p.cover.startswith('http') else url_for('static', filename=p.cover)) %}
+<div class="project-card js-expandable-card" id="{{ p.slug }}" data-project="{{ p.slug }}">
+  <div class="service-image-container">
+    {% if p.images and p.images|length > 1 %}
+    <div class="card-media-carousel" data-images="{{ p.images|join(',') }}" data-image-urls="{% for img in p.images %}{{ url_for('static', filename=img) }}{% if not loop.last %},{% endif %}{% endfor %}">
+      <button type="button" class="carousel-nav carousel-prev-inner" aria-label="Предыдущее">‹</button>
+      <img class="service-image project-card__cover" src="{{ cover_src }}" alt="{{ p.name }}" loading="lazy" data-fallback="{{ _fallback_img }}">
+      <button type="button" class="carousel-nav carousel-next-inner" aria-label="Следующее">›</button>
+    </div>
+    {% else %}
+    <img class="service-image project-card__cover" src="{{ cover_src }}" alt="{{ p.name }}" loading="lazy" data-fallback="{{ _fallback_img }}">
+    {% endif %}
+  </div>
+  <h4 class="project-card__title">{{ p.name }}</h4>
+  <p class="project-card__summary service-description service-description--short">{{ p.summary }}</p>
+  {% if p.price_from or p.level %}
+  <p class="price">{% if p.price_from %}{{ p.price_from }}{% endif %}{% if p.price_from and p.level %} · {% endif %}{% if p.level %}уровень: {{ p.level }}{% endif %}</p>
+  {% endif %}
+  <div class="card-details">
+    {% if p.checklist %}
+    <ul class="card-details__list">
+      {% for item in p.checklist %}
+      <li><i class="fas fa-check" aria-hidden="true"></i> {{ item }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if p.city %}<p class="card-details__text">{{ p.city }}{% if p.tags %} · {{ p.tags|join(', ') }}{% endif %}</p>{% endif %}
+  </div>
+  <div class="service-card-actions project-card__actions">
+    {% if p.url %}
+    <a class="btn btn-secondary" href="{{ p.url }}">Подробнее</a>
+    {% endif %}
+    {% if p.cta_url %}
+    <a class="btn btn-primary" href="{{ p.cta_url }}">Записаться</a>
+    {% endif %}
+  </div>
+</div>

@@ -2,6 +2,16 @@ import eventlet
 eventlet.monkey_patch()
 
 import os
+import errno
+import sys
+import logging
+
+# Консоль Windows часто буферизует stdout — строки логов могут «не появляться» до переполнения буфера.
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(line_buffering=True)
+    except Exception:
+        pass
 
 # Загружаем .env файл ПЕРЕД импортом приложения
 try:
@@ -13,6 +23,8 @@ except ImportError:
 from app import create_app, socketio
 from flask import send_from_directory
 
+_log = logging.getLogger("main")
+
 # Настройка Prometheus
 prometheus_dir = os.path.join(os.path.dirname(__file__), 'prometheus_multiproc')
 if not os.path.exists(prometheus_dir):
@@ -22,15 +34,20 @@ os.environ['PROMETHEUS_MULTIPROC_DIR'] = prometheus_dir
 # Включаем Google сервисы
 os.environ['ENABLE_GOOGLE_SERVICES'] = 'True'
 
-app = create_app()
+def _flask_config_name() -> str:
+    v = (os.getenv("FLASK_CONFIG") or os.getenv("FLASK_ENV") or "development").strip().lower()
+    if v in ("production", "prod"):
+        return "production"
+    if v in ("testing", "test"):
+        return "testing"
+    return "development"
 
-# Ensure SocketIO is initialized with eventlet async mode after monkey patching
-try:
-    # socketio is provided by the app package (from app.extensions)
-    socketio.init_app(app, async_mode='eventlet', logger=True, engineio_logger=True)
-except Exception:
-    # If socketio was already initialized inside create_app(), ignore
-    pass
+
+app = create_app(_flask_config_name())
+application = app  # gunicorn / uwsgi
+_log_file_hint = os.path.abspath(os.path.join(os.path.dirname(__file__), "logs", "app.log"))
+_log.info("Приложение загружено; логи: %s", _log_file_hint)
+# init_websocket() уже вызван в create_app() — повторный socketio.init_app не нужен
 
 # [CSP/nonce] вставить сразу после строки: app = create_app()
 import secrets
@@ -85,10 +102,31 @@ def analytics_event():
 # To avoid duplicate endpoint registration we rely on the implementation there.
 
 if __name__ == '__main__':
-    # Run with eventlet; disable the Flask reloader to avoid multiple processes
-    try:
-        socketio.run(app, host='0.0.0.0', port=5000, debug=False, use_reloader=False, log_output=True)
-    except Exception as e:
-        print(f"⚠️ SocketIO run failed: {e}")
-        print("Falling back to standard Flask run...")
-        app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+    host = '0.0.0.0'
+    for port in range(5000, 5011):
+        try:
+            _log.info("Пробуем порт %s (локальный dev; production: gunicorn -c gunicorn.conf.py main:app)", port)
+            socketio.run(
+                app,
+                host=host,
+                port=port,
+                debug=False,
+                use_reloader=False,
+                log_output=_log.isEnabledFor(logging.DEBUG),
+                allow_unsafe_werkzeug=True,
+            )
+            break
+        except OSError as e:
+            # Windows: WinError 10048 (WSAEADDRINUSE); локализованное сообщение не совпадает с EN-текстом.
+            addr_in_use = (
+                e.errno == errno.EADDRINUSE
+                or getattr(e, "winerror", None) == 10048
+                or "address already in use" in str(e).lower()
+                or "уже используется" in str(e).lower()
+            )
+            if addr_in_use:
+                _log.warning("Порт %s занят, следующий", port)
+            else:
+                raise
+    else:
+        _log.error("Порты 5000-5010 заняты; освободите порт.")

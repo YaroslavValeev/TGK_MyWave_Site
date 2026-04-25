@@ -1,51 +1,183 @@
-<div id="bookingDateModal" class="modal hidden">
+{# Модальные окна бронирования — ID должны совпадать с booking.js #}
+<div id="modalCalendar" class="modal hidden">
   <div class="modal-content">
-      <span class="close-modal" data-modal-close>&times;</span>
-      <h2>Выберите дату</h2>
-      <p class="booking-service-hint">Услуга: <strong id="bookingServiceBadge">Зал</strong></p>
-      <p class="progress-info">Шаг 1 / 3</p>
-      <div class="date-input-container">
-          <input type="text" id="bookingDatePickr" placeholder="Выберите дату" readonly>
-          <i id="dateIcon" class="fas fa-calendar-alt"></i>
-      </div>
-      <p id="selectedDateDisplay">Дата не выбрана</p>
-      <button id="confirmDateBtn" class="btn btn-primary">Далее</button>
+    <span class="close-modal">&times;</span>
+    <h2>Выберите дату</h2>
+    <p id="step-indicator" class="progress-info">Шаг 1 / 4</p>
+    <p class="booking-service-hint">Услуга: <strong id="bookingServiceBadge">Зал</strong></p>
+    <div class="date-input-container">
+      <input type="text" id="bookingDateInput" placeholder="Выберите дату" readonly>
+      <i id="dateIcon" class="fas fa-calendar-alt"></i>
+    </div>
+    <button id="confirmDateBtn" class="btn btn-primary">Далее</button>
   </div>
 </div>
-<div id="bookingTimeModal" class="modal hidden">
+<div id="modalSlots" class="modal hidden">
   <div class="modal-content">
+    <span class="close-modal">&times;</span>
     <h3>Выберите время</h3>
-    <p class="progress-info">Шаг 2 / 3</p>
+    <p class="progress-info">Шаг 2 / 4</p>
     <div id="slotButtonsContainer"></div>
     <input type="hidden" id="selectedSlot" />
-    <button id="confirmTimeBtn" disabled>Далее</button>
-    <button id="backToTimeBtn" class="close-modal">Назад</button>
+    <button id="confirmSlotBtn" class="btn btn-secondary">Далее</button>
+    <button class="close-modal btn">Назад</button>
   </div>
 </div>
-<div id="bookingContactModal" class="modal hidden">
+<div id="modalContact" class="modal hidden">
   <div class="modal-content">
+    <span class="close-modal">&times;</span>
     <h3>Ваши данные</h3>
-    <p class="progress-info">Шаг 3 / 3</p>
-    <form id="bookingContactForm">
-      <input type="text" id="bookingName" placeholder="Имя" required />
-      <input type="text" id="bookingPhone" placeholder="Телефон" required />
-      <input type="hidden" id="bookingServiceType" name="service_type" value="gym">
-      <button type="submit">Отправить</button>
-    </form>
-    <button id="backToTimeBtn2" class="close-modal">Назад</button>
+    <p class="progress-info">Шаг 3 / 4</p>
+    <input type="text" id="bookingName" placeholder="Имя" required>
+    <input type="text" id="bookingPhone" placeholder="Телефон" required>
+    <input type="hidden" id="bookingServiceType" name="service_type" value="gym">
+    <button id="confirmContactBtn" class="btn btn-primary">Далее</button>
+    <button class="close-modal btn">Назад</button>
   </div>
 </div>
-<div id="bookingSuccessModal" class="modal hidden">
+<div id="modalConfirm" class="modal hidden">
   <div class="modal-content">
-    <button class="close-modal" id="closeSuccessModal" data-modal-close>&times;</button>
+    <span class="close-modal">&times;</span>
     <h2>Подтверждение записи</h2>
-    <p id="successMessage"></p>
+    <div id="confirmDetails"></div>
+    <a id="home-link" href="/" class="hidden"></a>
     <p class="pay-hint">
-      💳 Оплата производится на месте после тренировки. 
+      💳 Оплата производится на месте после тренировки.
       Мы пока не принимаем онлайн-оплату.
     </p>
+    <div class="modal-actions">
+      <button id="finalConfirmBtn" class="btn btn-primary-lg">Подтвердить запись</button>
+    </div>
   </div>
 </div>
-<div id="bookingToast" class="toast"></div>
-<input type="hidden" id="bookingDate">
-<input type="hidden" id="bookingTime">
+
+{# P1: Модалки Camp, CoachTriper, Consulting — продающие: структура + форма заявки (ТЗ разд. 5) #}
+<div id="modalCamp" class="modal hidden">
+  <div class="modal-content modal-content--full">
+    <span class="close-modal" aria-label="Закрыть">&times;</span>
+    <h2>MyWave Camp — заявка</h2>
+    <p class="modal-lead">Напиши пару деталей — я предложу ближайшие даты/формат и соберу план под тебя.</p>
+    <h4>Для кого</h4>
+    <ul class="modal-checklist">
+      <li>Для тех, кто хочет заметный рывок в технике без перегруза</li>
+      <li>Для тех, кому важны восстановление, режим и «умный прогресс»</li>
+      <li>Для тех, кто любит формат путешествия и атмосферу команды</li>
+    </ul>
+    <h4>Что входит в базу</h4>
+    <ul class="modal-checklist">
+      <li><i class="fas fa-check" aria-hidden="true"></i> Проживание</li>
+      <li><i class="fas fa-check" aria-hidden="true"></i> Тренировки</li>
+      <li><i class="fas fa-check" aria-hidden="true"></i> Сопровождение</li>
+      <li><i class="fas fa-check" aria-hidden="true"></i> Базовая программа</li>
+      <li><i class="fas fa-check" aria-hidden="true"></i> Разбор техники</li>
+      <li><i class="fas fa-check" aria-hidden="true"></i> Фото/видео</li>
+      <li><i class="fas fa-check" aria-hidden="true"></i> Экипировка</li>
+    </ul>
+    <h4>Что может оплачиваться отдельно</h4>
+    <ul>
+      <li>Трансфер до места</li>
+      <li>Индивидуальные тренировки</li>
+      <li>Доп. катание</li>
+      <li>Аренда снаряжения</li>
+      <li>Одноместное размещение</li>
+      <li>Экскурсии</li>
+      <li>Питание вне пакета</li>
+    </ul>
+    <h4>Условия</h4>
+    <p>Стоимость: от 15 000 ₽ (зависит от локации/даты/формата). Количество мест ограничено. Требуется подтверждение участия после согласования деталей.</p>
+    <form class="modal-lead-form" data-service="camp" data-event="camp_lead" data-success="Заявка отправлена! Я свяжусь с тобой и предложу лучшие даты и формат Camp.">
+      <input type="text" name="name" placeholder="Имя" required>
+      <input type="text" name="phone" placeholder="Телефон или Telegram" required>
+      <input type="text" name="level" placeholder="Уровень (новичок / уверенный / трюки)">
+      <input type="text" name="goal" placeholder="Цель (что хочешь улучшить)">
+      <input type="text" name="dates" placeholder="Предпочтительные даты/месяц">
+      <button type="submit" class="btn btn-primary-lg">Отправить заявку</button>
+    </form>
+    <div class="modal-actions">
+      <a href="{{ url_for('index') }}#contacts" class="btn btn-secondary">Написать в чат</a>
+    </div>
+  </div>
+</div>
+<div id="modalCoachTriper" class="modal hidden">
+  <div class="modal-content modal-content--full">
+    <span class="close-modal" aria-label="Закрыть">&times;</span>
+    <h2>Тренер на выезде — заявка</h2>
+    <p class="modal-lead">Опиши локацию и задачу — предложу формат и расчёт.</p>
+    <h4>Что ты получаешь</h4>
+    <ul class="modal-checklist">
+      <li><i class="fas fa-check" aria-hidden="true"></i> Диагностика техники «на месте»: ошибки → быстрые правки</li>
+      <li><i class="fas fa-check" aria-hidden="true"></i> План занятия под твою цель (старт/повороты/трюки/стабильность)</li>
+      <li><i class="fas fa-check" aria-hidden="true"></i> Подсказки по настройке катера/волны (если применимо)</li>
+      <li><i class="fas fa-check" aria-hidden="true"></i> Видео-фидбек + домашние упражнения (5–10 минут в день)</li>
+    </ul>
+    <h4>Форматы</h4>
+    <ul>
+      <li>Разовое занятие (1–2 часа)</li>
+      <li>Сопровождение на день (несколько сетов)</li>
+      <li>Мини-группа (друзья/семья)</li>
+    </ul>
+    <h4>Что нужно от тебя</h4>
+    <p>Локация и время. Уровень и цель. Контакт пилота/катера (если катер ваш).</p>
+    <form class="modal-lead-form" data-service="coach_triper" data-event="coach_lead" data-success="Принято! Я напишу и предложу лучший формат выезда.">
+      <input type="text" name="name" placeholder="Имя" required>
+      <input type="text" name="phone" placeholder="Телефон или Telegram" required>
+      <input type="text" name="location" placeholder="Город/локация">
+      <input type="text" name="dates" placeholder="Даты (или период)">
+      <input type="text" name="task" placeholder="Задача (личная техника / команда / клуб)">
+      <button type="submit" class="btn btn-primary-lg">Отправить заявку</button>
+    </form>
+    <div class="modal-actions">
+      <a href="{{ url_for('index') }}#contacts" class="btn btn-secondary">Написать в чат</a>
+    </div>
+  </div>
+</div>
+<div id="modalConsulting" class="modal hidden">
+  <div class="modal-content modal-content--full">
+    <span class="close-modal" aria-label="Закрыть">&times;</span>
+    <h2>Консалтинг — запуск и развитие клуба</h2>
+    <p class="modal-lead">Экспертная помощь в построении вейксёрф-клуба: от нуля до стабильной работы. Оставьте заявку — предложу формат и план первого созвона.</p>
+    <h4>Для кого</h4>
+    <ul>
+      <li>Владельцы, запускающие клуб с нуля</li>
+      <li>Клубы, которые хотят выйти на новый уровень</li>
+      <li>Команды, которым нужна систематизация процессов</li>
+    </ul>
+    <h4>Какие задачи решаем</h4>
+    <ul class="modal-checklist">
+      <li><i class="fas fa-check" aria-hidden="true"></i> Построение клуба с нуля</li>
+      <li><i class="fas fa-check" aria-hidden="true"></i> Чек-лист успешного запуска и развития клуба</li>
+      <li><i class="fas fa-check" aria-hidden="true"></i> Обучение персонала (инструкторы, сервис)</li>
+      <li><i class="fas fa-check" aria-hidden="true"></i> Внедрение систем, техник и методик</li>
+      <li><i class="fas fa-check" aria-hidden="true"></i> Операционная и тренировочная модель под ключ</li>
+    </ul>
+    <h4>Что входит</h4>
+    <p>Диагностика ситуации, пошаговый план, внедрение процессов, контрольные точки, обучение и поддержка на этапе запуска.</p>
+    <h4>Формат взаимодействия</h4>
+    <p>Онлайн и/или офлайн под задачу. Созвоны, чек-листы, выезды на объект при необходимости. Сроки и объём — по договорённости.</p>
+    <h4>Результат для клуба</h4>
+    <p>Понятная система работы, обученный персонал, внедрённые методики. Чёткие метрики и план развития.</p>
+    <form class="modal-lead-form" data-service="consulting" data-event="consulting_lead" data-success="Заявка отправлена! Я свяжусь и предложу формат консультации.">
+      <input type="text" name="name" placeholder="Имя" required>
+      <input type="text" name="phone" placeholder="Телефон или Telegram" required>
+      <input type="text" name="topic" placeholder="Задача (запуск с нуля / развитие / персонал / системы)">
+      <input type="text" name="goal" placeholder="Кратко опишите ситуацию или цель">
+      <button type="submit" class="btn btn-primary-lg">Запросить консультацию</button>
+    </form>
+    <div class="modal-actions">
+      <a href="{{ url_for('index') }}#contacts" class="btn btn-secondary">Написать в чат</a>
+    </div>
+  </div>
+</div>
+
+{# MyWave Ruza Camp — квалификационная заявка #}
+<div id="modalRuzaCamp" class="modal hidden">
+  <div class="modal-content modal-content--full">
+    <span class="close-modal">&times;</span>
+    <h2>MyWave Ruza Camp — запросить программу и места</h2>
+    <p class="modal-lead">Заполните заявку — мы свяжемся в течение 24 часов и пришлём программу смены, список вещей и следующий шаг.</p>
+    {% include 'partials/ruza_lead_form.html' %}
+    <div class="modal-actions">
+      <a href="/projects/mywave-ruza-camp" class="btn btn-secondary">Перейти на страницу проекта</a>
+    </div>
+  </div>
+</div>

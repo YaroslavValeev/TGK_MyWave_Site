@@ -1,0 +1,26 @@
+# Wake Industry — не показывается на витрине (консолидирован с Checklist)
+# Оставлен для совместимости, channels пуст
+id: wake_industry
+slug: wake-industry
+name: "Wake Industry"
+summary: "Индустрия вейксерфинга: оборудование, события, партнёры"
+description: |
+  Wake Industry — направление, объединяющее производителей, организаторов и партнёров
+  индустрии вейксерфинга.
+category: industry
+kind: resource
+schema_type: Article
+status: inactive
+city: ""
+country: ""
+start_date: "2025-01-01"
+end_date: "2025-12-31"
+tags:
+  - industry
+cover_image: images/Place1Logo.png
+gallery: []
+cta_url: null
+route: /projects
+channels: []
+checklist: []
+metadata: {}

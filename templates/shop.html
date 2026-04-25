@@ -1,68 +1,56 @@
 {% extends "base.html" %}
 
+{% block body_attrs %} data-mw-chat-context='{{ {"entry":"shop","kind":"section","title":"Онлайн-магазин"}|tojson }}'{% endblock %}
+
 {% block content %}
 <section id="shop" class="store-section">
-  <h2>Он‑лайн‑магазин</h2>
+  <h2>Онлайн-магазин</h2>
 
-  <!-- фильтры -->
   <div class="store-filters">
     <button class="filter-btn active" data-category="all">Все</button>
-    <button class="filter-btn" data-category="balance-board">Баланс‑борды</button>
+    <button class="filter-btn" data-category="balance-board">Баланс-борды</button>
     <button class="filter-btn" data-category="poncho">Пончо</button>
     <button class="filter-btn" data-category="boardgame">Настольные&nbsp;игры</button>
     <button class="filter-btn" data-category="wakesurfpolia">WakeSurfPolia</button>
+    <button class="filter-btn" data-category="sertificate">Сертификаты</button>
   </div>
 
-  <!-- карточки -->
-  <div id="store-products" class="store-list">
-    <div class="product-card" data-category="balance-board">
-      <img src="{{ url_for('static', filename='images/balans_trick_trening1.jpg') }}" alt="Баланс-борд">
-      <h4>Баланс-борд</h4>
-      <p>Тренировочный баланс-борд для трюков и фитнеса.</p>
-      <p class="price">7 500&nbsp;₽</p>
-      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='balance-board') }}">Купить</a>
+  <div class="products-carousel">
+    <button class="carousel-prev" aria-label="Предыдущие товары">◀</button>
+    <div id="store-products" class="carousel-track store-list--unified">
+      {% for slug, product in products.items() %}
+      {% set cat = 'balance-board' if 'balance' in slug or 'Balance' in product.title else
+                   'boardgame' if 'wave-cards' in slug or 'Wave' in product.title else
+                   'wakesurfpolia' if 'wakesurfpolia' in slug else
+                   'poncho' if 'poncho' in slug or 'Пончо' in product.title else
+                   'sertificate' if 'sertificate' in slug or 'Сертификат' in product.title else 'all' %}
+      <div class="product-card product-card--unified js-expandable-card" data-category="{{ cat }}"
+           data-mw-product-slug="{{ slug|e }}"
+           data-mw-product-title="{{ product.title|e }}">
+        <div class="service-image-container product-card__image-wrap">
+          {% if product.images and product.images|length > 1 %}
+          <div class="card-media-carousel" data-images="{{ product.images|join(',') }}">
+            <button type="button" class="carousel-nav carousel-prev-inner" aria-label="Предыдущее">‹</button>
+            <img class="service-image" src="{{ url_for('static', filename=product.cover) }}" alt="{{ product.title }}" loading="lazy" data-fallback="{{ url_for('static', filename=product.fallback) }}">
+            <button type="button" class="carousel-nav carousel-next-inner" aria-label="Следующее">›</button>
+          </div>
+          {% else %}
+          <img class="service-image" src="{{ url_for('static', filename=product.cover) }}" alt="{{ product.title }}" loading="lazy" data-fallback="{{ url_for('static', filename=product.fallback) }}">
+          {% endif %}
+        </div>
+        <div class="product-card__body">
+          <h4>{{ product.title }}</h4>
+          <p class="service-description service-description--short">{{ product.description }}</p>
+          <p class="price">{{ product.price }}</p>
+          <div class="card-details"><p class="card-details__text">{{ product.description }}</p></div>
+          {% set buy_href = product.buy_url if product.buy_url else url_for('shop.product', slug=slug) %}
+          <a class="btn btn-primary-lg" href="{{ buy_href }}"{% if product.buy_url %} target="_blank" rel="noopener noreferrer"{% endif %}>Купить</a>
+        </div>
+      </div>
+      {% endfor %}
     </div>
-
-    <div class="product-card" data-category="balance-board">
-      <img src="{{ url_for('static', filename='images/balans_trick_trening.jpg') }}" alt="Баланс-борд Big">
-      <h4>Баланс-борд Big</h4>
-      <p>Увеличенная модель для продвинутых — стабильнее и удобнее для силовых упражнений.</p>
-      <p class="price">9 900&nbsp;₽</p>
-      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='balance-board-big') }}">Купить</a>
-    </div>
-
-    <div class="product-card" data-category="poncho">
-      <img src="{{ url_for('static', filename='images/01.jpg') }}" alt="Пончо сухое">
-      <h4>Пончо для сёрфинга</h4>
-      <p>Удобное сменное пончо — быстро надеть/снять на пляже, сохраняет тепло.</p>
-      <p class="price">4 500&nbsp;₽</p>
-      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='poncho') }}">Купить</a>
-    </div>
-
-    <div class="product-card" data-category="boardgame">
-      <img src="{{ url_for('static', filename='images/sample-product.jpg') }}" alt="Настольная игра">
-      <h4>Настольная игра «Wave Cards»</h4>
-      <p>Игра про трюки и тактику на воде — весёлая и простая, подходит для вечеринок.</p>
-      <p class="price">1 200&nbsp;₽</p>
-      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='wave-cards') }}">Купить</a>
-    </div>
-
-    <div class="product-card" data-category="wakesurfpolia">
-      <img src="{{ url_for('static', filename='images/hero-wakesurf.png') }}" alt="WakeSurfPolia">
-      <h4>WakeSurfPolia</h4>
-      <p>Комплект для тренировок на воде: страховочные элементы и аксессуары.</p>
-      <p class="price">5 000&nbsp;₽</p>
-      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='wakesurfpolia') }}">Купить</a>
-    </div>
-
-    <div class="product-card" data-category="balance-board">
-      <img src="{{ url_for('static', filename='images/02.jpg') }}" alt="Баланс-борд Pro">
-      <h4>Баланс-борд Pro</h4>
-      <p>Профессиональная доска с улучшенной устойчивостью и долговечностью.</p>
-      <p class="price">12 500&nbsp;₽</p>
-      <a class="btn btn-primary-lg" href="{{ url_for('shop.product', slug='balance-board-pro') }}">Купить</a>
-    </div>
+    <button class="carousel-next" aria-label="Следующие товары">▶</button>
   </div>
 </section>
-  <script src="{{ url_for('static', filename='js/shop-filter.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/storeFilter.js') }}"></script>
 {% endblock %}

@@ -172,9 +172,9 @@ def project_page():
     
     sponsor = _read_json(base / "sponsor_packages.json", {
         "packages": [
-            {"tier": "Бронза", "price": 100000, "deliverables": ["Логотип на сайте"]},
-            {"tier": "Серебро", "price": 500000, "deliverables": ["Все из Бронзы"]},
-            {"tier": "Золото", "price": 1000000, "deliverables": ["Все из Серебра"]}
+            {"tier": "Bronze", "price": 100000, "deliverables": ["Логотипы и брендинг", "Упоминания в соцсетях"]},
+            {"tier": "Silver", "price": 500000, "deliverables": ["Всё из Bronze", "Коллаб-контент", "Офлайн-присутствие"]},
+            {"tier": "Gold", "price": 1000000, "deliverables": ["Всё из Silver", "Призы и спецноминации", "Кейсовые видео", "VIP-участие в финале"]}
         ],
         "currency": "₽",
         "contacts": {"email": "Y.Valeev@gmail.com", "phone": "+7 916 011 71 79"}

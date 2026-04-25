@@ -1,0 +1,80 @@
+# Периодический / ручной health-check источника блога (raw_feed через Google Sheets).
+#
+# Секреты репозитория (Settings → Secrets):
+#   GOOGLE_SERVICE_ACCOUNT_JSON — полный JSON сервисного аккаунта (Sheets read).
+#   SPREADSHEET_ID — ID основной таблицы (если PARSER_TAB — имя листа, не отдельный spreadsheet).
+# Опционально:
+#   PARSER_TAB — как в .env (spreadsheet id листа ParserNews или имя листа).
+#   PARSER_SHEET_NAME — имя листа raw_feed при отдельном spreadsheet id в PARSER_TAB.
+#
+# Пороги см. шаг «Run blog smoke check».
+
+name: Blog Health Check
+
+on:
+  schedule:
+    - cron: "30 */6 * * *"  # каждые 6 ч. в :30 UTC (смягчено от */30 — меньше шума и квот)
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: "3.11"
+  FLASK_ENV: development
+  DATABASE_URL: sqlite:///blog_health_ci.db
+  PROMETHEUS_MULTIPROC_DIR: prometheus_multiproc_ci
+  ENABLE_GOOGLE_SERVICES: "1"
+
+jobs:
+  blog-health:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Write Google service account JSON
+        env:
+          SA_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          raw = os.environ.get("SA_JSON", "").strip()
+          if not raw:
+              raise SystemExit("Секрет GOOGLE_SERVICE_ACCOUNT_JSON пуст: добавьте JSON СА в настройках репозитория")
+          root = Path(os.environ["GITHUB_WORKSPACE"])
+          path = root / "configs" / "service_account.json"
+          path.parent.mkdir(parents=True, exist_ok=True)
+          path.write_text(raw, encoding="utf-8")
+          print("Wrote", path, "size", path.stat().st_size)
+          PY
+
+      - name: Run blog smoke check
+        env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          PARSER_TAB: ${{ secrets.PARSER_TAB }}
+          PARSER_SHEET_NAME: ${{ secrets.PARSER_SHEET_NAME }}
+        run: |
+          mkdir -p "$PROMETHEUS_MULTIPROC_DIR" reports
+          python scripts/blog_raw_feed_smoke_check.py \
+            --json \
+            --out-json reports/blog_health.json \
+            --min-publishable 2 \
+            --max-empty-status-share 0.95
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blog-health-report
+          path: reports/blog_health.json
+          if-no-files-found: warn

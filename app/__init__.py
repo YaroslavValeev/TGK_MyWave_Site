@@ -36,7 +36,7 @@ from app.routes.calendar_routes import calendar_bp
 from app.routes.services import services_bp
 from app.routes.booking import booking_bp
 from app.routes.admin_images import admin_images_bp
-from app.extensions import init_extensions, init_websocket, socketio, api
+from app.extensions import init_extensions, init_websocket, socketio, api, csrf
 from app.routes.api import api_ns
 from app.routes.admin import bp as admin_bp
 
@@ -54,20 +54,20 @@ from app.services.responses_api import responses_bp
 from app.routes.safari_cms_api import safari_cms_bp
 from app.routes.safari import safari_bp
 from app.routes.shop import shop_bp
-try:
-    from app.routes.telegram.routes import telegram_bp
-except Exception:
-    telegram_bp = None
-    # Do not let telegram import errors (eg. httpx/telegram incompatibility) break app startup
-    import logging
-    logging.getLogger(__name__).exception('Failed to import telegram_bp; continuing without telegram support')
+telegram_bp = None
+if os.getenv("DISABLE_TELEGRAM") != "1":
+    try:
+        from app.routes.telegram.routes import telegram_bp
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception('Failed to import telegram_bp; continuing without telegram support')
 from app.routes.content_calendar import bp as content_bp, get_events_by_month
 from app.routes.health import health_bp
 
 # Создаем экземпляры расширений
 migrate = Migrate()
 
-from flask_wtf.csrf import CSRFProtect, generate_csrf
+from flask_wtf.csrf import generate_csrf
 
 def create_app(config_name="development"):
     template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates"))
@@ -83,29 +83,27 @@ def create_app(config_name="development"):
     @app.route('/api/csrf-token', methods=['GET'])
     def get_csrf_token():
         from flask_wtf.csrf import generate_csrf
-        print('CSRF endpoint registered')
+        app.logger.debug("csrf-token issued")
         return jsonify({'csrf_token': generate_csrf()})
     
-    # Инициализация CSRF защиты
-    csrf = CSRFProtect()
-    # For testing environment, disable CSRF to simplify API tests
-    if config_name.lower() == 'testing':
-        app.config['WTF_CSRF_ENABLED'] = False
-        app.logger.debug('CSRF disabled for testing environment')
-    csrf.init_app(app)
+    # CSRF: один экземпляр — app.extensions.csrf (init в init_extensions).
+    # Раньше здесь вызывался второй CSRFProtect().init_app(), из‑за чего
+    # @csrf.exempt на /analytics/log не работал (exempt на «левом» экземпляре).
     
     # Обработчик CSRF ошибок
     @app.errorhandler(400)
     def handle_csrf_error(e):
-        import traceback
         from flask import request
-        print("=== CSRF DEBUG ===")
-        print("Request headers:", dict(request.headers))
-        print("Request cookies:", request.cookies)
-        print("Request data:", request.get_data())
-        print("Exception:", e)
-        print(traceback.format_exc())
-        print("==================")
+        if app.config.get("DEBUG") or (os.getenv("CSRF_ERROR_VERBOSE") or "").strip() in ("1", "true", "yes"):
+            import traceback
+            app.logger.warning(
+                "CSRF/400: headers=%s cookies=%s data=%r exc=%r\n%s",
+                dict(request.headers),
+                dict(request.cookies),
+                request.get_data(),
+                e,
+                traceback.format_exc(),
+            )
         if 'CSRF' in str(e):
             return jsonify(error="CSRF token missing or invalid"), 400
         return jsonify(error=str(e)), 400
@@ -115,7 +113,13 @@ def create_app(config_name="development"):
     def inject_csrf_token():
         return dict(csrf_token=generate_csrf())
 
-    # Load assistant prompt from file if present to use as CHAT_SYSTEM_PROMPT fallback
+    # Системная роль для публичного чата (см. docs/CHAT_RUNTIME_AND_RELEASE.md):
+    # - CHAT_BACKEND=completions или отсутствие ASSISTANT_ID → Chat Completions + CHAT_SYSTEM_PROMPT
+    #   (ниже: файл assistant_prompt.md, если не задано в env).
+    # - CHAT_BACKEND=auto и задан ASSISTANT_ID → сначала OpenAI Assistant API (инструкции в кабинете
+    #   OpenAI, не из assistant_prompt.md); при пустом ответе — fallback на Chat Completions с
+    #   CHAT_SYSTEM_PROMPT.
+    # - CHAT_BACKEND=assistant_only → только Assistant API без fallback на completions.
     try:
         prompt_path = os.path.join(app.root_path, 'config', 'assistant_prompt.md')
         if os.path.exists(prompt_path):
@@ -128,9 +132,70 @@ def create_app(config_name="development"):
 
     @app.route('/', endpoint='index')
     def home():
-        # Временно отключаем получение событий календаря
         months = {'Июнь': [], 'Июль': [], 'Август': [], 'Сентябрь': [], 'Октябрь': []}
-        return render_template('index.html', months=months)
+        from app.services.showcases import get_project_cards
+        from app.services.images_resolver import (
+            resolve_card_images,
+            rotate_images_to_cover_index,
+            FALLBACK as FALLBACK_IMG,
+        )
+        from app.routes.shop import _products_with_resolved_images
+
+        try:
+            from app.routes.services import _load_services_config
+            services_config = _load_services_config()
+        except ImportError:
+            app.logger.warning("Fallback: using inline services config")
+            services_config = [
+                {'service_id': 'gym', 'name': 'Запись на тренировку (Зал)', 'description': '...', 'price': '3 500 ₽', 'image_folder': 'images/Services/Gym', 'modal_id': 'modalCalendar', 'button_text': 'Подробнее / Записаться'},
+                {'service_id': 'boat', 'name': 'Запись на катер', 'description': '...', 'price': '10 000 ₽', 'image_folder': 'images/Services/Boat', 'modal_id': 'modalCalendar', 'button_text': 'Подробнее / Записаться'},
+                {'service_id': 'camp', 'name': 'Camp', 'description': '...', 'price': 'от 15 000 ₽', 'image_folder': 'images/Services/Camp', 'modal_id': 'modalCamp', 'button_text': 'Подробнее / Оставить заявку'},
+                {'service_id': 'coach_triper', 'name': 'Тренер на выезде', 'description': '...', 'price': 'по запросу', 'image_folder': 'images/Services/CoachTriper', 'modal_id': 'modalCoachTriper', 'button_text': 'Подробнее / Оставить заявку'},
+                {'service_id': 'consulting', 'name': 'Консалтинг', 'description': '...', 'price': 'по запросу', 'image_folder': 'images/Services/Consalting', 'modal_id': 'modalConsulting', 'button_text': 'Подробнее / Получить консультацию'},
+            ]
+
+        services = []
+        _svc_skip = frozenset({'image_folder', 'cover_index'})
+        for s in services_config:
+            folder = s.get('image_folder', '')
+            resolved = resolve_card_images(folder, fallback=FALLBACK_IMG)
+            imgs = resolved.get('images') or [resolved['cover']]
+            try:
+                ci = int(s.get('cover_index') or 0)
+            except (TypeError, ValueError):
+                ci = 0
+            imgs = rotate_images_to_cover_index(imgs, ci)
+            services.append({
+                **{k: v for k, v in s.items() if k not in _svc_skip},
+                'cover': imgs[0],
+                'fallback': resolved['fallback'],
+                'images': imgs,
+                'image_urls': [url_for('static', filename=p) for p in imgs],
+            })
+        products = _products_with_resolved_images()
+        try:
+            projects = get_project_cards()
+        except Exception as e:
+            app.logger.warning("get_project_cards failed: %s", e)
+            projects = []
+
+        blog_preview_posts = []
+        try:
+            from app.services.blog.store import get_posts
+
+            items, _ = get_posts(page=1, limit=4, prefer_sheets=True)
+            blog_preview_posts = items or []
+        except Exception as e:
+            app.logger.warning("home: не удалось загрузить превью блога: %s", e)
+
+        return render_template(
+            'index.html',
+            months=months,
+            services=services,
+            products=products,
+            projects=projects,
+            blog_preview_posts=blog_preview_posts,
+        )
 
     @app.route('/favicon.ico')
     def favicon():
@@ -219,7 +284,10 @@ def create_app(config_name="development"):
         app.config['AI_GATEWAY_RATE_LIMIT_WINDOW'] = int(os.getenv('AI_GATEWAY_RATE_LIMIT_WINDOW') or 60)
     except Exception:
         app.config['AI_GATEWAY_RATE_LIMIT_WINDOW'] = 60
-    # Затем остальные расширения
+    if config_name.lower() == 'testing':
+        app.config['WTF_CSRF_ENABLED'] = False
+        app.logger.debug('CSRF disabled for testing environment')
+    # Затем остальные расширения (в т.ч. csrf.init_app)
     init_extensions(app, db)
     init_websocket(app)
     
@@ -298,6 +366,22 @@ def create_app(config_name="development"):
     app.register_blueprint(files_bp)
     app.register_blueprint(blog_bp)
     app.register_blueprint(safari_bp)
+    try:
+        from app.routes.projects_safari import projects_safari_bp
+        app.register_blueprint(projects_safari_bp)
+    except Exception:
+        app.logger.debug('projects_safari_bp not found or failed to import')
+    try:
+        from app.routes.projects.wakesurf_challenge import wakesurf_challenge_bp
+        app.register_blueprint(wakesurf_challenge_bp)
+        app.logger.debug('wakesurf_challenge_bp registered')
+    except Exception as e:
+        app.logger.warning('wakesurf_challenge_bp failed to load: %s', e, exc_info=True)
+    try:
+        from app.routes.wake_industry import wake_industry_bp
+        app.register_blueprint(wake_industry_bp)
+    except Exception:
+        app.logger.debug('wake_industry_bp not found or failed to import')
     app.register_blueprint(about_bp)
     app.register_blueprint(contact_bp)
     app.register_blueprint(calendar_bp)
@@ -325,6 +409,15 @@ def create_app(config_name="development"):
         app.register_blueprint(csp_bp, url_prefix='/api')
     except Exception:
         app.logger.debug('csp_bp not found or failed to import')
+        @app.route('/api/csp-violations', methods=['POST'])
+        @csrf.exempt
+        def csp_violations_fallback():
+            """Fallback: accept and discard to avoid 404 when csp_bp fails to load."""
+            try:
+                request.get_json(silent=True)
+            except Exception:
+                pass
+            return '', 204
     # AI Gateway blueprint (optional)
     try:
         from app.routes.ai_gateway_api import ai_gateway_bp, ai_safari_bp, gateway
@@ -450,6 +543,36 @@ def create_app(config_name="development"):
         jsonld = get_projects_graph()
         return render_template('projects.html', projects=projects, showcase_graph=jsonld)
 
+    # Явный маршрут ДО /projects/<slug> — иначе slug перехватывает
+    @app.route('/projects/wakesurf-challenge-2025', methods=['GET'])
+    def wakesurf_challenge_page():
+        view_func = current_app.view_functions.get('wakesurf_challenge.project_page')
+        if view_func:
+            return view_func()
+        try:
+            from app.routes.projects.wakesurf_challenge import project_page
+            return project_page()
+        except Exception as e:
+            current_app.logger.exception("wakesurf_challenge_page: %s", e)
+            return "Страница проекта временно недоступна", 503
+
+    @app.route('/projects/<slug>', methods=['GET'])
+    def project_detail(slug):
+        """Редирект: wake-challenge → WSC; mywave-ruza-camp → страница Ruza; остальные → /projects#slug."""
+        from flask import redirect, url_for
+        if slug == 'wake-challenge':
+            return redirect('/projects/wakesurf-challenge-2025', code=301)
+        if slug == 'wake-indusrty':
+            return redirect('/projects/checklist-org', code=301)
+        if slug == 'checklist-org':
+            return render_template('wake_industry/checklist.html')
+        if slug == 'mywave-ruza-camp':
+            from app.services.showcases import get_showcase
+            sc = get_showcase('mywave_ruza_camp')
+            if sc:
+                return render_template('projects/ruza_camp.html', showcase=sc)
+        return redirect(url_for('projects_page', _anchor=slug))
+
     @app.route('/events', methods=['GET'])
     def events_page():
         from app.services.showcases import get_events_schema, get_event_cards
@@ -461,9 +584,20 @@ def create_app(config_name="development"):
     @app.route('/sitemap.xml', methods=['GET'])
     def sitemap():
         lastmod = datetime.utcnow().date().isoformat()
+        project_slugs = []
+        try:
+            from app.services.showcases import get_project_cards
+            for p in get_project_cards():
+                url = p.get('url', '')
+                if url.startswith('/projects/'):
+                    slug = url.replace('/projects/', '', 1).split('#')[0]
+                    if slug and slug not in project_slugs:
+                        project_slugs.append(slug)
+        except Exception:
+            pass
         urls = {
             'static': ['/', '/projects', '/services', '/book', '/calculator', '/blog'],
-            'project_slugs': []
+            'project_slugs': project_slugs
         }
         xml = render_template('sitemap.xml', lastmod=lastmod, urls=urls)
         resp = make_response(xml)
@@ -475,61 +609,62 @@ def create_app(config_name="development"):
         return render_template('calculator.html')
 
     @app.route('/analytics/log', methods=['POST'])
+    @csrf.exempt
     def analytics_log():
-        # Приём простого JSON лога и прокидка в Google Sheets — заглушка/реализация по месту
-        data = request.get_json(silent=True) or {}
-        event = data.get('event', 'unknown')
-        label = data.get('label', '')
-        phone = data.get('phone', '')
-        showcase_id = data.get('showcase_id')
-        channel = data.get('channel') or data.get('source') or 'web'
-        trip_date = data.get('trip_date')
-        timestamp = datetime.utcnow().isoformat()
-        meta = data.get('meta') or {}
-        if not isinstance(meta, dict):
-            meta = {'payload': meta}
-        if showcase_id:
-            meta['showcase_id'] = showcase_id
-        if channel:
-            meta['channel'] = channel
-        if trip_date:
-            meta['trip_date'] = trip_date
-
-        # Use standardized log_analytics_event helper when available; keep fallback for older format
+        """Fire-and-forget: всегда возвращает 200, чтобы не ломать UX клиента."""
         try:
-            from app.services.google_sheets_service import log_analytics_event
-            sheet_id = app.config.get('ANALYTICS_SHEET_SPREADSHEET_ID') or app.config.get('SPREADSHEET_ID')
-            payload = {
-                'event': event,
-                'context': data.get('context') or label or '',
-                'user_key': data.get('user_key') or data.get('user') or '',
-                'rule_id': data.get('rule_id', ''),
-                'item_id': data.get('item_id', ''),
-                'type': data.get('type', '') or channel,
-                'meta': meta,
-                'ip': request.remote_addr or '',
-                'user_agent': request.headers.get('User-Agent', '')
-            }
-            if sheet_id:
-                log_analytics_event(payload, spreadsheet_id=sheet_id)
-                app.logger.info('Analytics logged via log_analytics_event')
-            else:
-                app.logger.warning('ANALYTICS_SHEET_SPREADSHEET_ID / SPREADSHEET_ID not configured; skipping sheet write')
-        except Exception:
-            # Fallback to append_record for compatibility
+            data = request.get_json(silent=True) or {}
+            event = data.get('event', 'unknown')
+            label = data.get('label', '')
+            phone = data.get('phone', '')
+            showcase_id = data.get('showcase_id')
+            channel = data.get('channel') or data.get('source') or 'web'
+            trip_date = data.get('trip_date')
+            timestamp = datetime.utcnow().isoformat()
+            meta = data.get('meta') or {}
+            if not isinstance(meta, dict):
+                meta = {'payload': meta}
+            if showcase_id:
+                meta['showcase_id'] = showcase_id
+            if channel:
+                meta['channel'] = channel
+            if trip_date:
+                meta['trip_date'] = trip_date
+
             try:
-                from app.services.google_sheets_service import append_record
+                from app.services.google_sheets_service import log_analytics_event
                 sheet_id = app.config.get('ANALYTICS_SHEET_SPREADSHEET_ID') or app.config.get('SPREADSHEET_ID')
-                sheet_name = app.config.get('ANALYTICS_SHEET_NAME') or 'analytics_statistics'
-                row = [timestamp, event, label, phone, request.remote_addr or '', request.headers.get('User-Agent','')]
+                payload = {
+                    'event': event,
+                    'context': data.get('context') or label or '',
+                    'user_key': data.get('user_key') or data.get('user') or '',
+                    'rule_id': data.get('rule_id', ''),
+                    'item_id': data.get('item_id', ''),
+                    'type': data.get('type', '') or channel,
+                    'meta': meta,
+                    'ip': request.remote_addr or '',
+                    'user_agent': request.headers.get('User-Agent', '')
+                }
                 if sheet_id:
-                    append_record(sheet_id, sheet_name, row)
-                    app.logger.info(f"Analytics logged to sheet {sheet_name} (fallback)")
-                else:
-                    app.logger.warning('ANALYTICS_SHEET_SPREADSHEET_ID / SPREADSHEET_ID not configured; skipping sheet write')
-            except Exception as e:
-                app.logger.error(f'Failed to write analytics to sheet (fallback): {e}')
-        return jsonify({'ok': True})
+                    _ok = log_analytics_event(payload, spreadsheet_id=sheet_id)
+                    if _ok:
+                        app.logger.info('Analytics logged via log_analytics_event')
+                    else:
+                        app.logger.warning('Analytics log_analytics_event did not persist (see google_sheets logs)')
+            except Exception:
+                try:
+                    from app.services.google_sheets_service import append_record
+                    sheet_id = app.config.get('ANALYTICS_SHEET_SPREADSHEET_ID') or app.config.get('SPREADSHEET_ID')
+                    sheet_name = app.config.get('ANALYTICS_SHEET_NAME') or 'analytics_statistics'
+                    row = [timestamp, event, label, phone, request.remote_addr or '', request.headers.get('User-Agent','')]
+                    if sheet_id:
+                        append_record(sheet_id, sheet_name, row)
+                        app.logger.info(f"Analytics logged to sheet {sheet_name} (fallback)")
+                except Exception as e:
+                    app.logger.error(f'Failed to write analytics: {e}')
+        except Exception as e:
+            app.logger.warning(f'analytics/log parse error: {e}')
+        return jsonify({'ok': True}), 200
 
     # Global exception handler: report to Sentry (if configured) and trigger a Telegram alert
     # It's defensive: HTTPExceptions are re-raised so Flask can handle them normally.
@@ -594,6 +729,13 @@ def create_app(config_name="development"):
                 app.logger.error(f"Failed to initialize Google services: {e}")
                 if 'invalid_grant' in str(e):
                     app.logger.error("Google Service Account authorization failed. Please check your service_account.json file")
+
+    try:
+        from app.services.openai_runtime_config import log_openai_chat_config_startup
+
+        log_openai_chat_config_startup(app)
+    except Exception as e:
+        app.logger.debug("OpenAI chat runtime config log skipped: %s", e)
 
     return app
 

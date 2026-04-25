@@ -1,0 +1,107 @@
+{# Карточка WakeSurf Safari — флагманский премиальный продукт #}
+{% set _fallback_img = url_for('static', filename=(p.fallback or 'images/Place1Logo.png')) %}
+{% set cover_src = _fallback_img if not p.cover else (p.cover if p.cover.startswith('http') else url_for('static', filename=p.cover)) %}
+{% set expanded = p.expanded or {} %}
+<div class="project-card project-card--wakesurf-safari js-expandable-card" id="{{ p.slug }}" data-project="{{ p.slug }}">
+  <div class="service-image-container">
+    {% if p.images and p.images|length > 1 %}
+    <div class="card-media-carousel" data-images="{{ p.images|join(',') }}" data-image-urls="{% for img in p.images %}{{ url_for('static', filename=img) }}{% if not loop.last %},{% endif %}{% endfor %}">
+      <button type="button" class="carousel-nav carousel-prev-inner" aria-label="Предыдущее">‹</button>
+      <img class="service-image project-card__cover" src="{{ cover_src }}" alt="{{ p.name }}" loading="lazy" data-fallback="{{ _fallback_img }}">
+      <button type="button" class="carousel-nav carousel-next-inner" aria-label="Следующее">›</button>
+    </div>
+    {% else %}
+    <img class="service-image project-card__cover" src="{{ cover_src }}" alt="{{ p.name }}" loading="lazy" data-fallback="{{ _fallback_img }}">
+    {% endif %}
+  </div>
+
+  {# Свёрнутое состояние — продаёт мечту #}
+  <div class="project-card__collapsed">
+    <h4 class="project-card__title">{{ p.name }}</h4>
+    <p class="project-card__subtitle">{{ p.lead or 'Премиальное вейксерф-путешествие по Волге' }}</p>
+    <p class="project-card__lead project-card__summary">{{ p.summary }}</p>
+    {% if p.microfacts %}
+    <div class="project-card__microfacts project-card__microfacts--premium">
+      {% for fact in p.microfacts %}
+      <span class="project-card__badge">{{ fact }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <div class="service-card-actions project-card__actions">
+      <a class="btn btn-primary" href="{{ p.url }}">Подробнее</a>
+    </div>
+  </div>
+
+  {# Раскрытое состояние — масштаб и ценность #}
+  <div class="project-card__expanded">
+    <div class="project-card-expanded__block">
+      <h5>{{ p.name }}</h5>
+      <p class="project-card__subtitle">{{ p.lead or 'Премиальное вейксерф-путешествие по Волге' }}</p>
+      {% if p.microfacts %}
+      <div class="project-card__microfacts">
+        {% for fact in p.microfacts %}
+        <span class="project-card__badge">{{ fact }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% if expanded.description %}
+    <div class="project-card-expanded__block">
+      <p>{{ expanded.description }}</p>
+    </div>
+    {% endif %}
+    {% if expanded.what_inside %}
+    <div class="project-card-expanded__block">
+      <h5>Что внутри</h5>
+      <ul>
+        {% for item in expanded.what_inside %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    {% if expanded.for_whom %}
+    <div class="project-card-expanded__block">
+      <h5>Для кого</h5>
+      <ul>
+        {% for item in expanded.for_whom %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    {% if expanded.participation_formats %}
+    <div class="project-card-expanded__block">
+      <h5>Форматы участия</h5>
+      <div class="project-card-expanded__roles">
+        {% for item in expanded.participation_formats %}
+        <div class="project-card-expanded__role">
+          <strong>{{ item.role }}</strong> — {{ item.text }}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% if expanded.why_special %}
+    <div class="project-card-expanded__block">
+      <h5>Почему это особенный проект</h5>
+      <ul>
+        {% for item in expanded.why_special %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    {% if expanded.route_text %}
+    <div class="project-card-expanded__block project-card-expanded__route">
+      <h5>Маршрут</h5>
+      <p class="project-card-expanded__route-text">{{ expanded.route_text }}</p>
+    </div>
+    {% endif %}
+    <div class="project-card-expanded__cta">
+      <a class="btn btn-primary" href="{{ p.url }}">Перейти на страницу проекта</a>
+      <a class="btn btn-secondary" href="{{ p.url }}#join">Оставить заявку</a>
+      <a class="btn btn-secondary" href="{{ p.url }}#join">Стать участником</a>
+    </div>
+  </div>
+</div>

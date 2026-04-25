@@ -3,8 +3,9 @@ Prometheus metrics for Safari bookings system.
 
 Provides metrics for monitoring booking system health and performance.
 """
-from prometheus_client import Counter, Histogram, Gauge
+from prometheus_client import Counter, Histogram, Gauge, Info
 import logging
+import time as _time
 
 logger = logging.getLogger(__name__)
 
@@ -73,14 +74,34 @@ system_health = Gauge(
     'System health status (1=healthy, 0=unhealthy)'
 )
 
+# Общий слой (MyWave)
+_uptime = Gauge(
+    "mywave_uptime_seconds",
+    "Seconds since this process started (best-effort monotonic base)",
+)
+_process_start = _time.monotonic()
+mywave_build = Info("mywave_build", "Build / deploy metadata (from env or config)")
+_build_info_set = False
+
 
 def update_metrics():
     """Update all metrics from database."""
+    global _build_info_set
     try:
         from app.database.models import SafariBooking, Participant
         from flask import current_app
-        
+
+        _uptime.set(_time.monotonic() - _process_start)
+
         with current_app.app_context():
+            if not _build_info_set:
+                try:
+                    mywave_build.info(
+                        {"version": str(current_app.config.get("VERSION", "unknown"))}
+                    )
+                except (ValueError, TypeError):
+                    pass
+                _build_info_set = True
             # Update active bookings
             active_count = SafariBooking.query.filter(
                 SafariBooking.status.in_(['pending', 'confirmed'])

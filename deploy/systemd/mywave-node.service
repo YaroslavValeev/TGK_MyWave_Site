@@ -1,0 +1,20 @@
+[Unit]
+Description=MyWave Node chat proxy
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/mywave
+EnvironmentFile=-/var/www/mywave/.env
+Environment=PORT=5001
+ExecStart=/usr/bin/node /var/www/mywave/server.js
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mywave-node
+
+[Install]
+WantedBy=multi-user.target

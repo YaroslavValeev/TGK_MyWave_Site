@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<!-- saved from url=(0035)http://127.0.0.1:5000/wake-industry -->
+<html lang="ru" style="--mw-header-h: 67px;"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="content-language" content="ru">
+  <meta name="csrf-token" content="IjVhODQwNmRjYTI2NmZlMjEwZDE5YzVkZjY5MjEwMjlkNjFhNzhhNjIi.aXdLGw.TieLTO7347c1iz6ea2egJzovF7E">
+  
+  <!-- SEO -->
+  <meta name="description" content="MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.">
+  <meta property="og:title" content="MyWave">
+  <meta property="og:description" content="MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.">
+  <meta property="og:image" content="http://127.0.0.1:5000/static/images/og-image.jpg">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MyWave">
+  <meta name="twitter:description" content="MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.">
+  <meta name="twitter:image" content="http://127.0.0.1:5000/static/images/og-image.jpg">
+
+  
+<meta name="description" content="Подробный чеклист условий для организации профессиональных соревнований по вейксерфингу. Скачайте PDF версию для использования.">
+<link rel="canonical" href="http://127.0.0.1:5000/wake-industry">
+<style>
+  .wake-checklist__section {
+    margin-bottom: 3rem;
+  }
+  .wake-checklist__section-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #35C0CD;
+  }
+  .wake-checklist__subsection-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #495057;
+    margin: 1.5rem 0 1rem;
+  }
+  .wake-checklist__cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+  }
+  @media (min-width: 768px) {
+    .wake-checklist__cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1200px) {
+    .wake-checklist__cards {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .wake-checklist__card {
+    background: #fff;
+    border: 1px solid rgba(33, 37, 41, 0.14);
+    border-radius: 8px;
+    padding: 1.25rem;
+
+    /* Приоритет по умолчанию = базовый (синий) */
+    --priority-shadow: rgba(33, 150, 243, 0.18);
+
+    box-shadow:
+      0 8px 22px var(--priority-shadow),
+      0 2px 6px rgba(0, 0, 0, 0.08);
+
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+    cursor: pointer;
+  }
+  .wake-checklist__card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 12px 32px var(--priority-shadow),
+      0 4px 14px rgba(0, 0, 0, 0.12);
+    border-color: #35C0CD;
+  }
+  /* Приоритет карточек: цвет тени */
+  .wake-checklist__card[data-priority="critical"] {
+    --priority-shadow: rgba(244, 67, 54, 0.22); /* красный */
+  }
+  .wake-checklist__card[data-priority="base"] {
+    --priority-shadow: rgba(33, 150, 243, 0.20); /* синий */
+  }
+  .wake-checklist__card[data-priority="recommended"] {
+    --priority-shadow: rgba(76, 175, 80, 0.20); /* зелёный */
+  }
+  .wake-checklist__card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  .wake-checklist__checkbox {
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .wake-checklist__checkbox:hover {
+    transform: scale(1.1);
+  }
+  .wake-checklist__card-title {
+    font-weight: 600;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: #212529;
+    margin-left: 0.5rem;
+  }
+  .wake-checklist__card-body {
+    margin-top: 0.75rem;
+  }
+  .wake-checklist__card-icon {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto 0.5rem;
+    max-height: 120px;
+    object-fit: contain;
+  }
+  .wake-checklist__card-desc {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #495057;
+  }
+  .wake-checklist__card--completed {
+    background: #f2feff;          /* лёгкий брендовый оттенок */
+    border-color: #35C0CD;        /* брендовая рамка */
+  }
+  .wake-checklist__card--completed:hover {
+    border-color: #2ca8b4;
+  }
+  .wake-checklist__intro {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 1.5rem 0;
+  }
+  .wake-checklist__intro-icon {
+    display: block;
+    max-width: 300px;
+    width: 100%;
+    height: auto;
+    margin: 0 auto 1.5rem;
+    object-fit: contain;
+  }
+  .wake-checklist__intro-text {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #495057;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .wake-checklist__progress {
+    margin: 1rem 0 1.5rem;
+    padding: 0.75rem 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+  .wake-checklist__progress-text {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 0.5rem;
+  }
+  .wake-checklist__progress-bar {
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .wake-checklist__progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #35C0CD, #2ca8b4);
+    transition: width 0.3s ease;
+    border-radius: 4px;
+  }
+  .wake-checklist__controls {
+    text-align: right;
+    margin-top: 1rem;
+  }
+  .wake-checklist__controls button + button {
+    margin-left: 0.5rem;
+  }
+  /* Общий прогресс внизу */
+  .wake-checklist__overall {
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(33, 37, 41, 0.10);
+  }
+  .wake-checklist__overall-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #212529;
+    margin: 0 0 0.75rem 0;
+  }
+  .wake-checklist__overall-progress {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem 1rem 0.9rem;
+  }
+  .wake-checklist__overall-text {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 0.55rem;
+  }
+  .wake-checklist__overall-bar {
+    height: 10px;
+    background: #e9ecef;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .wake-checklist__overall-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #35C0CD, #2ca8b4);
+    transition: width 0.25s ease;
+  }
+  .wake-checklist__overall-meta {
+    margin-top: 0.6rem;
+    font-size: 0.88rem;
+    color: #6c757d;
+    font-weight: 500;
+  }
+  .wake-checklist__overall-legend {
+    margin-top: 0.8rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+  }
+  .wake-checklist__legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.85rem;
+    color: #495057;
+    font-weight: 600;
+  }
+  .wake-checklist__legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    display: inline-block;
+  }
+  .wake-checklist__legend-item--critical .wake-checklist__legend-dot { background: #f44336; }
+  .wake-checklist__legend-item--base .wake-checklist__legend-dot { background: #2196f3; }
+  .wake-checklist__legend-item--recommended .wake-checklist__legend-dot { background: #4caf50; }
+  /* Списки в карточках */
+  .wake-checklist__bullets {
+    margin: 0.65rem 0 0;
+    padding-left: 1.1rem;
+    color: #495057;
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+  /* Контрол пауз */
+  .wake-checklist__pause-controls {
+    margin-top: 0.9rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  @media (min-width: 768px) {
+    .wake-checklist__pause-controls {
+      grid-template-columns: 1fr 1fr;
+      align-items: end;
+    }
+  }
+  .wake-checklist__field-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.35rem;
+  }
+  .wake-checklist__field-input {
+    width: 100%;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid rgba(33, 37, 41, 0.18);
+    padding: 0 0.75rem;
+    font-size: 0.95rem;
+    outline: none;
+  }
+  .wake-checklist__field-input:focus {
+    border-color: #35C0CD;
+    box-shadow: 0 0 0 3px rgba(53, 192, 205, 0.18);
+  }
+  .wake-checklist__hint {
+    grid-column: 1 / -1;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #6c757d;
+  }
+  /* Авто-флаг: maxPause > X и шоу не включено */
+  .wake-checklist__card--flagged {
+    border-color: rgba(244, 67, 54, 0.55) !important;
+    box-shadow:
+      0 10px 26px rgba(244, 67, 54, 0.22),
+      0 2px 8px rgba(0, 0, 0, 0.10) !important;
+    background: #fff7f7;
+  }
+  /* Связка с медиа-продакшном: внимание */
+  .wake-checklist__card--attention {
+    border-color: rgba(255, 152, 0, 0.55) !important;
+    box-shadow:
+      0 10px 26px rgba(255, 152, 0, 0.20),
+      0 2px 8px rgba(0, 0, 0, 0.10) !important;
+    background: #fff9ee;
+  }
+  .wake-checklist__note {
+    margin-top: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    font-weight: 700;
+  }
+  .wake-checklist__note--warning {
+    background: rgba(255, 152, 0, 0.12);
+    border: 1px solid rgba(255, 152, 0, 0.35);
+    color: #7a4b00;
+  }
+  /* Flash сообщения */
+  .wake-checklist__flash-messages {
+    margin-bottom: 1.5rem;
+  }
+  .wake-checklist__flash-message {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    animation: slideIn 0.3s ease-out;
+  }
+  .wake-checklist__flash-message--info {
+    background: #e3f2fd;
+    border: 1px solid #2196f3;
+    color: #1565c0;
+  }
+  .wake-checklist__flash-message--error {
+    background: #ffebee;
+    border: 1px solid #f44336;
+    color: #c62828;
+  }
+  .wake-checklist__flash-message--success {
+    background: #e8f5e9;
+    border: 1px solid #4caf50;
+    color: #2e7d32;
+  }
+  .wake-checklist__flash-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    padding: 0;
+    margin-left: 1rem;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .wake-checklist__flash-close:hover {
+    opacity: 1;
+  }
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  /* Уменьшение отступов hero секции */
+  .wake-industry-hero {
+    padding-top: 0.75rem !important;  /* Уменьшено с 2rem - между шапкой и заголовком */
+    padding-bottom: 1rem;
+    margin-top: 0 !important;
+  }
+  .wake-industry-hero__title {
+    margin-top: 0;
+    margin-bottom: 0.5rem;  /* Уменьшено с 0.75rem */
+  }
+  .wake-industry-hero__subtitle {
+    margin-bottom: 0.75rem !important;  /* Уменьшено с 1.25rem - между описанием и кнопками */
+    margin-top: 0;
+  }
+  .wake-industry-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  .wake-industry-hero__actions a,
+  .wake-industry-hero__actions button {
+    position: relative;
+    z-index: 10;
+    cursor: pointer;
+    pointer-events: auto !important;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+  .wake-industry-hero__actions a:hover,
+  .wake-industry-hero__actions button:hover {
+    opacity: 0.9;
+  }
+  .wake-industry-hero__actions a:active,
+  .wake-industry-hero__actions button:active {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+  .wake-checklist__reset {
+    margin-top: 0 !important;
+  }
+  @media print {
+    .wake-checklist__card {
+      box-shadow: none;
+      background: #fff;
+      page-break-inside: avoid;
+    }
+    .wake-checklist__card-icon {
+      display: none;
+    }
+    .wake-checklist__progress {
+      display: none;
+    }
+    .wake-checklist__overall-legend,
+    .wake-checklist__overall-bar {
+      display: none;
+    }
+    .wake-checklist__overall-progress {
+      background: #fff;
+      border: 1px solid #ddd;
+    }
+  }
+</style>
+
+
+  <title>Чек-лист Организатора — Условия для соревнований по вейксерфингу</title>
+  <link rel="icon" href="http://127.0.0.1:5000/static/favicon.ico">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+  <link href="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/css2" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/all.min.css">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/style.css">
+  <link rel="stylesheet" href="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/branding.css">
+  
+  <!-- WSC2025 Styles (conditional, CSP-safe) -->
+  
+
+  <!-- Flatpickr -->
+  <link rel="stylesheet" href="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/flatpickr.min.css">
+  <script async="" src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/tag.js"></script><script src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/flatpickr"></script>
+  <script src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/ru.js"></script>
+
+  <!-- Google Analytics -->
+  <script async="" src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/js"></script>
+  <script nonce="">
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-343773438');
+  </script>
+
+  <!-- Yandex.Metrika counter -->
+  <script nonce="" type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){ (m[i].a=m[i].a||[]).push(arguments); };
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {
+            if (document.scripts[j].src === r) { return; }
+        }
+        k = e.createElement(t), a = e.getElementsByTagName(t)[0],
+        k.async = 1, k.src = r, a.parentNode.insertBefore(k,a)
+    })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+    
+    ym(99772473, "init", {
+        clickmap:true,
+        trackLinks:true,
+        accurateTrackBounce:true,
+        webvisor:true
+    });
+  </script>
+  <noscript>
+    <div>
+      <img src="https://mc.yandex.ru/watch/99772473" style="position:absolute; left:-9999px;" alt="Счётчик Яндекс.Метрики" />
+    </div>
+  </noscript>
+
+  <!-- Structured data: Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "MyWave",
+    "url": "http://127.0.0.1:5000/",
+    "logo": "http://127.0.0.1:5000/static/images/logo.png",
+    "contactPoint": [{
+      "@type": "ContactPoint",
+      "telephone": "+7 916 011-71-79",
+      "contactType": "customer service",
+      "areaServed": "RU"
+    }]
+  }
+  </script>
+
+  <link rel="preload" href="http://127.0.0.1:5000/static/fonts/pangolin.woff2" as="font" type="font/woff2" crossorigin="">
+  
+  <style>
+      body { 
+        font-family: 'Pangolin', sans-serif; 
+        background: var(--color-bg); 
+        color: var(--color-text); 
+      }
+      .site-header { 
+        background: #3d3d3d; 
+        color: #ffffff; 
+      }
+  </style>
+  
+
+  
+</head>
+
+<body>
+  <!-- Шапка -->
+  <header class="site-header hidden" id="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <a href="http://127.0.0.1:5000/">MyWave</a>
+      </div>
+      <nav class="site-nav" id="site-nav">
+        <ul>
+          <li><a class="js-nav-link" href="http://127.0.0.1:5000/wake-industry#services">Услуги</a></li>
+          <li><a class="js-nav-link" href="http://127.0.0.1:5000/wake-industry#events">Проекты</a></li>
+          <li><a class="js-nav-link" href="http://127.0.0.1:5000/wake-industry#store">Товары</a></li>
+          <li><a class="js-nav-link" href="http://127.0.0.1:5000/wake-industry#contacts">Контакты</a></li>
+        </ul>
+      </nav>
+      <button id="dark-mode-toggle" class="theme-toggle" aria-label="Переключить тему">🌙</button>
+      <button class="burger-menu" id="burger-menu" aria-label="Открыть меню">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+  <div id="header-pull-tab" class="header-pull-tab" aria-label="Показать меню" tabindex="0" role="button" style="display: flex;">
+    <i class="fas fa-chevron-down"></i>
+  </div>
+
+  <!-- Sticky progress line -->
+  <div class="mw-progress" aria-hidden="true">
+    <div class="mw-progress__fill" id="progress-fill"></div>
+  </div>
+
+  <div id="progress-bar" class="progress-bar mw-scroll-progress" aria-hidden="true">
+    <div id="progress-fill-old" class="mw-scroll-progress__fill"></div>
+  </div>
+
+  <!-- Контент -->
+  <main>
+    <div id="socket-status-indicator" class="socket-status-indicator" style="background: rgb(40, 167, 69);">Онлайн</div>
+    
+
+<section class="mw-section mw-hero wake-industry-hero">
+  <div class="mw-container">
+    <h1 class="wake-industry-hero__title">Чек-лист Организатора</h1>
+    <p class="wake-industry-hero__subtitle">
+      Необходимые и наилучшие условия для достижения высоких показателей в организации соревнованиях по вейксерфингу/вейкбордингу
+    </p>
+    <div class="wake-industry-hero__actions">
+      <a href="http://127.0.0.1:5000/wake-industry/download" class="btn-primary" id="download-pdf-btn" role="button">
+        📄 Скачать PDF
+      </a>
+      <button type="button" class="btn-secondary btn-ghost" id="print-btn">
+        🖨️ Печать
+      </button>
+      <button type="button" class="btn-secondary wake-checklist__reset" id="reset-all-btn">
+        🔄 Сбросить всё
+      </button>
+    </div>
+  </div>
+</section>
+
+<section class="mw-section" id="checklist-content">
+  <div class="mw-container">
+    
+      
+    
+    <div class="mw-card wake-checklist">
+      
+      <div class="wake-checklist__intro">
+        <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/checklist-icon.png" alt="Чек-лист Организатора" class="wake-checklist__intro-icon">
+        <p class="wake-checklist__intro-text">
+          Данный чеклист содержит все необходимые условия и требования для организации профессиональных соревнований по вейксерфингу. Используйте его как руководство при подготовке мероприятий для обеспечения высокого уровня проведения соревнований.
+        </p>
+      </div>
+
+      <!-- 1. Судьи -->
+      <section class="wake-checklist__section">
+        <h2 class="wake-checklist__section-title">1. Судьи</h2>
+        <div class="wake-checklist__progress">
+          <span class="wake-checklist__progress-text">0 из 6 выполнено</span>
+          <div class="wake-checklist__progress-bar">
+            <div class="wake-checklist__progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="wake-checklist__cards">
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="judge-1-1" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Количество соревнований в качестве главного судьи</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Опыт главного судьи напрямую влияет на качество и профессионализм судейства. Чем больше соревнований он провел в этой роли, тем лучше он понимает все нюансы процесса: от организации судейской команды до принятия сложных решений в спорных ситуациях. Главный судья отвечает за координацию всех аспектов судейства, а значительный опыт помогает ему быстро и точно реагировать на любые проблемы, обеспечивая справедливое и беспристрастное судейство.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="judge-1-2" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Претензии к судейству от участников (количество за карьеру влияет на его рейтинг)</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Претензии к судье могут возникать, если участники считают, что их выступления оценены несправедливо или с нарушением правил. Наличие жалоб может свидетельствовать о недостаточной объективности судьи или о непонимании участниками критериев его оценок. Важно, чтобы судья грамотно справлялся с такими ситуациями, предоставляя участникам чёткие объяснения своих решений. Если количество претензий велико, это может указывать на проблемы в судействе, такие как недостаточная квалификация судьи, непрозрачность оценивания или ошибки в процессе судейства.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="judge-1-3" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Параметры оценки или его профиль</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <div class="wake-checklist__card-desc">
+            <p>Судейство может варьироваться в зависимости от индивидуальных предпочтений судей и их подхода к оцениванию. На брифинге перед соревнованиями судьи часто объявляют основные параметры, на которые будут обращать внимание при оценке выступлений. Это помогает участникам понять, что будет приоритетным в текущих соревнованиях.</p>
+            <p>Каждый судья может выделять разные аспекты, такие как:</p>
+            <ul>
+              <li><strong>Амплитуда:</strong> Оценка высоты прыжка и его зрелищности. Чем выше спортсмен выполняет трюк, тем выше его оценка, поскольку это требует большей физической силы и контроля.</li>
+              <li><strong>Стиль (гребы и вытяжки):</strong> Важен плавный и уверенный стиль выполнения трюков. Это включает в себя грамотное использование гребов (сложность, вариативность и время удержания) и вытяжки, что добавляет визуальную эстетику и сложность выступлению.</li>
+              <li><strong>Дистанция пролета (приземление на флэт):</strong> Судья может уделять внимание тому, насколько далеко участник приземляется. Приземление на плоскую воду (флэт) после большого полета считается более сложным и требует от участника высокого уровня мастерства.</li>
+            </ul>
+            <p><strong>P.S.</strong> – Данный пункт может быть оформлен в профиле судьи на сайте федерации IWWF, а так же обозначен на сайте или приложении соревнований, чтобы участникам было понятно к чему готовиться!</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="judge-1-4" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Опрятность и поведение</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Опрятный внешний вид и корректное поведение судьи создают профессиональную атмосферу на соревнованиях и укрепляют доверие участников и зрителей. Судья, который выглядит аккуратно и ведет себя с уважением ко всем участникам, демонстрирует свою ответственность и серьезное отношение к своим обязанностям. Это включает в себя соблюдение спортивного этикета, избегание конфликтных ситуаций и нейтральное отношение ко всем спортсменам. Опрятность и поведение судьи также влияют на общее восприятие уровня организации соревнований, так как судья является лицом, которое представляет турнир. В рамках рейтинга соревнований это может быть специальные футболки (Поло/манишки/кепки/бейджи/шорты или брюки).</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="judge-1-5" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Онлайн скоринг</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Онлайн-система скоринга позволяет оперативно отображать результаты выступлений участников для зрителей, участников и судей. С её помощью можно следить за баллами и положением каждого участника в реальном времени через веб-платформу или мобильное приложение! А также через экран (мониторы) для зрителей и участников. Это особенно важно для зрителей, находящихся вдали от основного места проведения, а также для организаторов и медиа, которым требуется оперативная информация для освещения события.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="recommended" data-weight="1">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="judge-1-6" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Нейро-сотрудник и нейро-помощник</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Нейро-сотрудники и нейро-помощники представляют собой продвинутые цифровые решения на основе нейросетей, которые способны выполнять задачи в различных профессиональных областях, действуя как виртуальные ассистенты. Например, нейро-секретарь может управлять расписанием, организовывать встречи, обрабатывать входящую корреспонденцию и оперативно предоставлять нужную информацию. Благодаря обучению на больших объемах данных и возможности анализировать информацию, такие ассистенты могут не только автоматизировать рутинные процессы, но и предлагать оптимальные решения и стратегические рекомендации. Это повышает эффективность рабочих процессов и позволяет сосредоточиться на более важных задачах, требующих человеческого участия и креативности.</p>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <!-- 2. Акватория -->
+      <section class="wake-checklist__section">
+        <h2 class="wake-checklist__section-title">2. Акватория</h2>
+        <div class="wake-checklist__progress">
+          <span class="wake-checklist__progress-text">0 из 9 выполнено</span>
+          <div class="wake-checklist__progress-bar">
+            <div class="wake-checklist__progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="wake-checklist__cards">
+        <div class="wake-checklist__card" data-priority="critical" data-weight="3">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="aqua-2-1" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Безопасность акватории. Очистка и отсутствие препятствий</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Важно, чтобы акватория была тщательно проверена и очищена от препятствий, таких как крупные бревна, мусор или растительность (водоросли), которые могут представлять опасность для участников. Чистая акватория минимизирует риск травм и обеспечивает безопасное проведение соревнований.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="critical" data-weight="3">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="aqua-2-2" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Глубина акватории</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Глубина акватории должна соответствовать требованиям (&lt;3,5 метра). Оптимальная глубина обеспечивает достаточную высоту волны для выполнения сложных элементов.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="aqua-2-3" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Учет силы и направления ветра</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Ветер может значительно повлиять на выполнение трюков, поэтому важно оценить ветровые условия акватории. На закрытых акваториях и водных стадионах практически идеальная для проведения соревнований акватория.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="critical" data-weight="3">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="aqua-2-4" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Устойчивость акватории к волновым условиям</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Сильные волны или внезапные течения могут неблагоприятно сказаться на выполнение трюков и создать опасные ситуации. Участки акватории, подверженные частым волнам или резким течениям, должны быть адаптированы для проведения соревнований (волнорезы и др. приспособления). У дистанции не должно быть отбоя от берега и других препятствий (стоящее на рейде большое судно). Лучше всего подходят камыши 😊</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="critical" data-weight="3">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="aqua-2-5" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Четкая разметка трассы для прохождения дистанции</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Трасса должна быть четко размечена, чтобы спортсмены и судьи могли легко ориентироваться. Это включает выделение зон для начала дистанции, и финиша, а также границ разворота (должна быть, и ширина для комфортного разворота и дистанция до него что бы после разворота катер с запасом мог встать на курс, а волна сформироваться).</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="critical" data-weight="3">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="aqua-2-6" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Постоянное дежурство спасательной команды</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Спасатели и медицинские работники должны быть наготове для оказания помощи в случае несчастного случая или травмы, что особенно актуально после рассказа Алексея про ЧЕ.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="aqua-2-7" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Возможность тренировки в акватории до начала соревнований</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Важно дать участникам возможность ознакомиться с условиями акватории перед стартом официальных заездов, что поможет лучше подготовиться и избежать сюрпризов во время выступления.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="aqua-2-8" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Удобство размещения стартового дока</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Акватория должна обеспечивать удобный выход к стартовой линии и эффективную логистику между заездами, чтобы минимизировать время ожидания между выступлениями. Возможно использовать дополнительный док для катера подбора, чтобы не мешать стартующим участникам.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="aqua-2-9" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Разновидности акватории</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Акватория может быть закрытой как стадион в Крылатском, озеро или карьер. А может быть и открытой – река, залив, водохранилище, море. Отсутствие других плав средств, создающих волнение. Перекрытая ГИМС. Перекрытая собственными силами.</p>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <!-- 3. Площадка (территория) -->
+      <section class="wake-checklist__section">
+        <h2 class="wake-checklist__section-title">3. Площадка (территория)</h2>
+        <div class="wake-checklist__progress">
+          <span class="wake-checklist__progress-text">0 из 13 выполнено</span>
+          <div class="wake-checklist__progress-bar">
+            <div class="wake-checklist__progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+        <h3 class="wake-checklist__subsection-title">3. Выделенная территория для участников</h3>
+        <div class="wake-checklist__cards">
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="area-3-1" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Туалет</span>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="area-3-2" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Душевая</span>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="recommended" data-weight="1">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="area-3-3" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Сауна</span>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="area-3-4" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Раздевалка</span>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="area-3-5" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Сушильные шкафы для гидрокостюмов и экипировки</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Обеспечивают быстрое высушивание оборудования после заездов, чтобы участники могли снова использовать сухую экипировку.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="area-3-6" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Зона для хранения личных вещей</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Запираемые шкафчики, где спортсмены могут безопасно оставить свои личные вещи, такие как документы, гаджеты и ценные предметы, на время соревнований.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="area-3-7" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Кафетерий или буфет с полезной едой</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Наличие бесплатного питания с питательными блюдами и перекусами важно для восстановления сил. Легко усваиваемые и полезные блюда помогают спортсменам поддерживать энергию и быть готовыми к выступлениям. Доступ к бесплатной питьевой воде.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="area-3-8" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Тренерская зона и место для командных встреч</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Место для тренеров и команд, где они могут обсуждать стратегию, анализировать выступления спортсменов и проводить тактические совещания.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="area-3-9" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Территория для разминки и тренажеры</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Место для подготовки перед заездами. Тренажеры, маты для растяжки и свободное пространство для динамической разминки, а так же батуты помогают спортсменам разогреть мышцы и избежать травм.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="recommended" data-weight="1">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="area-3-10" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Массажные столы и физиотерапевтические услуги</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Специализированные услуги, такие как массаж и физиотерапия, помогают спортсменам снять напряжение, избежать травм и подготовиться к следующим заездам.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="area-3-11" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Место для техобслуживания оборудования</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Специальная зона для мелкого ремонта и настройки спортивного инвентаря, где спортсмены могут оперативно обслужить доски, крепления и прочее снаряжение с помощью специалистов.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="area-3-12" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Стартовая площадка</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Выделенная (огороженная) территория для подготовки к непосредственному старту участника. Расположение такой территории должно быть таким, чтобы после старта катеру не приходилось делать дополнительных маневров и пускать волну в трассу.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="area-3-13" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Связь и Экран с эфиром</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Место с доступом к интернету, где спортсмены могут проверить информацию, посмотреть видео предыдущих заездов или скачать свой проезд. Это полезно для анализа своих результатов и быстрого получения обратной связи.</p>
+          </div>
+        </div>
+      </div></section>
+
+      <!-- 4. Выделенная территория для организаторов -->
+      <section class="wake-checklist__section">
+        <h2 class="wake-checklist__section-title">4. Выделенная территория для организаторов</h2>
+        <div class="wake-checklist__progress">
+          <span class="wake-checklist__progress-text">0 из 4 выполнено</span>
+          <div class="wake-checklist__progress-bar">
+            <div class="wake-checklist__progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="wake-checklist__cards">
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="org-4-1" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Оперативный штаб</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Центральный пункт для координации всех организационных процессов и коммуникации между командами, включая судей, волонтеров и технический персонал. Здесь должны находиться рабочие места с доступом к интернету, зарядные станции для оборудования и оргтехника.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="org-4-2" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Комната для хранения оборудования и материалов</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Специальное помещение для безопасного хранения оргтехники, канцелярии, материалов для мероприятий и спортивного оборудования, которое может потребоваться в процессе соревнований.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="org-4-3" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Зона для совещаний и обсуждений</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Удобное пространство для проведения встреч, обсуждений и планирования, где организаторы могут принимать оперативные решения. Желательно оборудовать комнату экраном и доской для стратегических обсуждений.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="org-4-4" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Логистический центр для работы с партнёрами и спонсорами</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Место для взаимодействия с партнерами и спонсорами, проведения переговоров и размещения материалов по брендингу. Здесь также можно разместить зоны с рекламной продукцией.</p>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <!-- 5. Выделенная территория для судей -->
+      <section class="wake-checklist__section">
+        <h2 class="wake-checklist__section-title">5. Выделенная территория для судей</h2>
+        <div class="wake-checklist__progress">
+          <span class="wake-checklist__progress-text">0 из 5 выполнено</span>
+          <div class="wake-checklist__progress-bar">
+            <div class="wake-checklist__progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="wake-checklist__cards">
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="judge-area-5-1" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Судейская зона для принятия решений</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Обособленное пространство для судей, где они могут проводить обсуждения, выносить решения и работать с протоколами. Эта зона должна быть оборудована компьютерами, планшетами и системой онлайн-скоринга.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="judge-area-5-2" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Место для отдыха и восстановления</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Пространство для судей, где они могут отдохнуть, перекусить (бесплатное питание (возможно выездной кейтеринг с оговоренным меню)) и набраться сил между выступлениями участников. Желательно иметь удобные кресла, воду, кофе и закуски.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="judge-area-5-3" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Зона видеоповторов и анализа</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Зона, где судьи могут просматривать повторные записи выступлений для объективного судейства и принятия обоснованных решений по спорным моментам. Оборудованная техникой позволяющая это делать оперативно. (тайм код на каждого участника и его прохождение трассы).</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="judge-area-5-4" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Точка доступа к Wi-Fi и зарядные станции</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Удобные рабочие места с доступом к интернету и возможностью подзарядки оборудования. Это необходимо для поддержки цифровых устройств, используемых для оценок и ведения документации. Рации и т.п. системы связи</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="judge-area-5-5" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Место для хранения личных вещей и судейского инвентаря</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Запираемые шкафчики или зона хранения для личных вещей и специализированного оборудования, необходимого для судейства, таких как наушники, планшеты или карточки для оценок.</p>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <!-- 6. Выделенная территория для СМИ -->
+      <section class="wake-checklist__section">
+        <h2 class="wake-checklist__section-title">6. Выделенная территория для СМИ</h2>
+        <div class="wake-checklist__progress">
+          <span class="wake-checklist__progress-text">0 из 5 выполнено</span>
+          <div class="wake-checklist__progress-bar">
+            <div class="wake-checklist__progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="wake-checklist__cards">
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="media-6-1" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Пресс-центр для работы с медиа</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Основной центр для представителей СМИ с рабочими местами, интернетом, оргтехникой и всем необходимым для оперативного освещения события.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="media-6-2" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Зона для проведения пресс-конференций и интервью</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Оборудованное пространство с микрофонами, камерами и удобными креслами для проведения интервью с участниками, тренерами и организаторами. Это также место для официальных заявлений и пресс-конференций.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="media-6-3" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Точка для фотосъемки и видеосъемки</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Специальная площадка с наилучшим обзором соревнований, откуда представители СМИ могут фотографировать и записывать видео без помех. Желательно, чтобы точка была ограждена для поддержания порядка. Возможно, дополнительное плав средство. Это кроме того, что их можно посадить в катер (основной или подбора).</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="media-6-4" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Логистическая поддержка и помощь для СМИ</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Организация транспортной и информационной поддержки, которая поможет представителям СМИ быстро добраться до нужных точек акватории или площадки, а также сориентироваться в процессе освещения события.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="media-6-5" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Оснащение комментаторских кабин</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Кабины или удобное место для комментаторов с микрофонами, наушниками, мониторами для просмотра соревнований и доступом к информации о текущих результатах и статусе участников. Такие кабины позволяют комментаторам в реальном времени делиться информацией со зрителями.</p>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <!-- 7. Выделенная территория для зрителей -->
+      <section class="wake-checklist__section">
+        <h2 class="wake-checklist__section-title">7. Выделенная территория для зрителей</h2>
+        <div class="wake-checklist__progress">
+          <span class="wake-checklist__progress-text">0 из 10 выполнено</span>
+          <div class="wake-checklist__progress-bar">
+            <div class="wake-checklist__progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="wake-checklist__cards">
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="viewers-7-1" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Обеспечение зрителей информацией о соревнованиях</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Важно, чтобы зрители получали актуальную информацию о ходе соревнований, результатах и участниках. Это можно реализовать с помощью экранов, мобильных приложений или информационных табло. Такая поддержка позволяет зрителям оставаться в курсе событий, что повышает их вовлеченность и интерес к происходящему.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="viewers-7-2" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Организация активности для болельщиков</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Интерактивные зоны для зрителей с конкурсами, голосованием или прогнозами результатов делают их участие более интересным. Это может включать участие в конкурсах с призами, прогнозирование результатов или голосование за любимых участников, что оставляет яркие впечатления у посетителей.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="viewers-7-3" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Комфортные зоны для просмотра</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Наличие сидячих мест с хорошим обзором акватории улучшает впечатления от просмотра соревнований. Зрительские трибуны, стулья или другие места для отдыха помогают зрителям наслаждаться мероприятием в удобной обстановке.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="viewers-7-4" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Защита от погодных условий</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Зоны с навесами или тентами обеспечивают защиту от солнца, дождя или ветра, что позволяет зрителям комфортно наблюдать за соревнованиями в любых погодных условиях.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="viewers-7-5" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Экраны для трансляции с повторными показами</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Экраны, на которых можно увидеть крупный план или повторные показ трюков, помогают зрителям лучше следить за каждым моментом соревнований, даже если часть акватории скрыта от их обзора.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="viewers-7-6" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Фуд-корт и зона напитков</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Организация зоны с едой и напитками предоставляет зрителям возможность перекусить и отдохнуть, не покидая площадку. Наличие разнообразного фуд-корта увеличивает время пребывания зрителей на мероприятии и создает дополнительное удобство.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="recommended" data-weight="1">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="viewers-7-7" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Детская зона с активностями</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Отдельная зона с играми и развлечениями для детей позволяет семьям комфортно проводить время, пока они наблюдают за соревнованиями. Это может включать детские аттракционы, игровые площадки или обучающие зоны, связанные со спортом. Баланс-борды, батуты, качели и т.д.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="viewers-7-8" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Пункты для зарядки гаджетов</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Установка станций для зарядки телефонов и планшетов позволяет зрителям оставаться на связи и делиться впечатлениями в социальных сетях, а также использовать мобильные приложения для отслеживания результатов. (Партнеры с такой опцией с удовольствием идут на встречу)</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="viewers-7-9" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Доступные туалетные комнаты</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Чистые и удобные туалетные комнаты с достаточной вместимостью и удобным расположением на территории — необходимое удобство для зрителей, чтобы они могли провести комфортное время на мероприятии.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="recommended" data-weight="1">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="viewers-7-10" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Зона с сувенирной продукцией и мерчем</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Ларёк или стенд с сувенирной продукцией, одеждой и аксессуарами с символикой соревнований позволяет зрителям приобрести памятные вещи и поддержать участников и организаторов.</p>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <!-- 8. Музыкальное сопровождение -->
+      <section class="wake-checklist__section">
+        <h2 class="wake-checklist__section-title">8. Музыкальное сопровождение</h2>
+        <div class="wake-checklist__progress">
+          <span class="wake-checklist__progress-text">0 из 4 выполнено</span>
+          <div class="wake-checklist__progress-bar">
+            <div class="wake-checklist__progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="wake-checklist__cards">
+        <div class="wake-checklist__card" data-priority="recommended" data-weight="1">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="music-8" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">DJ's, выступление музыкальных групп</span>
+          </div>
+        </div>
+
+        <!-- 8.2 Водные показательные -->
+        <div class="wake-checklist__card" data-priority="base" data-show="true" data-show-type="water" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="show-water-8-2" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Показательные выступления (водные)</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">
+              Для закрытия временных пауз (тех. задержки, ожидание окна по погоде/волне, перестроение тайминга).
+            </p>
+            <ul class="wake-checklist__bullets">
+              <li>Флайборд</li>
+              <li>Аквабайк</li>
+              <li>Виндсерф-фристайл за гидроциклом</li>
+              <li>Вейкскейт</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 8.3 Неводные показательные -->
+        <div class="wake-checklist__card" data-priority="base" data-show="true" data-show-type="land" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="show-land-8-3" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Показательные выступления (неводные)</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">
+              Если воду трогать нельзя/неудобно — закрываем паузу на берегу, но в стиле ЦА.
+            </p>
+            <ul class="wake-checklist__bullets">
+              <li>Баланс-борд / тренажёры / мини-челленджи</li>
+              <li>Трюковая зона / батут (короткие блоки 2–4 мин)</li>
+              <li>Интерактивы с ведущим</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 8.4 Партнёрские шоу-вставки -->
+        <div class="wake-checklist__card" data-priority="base" data-show="true" data-show-type="partner" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="show-partner-8-4" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Партнёрские шоу-вставки (интеграции брендов)</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">
+              Закрывают паузы и дают партнёрам измеримую активацию (контент + вовлечение).
+            </p>
+            <ul class="wake-checklist__bullets">
+              <li>Мини-конкурсы / "приз за реакцию"</li>
+              <li>Фото/видео-зона + "вызов дня"</li>
+              <li>Выход партнёра/ведущего (30–90 сек)</li>
+            </ul>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <!-- 9. Медиа-Продакшн -->
+      <section class="wake-checklist__section">
+        <h2 class="wake-checklist__section-title">9. Медиа-Продакшн</h2>
+        <div class="wake-checklist__progress">
+          <span class="wake-checklist__progress-text">0 из 1 выполнено</span>
+          <div class="wake-checklist__progress-bar">
+            <div class="wake-checklist__progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="wake-checklist__cards">
+        <div class="wake-checklist__card" data-priority="recommended" data-weight="1">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="media-prod-9" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Три коптера должны сопровождать райдера одновременно (могут управляться одним пилотом запрограммировав) + камера из катера + камера с берега + камера на зрителей + камера мобильная на участников</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Этим всем управляет главный режиссёр + его помощник. Подготовленные тайтлы и реклама для потокового видео. Онлайн трансляция на всевозможные площадки, особенно те с которыми есть медиа контракт (типа vk.com - они по своим алгоритмам распространяют видео как в прямой эфир так и саму запись для увеличения охвата) – опытные люди знают все приёмы, я поделился одним 😊</p>
+          <div class="wake-checklist__note wake-checklist__note--warning" data-media-note="1" style="display: none;">Шоу-вставки включены — желательно снять короткий клип (30–60 сек) и выложить в соцсети/партнёрские площадки.</div></div>
+        </div>
+        </div>
+      </section>
+
+      <!-- 10. Сайт и мобильное приложение мероприятия -->
+      <section class="wake-checklist__section">
+        <h2 class="wake-checklist__section-title">10. Сайт и мобильное приложение мероприятия</h2>
+        <div class="wake-checklist__progress">
+          <span class="wake-checklist__progress-text">0 из 10 выполнено</span>
+          <div class="wake-checklist__progress-bar">
+            <div class="wake-checklist__progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="wake-checklist__cards">
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="app-10-1" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Основная информация о соревнованиях</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Сайт и приложение должны содержать всю необходимую информацию о мероприятии: расписание, список участников, карты территорий и акваторий, правила и важные инструкции. Это помогает зрителям, участникам и партнерам быстро ориентироваться и находить нужную информацию.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="app-10-2" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Онлайн-скоринг и результаты в реальном времени</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Встроенная система онлайн-скоринга позволяет отслеживать результаты выступлений в режиме реального времени. Это удобно для зрителей, которые могут не находиться на трибунах, и для тех, кто следит за мероприятием удаленно.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="app-10-3" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Уведомления и новости мероприятия</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Пуш-уведомления или обновления новостей информируют пользователей о ключевых событиях, изменениях в расписании, началах новых заездов и других важных моментах. Это помогает быть в курсе всех событий и не пропустить интересующие этапы.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="recommended" data-weight="1">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="app-10-4" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Интерактивная карта территории</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Карта с отметками важных зон — зрительских трибун, фуд-кортов, зон для СМИ, мест для участников и судей — помогает зрителям и участникам легко ориентироваться на месте.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="recommended" data-weight="1">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="app-10-5" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Возможность онлайн-голосования и интерактивных конкурсов</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Зрители могут участвовать в интерактивных конкурсах и голосованиях через приложение, что делает их участие в соревнованиях более увлекательным и запоминающимся.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="app-10-6" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Прямая трансляция соревнований</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Возможность смотреть онлайн-трансляцию с разных камер позволяет пользователям следить за соревнованиями, даже если они не могут присутствовать физически. Это расширяет аудиторию и делает мероприятие доступным широкой общественности.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="app-10-7" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Раздел для аккредитации и регистрации</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Функции регистрации для участников, аккредитации для СМИ и гостей позволяют организаторам упростить процесс приема заявок и облегчают взаимодействие с различными группами посетителей.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="app-10-8" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Поддержка и обратная связь</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Раздел поддержки с контактами и формой обратной связи помогает пользователям быстро решить возникающие вопросы, будь то проблемы с доступом к приложению или уточнение информации о мероприятии.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="app-10-9" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Интеграция с социальными сетями</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Кнопки для быстрого доступа к социальным сетям и возможность делиться результатами и событиями помогают увеличить охват мероприятия и привлекать больше зрителей и участников.</p>
+          </div>
+        </div>
+
+        <div class="wake-checklist__card" data-priority="base" data-weight="2">
+          <div class="wake-checklist__card-header">
+            <input type="checkbox" id="app-10-10" class="wake-checklist__checkbox">
+            <span class="wake-checklist__card-title">Доступ к информации об условиях погоды и обновлениям</span>
+          </div>
+          <div class="wake-checklist__card-body">
+            <img src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/placeholder.svg" alt="Иконка" class="wake-checklist__card-icon">
+            <p class="wake-checklist__card-desc">Раздел с информацией о погоде и ее возможных изменениях важен для планирования пребывания зрителей и подготовки участников, особенно в условиях соревнований на открытой воде.</p>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <!-- Общий прогресс (весовой) -->
+      <section class="wake-checklist__overall" aria-label="Общий прогресс чеклиста">
+        <h2 class="wake-checklist__overall-title">Общий прогресс</h2>
+
+        <div class="wake-checklist__overall-progress">
+          <span class="wake-checklist__overall-text" id="wake-checklist-overall-text">0% выполнено</span>
+
+          <div class="wake-checklist__overall-bar" id="wake-checklist-overall-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="wake-checklist__overall-fill" id="wake-checklist-overall-fill" style="width: 0%"></div>
+          </div>
+
+          <div class="wake-checklist__overall-meta" id="wake-checklist-overall-meta">Критические: 0/5 • Базовые: 0/53 • Рекоменд.: 0/9 • Вес: 0/130</div>
+
+          <div class="wake-checklist__pause-controls">
+            <div class="wake-checklist__field">
+              <label class="wake-checklist__field-label" for="wake-pause-max">Максимальная пауза (мин)</label>
+              <input class="wake-checklist__field-input" id="wake-pause-max" type="number" min="0" step="1" value="0">
+            </div>
+
+            <div class="wake-checklist__field">
+              <label class="wake-checklist__field-label" for="wake-pause-threshold">Порог X (мин)</label>
+              <input class="wake-checklist__field-input" id="wake-pause-threshold" type="number" min="1" step="1" value="7">
+            </div>
+
+            <div class="wake-checklist__hint" id="wake-pause-hint" aria-live="polite" style="color: rgb(108, 117, 125);">Максимальная пауза не превышает порог (7 мин).</div>
+          </div>
+
+          <div class="wake-checklist__overall-legend" aria-label="Легенда приоритетов">
+            <span class="wake-checklist__legend-item wake-checklist__legend-item--critical">
+              <span class="wake-checklist__legend-dot"></span> Критический приоритет
+            </span>
+            <span class="wake-checklist__legend-item wake-checklist__legend-item--base">
+              <span class="wake-checklist__legend-dot"></span> Базовый приоритет
+            </span>
+            <span class="wake-checklist__legend-item wake-checklist__legend-item--recommended">
+              <span class="wake-checklist__legend-dot"></span> Рекомендованный
+            </span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+
+
+  </main>
+
+  <!-- Плавающий чат -->
+  <div class="floating-chat" id="floating-chat">
+    <button class="chat-toggle" id="chat-toggle" aria-label="Открыть чат">
+      <i class="fas fa-comments"></i>
+    </button>
+    
+    <div class="chat-widget hidden" id="chat-widget">
+      <div class="chat-header">
+        <h4>Чат с экспертом по вейку</h4>
+        <button class="close-chat" id="close-chat" aria-label="Закрыть чат">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="chat-messages" id="chat-messages"><div class="message bot"><div class="message-content">О чём я могу тебя спросить?</div></div></div>
+      <div class="chat-suggestions" id="chat-suggestions"></div>
+      
+      <form class="chat-form" id="chat-form">
+        <input type="hidden" name="csrf_token" value="IjVhODQwNmRjYTI2NmZlMjEwZDE5YzVkZjY5MjEwMjlkNjFhNzhhNjIi.aXdLGw.TieLTO7347c1iz6ea2egJzovF7E">
+        <div class="chat-input-wrapper">
+          <input type="text" id="chat-input" class="chat-input" placeholder="Напишите сообщение..." aria-label="Сообщение">
+          <button type="submit" class="send-button" aria-label="Отправить">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Индикатор загрузки -->
+  <div id="loading-indicator" class="loading-indicator hidden" aria-hidden="true">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Catalog Modal (Products/Services) -->
+  <div class="mw-modal mw-catalog-modal" id="mwCatalogModal" aria-hidden="true">
+    <div class="mw-modal__overlay" data-mw-modal-close=""></div>
+    <div class="mw-modal__panel" role="dialog" aria-modal="true" aria-labelledby="mwCatalogModalTitle" aria-describedby="mwCatalogModalDesc" tabindex="-1">
+      <button class="mw-modal__close" type="button" aria-label="Закрыть" data-mw-modal-close="">×</button>
+      <div class="mw-modal__media">
+        <img id="mwCatalogModalImg" alt="" loading="lazy">
+      </div>
+      <div class="mw-modal__body">
+        <h3 class="mw-modal__title" id="mwCatalogModalTitle"></h3>
+        <div class="mw-modal__price" id="mwCatalogModalPrice"></div>
+        <div class="mw-modal__desc" id="mwCatalogModalDesc"></div>
+        <div class="mw-modal__actions">
+          <button type="button" class="btn-primary" id="mwCatalogModalCta"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Подключение socket.io-client через CDN -->
+  <script src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/socket.io.min.js"></script>
+  <script src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/chat.js"></script>
+  <script src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/storeFilter.js"></script>
+  <script src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/socket.io.js"></script>
+  <script type="module">
+    import { SocketStatus } from '/static/js/socket-status.js';
+    const socket = io({
+      auth: {
+        csrf_token: document.querySelector('meta[name="csrf-token"]')?.content
+      }
+    });
+    new SocketStatus(socket);
+  </script>
+  
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // Веса приоритетов (можешь поменять числа, если захочешь «усилить» критические)
+    const PRIORITY_WEIGHTS = {
+      critical: 3,
+      base: 2,
+      recommended: 1
+    };
+
+    // Ручные переопределения по id чекбокса (если нужно точечно)
+    // Пример:
+    // const PRIORITY_OVERRIDES = { 'aqua-2-6': 'critical', 'music-8': 'recommended' };
+    const PRIORITY_OVERRIDES = {};
+
+    // Автоклассификация по ключевым словам в заголовке карточки
+    const KEYWORDS = {
+      critical: [
+        'безопас', 'спас', 'аптеч', 'жилет', 'медиц', 'дежурств', 'очист',
+        'препятств', 'размет', 'глубин', 'течен', 'волнов', 'ветер'
+      ],
+      recommended: [
+        'сауна', 'массаж', 'физиотерап', 'сувенир', 'мерч', 'dj', 'коптер',
+        'нейро', 'детск', 'голосован', 'интерактив', 'конкурс'
+      ]
+    };
+
+    function normalize(text) {
+      return (text || '').toString().trim().toLowerCase();
+    }
+
+    function resolvePriority(card) {
+      const checkbox = card.querySelector('input[type="checkbox"]');
+      const id = checkbox ? checkbox.id : '';
+
+      if (id && PRIORITY_OVERRIDES[id]) return PRIORITY_OVERRIDES[id];
+
+      const titleEl = card.querySelector('.wake-checklist__card-title');
+      const title = normalize(titleEl ? titleEl.textContent : '');
+
+      for (const kw of KEYWORDS.critical) {
+        if (title.includes(kw)) return 'critical';
+      }
+      for (const kw of KEYWORDS.recommended) {
+        if (title.includes(kw)) return 'recommended';
+      }
+      return 'base';
+    }
+
+    function applyPriorities() {
+      document.querySelectorAll('.wake-checklist__card').forEach(function(card) {
+        const pr = resolvePriority(card);
+        card.dataset.priority = pr;
+        // Можно вручную задать data-weight="5" на карточке, тогда это перекроет дефолт
+        if (!card.dataset.weight) {
+          card.dataset.weight = PRIORITY_WEIGHTS[pr] || 1;
+        }
+      });
+    }
+
+    // Функция обновления прогресса для каждой секции + общий прогресс
+    function updateProgress() {
+      // Секции
+      document.querySelectorAll('.wake-checklist__section').forEach(function(section) {
+        const cards = section.querySelectorAll('.wake-checklist__card');
+        const checked = section.querySelectorAll('.wake-checklist__card--completed').length;
+        const total = cards.length;
+
+        const progressText = section.querySelector('.wake-checklist__progress-text');
+        const progressFill = section.querySelector('.wake-checklist__progress-fill');
+
+        if (progressText && progressFill && total > 0) {
+          progressText.textContent = checked + ' из ' + total + ' выполнено';
+          progressFill.style.width = (checked / total * 100) + '%';
+        }
+      });
+
+      // Общий весовой прогресс
+      updateOverallProgress();
+    }
+
+    function updateOverallProgress() {
+      const cards = Array.from(document.querySelectorAll('.wake-checklist__card'))
+        .filter(c => c.querySelector('input[type="checkbox"]'));
+
+      let totalWeight = 0;
+      let doneWeight = 0;
+
+      const stats = {
+        critical: { total: 0, done: 0 },
+        base: { total: 0, done: 0 },
+        recommended: { total: 0, done: 0 }
+      };
+
+      cards.forEach(function(card) {
+        const pr = card.dataset.priority || 'base';
+        const w = Number(card.dataset.weight) || PRIORITY_WEIGHTS[pr] || 1;
+
+        totalWeight += w;
+        if (stats[pr]) stats[pr].total += 1;
+
+        const isDone = card.classList.contains('wake-checklist__card--completed');
+        if (isDone) {
+          doneWeight += w;
+          if (stats[pr]) stats[pr].done += 1;
+        }
+      });
+
+      const percent = totalWeight > 0 ? Math.round((doneWeight / totalWeight) * 100) : 0;
+
+      const textEl = document.getElementById('wake-checklist-overall-text');
+      const fillEl = document.getElementById('wake-checklist-overall-fill');
+      const metaEl = document.getElementById('wake-checklist-overall-meta');
+      const barEl  = document.getElementById('wake-checklist-overall-bar');
+
+      if (textEl) textEl.textContent = percent + '% выполнено';
+      if (fillEl) fillEl.style.width = percent + '%';
+      if (barEl)  barEl.setAttribute('aria-valuenow', String(percent));
+
+      if (metaEl) {
+        metaEl.textContent =
+          'Критические: ' + stats.critical.done + '/' + stats.critical.total +
+          ' • Базовые: ' + stats.base.done + '/' + stats.base.total +
+          ' • Рекоменд.: ' + stats.recommended.done + '/' + stats.recommended.total +
+          ' • Вес: ' + doneWeight + '/' + totalWeight;
+      }
+    }
+
+    // 1) Приоритеты (цветные тени)
+    applyPriorities();
+
+    // 2) Восстановление состояний чекбоксов из localStorage
+    document.querySelectorAll('.wake-checklist__card').forEach(function(card) {
+      const checkbox = card.querySelector('input[type="checkbox"]');
+      if (!checkbox) return;
+
+      const key = 'wake-checklist:' + checkbox.id;
+      const saved = localStorage.getItem(key);
+
+      if (saved === '1') {
+        checkbox.checked = true;
+        card.classList.add('wake-checklist__card--completed');
+      }
+
+      checkbox.addEventListener('change', function() {
+        card.classList.toggle('wake-checklist__card--completed', checkbox.checked);
+        localStorage.setItem(key, checkbox.checked ? '1' : '0');
+        updateProgress();
+        
+        // Если это чекбокс шоу или media-prod-9, обновляем связанные функции
+        if (card.dataset.show === 'true' || checkbox.id === 'media-prod-9') {
+          updatePauseAutoFlag();
+          updateMediaLink();
+        }
+      });
+    });
+
+    // ===== SHOW / MAX PAUSE / MEDIA LINK =====
+    const LS_PAUSE_MAX = 'wake-checklist:pause_max';
+    const LS_PAUSE_X   = 'wake-checklist:pause_threshold';
+
+    function getShowCards() {
+      return Array.from(document.querySelectorAll('[data-show="true"]'));
+    }
+    function getShowCheckboxes() {
+      return getShowCards()
+        .map(card => card.querySelector('input.wake-checklist__checkbox'))
+        .filter(Boolean);
+    }
+    function anyShowEnabled() {
+      return getShowCheckboxes().some(cb => cb.checked);
+    }
+
+    function getPauseEls() {
+      return {
+        max: document.getElementById('wake-pause-max'),
+        x: document.getElementById('wake-pause-threshold'),
+        hint: document.getElementById('wake-pause-hint')
+      };
+    }
+
+    function loadPauseSettings() {
+      const { max, x } = getPauseEls();
+      if (!max || !x) return;
+
+      const savedMax = localStorage.getItem(LS_PAUSE_MAX);
+      const savedX = localStorage.getItem(LS_PAUSE_X);
+
+      if (savedMax !== null) max.value = savedMax;
+      if (savedX !== null) x.value = savedX;
+    }
+
+    function savePauseSettings() {
+      const { max, x } = getPauseEls();
+      if (!max || !x) return;
+
+      localStorage.setItem(LS_PAUSE_MAX, String(Number(max.value) || 0));
+      localStorage.setItem(LS_PAUSE_X, String(Math.max(1, Number(x.value) || 7)));
+    }
+
+    function setShowFlag(isFlagged) {
+      getShowCards().forEach(card => {
+        card.classList.toggle('wake-checklist__card--flagged', isFlagged);
+      });
+    }
+
+    function updatePauseAutoFlag() {
+      const { max, x, hint } = getPauseEls();
+      if (!max || !x) return;
+
+      const maxPause = Number(max.value) || 0;         // <- МАКСИМАЛЬНАЯ пауза
+      const threshold = Math.max(1, Number(x.value) || 7);
+
+      const showOn = anyShowEnabled();
+      const shouldFlag = (maxPause > threshold) && !showOn;
+
+      setShowFlag(shouldFlag);
+
+      if (hint) {
+        if (maxPause > threshold && !showOn) {
+          hint.textContent = `Максимальная пауза ${maxPause} мин > ${threshold} мин — включи хотя бы один подтип шоу-вставок.`;
+          hint.style.color = '#b00020';
+        } else if (maxPause > threshold && showOn) {
+          hint.textContent = `Максимальная пауза ${maxPause} мин > ${threshold} мин — шоу-вставки включены ✅`;
+          hint.style.color = '#2e7d32';
+        } else {
+          hint.textContent = `Максимальная пауза не превышает порог (${threshold} мин).`;
+          hint.style.color = '#6c757d';
+        }
+      }
+    }
+
+    function updateMediaLink() {
+      const mediaCb = document.getElementById('media-prod-9');
+      if (!mediaCb) return;
+
+      const mediaCard = mediaCb.closest('.wake-checklist__card');
+      if (!mediaCard) return;
+
+      let note = mediaCard.querySelector('[data-media-note]');
+      if (!note) {
+        note = document.createElement('div');
+        note.className = 'wake-checklist__note wake-checklist__note--warning';
+        note.setAttribute('data-media-note', '1');
+        note.style.display = 'none';
+        note.textContent = 'Шоу-вставки включены — желательно снять короткий клип (30–60 сек) и выложить в соцсети/партнёрские площадки.';
+        const body = mediaCard.querySelector('.wake-checklist__card-body') || mediaCard;
+        body.appendChild(note);
+      }
+
+      const showOn = anyShowEnabled();
+
+      if (showOn && !mediaCb.checked) {
+        mediaCard.classList.add('wake-checklist__card--attention');
+        note.style.display = 'block';
+      } else {
+        mediaCard.classList.remove('wake-checklist__card--attention');
+        note.style.display = 'none';
+      }
+    }
+
+    function bindPauseInputs() {
+      const { max, x } = getPauseEls();
+      if (!max || !x) return;
+
+      max.addEventListener('input', () => {
+        savePauseSettings();
+        updatePauseAutoFlag();
+        updateMediaLink();
+      });
+
+      x.addEventListener('input', () => {
+        savePauseSettings();
+        updatePauseAutoFlag();
+        updateMediaLink();
+      });
+    }
+
+    // Init
+    loadPauseSettings();
+    bindPauseInputs();
+    updatePauseAutoFlag();
+    updateMediaLink();
+
+    // Реакция на изменения шоу и media-prod (дополнительные обработчики для надежности)
+    // Основная логика уже в обработчике change выше, но добавляем для совместимости
+    getShowCheckboxes().forEach(cb => {
+      // Проверяем, не добавлен ли уже обработчик через основной цикл
+      // Основной обработчик уже вызывает updatePauseAutoFlag и updateMediaLink
+    });
+
+    const mediaCb = document.getElementById('media-prod-9');
+    // Обработчик для media-prod-9 уже добавлен в основном цикле выше
+    // ===== /SHOW / MAX PAUSE / MEDIA LINK =====
+
+    // 3) Переключение чекбокса при клике на карточку (делегирование события)
+    document.querySelectorAll('.wake-checklist__cards').forEach(function(container) {
+      container.addEventListener('click', function(e) {
+        const card = e.target.closest('.wake-checklist__card');
+        if (!card) return;
+
+        // Защита от клика по интерактивным элементам
+        if (e.target.closest('a, button, input, label, select, textarea')) return;
+
+        const checkbox = card.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+          checkbox.checked = !checkbox.checked;
+          checkbox.dispatchEvent(new Event('change'));
+        }
+      });
+    });
+
+    // 4) Кнопка "Скачать PDF" — обработка клика (визуальная обратная связь)
+    const downloadBtn = document.getElementById('download-pdf-btn');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', function(e) {
+        const originalText = this.textContent;
+        
+        // Показываем индикатор загрузки
+        this.textContent = '⏳ Загрузка PDF...';
+        
+        // Восстанавливаем текст через 2 секунды (если скачивание не началось)
+        setTimeout(() => {
+          this.textContent = originalText;
+        }, 2000);
+      });
+    }
+
+    // 5) Кнопка "Печать" — добавляем обработчик для надежности
+    const printBtn = document.getElementById('print-btn');
+    if (printBtn) {
+      // Убираем inline onclick, используем только addEventListener
+      printBtn.removeAttribute('onclick');
+      printBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        window.print();
+        return false;
+      });
+    }
+
+    // 6) Кнопка "Сбросить всё" — снимает все отметки
+    const resetBtn = document.getElementById('reset-all-btn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (confirm('Сбросить все отметки?')) {
+          document.querySelectorAll('.wake-checklist__card input[type="checkbox"]').forEach(function(cb) {
+            cb.checked = false;
+            localStorage.removeItem('wake-checklist:' + cb.id);
+          });
+          document.querySelectorAll('.wake-checklist__card--completed').forEach(function(card) {
+            card.classList.remove('wake-checklist__card--completed');
+          });
+          
+          // Сброс значений пауз
+          localStorage.removeItem(LS_PAUSE_MAX);
+          localStorage.removeItem(LS_PAUSE_X);
+          
+          const pauseMaxEl = document.getElementById('wake-pause-max');
+          const pauseXEl = document.getElementById('wake-pause-threshold');
+          if (pauseMaxEl) pauseMaxEl.value = 0;
+          if (pauseXEl) pauseXEl.value = 7;
+          
+          updateProgress();
+          updatePauseAutoFlag();
+          updateMediaLink();
+        }
+      });
+    }
+
+    // 5) Инициализация прогресса при загрузке страницы
+    updateProgress();
+  });
+</script>
+
+  <script src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/catalog-modal.js"></script>
+  <script src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/loop-carousel.js"></script>
+  <script defer="" src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/nav-spy.js"></script>
+  <script src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/inline.js"></script>
+
+  <!-- booking.js должен быть после блока content и всех модалок -->
+  <script src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/booking.js"></script>
+
+  <div id="toast" class="toast hidden" aria-live="polite" aria-label="Уведомление"></div>
+
+  <footer class="site-footer">
+    <p>© 2025 MyWave. Все права защищены.</p>
+    <p>Разработка: MyWave Team</p>
+  </footer>
+
+  <script>
+    const themeBtn = document.getElementById('dark-mode-toggle');
+    const boatCard = document.getElementById('boat-card');
+
+    if (themeBtn) {
+      // Авто-применение при загрузке
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme','dark');
+        themeBtn.textContent = '☀️';
+      }
+
+      themeBtn.addEventListener('click', () => {
+        const isDark = document.documentElement.hasAttribute('data-theme');
+        if (isDark) {
+          document.documentElement.removeAttribute('data-theme');
+          localStorage.removeItem('theme');
+          themeBtn.textContent = '🌙';
+        } else {
+          document.documentElement.setAttribute('data-theme','dark');
+          localStorage.setItem('theme','dark');
+          themeBtn.textContent = '☀️';
+        }
+
+        // Подсветка карточки катера
+        if (boatCard) {
+          boatCard.classList.add('highlight-boat');
+          setTimeout(() => boatCard.classList.remove('highlight-boat'), 800);
+        }
+      });
+    }
+  </script>
+  <script src="./Чек-лист Организатора — Условия для соревнований по вейксерфингу_files/blog_latest.js" defer=""></script>
+
+</body></html>

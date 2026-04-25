@@ -1,11 +1,98 @@
+import re
 from flask import Blueprint, jsonify, request, current_app, render_template, session
 from app.database.models import ChatMessage, db  # ChatMessage должен быть связан с db из app.database
 from app.services.openai_service import ask
-from app.modules.logger import log_event
 from app.services.google_sheets_analytics import log_analytics_event
+from app.extensions import limiter
+from flask_limiter.util import get_remote_address
+from flask_limiter.errors import RateLimitExceeded
 from openai import OpenAIError
 
 chat_bp = Blueprint('chat', __name__, template_folder='../templates', url_prefix='/chat')
+
+
+@chat_bp.errorhandler(RateLimitExceeded)
+def _chat_rate_limit_exceeded(_e):
+    return jsonify(
+        response='Слишком много сообщений. Подождите около минуты и попробуйте снова.',
+        status='rate_limited',
+    ), 429
+
+# Роль «assistant» в поле user для пар к user-сообщениям (схема без отдельной колонки role)
+_ASSISTANT_USER = "assistant"
+
+
+_ALLOWED_CONTEXT_ENTRIES = frozenset({"general", "services", "shop", "projects", "home"})
+_ALLOWED_CONTEXT_KINDS = frozenset({"section", "service", "product", "project", ""})
+
+
+def _sanitize_chat_context(raw) -> dict | None:
+    """Допустимые поля контекста с страницы (услуги / магазин / проекты)."""
+    if not isinstance(raw, dict):
+        return None
+    entry = str(raw.get("entry") or "general").lower().strip()
+    if entry not in _ALLOWED_CONTEXT_ENTRIES:
+        entry = "general"
+    kind = str(raw.get("kind") or "").lower().strip()
+    if kind not in _ALLOWED_CONTEXT_KINDS:
+        kind = ""
+    cid = str(raw.get("id") or "").strip()[:64]
+    if cid and not re.match(r"^[\w\-.]+$", cid):
+        cid = ""
+    title = str(raw.get("title") or "").strip()[:120]
+    out = {"entry": entry, "kind": kind, "id": cid, "title": title}
+    if entry == "general" and not kind and not cid and not title:
+        return None
+    return out
+
+
+def _truncate_log_field(text, max_len: int = 400):
+    if text is None:
+        return ""
+    s = str(text)
+    return s if len(s) <= max_len else s[:max_len] + "…"
+
+
+def _needs_location_disambiguation(text_lc: str, mw_ctx: dict | None) -> bool:
+    """
+    Для вопроса «что взять/что нужно с собой» при общем контексте
+    задаём короткое уточнение «зал или катер», чтобы не давать нерелевантный чек-лист.
+    """
+    if mw_ctx and isinstance(mw_ctx, dict):
+        sid = str(mw_ctx.get("id") or "").lower().strip()
+        entry = str(mw_ctx.get("entry") or "").lower().strip()
+        title_lc = str(mw_ctx.get("title") or "").lower()
+        if sid in ("gym", "boat"):
+            return False
+        if entry in ("services", "shop", "projects"):
+            return False
+        if "зал" in title_lc or "катер" in title_lc:
+            return False
+    ask_what_to_bring = (
+        "что взять" in text_lc
+        or "что нужно с собой" in text_lc
+        or "что брать с собой" in text_lc
+        or "нужно брать" in text_lc
+    )
+    return ask_what_to_bring
+
+
+def _save_chat_turn(client_id: str, user_text: str, assistant_text: str | None) -> None:
+    """Политика persistence: в chat_message пишутся и user, и assistant (роль assistant — поле user='assistant')."""
+    try:
+        db.session.add(ChatMessage(user=client_id or "anon", message=user_text))
+        if assistant_text:
+            db.session.add(ChatMessage(user=_ASSISTANT_USER, message=assistant_text))
+        db.session.commit()
+    except Exception as db_error:
+        db.session.rollback()
+        current_app.logger.error("Ошибка при сохранении чата в БД: %s", db_error)
+
+
+def _chat_rate_limit_decorator(f):
+    if limiter is None:
+        return f
+    return limiter.limit("40 per minute", key_func=get_remote_address)(f)
 
 def _clean_assistant_text(text: str) -> str:
     try:
@@ -23,6 +110,19 @@ def _clean_assistant_text(text: str) -> str:
         for pat in patterns:
             import re
             cleaned = re.sub(pat, "", cleaned, flags=re.IGNORECASE)
+        # Remove markdown artifacts that look unnatural in chat bubbles.
+        cleaned = re.sub(r"\*\*(.*?)\*\*", r"\1", cleaned, flags=re.DOTALL)
+        cleaned = re.sub(r"^#{1,6}\s*", "", cleaned, flags=re.MULTILINE)
+        cleaned = re.sub(r"`{1,3}", "", cleaned)
+        cleaned = re.sub(r"\[(.*?)\]\((.*?)\)", r"\1", cleaned)
+        cleaned = re.sub(r"^\s*\d+\)\s*", "", cleaned, flags=re.MULTILINE)
+        cleaned = re.sub(r"^\s*\d+\.\s*", "", cleaned, flags=re.MULTILINE)
+        cleaned = re.sub(
+            r"(?i)\b(как\s+ии|как\s+искусственный\s+интеллект|я\s+не\s+могу\s+гарантировать)\b.*?[.!?]",
+            "",
+            cleaned,
+            flags=re.MULTILINE,
+        )
         # Remove leading bullets
         cleaned = re.sub(r"^[\-•]\s*", "", cleaned, flags=re.MULTILINE)
         # Collapse excess blank lines
@@ -31,13 +131,19 @@ def _clean_assistant_text(text: str) -> str:
     except Exception:
         return text
 
-# Отдельная страница чата удалена - используется только плавающий чат на главной странице
-# @chat_bp.route("/")
-# def chat_page():
-#     messages = ChatMessage.query.order_by(ChatMessage.created_at.asc()).all()
-#     return render_template("chat.html", messages=messages)
+@chat_bp.route("", methods=["GET"])
+@chat_bp.route("/", methods=["GET"])
+def chat_page():
+    """Страница «Чат»: тот же плавающий виджет из base.html, виджет открывается скриптом. Два маршрута — /chat и /chat/."""
+    return render_template(
+        "chat_page.html",
+        title="Чат с экспертом",
+        meta_description="Чат с AI-экспертом MyWave: вейксерф, тренировки, запись на занятие.",
+    )
+
 
 @chat_bp.route("/api", methods=["POST"])
+@_chat_rate_limit_decorator
 def chat_handler():
     try:
         current_app.logger.info("Получен новый запрос к чату")
@@ -49,6 +155,12 @@ def chat_handler():
 
         message = data.get('message')
         history = data.get('history')
+        ctx_in = _sanitize_chat_context(data.get("context"))
+        if ctx_in is not None:
+            session["mw_chat_context"] = ctx_in
+        elif "context" in data and data.get("context") in (None, {}, ""):
+            session.pop("mw_chat_context", None)
+
         if not message or not isinstance(message, str):
             current_app.logger.error(f"Некорректное сообщение: {message}")
             return jsonify({'error': 'Некорректное сообщение'}), 400
@@ -57,8 +169,6 @@ def chat_handler():
         client_id = request.headers.get("X-User-Id") or request.remote_addr
         current_app.logger.info(f"Обработка сообщения от пользователя {client_id}: {message}")
         
-        # Fallback: если сообщение похоже на запрос на бронирование, перенаправляем в booking API
-        import re
         text_lc = message.lower().strip()
         
         # СНАЧАЛА проверяем информационный intent (вопросы, объяснения)
@@ -82,34 +192,41 @@ def chat_handler():
             info_intent = True
         
         if is_booking_request:
-            current_app.logger.info(f"Обнаружен запрос на бронирование, перенаправление в /api/booking")
-            # Перенаправляем в booking API
-            from flask import redirect, url_for
+            current_app.logger.info("Запрос на бронирование: сценарий booking_orchestrator через /chat/api")
             from app.services.booking_orchestrator import orchestrate
             try:
-                state = session.get('booking_state', {})
+                state = dict(session.get("booking_state") or {})
+                mw_ctx = session.get("mw_chat_context")
+                if mw_ctx:
+                    state["mw_context"] = mw_ctx
                 reply_text, updated_state = orchestrate(message, state)
-                session['booking_state'] = updated_state
-                # Формируем suggestions
+                if mw_ctx:
+                    updated_state["mw_context"] = mw_ctx
+                session["booking_state"] = {
+                    k: v for k, v in updated_state.items() if k != "mw_context"
+                }
                 suggestions = []
-                step = updated_state.get('step')
-                if step == 'ask_date':
-                    suggestions = ['сегодня', 'завтра', 'послезавтра']
-                elif step == 'ask_time' and updated_state.get('date'):
+                step = updated_state.get("step")
+                if step == "ask_date":
+                    suggestions = ["сегодня", "завтра", "послезавтра"]
+                elif step == "ask_time" and updated_state.get("date"):
                     from app.services.tools import get_available_slots
                     try:
-                        slots = get_available_slots(updated_state['date'])
-                        suggestions = [s.get('time') for s in (slots or [])][:6]
+                        slots = get_available_slots(updated_state["date"])
+                        suggestions = [s.get("time") for s in (slots or [])][:6]
                     except Exception:
                         suggestions = []
-                elif step == 'confirm':
-                    suggestions = ['Да', 'Нет']
+                elif step == "confirm":
+                    suggestions = ["Да", "Нет"]
+                _save_chat_turn(client_id, message, reply_text)
                 return jsonify(response=reply_text, state=updated_state, suggestions=suggestions)
             except Exception as exc:
                 current_app.logger.error(f"Ошибка при обработке бронирования: {exc}", exc_info=True)
+                err_reply = "Сервис записи временно недоступен. Попробуйте чуть позже."
+                _save_chat_turn(client_id, message, err_reply)
                 return jsonify(
-                    response="Сервис записи временно недоступен. Попробуйте чуть позже.",
-                    state=session.get('booking_state', {}),
+                    response=err_reply,
+                    state=session.get("booking_state", {}),
                     suggestions=[],
                 ), 200
 
@@ -121,10 +238,16 @@ def chat_handler():
             current_app.logger.info("Сброс booking_state для информационного запроса")
             session.pop('booking_state', None)
         
+        mw_ctx = session.get("mw_chat_context")
+
         if info_intent:
+            if _needs_location_disambiguation(text_lc, mw_ctx):
+                reply = "Уточните, пожалуйста: вам нужна запись в зал или на катер? Тогда дам точный список, что взять с собой."
+                _save_chat_turn(client_id, message, reply)
+                return jsonify({'response': reply, 'status': 'success'})
             from app.services.responses_api import get_response_with_knowledge as _resp
             try:
-                reply = _resp(message)
+                reply = _resp(message, mw_chat_context=mw_ctx)
             except Exception as exc:
                 current_app.logger.warning("Knowledge-base response failed, falling back to chat: %s", exc, exc_info=True)
                 reply = None
@@ -135,25 +258,25 @@ def chat_handler():
                 reply += ' Если захотите, подскажу свободные слоты и помогу записаться.'
             else:
                 # Fallback to regular chat if knowledge base did not return an answer
-                reply = ask(message, client_id=client_id, source="web", history=history)
+                reply = ask(
+                    message,
+                    client_id=client_id,
+                    source="web",
+                    history=history,
+                    page_context=mw_ctx,
+                )
         else:
-            reply = ask(message, client_id=client_id, source="web", history=history)
+            reply = ask(
+                message,
+                client_id=client_id,
+                source="web",
+                history=history,
+                page_context=mw_ctx,
+            )
         reply = _clean_assistant_text(reply)
         current_app.logger.info(f"Получен ответ от OpenAI: {reply}")
 
-        # Сохраняем сообщение в базу данных
-        try:
-            chat_message = ChatMessage(
-                user=client_id,  # используем client_id как user
-                message=message
-            )
-            current_app.logger.info("Сохранение сообщения в базу данных")
-            db.session.add(chat_message)
-            db.session.commit()
-            current_app.logger.info("Сообщение успешно сохранено")
-        except Exception as db_error:
-            current_app.logger.error(f"Ошибка при сохранении в БД: {str(db_error)}")
-            # Продолжаем выполнение даже при ошибке БД
+        _save_chat_turn(client_id, message, reply)
 
         # Логируем событие в аналитику (best-effort)
         try:
@@ -165,9 +288,10 @@ def chat_handler():
                 "rule_id": "",
                 "item_id": "",
                 "meta": {
-                    "message": message,
-                    "response": reply,
+                    "message": _truncate_log_field(message),
+                    "response": _truncate_log_field(reply),
                     "source": "site_web",
+                    "chat_context": session.get("mw_chat_context") or {},
                 },
                 "ip": request.remote_addr or "",
                 "user_agent": request.headers.get("User-Agent", "")

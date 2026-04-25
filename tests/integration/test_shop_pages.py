@@ -18,8 +18,9 @@ def test_shop_page_renders_products():
     # There should be at least one product-card
     assert len(product_cards) >= 1
 
-    # Each product card should contain a link to product page
+    # Кнопка «Купить»: страница товара на сайте или внешний URL (например партнёрский магазин)
     for card in product_cards:
         a = card.find('a')
         assert a and a.has_attr('href')
-        assert '/shop/product/' in a['href']
+        href = a['href']
+        assert '/shop/product/' in href or href.startswith('https://')

@@ -19,6 +19,8 @@ class Config:
     AB_CONTROL_GROUP_SIZE = int(os.getenv('AB_CONTROL_GROUP_SIZE', '2'))
     # Recommendation cache time-to-live (seconds)
     RECO_CACHE_TTL = int(os.getenv('RECO_CACHE_TTL', '300'))
+    # In-memory кэш строк raw_feed (Sheets) для витрины блога; 0 = всегда перечитывать
+    BLOG_SHEETS_CACHE_TTL = int(os.getenv("BLOG_SHEETS_CACHE_TTL", "120"))
     # CSP toggle — allow enabling/disabling strict CSP rules via env
     CSP_ENABLED = os.getenv('CSP_ENABLED', 'True') in ('1', 'true', 'True')
     # Sitemap build timestamp (optional override)
@@ -31,10 +33,18 @@ class Config:
     CSP_POLICY = {}
 
     # Настройки для OpenAI и GPT
-    GPTS_MODEL = os.getenv("GPTS_MODEL", "gpt-4")
-    FINE_TUNED_MODEL = os.getenv("FINE_TUNED_MODEL", "gpt-4")
-    FALLBACK_MODEL = os.getenv("FALLBACK_MODEL", "gpt-3.5-turbo")
+    GPTS_MODEL = os.getenv("GPTS_MODEL", "gpt-4.1-nano")
+    FINE_TUNED_MODEL = os.getenv("FINE_TUNED_MODEL", "gpt-4.1-nano")
+    FALLBACK_MODEL = os.getenv("FALLBACK_MODEL", "gpt-4.1-nano")
     ASSISTANT_ID = os.getenv("ASSISTANT_ID")
+    # Публичный чат (ask в openai_service): auto | completions | responses | assistant_only
+    # auto — Assistant API при ASSISTANT_ID, иначе completions; при пустом ответе — fallback completions
+    # completions — только Chat Completions + CHAT_SYSTEM_PROMPT (игнор ASSISTANT_ID)
+    # responses — OpenAI Responses API для обычного public text chat
+    # assistant_only — только Assistant API без fallback на completions (отладка)
+    CHAT_BACKEND = (os.getenv("CHAT_BACKEND") or "auto").strip().lower()
+    # Flask-Limiter: memory:// (локально), production — redis://host:6379/0
+    RATELIMIT_STORAGE_URI = os.getenv("RATELIMIT_STORAGE_URI", "memory://")
 
     # Настройки для Telegram
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -52,6 +62,15 @@ class Config:
     
     GOOGLE_SERVICE_ACCOUNT_FILE = os.path.abspath(os.path.join(CONFIG_DIR, "service_account.json"))
     GOOGLE_WORKSHEET_NAME = "Dialog_History"
+
+    # Public media upload (for parser -> site image publishing)
+    SITE_BASE_URL = (os.getenv("SITE_BASE_URL") or "").rstrip("/")
+    MEDIA_UPLOAD_TOKEN = os.getenv("MEDIA_UPLOAD_TOKEN", "")
+    MEDIA_UPLOAD_SUBDIR = os.getenv("MEDIA_UPLOAD_SUBDIR", "uploads/review_media")
+    MEDIA_UPLOAD_MAX_BYTES = int(os.getenv("MEDIA_UPLOAD_MAX_BYTES", "10485760"))
+    # Optional absolute root for uploaded media (tests/local override).
+    # If empty, uploads go to <static_folder>/<MEDIA_UPLOAD_SUBDIR>.
+    MEDIA_UPLOAD_ROOT = os.getenv("MEDIA_UPLOAD_ROOT", "")
 
     # Настройки уведомлений
     NOTIFICATION_BOT_TOKEN = os.getenv("NOTIFICATION_BOT_TOKEN")
@@ -133,6 +152,8 @@ class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'  # In-memory database для быстрых тестов
     SQLALCHEMY_ECHO = False
     WTF_CSRF_ENABLED = False  # Отключаем CSRF для тестов
+    # Отключаем Google Sheets/Calendar в тестах — используем локальную БД
+    SPREADSHEET_ID = os.getenv('TEST_SPREADSHEET_ID') or ''
 
 class ProductionConfig(Config):
     """Конфигурация для продакшн."""

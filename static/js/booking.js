@@ -168,11 +168,10 @@ function initializeBooking() {
     return wrap;
   }
   let hideAllModals = () => {
-    [UI.calendarModal, UI.slotsModal, UI.contactModal, UI.confirmModal].forEach((m) => {
-      if (m) {
-        m.classList.remove("show");
-        m.style.display = "none";
-      }
+    document.querySelectorAll(".modal").forEach((m) => {
+      m.classList.remove("show");
+      m.style.display = "none";
+      m.classList.add("hidden");
     });
     document.body.style.overflow = "auto";
   };
@@ -493,7 +492,7 @@ function initializeBooking() {
       if (!payload.service_type) {
         payload.service_type = 'boat';
       }
-      if (!['boat', 'gym'].includes(payload.service_type)) {
+      if (!['boat', 'gym', 'camp', 'coach_triper', 'consulting'].includes(payload.service_type)) {
         throw new Error("Некорректный тип услуги");
       }
 
@@ -546,12 +545,13 @@ function initializeBooking() {
           csrf_token: csrfData.csrf_token
       };
 
-      // Формируем окончательный запрос — отправляем только поля, которые ожидает сервер (BookingSchema)
+      // Формируем окончательный запрос — отправляем поля, которые ожидает сервер (BookingSchema)
       const finalRequestData = {
           date: payload.date,
           time: payload.time,
           name: payload.name,
-          phone: payload.phone
+          phone: payload.phone,
+          service_type: payload.service_type || currentService || 'boat'
       };
 
       console.log("Отправляем данные на сервер (без лишних полей):", finalRequestData);
@@ -628,7 +628,9 @@ function initializeBooking() {
           const serviceLabels = {
             boat: 'Катер',
             gym: 'Зал',
-            camp: 'Кэмп'
+            camp: 'Camp',
+            coach_triper: 'CoachTriper',
+            consulting: 'Consulting'
           };
 
           const humanService =
@@ -905,6 +907,18 @@ function initializeBooking() {
       if (serviceType) {
         currentService = serviceType;
         console.log(`[booking.js] Установлен тип сервиса: ${currentService}`);
+        const badge = document.getElementById('bookingServiceBadge');
+        const labels = { gym: 'Запись на тренировку (Зал)', boat: 'Запись на катер', camp: 'Camp', coach_triper: 'CoachTriper', consulting: 'Consulting' };
+        const labelText = labels[serviceType] || serviceType;
+        if (badge) badge.textContent = labelText;
+        // Плавающий чат: только контекст услуги. Сценарий «запиши меня» в чате — server-first через POST /chat/api; модалка брони — отдельные API календаря.
+        if (typeof window.syncChatContextFromBooking === 'function') {
+          try {
+            window.syncChatContextFromBooking(serviceType, labelText);
+          } catch (e) {
+            console.debug('[booking.js] syncChatContextFromBooking:', e);
+          }
+        }
       }
 
       // Настраиваем календарь в зависимости от типа услуги
@@ -930,7 +944,11 @@ function initializeBooking() {
       if (targetModal) {
         console.log('[booking.js] ✅ Открываем модальное окно:', targetModal.id || 'calendarModal');
         showModal(targetModal);
-        goToStep(1);
+        // Только для потока записи в календарь (катер/зал и т.д.). Для data-modal=modalRuzaCamp,
+        // modalCamp и др. goToStep(1) подменяет окно на modalCalendar и ломает сценарий (ошибка слотов).
+        if (targetModal.id === 'modalCalendar') {
+          goToStep(1);
+        }
       } else {
         console.error('[booking.js] ❌ ОШИБКА: модальное окно не найдено!');
       }
@@ -968,10 +986,9 @@ function initializeBooking() {
         showToast('❌ Введите корректный номер телефона');
         return;
       }
-      showModal(UI.confirmModal);
-      // Переход к шагу подтверждения + скролл
+      goToStep(4);
       setTimeout(() => {
-        UI.confirmModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (UI.confirmModal) UI.confirmModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
     });
   }
@@ -982,16 +999,23 @@ function initializeBooking() {
     });
   }
 
-  // Закрытие модальных окон
+  // Закрытие модальных окон: крестик, overlay, Escape
+  function closeModalHandler(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    hideAllModals();
+  }
   UI.modalCloseButtons.forEach((btn) => {
-    btn.addEventListener("click", hideAllModals);
+    btn.addEventListener("click", closeModalHandler);
   });
-
-  // Закрытие по Escape
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      hideAllModals();
+  // Делегирование на document — для модалок, добавленных динамически или вне первоначального querySelectorAll
+  document.addEventListener("click", function(e) {
+    if (e.target.classList.contains("close-modal")) {
+      closeModalHandler(e);
     }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") hideAllModals();
   });
 
   // Скрываем все модальные окна при загрузке
@@ -1033,7 +1057,7 @@ function initializeBooking() {
     }
   }
 
-  // Переопределяем showModal/hideAllModals для анимаций
+  // Переопределяем showModal/hideAllModals: сразу скрываем (без задержки), затем анимация по желанию
   const _showModal = showModal;
   showModal = (modal) => {
     if (!modal) return;
@@ -1041,9 +1065,12 @@ function initializeBooking() {
     animateModal(modal, true);
   };
   hideAllModals = () => {
-    [UI.calendarModal, UI.slotsModal, UI.contactModal, UI.confirmModal].forEach((m) => {
-      if (m) animateModal(m, false);
+    document.querySelectorAll(".modal").forEach((m) => {
+      m.classList.remove("show");
+      m.classList.add("hidden");
+      m.style.display = "none";
     });
+    document.body.style.overflow = "auto";
   };
 
   // Закрытие по Escape
@@ -1104,11 +1131,26 @@ function initializeBooking() {
         if (UI.bookingName) UI.bookingName.focus();
         break;
       case 4:
+        if (UI.confirmDetails) {
+          const serviceLabels = { boat: 'Катер', gym: 'Зал', camp: 'Camp', coach_triper: 'CoachTriper', consulting: 'Consulting' };
+          const svc = serviceLabels[currentService] || currentService;
+          const dateVal = UI.bookingDateInput ? UI.bookingDateInput.value : '';
+          const slotInput = document.getElementById('selectedSlot');
+          const timeVal = slotInput ? slotInput.value : '';
+          const nameVal = UI.bookingName ? UI.bookingName.value : '';
+          const phoneVal = UI.bookingPhone ? UI.bookingPhone.value : '';
+          UI.confirmDetails.innerHTML = `
+            <p><strong>Дата:</strong> ${dateVal || '—'}</p>
+            <p><strong>Время:</strong> ${timeVal || '—'}</p>
+            <p><strong>Услуга:</strong> ${svc}</p>
+            <p><strong>Имя:</strong> ${nameVal || '—'}</p>
+            <p><strong>Телефон:</strong> ${phoneVal || '—'}</p>
+          `;
+        }
         showModal(UI.confirmModal);
         if (UI.stepIndicator) UI.stepIndicator.textContent = `Шаг 4/4`;
-        // обновить прогресс-бар
-        const progressFill = document.getElementById("progress-fill");
-        if (progressFill) progressFill.style.width = `${(4 / 4) * 100}%`;
+        const progressFill4 = document.getElementById("progress-fill");
+        if (progressFill4) progressFill4.style.width = `${(4 / 4) * 100}%`;
         break;
     }
   }

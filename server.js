@@ -1,27 +1,39 @@
-// server.js
+// MyWave Node-прокси OpenAI (отдельный порт, напр. 5001). Требуется Node 18+ (встроенный fetch).
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
-const fetch = require("node-fetch");  // исправлен импорт fetch для совместимости
 
 const app = express();
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname)));
 
-// Используем переменные окружения для ключей (ключ из .env)
-const apiKey = process.env.OPENAI_API_KEY; // Убедитесь, что ключ задан в переменной окружения
+// Для Docker HEALTHCHECK, балансировщиков и ручного curl
+app.get("/health", (req, res) => {
+    res.status(200).json({ ok: true, service: "mywave-node-proxy" });
+});
+
+const apiKey = process.env.OPENAI_API_KEY;
 const assistantId = process.env.ASSISTANT_ID;
 
 if (!apiKey) {
-    console.error("❌ OPENAI_API_KEY is not set. Set the environment variable and restart the proxy server.");
+    console.error("OPENAI_API_KEY is not set. Set the environment variable and restart the proxy server.");
     process.exit(1);
 }
 if (!assistantId) {
-    console.error("❌ ASSISTANT_ID is not set. Set the environment variable and restart the proxy server.");
+    console.error("ASSISTANT_ID is not set. Set the environment variable and restart the proxy server.");
     process.exit(1);
 }
 
-// Обработчик POST запроса для чата
+function httpErrorMessage(status, body) {
+    if (!body) return `HTTP ${status}`;
+    try {
+        const j = JSON.parse(body);
+        return j.error && j.error.message ? j.error.message : body.slice(0, 500);
+    } catch {
+        return body.slice(0, 500);
+    }
+}
+
 app.post("/chat", async (req, res) => {
     const userMessage = req.body.message;
 
@@ -29,81 +41,122 @@ app.post("/chat", async (req, res) => {
         return res.status(400).json({ reply: "Сообщение не предоставлено" });
     }
 
-    if (!assistantId) {
-        console.error("❌ ASSISTANT_ID не настроен");
-        return res.status(500).json({ reply: "Ошибка конфигурации ассистента" });
-    }
-
     try {
-        console.log("📤 Обработка сообщения:", userMessage);
-        // Создаем Thread
         const threadResponse = await fetch("https://api.openai.com/v1/threads", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${apiKey}`
-            }
+                Authorization: `Bearer ${apiKey}`,
+            },
         });
-        const thread = await threadResponse.json();
+        const threadBody = await threadResponse.text();
+        if (!threadResponse.ok) {
+            console.error("OpenAI threads error:", threadResponse.status, threadBody);
+            return res.status(502).json({
+                reply: "Ошибка API ассистента",
+                error: httpErrorMessage(threadResponse.status, threadBody),
+            });
+        }
+        const thread = JSON.parse(threadBody);
 
-        // Добавляем сообщение в Thread
-        await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
+        const msgRes = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${apiKey}`
+                Authorization: `Bearer ${apiKey}`,
             },
             body: JSON.stringify({
                 role: "user",
-                content: userMessage
-            })
+                content: userMessage,
+            }),
         });
+        const msgBody = await msgRes.text();
+        if (!msgRes.ok) {
+            console.error("OpenAI messages error:", msgRes.status, msgBody);
+            return res.status(502).json({
+                reply: "Ошибка API ассистента",
+                error: httpErrorMessage(msgRes.status, msgBody),
+            });
+        }
 
-        // Запускаем ассистента
         const runResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${apiKey}`
+                Authorization: `Bearer ${apiKey}`,
             },
             body: JSON.stringify({
-                assistant_id: assistantId
-            })
+                assistant_id: assistantId,
+            }),
         });
-        const run = await runResponse.json();
+        const runBody = await runResponse.text();
+        if (!runResponse.ok) {
+            console.error("OpenAI runs create error:", runResponse.status, runBody);
+            return res.status(502).json({
+                reply: "Ошибка API ассистента",
+                error: httpErrorMessage(runResponse.status, runBody),
+            });
+        }
+        const run = JSON.parse(runBody);
 
-        // Ждем завершения выполнения
         let runStatus;
         do {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            const statusResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs/${run.id}`, {
-                headers: {
-                    "Authorization": `Bearer ${apiKey}`
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            const statusResponse = await fetch(
+                `https://api.openai.com/v1/threads/${thread.id}/runs/${run.id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                    },
                 }
-            });
-            runStatus = await statusResponse.json();
+            );
+            const stBody = await statusResponse.text();
+            if (!statusResponse.ok) {
+                console.error("OpenAI run status error:", statusResponse.status, stBody);
+                return res.status(502).json({
+                    reply: "Ошибка API ассистента",
+                    error: httpErrorMessage(statusResponse.status, stBody),
+                });
+            }
+            runStatus = JSON.parse(stBody);
         } while (runStatus.status === "queued" || runStatus.status === "in_progress");
 
-        // Получаем сообщения
+        if (runStatus.status !== "completed") {
+            console.error("OpenAI run not completed:", runStatus);
+            return res.status(502).json({
+                reply: "Ассистент не завершил ответ",
+                error: (runStatus.last_error && runStatus.last_error.message) || runStatus.status,
+            });
+        }
+
         const messagesResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
             headers: {
-                "Authorization": `Bearer ${apiKey}`
-            }
+                Authorization: `Bearer ${apiKey}`,
+            },
         });
-        const messages = await messagesResponse.json();
-
-        // Отправляем последнее сообщение ассистента
+        const messagesBody = await messagesResponse.text();
+        if (!messagesResponse.ok) {
+            console.error("OpenAI list messages error:", messagesResponse.status, messagesBody);
+            return res.status(502).json({
+                reply: "Ошибка API ассистента",
+                error: httpErrorMessage(messagesResponse.status, messagesBody),
+            });
+        }
+        const messages = JSON.parse(messagesBody);
+        if (!messages.data || !messages.data[0] || !messages.data[0].content || !messages.data[0].content[0]) {
+            return res.status(500).json({ reply: "Пустой ответ ассистента" });
+        }
         const assistantMessage = messages.data[0].content[0].text.value;
         res.json({ reply: assistantMessage });
     } catch (error) {
-        console.error("❌ Ошибка чата:", error);
-        res.status(500).json({ 
+        console.error("Chat error:", error);
+        res.status(500).json({
             reply: "Ошибка обработки сообщения",
-            error: error.message 
+            error: error && error.message ? error.message : String(error),
         });
     }
 });
 
-// Запуск сервера
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Сервер запущен на http://localhost:${PORT}`));
+const HOST = process.env.HOST || "0.0.0.0";
+app.listen(PORT, HOST, () => console.log(`Node proxy listening on http://${HOST}:${PORT}`));

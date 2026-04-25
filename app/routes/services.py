@@ -90,69 +90,66 @@ def upload():
         logger.error(f"Ошибка в upload: {e}", exc_info=True)
         return {"ok": False, "error": str(e)}, 500
 
-@services_bp.route("/services")
-def services_list():
-    """Страница списка всех услуг"""
+# P0-1: Маппинг услуг из configs/services.yaml (fallback — встроенный список)
+# Алиас для обратной совместимости (legacy import)
+def _load_services_config():
+    """Загружает конфиг услуг из YAML. При ошибке — встроенный список."""
     try:
-        services = [
-            {
-                'name': 'Тренировка',
-                'description': 'Тренировка на авторских тренажёрах по уникальной методике вейксерфинга. '
-                             'Развиваем баланс, координацию, биомеханику и нейронные связи для уверенного выполнения трюков.',
-                'price': '3500 рублей',
-                'image_url': 'training1.jpg',
-                'service_id': 'gym',
-                'modal_id': 'modalCalendar',
-                'button_text': 'Подробнее / Записаться'
-            },
-            {
-                'name': 'Сет за катером с тренером',
-                'description': '1 час за катером + баланс-борд перед стартом. Индивидуальная тренировка для вашего прогресса.',
-                'price': '10 000 рублей',
-                'image_url': 'hero-wakesurf.png',
-                'service_id': 'boat',
-                'modal_id': 'modalBoat',
-                'button_text': 'Подробнее / Записаться'
-            },
-            {
-                'name': 'Wake Challenge',
-                'description': 'Интенсивная программа для спортсменов и любителей — серия соревнований и тренировок.',
-                'price': 'По договорённости',
-                'image_url': 'wake_challenge.jpg',
-                'service_id': 'challenge',
-                'book_url': url_for('services.wake_challenge'),
-                'button_text': 'Подробнее'
-            },
-            {
-                'name': 'WakeSurf Safari',
-                'description': 'Эксклюзивные туры по рекам и озёрам с проживанием и обучающей программой.',
-                'price': 'От 15 000 рублей',
-                'image_url': 'wakesurf_safari.jpg',
-                'service_id': 'safari',
-                'book_url': url_for('services.wakesurf_safari'),
-                'button_text': 'Подробнее'
-            },
-            {
-                'name': 'Wake Discovery',
-                'description': 'Короткая ознакомительная сессия: попробуйте вейксерф впервые с инструктором. '
-                             'Включает базовый инструктаж и практику.',
-                'price': '2500 рублей',
-                'image_url': 'students/training1.jpg',
-                'service_id': 'discovery',
-                'book_url': url_for('services.wake_discovery'),
-                'button_text': 'Подробнее / Калькулятор'
-            },
-            {
-                'name': 'Wake Camp',
-                'description': 'Интенсивный лагерной формат для систематической прокачки навыков и техники. '
-                             'Погрузитесь в мир вейксерфинга с головой!',
-                'price': 'от 15 000 рублей',
-                'image_url': 'balans_trick_trening1.jpg',
-                'service_id': 'camp',
-                'book_url': url_for('services.wake_camp'),
-                'button_text': 'Подробнее / Записаться'
-            }
-        ]
+        import yaml
+        from pathlib import Path
+        cfg_path = Path(__file__).resolve().parents[2] / 'configs' / 'services.yaml'
+        if cfg_path.exists():
+            with cfg_path.open('r', encoding='utf-8') as f:
+                data = yaml.safe_load(f) or {}
+                return data.get('services', [])
+    except Exception as e:
+        logger.warning("Не удалось загрузить configs/services.yaml: %s", e)
+    return [
+        {'service_id': 'gym', 'name': 'Запись на тренировку (Зал)', 'description': '...', 'price': '3500 рублей', 'image_folder': 'images/Services/Gym', 'modal_id': 'modalCalendar', 'button_text': 'Подробнее / Записаться'},
+        {'service_id': 'boat', 'name': 'Запись на катер', 'description': '...', 'price': '10 000 рублей', 'image_folder': 'images/Services/Boat', 'modal_id': 'modalCalendar', 'button_text': 'Подробнее / Записаться'},
+        {'service_id': 'camp', 'name': 'Camp', 'description': '...', 'price': 'от 15 000 рублей', 'image_folder': 'images/Services/Camp', 'modal_id': 'modalCamp', 'button_text': 'Подробнее / Записаться'},
+        {'service_id': 'coach_triper', 'name': 'Тренер на выезде', 'description': '...', 'price': 'по запросу', 'image_folder': 'images/Services/CoachTriper', 'modal_id': 'modalCoachTriper', 'button_text': 'Подробнее / Оставить заявку'},
+        {'service_id': 'consulting', 'name': 'Консалтинг', 'description': '...', 'price': 'по запросу', 'image_folder': 'images/Services/Consalting', 'modal_id': 'modalConsulting', 'button_text': 'Подробнее / Получить консультацию'},
+    ]
+
+
+# Обратная совместимость: старый код мог импортировать _SERVICES_RAW
+_SERVICES_RAW = _load_services_config
+
+
+@services_bp.route("/")
+def services_list():
+    """Страница списка всех услуг. P0-1: images[]/cover/fallback из скана папки."""
+    try:
+        from app.services.images_resolver import (
+            resolve_card_images,
+            rotate_images_to_cover_index,
+            FALLBACK as FALLBACK_IMG,
+        )
+        services = []
+        _svc_skip = frozenset({'image_folder', 'cover_index'})
+        for s in _load_services_config():
+            folder = s.get('image_folder', '')
+            resolved = resolve_card_images(folder, fallback=FALLBACK_IMG)
+            imgs = resolved.get('images') or []
+            if not imgs:
+                logger.warning("Пустая папка изображений для услуги %s: %s", s.get('service_id'), folder)
+            try:
+                ci = int(s.get('cover_index') or 0)
+            except (TypeError, ValueError):
+                ci = 0
+            imgs = rotate_images_to_cover_index(imgs, ci)
+            if not imgs:
+                imgs = [resolved['cover']]
+            image_urls = [url_for('static', filename=p) for p in imgs]
+            services.append({
+                **{k: v for k, v in s.items() if k not in _svc_skip},
+                'image_url': imgs[0],
+                'images': imgs,
+                'image_urls': image_urls,
+                'cover': imgs[0],
+                'fallback': resolved['fallback'],
+            })
         return render_template("services.html", services=services)
     except Exception as e:
         logger.error(f"Ошибка в services_list: {e}", exc_info=True)
@@ -177,16 +174,6 @@ def wakesurf_safari():
         return render_template('services/wakesurf_safari.html')
     except Exception as e:
         logger.error(f"Ошибка в wakesurf_safari: {e}", exc_info=True)
-        return {"ok": False, "error": str(e)}, 500
-
-
-@services_bp.route('/wake-discovery')
-def wake_discovery():
-    """Страница Wake Discovery — содержит информацию и ссылку на калькулятор"""
-    try:
-        return render_template('services/wake_discovery.html')
-    except Exception as e:
-        logger.error(f"Ошибка в wake_discovery: {e}", exc_info=True)
         return {"ok": False, "error": str(e)}, 500
 
 

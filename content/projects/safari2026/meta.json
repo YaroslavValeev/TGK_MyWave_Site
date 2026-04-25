@@ -1,17 +1,17 @@
 {
-  "title": "Wake Surf Safari 2026 – экспедиционный вейксерф-тур по Волге",
-  "description": "Wake Surf Safari – премиальный 9-дневный вейксерфинг-маршрут по Волге (Москва–Волгоград, 10–18 июля 2026). Обучение с про-райдерами, путешествие по городам, комьюнити единомышленников и уникальный контент без соревновательного элемента. Организатор: MyWave.",
+  "title": "WakeSurf Safari – премиальное вейксерф-путешествие по Волге",
+  "description": "WakeSurf Safari – флагманский experience-продукт MyWave: 8 дней по Волге с вейксерфингом, культурой, гастрономией, медиа-контентом и финальным Fun contest. Москва → Волгоград.",
   "og": {
-    "title": "Wake Surf Safari 2026 – экспедиционный вейксерф-тур",
-    "description": "Премиальный вейксерфинг-поход по Волге: 9 дней приключений от Москвы до Волгограда с обучением, медиа-сопровождением и комьюнити райдеров. Без соревнований – только волны и свобода.",
-    "image": "https://mywave.ru/images/safari-og.jpg",
-    "url": "https://mywave.ru/safari",
+    "title": "WakeSurf Safari – вейксерф-путешествие по Волге",
+    "description": "Премиальный маршрут: спорт, стиль и приключение на одной волне. 8 дней по Волге с тренировками, культурными остановками и финальной кульминацией.",
+    "image": "https://mywavetreaning.ru/static/images/Project/Sufari/sufary2.png",
+    "url": "https://mywavetreaning.ru/projects/wakesurf-safari",
     "type": "website"
   },
   "twitter": {
     "card": "summary_large_image",
-    "title": "Wake Surf Safari 2026 – экспедиционный вейксерф-тур",
-    "description": "9-дневное путешествие по Волге с вейксерфингом, обучением и ярким контентом. Прими участие в Wake Surf Safari – уникальном проекте от MyWave.",
-    "image": "https://mywave.ru/images/safari-og.jpg"
+    "title": "WakeSurf Safari – вейксерф-путешествие по Волге",
+    "description": "8 дней по Волге: вейксерфинг, культура, гастрономия, медиа и финальный день. Премиальный формат от MyWave.",
+    "image": "https://mywavetreaning.ru/static/images/Project/Sufari/sufary2.png"
   }
 }

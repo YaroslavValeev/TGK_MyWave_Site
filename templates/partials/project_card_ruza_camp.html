@@ -1,0 +1,134 @@
+{# Карточка MyWave Ruza Camp — по спецификации ТЗ #}
+{% set _fallback_img = url_for('static', filename=(p.fallback or 'images/Place1Logo.png')) %}
+{% set cover_src = _fallback_img if not p.cover else (p.cover if p.cover.startswith('http') else url_for('static', filename=p.cover)) %}
+{% set expanded = p.expanded or {} %}
+<div class="project-card project-card--ruza-camp js-expandable-card" id="{{ p.slug }}" data-project="{{ p.slug }}">
+  <div class="service-image-container">
+    {% if p.images and p.images|length > 1 %}
+    <div class="card-media-carousel" data-images="{{ p.images|join(',') }}" data-image-urls="{% for img in p.images %}{{ url_for('static', filename=img) }}{% if not loop.last %},{% endif %}{% endfor %}">
+      <button type="button" class="carousel-nav carousel-prev-inner" aria-label="Предыдущее">‹</button>
+      <img class="service-image project-card__cover" src="{{ cover_src }}" alt="{{ p.name }}" loading="lazy" data-fallback="{{ _fallback_img }}">
+      <button type="button" class="carousel-nav carousel-next-inner" aria-label="Следующее">›</button>
+    </div>
+    {% else %}
+    <img class="service-image project-card__cover" src="{{ cover_src }}" alt="{{ p.name }}" loading="lazy" data-fallback="{{ _fallback_img }}">
+    {% endif %}
+  </div>
+
+  {# Свёрнутое состояние #}
+  <div class="project-card__collapsed">
+    <h4 class="project-card__title">{{ p.name }}</h4>
+    <p class="project-card__subtitle">{{ p.lead or '14 дней на Рузе: вода, команда, результат' }}</p>
+    <p class="project-card__lead project-card__summary">{{ p.summary }}</p>
+    {% if p.microfacts %}
+    <div class="project-card__microfacts">
+      {% for fact in p.microfacts %}
+      <span class="project-card__badge">{{ fact }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if p.bullets %}
+    <ul class="project-card__bullets">
+      {% for item in p.bullets %}
+      <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if p.price_from %}
+    <p class="price project-card__price">{{ p.price_from }}</p>
+    {% endif %}
+    <div class="service-card-actions project-card__actions">
+      <a class="btn btn-primary" href="{{ p.url }}">Подробнее</a>
+      <button type="button" class="btn btn-secondary btn-book" data-modal="modalRuzaCamp" data-source-cta="card_main">Запросить программу и места</button>
+    </div>
+  </div>
+
+  {# Раскрытое состояние — 9 блоков #}
+  <div class="project-card__expanded">
+    <div class="project-card-expanded__block">
+      <h5>{{ p.name }}</h5>
+      <p class="project-card__subtitle">{{ p.lead or '14 дней на Рузе: вода, команда, результат' }}</p>
+      {% if p.microfacts %}
+      <div class="project-card__microfacts">
+        {% for fact in p.microfacts %}
+        <span class="project-card__badge">{{ fact }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% if expanded.description %}
+    <div class="project-card-expanded__block">
+      <h5>Описание для родителя</h5>
+      <p>{{ expanded.description }}</p>
+    </div>
+    {% endif %}
+    {% if expanded.suits_if or expanded.not_suits_if %}
+    <div class="project-card-expanded__block project-card-expanded__two-cols">
+      <div>
+        <h5>Подойдёт, если</h5>
+        <ul>
+          {% for item in expanded.suits_if or [] %}
+          <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div>
+        <h5>Не подойдёт, если</h5>
+        <ul>
+          {% for item in expanded.not_suits_if or [] %}
+          <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+    {% if expanded.what_takes_away %}
+    <div class="project-card-expanded__block">
+      <h5>Что ребёнок увезёт с собой</h5>
+      <ul>
+        {% for item in expanded.what_takes_away %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    {% if expanded.is_not %}
+    <div class="project-card-expanded__block">
+      <h5>Это НЕ…</h5>
+      <p>{{ expanded.is_not }}</p>
+    </div>
+    {% endif %}
+    {% if expanded.program_short %}
+    <div class="project-card-expanded__block">
+      <h5>Краткая программа</h5>
+      <ul>
+        {% for item in expanded.program_short %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    {% if expanded.packages %}
+    <div class="project-card-expanded__block">
+      <h5>Пакеты</h5>
+      <ul>
+        {% if expanded.packages.economy %}
+        <li>{{ expanded.packages.economy }}</li>
+        {% endif %}
+        {% if expanded.packages.pro %}
+        <li>{{ expanded.packages.pro }}</li>
+        {% endif %}
+      </ul>
+    </div>
+    {% endif %}
+    {% if expanded.microtrust %}
+    <div class="project-card-expanded__block project-card-expanded__microtrust">
+      <p>{{ expanded.microtrust }}</p>
+    </div>
+    {% endif %}
+    <div class="project-card-expanded__cta">
+      <button type="button" class="btn btn-primary btn-book" data-modal="modalRuzaCamp" data-source-cta="card_expanded">Запросить программу и места</button>
+      <a class="btn btn-secondary" href="{{ p.url }}">Перейти на страницу проекта</a>
+    </div>
+  </div>
+</div>
