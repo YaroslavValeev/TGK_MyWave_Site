@@ -7,29 +7,31 @@
 <section class="mw-section mw-surface">
   <div class="mw-container">
     <div class="mw-card">
-      <h1>Блог</h1>
-      <form method="get" action="{{ url_for('blog.blog_index') }}" class="blog-search-form">
-        <input
-          type="search"
-          name="q"
-          value="{{ q or '' }}"
-          placeholder="Поиск по публикациям"
-          class="blog-search-form__input"
-        >
+      <div class="blog-index-header">
+        <h1>Блог</h1>
+        <form method="get" action="{{ url_for('blog.blog_index') }}" class="blog-search-form">
+          <input
+            type="search"
+            name="q"
+            value="{{ q or '' }}"
+            placeholder="Поиск по публикациям"
+            class="blog-search-form__input"
+          >
+          {% if tag %}
+            <input type="hidden" name="tag" value="{{ tag }}">
+          {% endif %}
+          <button type="submit" class="btn-primary">Найти</button>
+          {% if q %}
+            <a class="btn-secondary" href="{{ url_for('blog.blog_index', tag=tag) if tag else url_for('blog.blog_index') }}">Сбросить</a>
+          {% endif %}
+        </form>
         {% if tag %}
-          <input type="hidden" name="tag" value="{{ tag }}">
+          <p style="opacity: .8; margin: 0 0 16px 0;">Фильтр по тегу: <strong>#{{ tag }}</strong></p>
         {% endif %}
-        <button type="submit" class="btn-primary">Найти</button>
         {% if q %}
-          <a class="btn-secondary" href="{{ url_for('blog.blog_index', tag=tag) if tag else url_for('blog.blog_index') }}">Сбросить</a>
+          <p style="opacity: .8; margin: 0 0 16px 0;">Поиск: <strong>{{ q }}</strong></p>
         {% endif %}
-      </form>
-      {% if tag %}
-        <p style="opacity: .8; margin: 0 0 16px 0;">Фильтр по тегу: <strong>#{{ tag }}</strong></p>
-      {% endif %}
-      {% if q %}
-        <p style="opacity: .8; margin: 0 0 16px 0;">Поиск: <strong>{{ q }}</strong></p>
-      {% endif %}
+      </div>
 
       {% set blog_cover_fallback = url_for('static', filename='images/Place1Logo.png') %}
       {% if posts %}
@@ -38,12 +40,10 @@
             <article class="mw-card blog-card blog-card--listing">
               <a class="blog-card-link" href="{{ url_for('blog.blog_post', slug=p.slug) }}">
                 <div class="service-image-container blog-card-cover">
-                  <img class="service-image" src="{{ p.card_image_url or p.cover_image_url or p.image_url or p.cover or blog_cover_fallback }}" alt="" loading="lazy" decoding="async" data-fallback="{{ blog_cover_fallback }}">
+                  <img class="service-image" src="{{ (p.card_image_url or p.cover_image_url or p.image_url or p.cover or blog_cover_fallback)|trim }}" alt="" loading="lazy" decoding="async" data-fallback="{{ blog_cover_fallback }}">
                 </div>
-                <h3 class="blog-card-title">{{ p.title }}</h3>
-                {% if p.excerpt %}
-                <p class="blog-card-excerpt">{{ p.excerpt }}</p>
-                {% endif %}
+                <h3 class="blog-card-title">{{ p.title|mw_plain_title }}</h3>
+                <p class="blog-card-excerpt">{{ p.excerpt|mw_plain_excerpt }}</p>
                 <div class="blog-card-meta" aria-label="Источник и дата">
                   {% if p.source_name %}<span>Источник: {{ p.source_name }}</span>{% endif %}
                   {% if p.published_at %}
