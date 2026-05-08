@@ -100,6 +100,92 @@
 
   var DEFAULT_PRIORITY = 'base';
   var DEFAULT_WEIGHT = 3;
+  var CHECKLIST_IMAGE_BASE = '/static/images/Project/Cards/checklist/';
+  var CHECKLIST_CARD_BACKGROUNDS = {
+    // Judges
+    'judge-1-1': 'judges/judges_online_scoring.webp',
+    'judge-1-2': 'judges/judges_online_scoring.webp',
+    'judge-1-3': 'judges/judges_zone_wifi_charging.webp',
+    'judge-1-4': 'judges/judges_zone_rest_recovery.webp',
+    'judge-1-5': 'judges/judges_online_scoring.webp',
+    'judge-1-6': 'judges/judges_neuro_assistant.webp',
+    // Aquatory
+    'aqua-2-1': 'aquatory/aquatory_safety_clean_water.webp',
+    'aqua-2-2': 'aquatory/aquatory_depth_measurement.webp',
+    'aqua-2-3': 'aquatory/aquatory_wind_direction_control.webp',
+    'aqua-2-4': 'aquatory/aquatory_wave_stability.webp',
+    'aqua-2-5': 'aquatory/aquatory_course_marking.webp',
+    'aqua-2-6': 'aquatory/aquatory_rescue_team_on_duty.webp',
+    'aqua-2-7': 'aquatory/aquatory_pre_event_training.webp',
+    'aqua-2-8': 'aquatory/aquatory_types_comparison.webp',
+    'aqua-2-9': 'aquatory/aquatory_types_comparison1.webp',
+    // Participants area
+    'area-3-1': 'participants/participants_toilet_facility.webp',
+    'area-3-2': 'participants/participant_shower_zone.webp',
+    'area-3-3': 'participants/participant_sauna_recovery.webp',
+    'area-3-4': 'participants/participant_changing_room.webp',
+    'area-3-5': 'participants/participant_drying_wetsuits.webp',
+    'area-3-6': 'participants/participant_changing_room.webp',
+    'area-3-7': 'participants/participant_healthy_food_zone.webp',
+    'area-3-8': 'participants/participant_team_coach_area.webp',
+    'area-3-9': 'participants/participant_warmup_training_zone.webp',
+    'area-3-10': 'participants/participant_recovery_massage.webp',
+    'area-3-11': 'participants/participant_team_coach_area.webp',
+    'area-3-12': 'aquatory/aquatory_course_marking.webp',
+    'area-3-13': 'judges/judges_zone_wifi_charging.webp',
+    // Organizers
+    'org-4-1': 'organizers/organizer_operations_hq.webp',
+    'org-4-2': 'organizers/organizers_meeting_discussion.webp',
+    'org-4-3': 'organizers/organizers_meeting_discussion.webp',
+    'org-4-4': 'partners/partner_hospitality_support.webp',
+    // Judges area
+    'judge-area-5-1': 'judges/judges_online_scoring.webp',
+    'judge-area-5-2': 'judges/judges_zone_rest_recovery.webp',
+    'judge-area-5-3': 'media/media_replay_highlights_system.webp',
+    'judge-area-5-4': 'judges/judges_zone_wifi_charging.webp',
+    'judge-area-5-5': 'judges/judges_zone_rest_recovery.webp',
+    // Media
+    'media-6-1': 'media/media_press_conference_interview.webp',
+    'media-6-2': 'media/media_interview_zone_alt.webp',
+    'media-6-3': 'media/media_photo_video_point.webp',
+    'media-6-4': 'media/media_logistics_support.webp',
+    'media-6-5': 'media/media_commentary_booth.webp',
+    // Viewers
+    'viewers-7-1': 'viewers/viewers_replay_screens.webp',
+    'viewers-7-2': 'viewers/viewers_fan_activities.webp',
+    'viewers-7-3': 'viewers/viewers_comfort_viewing_area.webp',
+    'viewers-7-4': 'viewers/viewers_weather_protection.webp',
+    'viewers-7-5': 'viewers/viewers_replay_screens.webp',
+    'viewers-7-6': 'viewers/viewers_food_court_drinks.webp',
+    'viewers-7-7': 'viewers/viewers_fan_activities.webp',
+    'viewers-7-8': 'judges/judges_zone_wifi_charging.webp',
+    'viewers-7-9': 'participants/participants_toilet_facility.webp',
+    'viewers-7-10': 'viewers/viewers_merch_zone.webp',
+    // Other
+    'music-8': 'media/media_commentary_booth.webp',
+    'media-prod-9': 'media/media_multicamera_drone_coverage.webp',
+    // App
+    'app-10-1': 'app/app_event_information.webp',
+    'app-10-2': 'app/app_live_scoring_results.webp',
+    'app-10-3': 'app/app_event_information_alt.webp',
+    'app-10-4': 'app/app_interactive_map_territory.webp',
+    'app-10-5': 'app/app_online_voting_contests.webp',
+    'app-10-6': 'app/app_live_streaming_event.webp',
+    'app-10-7': 'app/app_registration_accreditation.webp',
+    'app-10-8': 'app/app_event_information_alt_2.webp',
+    'app-10-9': 'app/app_social_media_integration.webp',
+    'app-10-10': 'app/app_event_information.webp',
+    // Partners
+    'partner-11-1': 'partners/partner_value_proposition.webp',
+    'partner-11-2': 'partners/partner_kpi_commitments.webp',
+    'partner-11-3': 'partners/partner_brand_integration_plan.webp',
+    'partner-11-4': 'partners/partner_hospitality_support.webp',
+    'partner-11-5': 'partners/partner_hospitality_support.webp',
+    'partner-11-6': 'partners/partner_kpi_commitments.webp',
+    'partner-11-7': 'partners/partner_post_event_report.webp',
+    'partner-11-8': 'partners/partner_post_event_report_alt.webp',
+    'partner-11-9': 'partners/partner_value_proposition.webp'
+  };
 
   function getCard(checkbox) {
     return checkbox && checkbox.closest && checkbox.closest('.wake-checklist__card');
@@ -177,6 +263,40 @@
     return text.replace(/^\d+\.\d+\s*/, '').trim();
   }
 
+  function applyCardBackgrounds(container) {
+    var checkboxes = container.querySelectorAll('.wake-checklist__checkbox');
+    checkboxes.forEach(function(cb) {
+      var card = getCard(cb);
+      if (!card) return;
+      var file = CHECKLIST_CARD_BACKGROUNDS[cb.id];
+      if (!file) return;
+      card.style.setProperty('--checklist-card-bg', 'url("' + CHECKLIST_IMAGE_BASE + file + '")');
+    });
+  }
+
+  function bindCardParallax(container) {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+    if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
+      return;
+    }
+    var cards = container.querySelectorAll('.wake-checklist__card');
+    cards.forEach(function(card) {
+      card.addEventListener('mousemove', function(ev) {
+        var rect = card.getBoundingClientRect();
+        var x = ((ev.clientX - rect.left) / rect.width - 0.5) * 10;
+        var y = ((ev.clientY - rect.top) / rect.height - 0.5) * 10;
+        card.style.setProperty('--checklist-card-shift-x', x.toFixed(1) + 'px');
+        card.style.setProperty('--checklist-card-shift-y', y.toFixed(1) + 'px');
+      });
+      card.addEventListener('mouseleave', function() {
+        card.style.setProperty('--checklist-card-shift-x', '0px');
+        card.style.setProperty('--checklist-card-shift-y', '0px');
+      });
+    });
+  }
+
   function init() {
     var container = document.querySelector('.wake-checklist');
     if (!container) return;
@@ -185,6 +305,8 @@
     container.querySelectorAll('.wake-checklist__card-title').forEach(function(el) {
       el.textContent = stripTitleNumber(el.textContent);
     });
+    applyCardBackgrounds(container);
+    bindCardParallax(container);
 
     var checkboxes = container.querySelectorAll('.wake-checklist__checkbox');
 
