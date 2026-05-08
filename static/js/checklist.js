@@ -272,6 +272,23 @@
     return text.replace(/^\d+\.\d+\s*/, '').trim();
   }
 
+  /** Двухколоночная вёрстка: текст слева, иллюстрация справа */
+  function ensureSplitCardLayout(container) {
+    container.querySelectorAll('.wake-checklist__card').forEach(function(card) {
+      if (card.querySelector('.wake-checklist__card-inner')) return;
+      var inner = document.createElement('div');
+      inner.className = 'wake-checklist__card-inner';
+      while (card.firstChild) {
+        inner.appendChild(card.firstChild);
+      }
+      var art = document.createElement('div');
+      art.className = 'wake-checklist__card-art';
+      art.setAttribute('aria-hidden', 'true');
+      card.appendChild(inner);
+      card.appendChild(art);
+    });
+  }
+
   function applyCardBackgrounds(container) {
     var checkboxes = container.querySelectorAll('.wake-checklist__checkbox');
     checkboxes.forEach(function(cb) {
@@ -279,7 +296,80 @@
       if (!card) return;
       var file = CHECKLIST_CARD_BACKGROUNDS[cb.id];
       if (!file) return;
-      card.style.setProperty('--checklist-card-bg', 'url("' + getChecklistAssetBase() + file + '")');
+      var url = 'url("' + getChecklistAssetBase() + file + '")';
+      card.style.setProperty('--checklist-card-bg', url);
+      var art = card.querySelector('.wake-checklist__card-art');
+      if (art) art.style.backgroundImage = url;
+    });
+  }
+
+  var PRIORITY_CHIP_LABELS = {
+    critical: 'Критично',
+    base: 'Базовый',
+    recommended: 'Рекомендуется'
+  };
+
+  function ensurePriorityChip(header, priority) {
+    if (!header || header.querySelector('.wake-checklist__priority-chip')) return;
+    var cb = header.querySelector('.wake-checklist__checkbox');
+    if (!cb) return;
+    var chip = document.createElement('span');
+    chip.className = 'wake-checklist__priority-chip wake-checklist__priority-chip--' + priority;
+    chip.textContent = PRIORITY_CHIP_LABELS[priority] || PRIORITY_CHIP_LABELS.base;
+    chip.setAttribute('title', chip.textContent);
+    cb.insertAdjacentElement('afterend', chip);
+  }
+
+  /** Длинное описание: свёртка + кнопка «Показать полностью» */
+  function setupExpandableBodies(container) {
+    function attachToggle(body, inner) {
+      if (body.querySelector('.wake-checklist__card-expand')) return;
+      inner.classList.add('is-clamped');
+      if (inner.scrollHeight <= inner.clientHeight + 6) {
+        inner.classList.remove('is-clamped');
+        return;
+      }
+      var card = body.closest('.wake-checklist__card');
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'wake-checklist__card-expand';
+      btn.setAttribute('aria-expanded', 'false');
+      btn.innerHTML =
+        '<span class="wake-checklist__card-expand__text">Показать полностью</span>' +
+        '<span class="wake-checklist__card-expand__icon" aria-hidden="true"></span>';
+      body.appendChild(btn);
+      btn.addEventListener('click', function(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (!card) return;
+        var textEl = btn.querySelector('.wake-checklist__card-expand__text');
+        if (card.classList.contains('wake-checklist__card--expanded')) {
+          card.classList.remove('wake-checklist__card--expanded');
+          inner.classList.add('is-clamped');
+          btn.setAttribute('aria-expanded', 'false');
+          if (textEl) textEl.textContent = 'Показать полностью';
+        } else {
+          card.classList.add('wake-checklist__card--expanded');
+          inner.classList.remove('is-clamped');
+          btn.setAttribute('aria-expanded', 'true');
+          if (textEl) textEl.textContent = 'Свернуть';
+        }
+      });
+    }
+
+    container.querySelectorAll('.wake-checklist__card-body').forEach(function(body) {
+      if (!body.innerHTML.trim()) return;
+      if (body.querySelector('.wake-checklist__card-body-inner')) return;
+      var inner = document.createElement('div');
+      inner.className = 'wake-checklist__card-body-inner';
+      while (body.firstChild) {
+        inner.appendChild(body.firstChild);
+      }
+      body.appendChild(inner);
+      void inner.offsetHeight;
+      requestAnimationFrame(function() {
+        attachToggle(body, inner);
+      });
     });
   }
 
@@ -290,18 +380,17 @@
     if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
       return;
     }
-    var cards = container.querySelectorAll('.wake-checklist__card');
-    cards.forEach(function(card) {
-      card.addEventListener('mousemove', function(ev) {
-        var rect = card.getBoundingClientRect();
-        var x = ((ev.clientX - rect.left) / rect.width - 0.5) * 10;
-        var y = ((ev.clientY - rect.top) / rect.height - 0.5) * 10;
-        card.style.setProperty('--checklist-card-shift-x', x.toFixed(1) + 'px');
-        card.style.setProperty('--checklist-card-shift-y', y.toFixed(1) + 'px');
+    container.querySelectorAll('.wake-checklist__card-art').forEach(function(art) {
+      art.addEventListener('mousemove', function(ev) {
+        var rect = art.getBoundingClientRect();
+        var x = ((ev.clientX - rect.left) / rect.width - 0.5) * 12;
+        var y = ((ev.clientY - rect.top) / rect.height - 0.5) * 12;
+        art.style.setProperty('--checklist-card-shift-x', x.toFixed(1) + 'px');
+        art.style.setProperty('--checklist-card-shift-y', y.toFixed(1) + 'px');
       });
-      card.addEventListener('mouseleave', function() {
-        card.style.setProperty('--checklist-card-shift-x', '0px');
-        card.style.setProperty('--checklist-card-shift-y', '0px');
+      art.addEventListener('mouseleave', function() {
+        art.style.setProperty('--checklist-card-shift-x', '0px');
+        art.style.setProperty('--checklist-card-shift-y', '0px');
       });
     });
   }
@@ -310,12 +399,13 @@
     var container = document.querySelector('.wake-checklist');
     if (!container) return;
 
+    ensureSplitCardLayout(container);
+
     // Strip numbers from titles
     container.querySelectorAll('.wake-checklist__card-title').forEach(function(el) {
       el.textContent = stripTitleNumber(el.textContent);
     });
     applyCardBackgrounds(container);
-    bindCardParallax(container);
 
     var checkboxes = container.querySelectorAll('.wake-checklist__checkbox');
 
@@ -327,13 +417,21 @@
         card.setAttribute('data-priority', cfg.priority);
         card.setAttribute('data-weight', String(cfg.weight));
       }
+      var header = card && card.querySelector('.wake-checklist__card-header');
+      if (header) ensurePriorityChip(header, cfg.priority);
       var saved = loadState(cb.id);
       cb.checked = saved;
       updateCardCompleted(getCard(cb), saved);
     });
 
-    // Click delegation: карточка целиком кликабельна
+    setupExpandableBodies(container);
+    bindCardParallax(container);
+
+    // Click delegation: карточка целиком кликабельна (кроме кнопки раскрытия)
     container.addEventListener('click', function(ev) {
+      if (ev.target.closest && ev.target.closest('.wake-checklist__card-expand')) {
+        return;
+      }
       var target = ev.target;
       if (target.matches('a, button, input, label, select, textarea')) return;
       var card = target.closest('.wake-checklist__card');
