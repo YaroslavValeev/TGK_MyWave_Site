@@ -1040,6 +1040,9 @@
     });
   });
 </script>
+<script>
+  window.__MW_CHECKLIST_ASSET_BASE__ = {{ url_for('static', filename='images/Project/Cards/checklist') | tojson }};
+</script>
 <script src="{{ url_for('static', filename='js/checklist.js') }}"></script>
 {% endblock %}
 

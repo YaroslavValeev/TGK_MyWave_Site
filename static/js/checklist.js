@@ -100,25 +100,34 @@
 
   var DEFAULT_PRIORITY = 'base';
   var DEFAULT_WEIGHT = 3;
-  var CHECKLIST_IMAGE_BASE = '/static/images/Project/Cards/checklist/';
+
+  /** База каталога иллюстраций: задаётся из шаблона через url_for(static), иначе относительный путь по умолчанию */
+  function getChecklistAssetBase() {
+    var b = (typeof window !== 'undefined' && window.__MW_CHECKLIST_ASSET_BASE__) || '';
+    b = String(b).replace(/\/+$/, '');
+    if (b) return b + '/';
+    return '/static/images/Project/Cards/checklist/';
+  }
+
+  /** Соответствие id чекбокса → файл в static/images/Project/Cards/checklist/ (по смыслу имени) */
   var CHECKLIST_CARD_BACKGROUNDS = {
     // Judges
     'judge-1-1': 'judges/judges_online_scoring.webp',
     'judge-1-2': 'judges/judges_online_scoring.webp',
-    'judge-1-3': 'judges/judges_zone_wifi_charging.webp',
+    'judge-1-3': 'judges/judges_online_scoring.webp',
     'judge-1-4': 'judges/judges_zone_rest_recovery.webp',
     'judge-1-5': 'judges/judges_online_scoring.webp',
     'judge-1-6': 'judges/judges_neuro_assistant.webp',
     // Aquatory
     'aqua-2-1': 'aquatory/aquatory_safety_clean_water.webp',
     'aqua-2-2': 'aquatory/aquatory_depth_measurement.webp',
-    'aqua-2-3': 'aquatory/aquatory_wind_direction_control.webp',
+    'aqua-2-3': 'aquatory/aquatory_wind_direction_monitoring_alt.webp',
     'aqua-2-4': 'aquatory/aquatory_wave_stability.webp',
     'aqua-2-5': 'aquatory/aquatory_course_marking.webp',
     'aqua-2-6': 'aquatory/aquatory_rescue_team_on_duty.webp',
     'aqua-2-7': 'aquatory/aquatory_pre_event_training.webp',
     'aqua-2-8': 'aquatory/aquatory_types_comparison.webp',
-    'aqua-2-9': 'aquatory/aquatory_types_comparison1.webp',
+    'aqua-2-9': 'aquatory/aquatory_types_comparison2.webp',
     // Participants area
     'area-3-1': 'participants/participants_toilet_facility.webp',
     'area-3-2': 'participants/participant_shower_zone.webp',
@@ -130,12 +139,12 @@
     'area-3-8': 'participants/participant_team_coach_area.webp',
     'area-3-9': 'participants/participant_warmup_training_zone.webp',
     'area-3-10': 'participants/participant_recovery_massage.webp',
-    'area-3-11': 'participants/participant_team_coach_area.webp',
+    'area-3-11': 'participants/participant_warmup_training_zone.webp',
     'area-3-12': 'aquatory/aquatory_course_marking.webp',
-    'area-3-13': 'judges/judges_zone_wifi_charging.webp',
+    'area-3-13': 'media/media_broadcast_graphics_branding.webp',
     // Organizers
     'org-4-1': 'organizers/organizer_operations_hq.webp',
-    'org-4-2': 'organizers/organizers_meeting_discussion.webp',
+    'org-4-2': 'organizers/organizer_operations_hq.webp',
     'org-4-3': 'organizers/organizers_meeting_discussion.webp',
     'org-4-4': 'partners/partner_hospitality_support.webp',
     // Judges area
@@ -151,9 +160,9 @@
     'media-6-4': 'media/media_logistics_support.webp',
     'media-6-5': 'media/media_commentary_booth.webp',
     // Viewers
-    'viewers-7-1': 'viewers/viewers_replay_screens.webp',
+    'viewers-7-1': 'media/media_realtime_social_content.webp',
     'viewers-7-2': 'viewers/viewers_fan_activities.webp',
-    'viewers-7-3': 'viewers/viewers_comfort_viewing_area.webp',
+    'viewers-7-3': 'viewers/viewers_comfort_viewing_area_alt.webp',
     'viewers-7-4': 'viewers/viewers_weather_protection.webp',
     'viewers-7-5': 'viewers/viewers_replay_screens.webp',
     'viewers-7-6': 'viewers/viewers_food_court_drinks.webp',
@@ -162,7 +171,7 @@
     'viewers-7-9': 'participants/participants_toilet_facility.webp',
     'viewers-7-10': 'viewers/viewers_merch_zone.webp',
     // Other
-    'music-8': 'media/media_commentary_booth.webp',
+    'music-8': 'media/media_live_switching_director.webp',
     'media-prod-9': 'media/media_multicamera_drone_coverage.webp',
     // App
     'app-10-1': 'app/app_event_information.webp',
@@ -172,19 +181,19 @@
     'app-10-5': 'app/app_online_voting_contests.webp',
     'app-10-6': 'app/app_live_streaming_event.webp',
     'app-10-7': 'app/app_registration_accreditation.webp',
-    'app-10-8': 'app/app_event_information_alt_2.webp',
+    'app-10-8': 'app/app_registration_accreditation_alt_2.webp',
     'app-10-9': 'app/app_social_media_integration.webp',
     'app-10-10': 'app/app_event_information.webp',
     // Partners
     'partner-11-1': 'partners/partner_value_proposition.webp',
     'partner-11-2': 'partners/partner_kpi_commitments.webp',
     'partner-11-3': 'partners/partner_brand_integration_plan.webp',
-    'partner-11-4': 'partners/partner_hospitality_support.webp',
+    'partner-11-4': 'media/media_realtime_social_content.webp',
     'partner-11-5': 'partners/partner_hospitality_support.webp',
     'partner-11-6': 'partners/partner_kpi_commitments.webp',
-    'partner-11-7': 'partners/partner_post_event_report.webp',
+    'partner-11-7': 'media/media_postproduction_archive.webp',
     'partner-11-8': 'partners/partner_post_event_report_alt.webp',
-    'partner-11-9': 'partners/partner_value_proposition.webp'
+    'partner-11-9': 'partners/partner_post_event_report.webp'
   };
 
   function getCard(checkbox) {
@@ -270,7 +279,7 @@
       if (!card) return;
       var file = CHECKLIST_CARD_BACKGROUNDS[cb.id];
       if (!file) return;
-      card.style.setProperty('--checklist-card-bg', 'url("' + CHECKLIST_IMAGE_BASE + file + '")');
+      card.style.setProperty('--checklist-card-bg', 'url("' + getChecklistAssetBase() + file + '")');
     });
   }
 
