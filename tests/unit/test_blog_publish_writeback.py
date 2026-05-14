@@ -60,7 +60,11 @@ def test_ack_publish_writes_canonical_url_and_site_fields(app, mocker):
     mocker.patch("app.services.blog.publish.update_sheet_cells", side_effect=_fake_update_sheet_cells)
 
     with app.app_context():
-        # SERVER_NAME не задан в проекте по умолчанию → fallback на mywavetraining.ru
+        app.config["PUBLIC_BASE_URL"] = ""
+        app.config["BASE_URL"] = ""
+        app.config["SITE_BASE_URL"] = ""
+        app.config["SERVER_NAME"] = ""
+        # SERVER_NAME/PUBLIC_BASE_URL не заданы в проекте по умолчанию → fallback на mywavewake.ru
         ok = publish_mod.ack_publish(2, "1013", datetime(2026, 1, 28, 10, 0, 0), slug=None)
 
     assert ok is True
@@ -87,7 +91,7 @@ def test_ack_publish_writes_canonical_url_and_site_fields(app, mocker):
 
     # canonical_url записан из slug
     assert "I2" in ranges
-    assert values["I2"].endswith("/blog/my-post-slug")
+    assert values["I2"] == "https://mywavewake.ru/blog/my-post-slug"
 
     # status/slug не пишем
     assert "C2" not in ranges  # status

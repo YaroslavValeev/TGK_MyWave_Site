@@ -4,7 +4,14 @@
 # Cron: */5 * * * * /var/www/mywave/scripts/healthcheck.sh >> /var/log/mywave/healthcheck.log 2>&1
 set -euo pipefail
 
-URL="${HEALTHCHECK_URL:-https://mywavetreaning.ru/health}"
+ROOT="${MYWAVE_ROOT:-/var/www/mywave}"
+ENV_FILE="${MYWAVE_ENV_FILE:-$ROOT/.env}"
+if [[ -f "$ENV_FILE" ]]; then
+  # shellcheck disable=SC1090
+  set -a && source "$ENV_FILE" && set +a
+fi
+
+URL="${HEALTHCHECK_URL:-https://mywavewake.ru/health}"
 BOT="${ALERT_TELEGRAM_BOT_TOKEN:-${NOTIFICATION_BOT_TOKEN:-}}"
 CHAT="${ALERT_TELEGRAM_CHAT_ID:-${TRAINER_CHAT_ID:-}}"
 

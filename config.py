@@ -1,6 +1,56 @@
 import os
 from datetime import timedelta
 
+
+BASE_DIR = os.path.dirname(__file__)
+CONFIG_DIR_PATH = os.path.join(BASE_DIR, "configs")
+
+
+def _clean_url(value) -> str:
+    return (value or "").strip().rstrip("/")
+
+
+def _resolve_public_base_url() -> str:
+    return _clean_url(os.getenv("PUBLIC_BASE_URL") or os.getenv("BASE_URL"))
+
+
+def _resolve_site_base_url() -> str:
+    return _clean_url(os.getenv("SITE_BASE_URL") or _resolve_public_base_url())
+
+
+def _resolve_server_name() -> str:
+    return (os.getenv("SERVER_NAME") or os.getenv("DOMAIN") or "").strip()
+
+
+def _resolve_healthcheck_url() -> str:
+    explicit = _clean_url(os.getenv("HEALTHCHECK_URL"))
+    if explicit:
+        return explicit
+    public_base_url = _resolve_public_base_url()
+    if public_base_url:
+        return f"{public_base_url}/health"
+    return ""
+
+
+def _resolve_service_account_file() -> str:
+    configured = (
+        os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE")
+        or os.getenv("GOOGLE_SHEETS_CREDENTIALS")
+        or os.path.join(CONFIG_DIR_PATH, "service_account.json")
+    )
+    return os.path.abspath(configured)
+
+
+def _sqlite_file_url(path: str) -> str:
+    normalized = os.path.abspath(path).replace("\\", "/")
+    if os.name == "nt":
+        return f"sqlite:///{normalized}"
+    return f"sqlite:////{normalized.lstrip('/')}"
+
+
+def _default_production_database_url() -> str:
+    return _sqlite_file_url(os.path.join(BASE_DIR, "instance", "mywave.db"))
+
 class Config:
     """Основная конфигурация для приложения."""
     # SECRET_KEY обязателен в production; в development — желателен
@@ -23,6 +73,8 @@ class Config:
     BLOG_SHEETS_CACHE_TTL = int(os.getenv("BLOG_SHEETS_CACHE_TTL", "120"))
     # CSP toggle — allow enabling/disabling strict CSP rules via env
     CSP_ENABLED = os.getenv('CSP_ENABLED', 'True') in ('1', 'true', 'True')
+    # GA / Yandex Metrika / GTM: выключены по умолчанию для dev/testing; включаются в ProductionConfig или явным env=1
+    ENABLE_PUBLIC_ANALYTICS = False
     # Sitemap build timestamp (optional override)
     SITEMAP_BUILD_TS = os.getenv('SITEMAP_BUILD_TS', '')
     TIMEZONE = 'Europe/Moscow'
@@ -51,20 +103,44 @@ class Config:
     TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
     # Настройки для Google Sheets, Drive и Calendar
-    GOOGLE_SHEETS_CREDENTIALS = os.getenv("GOOGLE_SHEETS_CREDENTIALS")
+    GOOGLE_SHEETS_CREDENTIALS = os.getenv("GOOGLE_SHEETS_CREDENTIALS") or os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE")
     DRIVE_FOLDER_ID = os.getenv("DRIVE_FOLDER_ID")
-    SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "1kyNQVjeLLe4Ra6oWuf84fHqSjUlWXI8MakVMOrCgic0")
+    SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "")
+    CLIENT_WORKOUTS_SHEET_NAME = os.getenv("CLIENT_WORKOUTS_SHEET_NAME", "Client_Workouts")
+    BOAT_BOOKINGS_SHEET_NAME = os.getenv("BOAT_BOOKINGS_SHEET_NAME", "Boat_Bookings")
+    BOAT_RUZA_SYNC_ENABLED = os.getenv("BOAT_RUZA_SYNC_ENABLED", "False") in ("1", "true", "True")
+    BOAT_RUZA_SPREADSHEET_ID = os.getenv("BOAT_RUZA_SPREADSHEET_ID", "")
+    BOAT_RUZA_CLUB_ID = os.getenv("BOAT_RUZA_CLUB_ID", "ice_beach_ruza")
+    BOAT_RUZA_CLIENTS_SHEET_NAME = os.getenv("BOAT_RUZA_CLIENTS_SHEET_NAME", "clients")
+    BOAT_RUZA_BOOKINGS_SHEET_NAME = os.getenv("BOAT_RUZA_BOOKINGS_SHEET_NAME", "bookings")
+    BOAT_RUZA_BOATS_SHEET_NAME = os.getenv("BOAT_RUZA_BOATS_SHEET_NAME", "boats")
+    BOAT_RUZA_SCHEDULE_SHEET_NAME = os.getenv("BOAT_RUZA_SCHEDULE_SHEET_NAME", "schedule")
+    BOAT_RUZA_SLOT_OVERRIDES_SHEET_NAME = os.getenv("BOAT_RUZA_SLOT_OVERRIDES_SHEET_NAME", "slot_overrides")
+    BOAT_RUZA_AUDIT_LOG_SHEET_NAME = os.getenv("BOAT_RUZA_AUDIT_LOG_SHEET_NAME", "audit_log")
+    BOAT_RUZA_DEFAULT_BOAT_ID = os.getenv("BOAT_RUZA_DEFAULT_BOAT_ID", "boat_001")
+    BOAT_RUZA_DEFAULT_BOOKING_STATUS = os.getenv("BOAT_RUZA_DEFAULT_BOOKING_STATUS", "new")
+    BOAT_RUZA_DEFAULT_RIDE_TYPE = os.getenv("BOAT_RUZA_DEFAULT_RIDE_TYPE", "surf")
+    BOAT_RUZA_TOTAL_PRICE = os.getenv("BOAT_RUZA_TOTAL_PRICE", "10000")
+    BOAT_RUZA_CREATED_BY = os.getenv("BOAT_RUZA_CREATED_BY", "site")
+    HOME_BOOKING_SWITCH_DATE = os.getenv("HOME_BOOKING_SWITCH_DATE", "2026-05-15")
+    HOME_BOOKING_DEFAULT_SERVICE = os.getenv("HOME_BOOKING_DEFAULT_SERVICE", "gym")
+    HOME_BOOKING_SWITCHED_SERVICE = os.getenv("HOME_BOOKING_SWITCHED_SERVICE", "boat")
     
     # Проверяем существование директории configs
-    CONFIG_DIR = os.path.join(os.path.dirname(__file__), "configs")
+    CONFIG_DIR = CONFIG_DIR_PATH
     if not os.path.exists(CONFIG_DIR):
         os.makedirs(CONFIG_DIR)
     
-    GOOGLE_SERVICE_ACCOUNT_FILE = os.path.abspath(os.path.join(CONFIG_DIR, "service_account.json"))
+    GOOGLE_SERVICE_ACCOUNT_FILE = _resolve_service_account_file()
     GOOGLE_WORKSHEET_NAME = "Dialog_History"
 
     # Public media upload (for parser -> site image publishing)
-    SITE_BASE_URL = (os.getenv("SITE_BASE_URL") or "").rstrip("/")
+    DOMAIN = (os.getenv("DOMAIN") or "").strip()
+    BASE_URL = _clean_url(os.getenv("BASE_URL"))
+    PUBLIC_BASE_URL = _resolve_public_base_url()
+    SITE_BASE_URL = _resolve_site_base_url()
+    SERVER_NAME = _resolve_server_name()
+    HEALTHCHECK_URL = _resolve_healthcheck_url()
     MEDIA_UPLOAD_TOKEN = os.getenv("MEDIA_UPLOAD_TOKEN", "")
     MEDIA_UPLOAD_SUBDIR = os.getenv("MEDIA_UPLOAD_SUBDIR", "uploads/review_media")
     MEDIA_UPLOAD_MAX_BYTES = int(os.getenv("MEDIA_UPLOAD_MAX_BYTES", "10485760"))
@@ -85,6 +161,8 @@ class DevelopmentConfig(Config):
     # В development допустим fallback для удобства; в production — обязательно из .env
     SECRET_KEY = os.getenv('SECRET_KEY') or 'dev-secret-key-change-in-production'
     DEBUG = os.getenv('FLASK_DEBUG', 'False') == 'True'
+    # Локально при 127.0.0.1 обычно не нужна внешняя аналитика (консоль + CSP без шума).
+    ENABLE_PUBLIC_ANALYTICS = os.getenv('ENABLE_PUBLIC_ANALYTICS', '0').lower() in ('1', 'true', 'yes')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
         'sqlite:///dev-app.db'
     SQLALCHEMY_ECHO = True  # Печать SQL-запросов в консоль
@@ -109,12 +187,13 @@ class DevelopmentConfig(Config):
         'style-src-elem': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
         'img-src': [
             "'self'",
-            "https://cdn.jsdelivr.net",
-            "https://cdnjs.cloudflare.com",
-            "https://www.googletagmanager.com",
+            # Обложки блога приходят из произвольных внешних CMS/CDN (СМИ).
+            # Безопаснее разрешить https:/http: целиком, чем держать allowlist
+            # десятков случайных доменов и постоянно расширять его руками.
+            "https:",
+            "http:",
             "data:",
-            "https://mc.yandex.ru",
-            "https://mc.yandex.com"
+            "blob:",
         ],
         'font-src': [
             "'self'",
@@ -133,16 +212,31 @@ class DevelopmentConfig(Config):
             "wss://mc.yandex.com",
             "wss://mc.yandex.ru",
             "https://www.google-analytics.com",
+            "https://www.googletagmanager.com",
+            "https://www.google.com",
+            "https://analytics.google.com",
+            "https://*.google-analytics.com",
+            "https://*.analytics.google.com",
             "https://*.googleapis.com"
         ],
-        'frame-src': ["'self'", "https://cdn.jsdelivr.net", "https://calendar.google.com", "https://mc.yandex.com", "https://mc.yandex.ru"],
+        'frame-src': [
+            "'self'",
+            "https://cdn.jsdelivr.net",
+            "https://calendar.google.com",
+            "https://mc.yandex.com",
+            "https://mc.yandex.ru",
+            "https://www.youtube.com",
+            "https://www.youtube-nocookie.com",
+            "https://*.youtube.com",
+            "https://player.vimeo.com"
+        ],
         'object-src': ["'none'"],
         'base-uri': ["'self'"],
         'form-action': ["'self'"],
         'frame-ancestors': ["'none'"],
         'upgrade-insecure-requests': [],
         'manifest-src': ["'self'"],
-        'media-src': ["'self'"],
+        'media-src': ["'self'", "blob:"],
     }
 
 class TestingConfig(Config):
@@ -164,31 +258,36 @@ class ProductionConfig(Config):
             "Set it in .env or environment."
         )
     SECRET_KEY = _secret
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///app.db'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or _default_production_database_url()
     SQLALCHEMY_ECHO = False  # Отключаем вывод SQL-запросов в продакшн
 
-    # CSP для продакшена (более строгий)
+    # Публичная аналитика: по умолчанию следует ENABLE_ANALYTICS; отключить FORCE: ENABLE_PUBLIC_ANALYTICS=0
+    ENABLE_PUBLIC_ANALYTICS = Config.ENABLE_ANALYTICS and os.getenv(
+        'ENABLE_PUBLIC_ANALYTICS', '1'
+    ).lower() not in ('0', 'false', 'no')
+
+    # CSP для продакшена (строгая, но с разрешёнными origins для счётчиков и картинок блога)
     CSP_POLICY = {
         'default-src': ["'self'"],
         'script-src': [
             "'self'",
             "https://cdn.jsdelivr.net",
+            "https://cdnjs.cloudflare.com",
             "https://www.googletagmanager.com",
             "https://cdn.socket.io",
             "https://mc.yandex.ru",
             "https://mc.yandex.com",
-            "https://www.google-analytics.com"
+            "https://www.google-analytics.com",
+            "https://www.google.com"
         ],
         'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
         'style-src-elem': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
         'img-src': [
             "'self'",
-            "https://cdn.jsdelivr.net",
-            "https://www.googletagmanager.com",
+            # Обложки блога: внешние CMS/CDN (см. комментарий в DevelopmentConfig).
+            "https:",
             "data:",
-            "https://mc.yandex.ru",
-            "https://mc.yandex.com"
+            "blob:",
         ],
         'font-src': [
             "'self'",
@@ -199,20 +298,35 @@ class ProductionConfig(Config):
         'connect-src': [
             "'self'",
             "https://cdn.jsdelivr.net",
+            "https://cdnjs.cloudflare.com",
             "https://cdn.socket.io",
             "https://api.openai.com",
             "https://mc.yandex.com",
             "https://mc.yandex.ru",
             "wss://mc.yandex.com",
             "wss://mc.yandex.ru",
-            "https://www.google-analytics.com"
+            "https://www.google-analytics.com",
+            "https://www.googletagmanager.com",
+            "https://www.google.com",
+            "https://analytics.google.com",
+            "https://*.google-analytics.com",
+            "https://*.analytics.google.com"
         ],
-        'frame-src': ["'self'", "https://calendar.google.com", "https://mc.yandex.com", "https://mc.yandex.ru"],
+        'frame-src': [
+            "'self'",
+            "https://calendar.google.com",
+            "https://mc.yandex.com",
+            "https://mc.yandex.ru",
+            "https://www.youtube.com",
+            "https://www.youtube-nocookie.com",
+            "https://*.youtube.com",
+            "https://player.vimeo.com"
+        ],
+        'media-src': ["'self'", "blob:", "https://*.googlevideo.com"],
         'object-src': ["'none'"],
         'base-uri': ["'self'"],
         'form-action': ["'self'"],
         'frame-ancestors': ["'none'"],
         'upgrade-insecure-requests': [],
         'manifest-src': ["'self'"],
-        'media-src': ["'self'"],
     }

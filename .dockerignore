@@ -4,6 +4,8 @@
 **/*.pyc
 venv
 .venv
+**/.venv
+**/venv
 env
 node_modules
 *.db
@@ -18,3 +20,18 @@ venv_backup_*
 terminals
 .cursor
 coverage_html
+automation/.venv
+venv_backup_*
+venv_broken_to_delete
+.env
+.env.*
+!.env.example
+!env.example
+service_account.json
+configs/service_account.json
+config/service_account.json
+instance/service_account.json
+credentials.json
+tmp_service_account_diag.txt
+*.sqlite
+*.sqlite-*

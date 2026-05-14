@@ -1,6 +1,6 @@
-# MyWave: чеклист 10/10 (сервер + репозиторий)
+# MyWaveWake: чеклист 10/10 (Timeweb + репозиторий)
 
-Пункты **1–9, 11** выполняет владелец на хосте (SSH). В репозитории закрыты: отдельный **Node-образ** с `npm ci`, **healthcheck** в compose, **дашборд** Grafana, скрипты `scripts/`.
+Пункты **1–9, 11** выполняет владелец на хосте (SSH). Базовый production contour: Flask/Gunicorn/eventlet, Nginx, Let’s Encrypt, SQLite, Google APIs, Telegram alerts, backup cron. Extended monitoring включается только при необходимости.
 
 ---
 
@@ -19,8 +19,9 @@ sudo chmod +x /var/www/mywave/deploy/scripts/backup_mywave.sh
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl restart mywave-site mywave-node mywave-telegram-bot
-systemctl status mywave-site
+sudo systemctl restart mywave-site mywave-telegram-bot
+sudo systemctl restart mywave-node   # только если нужен /node-chat/*
+systemctl status mywave-site mywave-telegram-bot --no-pager
 ```
 
 **Критерий:** `active (running)`, нет `permission denied` в `journalctl`.
@@ -44,11 +45,12 @@ journalctl -u mywave-site -n 100 --no-pager
 
 ```bash
 sudo nginx -t && sudo systemctl reload nginx
+sudo certbot --nginx -d mywavewake.ru -d www.mywavewake.ru
 sudo certbot certificates
 sudo certbot renew --dry-run
 ```
 
-**Критерий:** HTTPS в браузере, в DevTools → нет критичного mixed content для основных сценариев.
+**Критерий:** `https://mywavewake.ru` открывается, `https://www.mywavewake.ru` редиректит на canonical, в DevTools нет критичного mixed content.
 
 ---
 
@@ -56,9 +58,10 @@ sudo certbot renew --dry-run
 
 | Компонент | URL / действие |
 |-----------|----------------|
-| Prometheus | `http://<сервер>:9090/targets` → `mywave-web` = **UP** |
-| Grafana | `http://<сервер>:3000` → дашборд **MyWave — Web** — latency, RPS, uptime, exceptions |
-| cAdvisor | `http://<сервер>:8088` (если поднят из compose) — CPU/RAM по контейнерам |
+| Базовый режим | `/health`, `/metrics`, `journalctl`, Nginx logs, Telegram alerts |
+| Prometheus | `http://<сервер>:9090/targets` → `mywave-web` = **UP** (если включён) |
+| Grafana | `http://<сервер>:3000` → дашборд **MyWave — Web** (если включён) |
+| cAdvisor | `http://<сервер>:8088` (если включён) |
 
 Провиженинг: `deploy/grafana/provisioning/`, `deploy/prometheus/prometheus.yml`.
 
@@ -72,7 +75,7 @@ crontab -l
 bash /var/www/mywave/scripts/healthcheck.sh
 ```
 
-**Критерий:** при недоступности URL из `HEALTHCHECK_URL` приходит сообщение в Telegram (если заданы `ALERT_TELEGRAM_*` / fallback из `env.example`).
+**Критерий:** при недоступности URL из `HEALTHCHECK_URL` приходит сообщение в Telegram (если заданы `ALERT_TELEGRAM_*` / fallback из `.env.example`).
 
 ---
 
@@ -103,25 +106,27 @@ Cron (пример):
 cd /var/www/mywave
 git status
 git check-ignore -v .env
+bash scripts/release_preflight.sh
 bash scripts/verify_repo_secrets.sh
 ```
 
-**Критерий:** `.env` в `.gitignore`; `verify_repo_secrets.sh` = 0; ротация ключей вручную в `.env` и в провайдерах (OpenAI, Telegram, admin).
+**Критерий:** `.env` в `.gitignore`; `.env.example` обновлён; `verify_repo_secrets.sh` = 0; ротация ключей вручную в `.env` и в провайдерах (OpenAI, Telegram, admin).
 
 ---
 
 ## 9. Smoke-test и нагрузка (ручные)
 
-1. Главная, HTTPS, чат (Socket.IO).  
-2. Запись: дата, слот, Google Sheets.  
-3. Google Calendar, media upload, parser / `public_url`, Telegram.  
+1. Главная, HTTPS, чат (Socket.IO).
+2. `www.mywavewake.ru` -> 301 на `https://mywavewake.ru`.
+3. Запись: дата, слот, Google Sheets.
+4. Google Calendar, media upload, parser / `public_url`, Telegram.
 4. Console браузера без критичных ошибок.  
 5. `journalctl` / Gunicorn без лавины 500.
 
 Нагрузка (если установлен `ab`):
 
 ```bash
-ab -n 200 -c 10 https://mywavetreaning.ru/
+ab -n 200 -c 10 https://mywavewake.ru/
 ```
 
 **Критерий:** сервис остаётся up, `journalctl` без массового timeout.
@@ -137,8 +142,9 @@ ab -n 200 -c 10 https://mywavetreaning.ru/
 
 ## 12. Критерий 10/10
 
-- [ ] `mywave-site`, `mywave-node`, `mywave-telegram-bot` после `reboot` — active.  
-- [ ] Prometheus target UP, Grafana панели обновляются.  
+- [ ] `mywave-site`, `mywave-telegram-bot` после `reboot` — active.
+- [ ] `mywave-node` active только если `/node-chat/*` реально используется.
+- [ ] Prometheus target UP, Grafana панели обновляются, если extended monitoring включён.
 - [ ] Telegram-алерт по healthcheck.  
 - [ ] Ежедневный backup по cron.  
 - [ ] Нет секретов в git; `verify_repo_secrets.sh` чист.  
@@ -155,8 +161,9 @@ ab -n 200 -c 10 https://mywavetreaning.ru/
 
 ## Что «приложить» в отчёт (артефакты)
 
-- Вывод: `systemctl status mywave-site mywave-node mywave-telegram-bot --no-pager`  
-- Скрин: Prometheus → Targets, Grafana → дашборд `mywave-web`  
+- Вывод: `systemctl status mywave-site mywave-telegram-bot --no-pager`
+- Вывод: `systemctl status mywave-node --no-pager` только если Node включён
+- Скрин: Prometheus → Targets, Grafana → дашборд `mywave-web` (если включены)
 - Кратко: smoke-test (ok / fail по пунктам)  
 - Nginx/SSL: вывод `nginx -t`, `certbot renew --dry-run`  
 
@@ -175,3 +182,4 @@ ab -n 200 -c 10 https://mywavetreaning.ru/
 | `deploy/scripts/backup_mywave.sh` |
 | `deploy/prometheus/`, `deploy/grafana/provisioning/` |
 | `docs/deployment/PRODUCTION_STACK.md` |
+| `docs/deployment/TIMEWEB_PRODUCTION_RUNBOOK.md` |

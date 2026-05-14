@@ -1,15 +1,37 @@
 // MyWave Node-прокси OpenAI (отдельный порт, напр. 5001). Требуется Node 18+ (встроенный fetch).
 const express = require("express");
 const bodyParser = require("body-parser");
-const path = require("path");
 
 const app = express();
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname)));
+app.disable("x-powered-by");
+app.use(bodyParser.json({ limit: "256kb" }));
+
+const OPENAI_TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS || 30000);
+const MAX_MESSAGE_LENGTH = Number(process.env.NODE_CHAT_MAX_MESSAGE_LENGTH || 4000);
+
+async function fetchWithTimeout(url, options = {}) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
+    try {
+        return await fetch(url, { ...options, signal: controller.signal });
+    } catch (error) {
+        if (error && error.name === "AbortError") {
+            throw new Error(`OpenAI request timed out after ${OPENAI_TIMEOUT_MS}ms`);
+        }
+        throw error;
+    } finally {
+        clearTimeout(timer);
+    }
+}
 
 // Для Docker HEALTHCHECK, балансировщиков и ручного curl
 app.get("/health", (req, res) => {
-    res.status(200).json({ ok: true, service: "mywave-node-proxy" });
+    res.status(200).json({
+        ok: true,
+        service: "mywave-node-proxy",
+        port: Number(process.env.PORT || 5000),
+        openai_configured: Boolean(process.env.OPENAI_API_KEY && process.env.ASSISTANT_ID),
+    });
 });
 
 const apiKey = process.env.OPENAI_API_KEY;
@@ -35,14 +57,17 @@ function httpErrorMessage(status, body) {
 }
 
 app.post("/chat", async (req, res) => {
-    const userMessage = req.body.message;
+    const userMessage = typeof req.body.message === "string" ? req.body.message.trim() : "";
 
     if (!userMessage) {
         return res.status(400).json({ reply: "Сообщение не предоставлено" });
     }
+    if (userMessage.length > MAX_MESSAGE_LENGTH) {
+        return res.status(413).json({ reply: "Сообщение слишком длинное" });
+    }
 
     try {
-        const threadResponse = await fetch("https://api.openai.com/v1/threads", {
+        const threadResponse = await fetchWithTimeout("https://api.openai.com/v1/threads", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -59,7 +84,7 @@ app.post("/chat", async (req, res) => {
         }
         const thread = JSON.parse(threadBody);
 
-        const msgRes = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
+        const msgRes = await fetchWithTimeout(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -79,7 +104,7 @@ app.post("/chat", async (req, res) => {
             });
         }
 
-        const runResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs`, {
+        const runResponse = await fetchWithTimeout(`https://api.openai.com/v1/threads/${thread.id}/runs`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -102,7 +127,7 @@ app.post("/chat", async (req, res) => {
         let runStatus;
         do {
             await new Promise((resolve) => setTimeout(resolve, 1000));
-            const statusResponse = await fetch(
+            const statusResponse = await fetchWithTimeout(
                 `https://api.openai.com/v1/threads/${thread.id}/runs/${run.id}`,
                 {
                     headers: {
@@ -129,7 +154,7 @@ app.post("/chat", async (req, res) => {
             });
         }
 
-        const messagesResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
+        const messagesResponse = await fetchWithTimeout(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
             headers: {
                 Authorization: `Bearer ${apiKey}`,
             },

@@ -15,7 +15,7 @@ def find_service_account_file():
     ]
     
     # First check environment variable
-    env_path = os.getenv('GOOGLE_SERVICE_ACCOUNT_FILE')
+    env_path = os.getenv('GOOGLE_SERVICE_ACCOUNT_FILE') or os.getenv('GOOGLE_SHEETS_CREDENTIALS')
     if env_path and os.path.isfile(env_path):
         return env_path
         

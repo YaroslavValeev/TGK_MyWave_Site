@@ -1,6 +1,7 @@
 from flask_socketio import SocketIO
-from flask import request
+from flask import request, redirect, url_for
 import os
+from flask_login import LoginManager
 from flask_wtf import CSRFProtect
 from flask_wtf.csrf import validate_csrf, ValidationError as CSRFValidationError
 from flask_cors import CORS
@@ -9,6 +10,7 @@ from flask_restx import Api
 from flask_caching import Cache
 from prometheus_flask_exporter import PrometheusMetrics
 from flask_sqlalchemy import SQLAlchemy
+from urllib.parse import urlsplit
 
 # Flask-Limiter (optional, for rate limiting)
 # Явный storage_uri=memory:// убирает предупреждение «no storage specified» в dev.
@@ -26,12 +28,44 @@ try:
 except ImportError:
     limiter = None
 
+
+def _origin_from_url(value: str) -> str:
+    raw = (value or "").strip()
+    if not raw:
+        return ""
+    parsed = urlsplit(raw if "://" in raw else f"https://{raw}")
+    if not parsed.netloc:
+        return ""
+    return f"{parsed.scheme or 'https'}://{parsed.netloc}"
+
+
+def _public_http_origins() -> list[str]:
+    out: list[str] = []
+    candidates = [
+        os.getenv("PUBLIC_BASE_URL"),
+        os.getenv("BASE_URL"),
+        os.getenv("SITE_BASE_URL"),
+    ]
+    server_name = (os.getenv("SERVER_NAME") or os.getenv("DOMAIN") or "").strip()
+    if server_name:
+        candidates.append(f"https://{server_name}")
+        if not server_name.startswith("www."):
+            candidates.append(f"https://www.{server_name}")
+    if not any((candidate or "").strip() for candidate in candidates):
+        candidates.extend([
+            "https://mywavewake.ru",
+            "https://www.mywavewake.ru",
+        ])
+    for candidate in candidates:
+        origin = _origin_from_url(candidate or "")
+        if origin and origin not in out:
+            out.append(origin)
+    return out
+
+
 def _socketio_cors_origins() -> list[str]:
     """Те же хосты, что и в main.py при переборе портов 5000–5010 — иначе Engine.IO режет Origin."""
-    out = [
-        "https://mywavetreaning.ru",
-        "https://www.mywave.ru",
-    ]
+    out = _public_http_origins()
     for port in range(5000, 5012):
         out.append(f"http://127.0.0.1:{port}")
         out.append(f"http://localhost:{port}")
@@ -65,6 +99,8 @@ def _make_socketio() -> SocketIO:
 
 socketio = _make_socketio()
 csrf = CSRFProtect()
+login_manager = LoginManager()
+login_manager.session_protection = "strong"
 migrate = Migrate()
 api = Api(doc='/swagger/')
 cache = Cache()
@@ -119,6 +155,27 @@ def init_extensions(app, db=None):
     # Инициализация CSRF защиты
     csrf.init_app(app)
 
+    # Flask-Login: сессии, user_loader, редирект на /admin/login для защищённых /admin/* (кроме логина)
+    login_manager.init_app(app)
+    login_manager.login_view = "auth.login"
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        if user_id is None:
+            return None
+        from app.database.models import User
+        try:
+            return User.query.get(int(user_id))
+        except (TypeError, ValueError):
+            return None
+
+    @login_manager.unauthorized_handler
+    def _unauthorized():
+        p = (request.path or "")
+        if p.startswith("/admin") and not p.startswith("/admin/login"):
+            return redirect(url_for("admin.login", next=request.url))
+        return redirect(url_for("auth.login", next=request.url))
+
     # Flask-Limiter (rate limiting)
     if limiter is not None:
         limiter.init_app(app)
@@ -137,7 +194,7 @@ def init_extensions(app, db=None):
     # Инициализация CORS
     CORS(
         app,
-        resources={r"/api/*": {"origins": ["https://mywavetreaning.ru", "https://www.mywave.ru"]}},
+        resources={r"/api/*": {"origins": _public_http_origins()}},
         supports_credentials=True
     )
     

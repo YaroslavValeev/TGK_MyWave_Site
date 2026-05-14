@@ -91,3 +91,13 @@ client_secret.json
 knowledge_base/*
 !knowledge_base/**/
 !knowledge_base/**/*.py
+
+# Production deploy hygiene
+.env.*
+!.env.example
+!env.example
+*.sqlite
+*.sqlite-*
+*.db-*
+service_account.json
+tmp_service_account_diag.txt

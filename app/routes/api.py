@@ -3,6 +3,7 @@ from app.extensions import csrf
 import os
 import hmac
 import secrets
+import shutil
 from app.modules.booking_utils import handle_booking as real_book_slot
 from app.routes.files import upload_file as real_upload_file
 from app.routes.ai_router import route_message as real_handle_message
@@ -61,26 +62,48 @@ def upload():
 
 def _media_upload_token_from_request() -> str:
     auth = request.headers.get("Authorization", "").strip()
-    if auth.lower().startswith("bearer "):
-        return auth[7:].strip()
+    auth_lower = auth.lower()
+    for prefix in ("bearer ", "token "):
+        if auth_lower.startswith(prefix):
+            return auth[len(prefix):].strip()
     return (
         request.headers.get("X-Media-Upload-Token", "").strip()
+        or request.headers.get("X-Upload-Token", "").strip()
+        or request.headers.get("X-API-Key", "").strip()
         or (request.form.get("media_upload_token", "").strip() if request.form else "")
+        or (request.form.get("upload_token", "").strip() if request.form else "")
+        or (request.form.get("token", "").strip() if request.form else "")
+        or (request.form.get("api_key", "").strip() if request.form else "")
     )
 
 
-def _resolve_media_upload_dir() -> str:
+def _resolve_media_upload_root() -> str:
     root = (current_app.config.get("MEDIA_UPLOAD_ROOT") or "").strip()
     if root:
-        upload_root = root
-    else:
-        upload_root = current_app.static_folder or os.path.join(current_app.root_path, "..", "static")
+        return root
+    return current_app.static_folder or os.path.join(current_app.root_path, "..", "static")
+
+
+def _resolve_media_upload_dir() -> str:
+    upload_root = _resolve_media_upload_root()
     subdir = str(current_app.config.get("MEDIA_UPLOAD_SUBDIR") or "uploads/review_media").strip().strip("/\\")
     return os.path.join(upload_root, subdir)
 
 
+def _write_legacy_media_copy(save_path: str, filename: str) -> None:
+    """Поддержка старых клиентов, которые читают /static/downloads/..."""
+    legacy_dir = os.path.join(_resolve_media_upload_root(), "downloads")
+    os.makedirs(legacy_dir, exist_ok=True)
+    legacy_path = os.path.join(legacy_dir, filename)
+    shutil.copy2(save_path, legacy_path)
+
+
 def _build_public_media_url(filename: str) -> str:
-    base_url = (current_app.config.get("SITE_BASE_URL") or "").strip().rstrip("/")
+    base_url = (
+        (current_app.config.get("SITE_BASE_URL") or "").strip().rstrip("/")
+        or (current_app.config.get("PUBLIC_BASE_URL") or "").strip().rstrip("/")
+        or (current_app.config.get("BASE_URL") or "").strip().rstrip("/")
+    )
     if not base_url:
         base_url = request.host_url.rstrip("/")
     subdir = str(current_app.config.get("MEDIA_UPLOAD_SUBDIR") or "uploads/review_media").strip().strip("/\\")
@@ -126,6 +149,10 @@ def media_upload():
     filename = f"review_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{secrets.token_hex(6)}{ext}"
     save_path = os.path.join(upload_dir, filename)
     media_file.save(save_path)
+    try:
+        _write_legacy_media_copy(save_path, filename)
+    except Exception:
+        current_app.logger.warning("Failed to create legacy media copy for %s", filename, exc_info=True)
 
     public_url = _build_public_media_url(filename)
     return jsonify(

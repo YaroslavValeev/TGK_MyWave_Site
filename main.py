@@ -29,10 +29,10 @@ _log = logging.getLogger("main")
 prometheus_dir = os.path.join(os.path.dirname(__file__), 'prometheus_multiproc')
 if not os.path.exists(prometheus_dir):
     os.makedirs(prometheus_dir)
-os.environ['PROMETHEUS_MULTIPROC_DIR'] = prometheus_dir
+os.environ.setdefault('PROMETHEUS_MULTIPROC_DIR', prometheus_dir)
 
-# Включаем Google сервисы
-os.environ['ENABLE_GOOGLE_SERVICES'] = 'True'
+# Не перетираем production env: включаем Google сервисы только если оператор не задал иное.
+os.environ.setdefault('ENABLE_GOOGLE_SERVICES', 'True')
 
 def _flask_config_name() -> str:
     v = (os.getenv("FLASK_CONFIG") or os.getenv("FLASK_ENV") or "development").strip().lower()
@@ -48,40 +48,7 @@ application = app  # gunicorn / uwsgi
 _log_file_hint = os.path.abspath(os.path.join(os.path.dirname(__file__), "logs", "app.log"))
 _log.info("Приложение загружено; логи: %s", _log_file_hint)
 # init_websocket() уже вызван в create_app() — повторный socketio.init_app не нужен
-
-# [CSP/nonce] вставить сразу после строки: app = create_app()
-import secrets
-from flask import g, request
-
-
-@app.before_request
-def _gen_csp_nonce():
-    # Генерируем nonce на каждый запрос и прокидываем в g
-    g.csp_nonce = secrets.token_urlsafe(16)
-
-
-@app.after_request
-def _set_csp(response):
-    # Разрешаем только собственные скрипты + JSON-LD с nonce
-    nonce = getattr(g, "csp_nonce", "")
-    csp = (
-        "default-src 'self'; "
-        f"script-src 'self' 'nonce-{nonce}' https://www.googletagmanager.com https://www.google-analytics.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://mc.yandex.ru https://mc.yandex.com; "
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
-        "img-src 'self' data: https://www.google-analytics.com https://mc.yandex.ru https://mc.yandex.com; "
-        "connect-src 'self' https://www.google-analytics.com https://*.googleapis.com https://cdn.socket.io https://api.openai.com https://mc.yandex.com https://mc.yandex.ru wss://mc.yandex.com wss://mc.yandex.ru; "
-        "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
-        "frame-src 'self' https://calendar.google.com https://mc.yandex.com https://mc.yandex.ru; "
-        "object-src 'none'; "
-        "frame-ancestors 'none'; "
-        "base-uri 'self'; "
-        "form-action 'self'; "
-        "upgrade-insecure-requests; "
-        "manifest-src 'self'; "
-        "media-src 'self'"
-    )
-    response.headers["Content-Security-Policy"] = csp
-    return response
+# CSP и nonce задаются только в create_app() из CSP_POLICY (config.py); дубликат здесь ломал предсказуемость.
 
 # [Sitemap] добавить роут
 from flask import render_template, make_response, request, url_for

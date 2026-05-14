@@ -129,18 +129,33 @@ def _get_row_number_from_record(record: Dict, index_in_records: int) -> Optional
 def _get_public_blog_base_url() -> str:
     """
     Базовый URL для canonical_url.
-    Если в конфиге задан SERVER_NAME, используем его. Иначе fallback на canonical домен проекта.
+    Если в конфиге задан PUBLIC/BASE/SITE URL, используем его. Иначе берём SERVER_NAME.
+    В крайнем случае — fallback на canonical домен проекта.
     
-    Canonical домен: mywavetreaning.ru (регистрация до 12.02.2027)
-    Альтернативные домены должны редиректить на canonical.
+    Canonical production домен: mywavewake.ru
+    www должен редиректить на основной домен.
     """
     try:
+        configured_base = (
+            (current_app.config.get("PUBLIC_BASE_URL") or "").strip()
+            or (current_app.config.get("BASE_URL") or "").strip()
+            or (current_app.config.get("SITE_BASE_URL") or "").strip()
+        ) if current_app else ""
         server_name = (current_app.config.get("SERVER_NAME") or "").strip() if current_app else ""
     except Exception:
+        configured_base = ""
         server_name = ""
-    if server_name:
+    if configured_base:
+        return configured_base.rstrip("/")
+    local_server_names = {
+        "localhost",
+        "localhost:5000",
+        "127.0.0.1",
+        "127.0.0.1:5000",
+    }
+    if server_name and server_name not in local_server_names and "." in server_name:
         return f"https://{server_name}".rstrip("/")
-    return "https://mywavetreaning.ru"
+    return "https://mywavewake.ru"
 
 
 def _make_canonical_url(slug: str) -> Optional[str]:
