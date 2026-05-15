@@ -30,7 +30,7 @@
 | 2026-05-15 | Operational pack refs sync | ops | `544f518a` | PASS | governance stack synced |
 | 2026-05-15 | Engineering maturity roadmap canon | ops | `af153b05` | PASS | phased execution integrated |
 | 2026-05-15 | Mobile QA automated pre-check | ops | `000a7100` | PARTIAL | smoke PASS; prod mobile-home v=2 not v=3 |
-| 2026-05-15 | Phase 1 status board + Step 0 deploy runbook | ops | pending | OPEN | frontend ?v=3 deploy blocked device QA |
+| 2026-05-15 | Phase 1 status board + Step 0 deploy runbook | ops | `b851d634` | OPEN | frontend ?v=3 deploy blocked device QA |
 
 ---
 
