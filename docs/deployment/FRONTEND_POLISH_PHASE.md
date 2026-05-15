@@ -1,10 +1,10 @@
 # MyWaveWake — фаза Frontend Polish + Hardening
 
-> **Актуальная управляющая фаза:** [STABILIZATION_QA_PHASE.md](STABILIZATION_QA_PHASE.md) — Production Stabilization + QA Discipline (4 слоя).
+> **Governance index:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md) · фаза: [STABILIZATION_QA_PHASE.md](STABILIZATION_QA_PHASE.md)
 
 **Дата фиксации:** 2026-05  
 **Production runtime baseline (заморожен):** `3de56f8c9316158aa992cfb7e74f0330eec0171c`  
-**Frontend/docs baseline:** `48dc9c64` · **QA/Ops governance:** `0a2a0e1a`
+**Frontend/docs baseline:** `48dc9c64` · **Governance docs:** `0a2a0e1a` / `94fbc211`
 
 Критическая фаза backend instability **завершена**. Backend operational:
 

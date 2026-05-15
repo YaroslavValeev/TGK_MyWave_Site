@@ -1,8 +1,10 @@
 # Production Stabilization + QA Discipline
 
+**Индекс governance:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)  
 **Дата фиксации:** 2026-05  
 **Production:** https://mywavewake.ru  
-**Статус:** Timeweb Cloud deploy успешен; критическая фаза backend instability **завершена**.
+**Модель:** production-governed система (runtime · UX · content · ops)  
+**Статус:** Timeweb Cloud deploy успешен; backend operational, runtime стабилен.
 
 ---
 
@@ -42,8 +44,9 @@
 | Слой | Commit | Статус |
 |------|--------|--------|
 | **Runtime Foundation** | `3de56f8c` | **FROZEN** |
-| **Frontend/docs phase** | `48dc9c64` | ACTIVE |
+| **Frontend/docs** | `48dc9c64` | ACTIVE |
 | **QA/Ops governance** | `0a2a0e1a` | ACTIVE |
+| **Production state/docs** | `94fbc211` | ACTIVE |
 
 **Runtime Foundation** = production runtime foundation. Любое изменение runtime:
 
@@ -72,21 +75,23 @@
 
 ---
 
-## Главное правило: BACKEND RUNTIME ЗАМОРОЖЕН
+## Главное правило: RUNTIME FOUNDATION ЗАМОРОЖЕН
 
-### Запрещено без согласования
+Baseline: `3de56f8c`. Без explicit approval области ниже **не изменяются**.
 
-- Flask bootstrap, Gunicorn wiring  
+### Что считается Runtime Foundation (freeze scope)
+
+- Flask bootstrap  
+- Gunicorn wiring  
 - SQLAlchemy init  
 - Redis architecture  
 - Socket.IO runtime  
 - booking API architecture  
-- Google init  
+- Google services init  
 - env loading  
 - health routing  
 - websocket architecture  
-- runtime patches  
-- DNS / runtime SSL behavior  
+- runtime SSL / DNS patches  
 
 ### Нельзя
 
@@ -238,14 +243,29 @@ Placeholder webp → финальные иллюстрации, art direction, o
 
 ---
 
+## Release taxonomy
+
+**ОДИН DEPLOY = ОДИН RELEASE TYPE.** См. [RELEASE_TYPES.md](RELEASE_TYPES.md).
+
+| Type | Scope |
+|------|-------|
+| `runtime` | backend / runtime / infrastructure |
+| `frontend` | CSS / templates / static UX |
+| `content` | blog / parser / Sheets visibility |
+| `ops` | monitoring / security / deploy |
+
+Запрещено: смешанный **runtime + UX** hotfix deploy без отдельного approval.
+
+---
+
 ## Рабочий deploy flow
 
 ```
 Изменение
-  → классификация слоя (+ release type)
+  → классификация release type (один тип на deploy)
   → RELEASE_GATE_CHECKLIST
   → production_smoke.sh
-  → Mobile QA (если UX)
+  → Mobile QA (если frontend)
   → deploy
   → post-deploy smoke
   → rollback при FAIL
@@ -281,7 +301,7 @@ Placeholder webp → финальные иллюстрации, art direction, o
 - [ ] Checklist — финальные webp  
 - [ ] Demo / investor ready  
 
-**После stabilization:** SEO, parser scaling, sponsor platform, AI orchestration, tourism ecosystem, advanced analytics.
+**После stabilization:** SEO, parser scaling, sponsor platform, AI orchestration, tourism ecosystem, advanced analytics, growth automation.
 
 **До exit:** никаких runtime refactor.
 
@@ -295,3 +315,4 @@ Placeholder webp → финальные иллюстрации, art direction, o
 | `3de56f8c` | **Frozen runtime** |
 | `48dc9c64` | Frontend/docs — mobile v3, smoke |
 | `0a2a0e1a` | QA/Ops governance artifacts |
+| `94fbc211` | Production state / canonical governance docs |

@@ -10,8 +10,9 @@
 | Runtime Foundation | `3de56f8c` | FROZEN |
 | Frontend/docs | `48dc9c64` | ACTIVE |
 | QA/Ops governance | `0a2a0e1a` | ACTIVE |
+| Production state/docs | `94fbc211` | ACTIVE |
 
-Release type: см. [RELEASE_TYPES.md](RELEASE_TYPES.md)
+**ОДИН DEPLOY = ОДИН RELEASE TYPE** — см. [RELEASE_TYPES.md](RELEASE_TYPES.md) · индекс [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)
 
 ---
 

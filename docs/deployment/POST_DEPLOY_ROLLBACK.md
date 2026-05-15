@@ -8,9 +8,10 @@
 | `3de56f8c` | **Frozen runtime** — откат backend |
 | `48dc9c64` | Frontend/docs — mobile v3, smoke, runbooks |
 | `0a2a0e1a` | QA/Ops governance — matrix, incident policy, release gate |
+| `94fbc211` | Production state / canonical governance |
 
-После каждого prod deploy обновляйте PREV в [RELEASE_GATE_CHECKLIST.md](RELEASE_GATE_CHECKLIST.md).  
-Governance: [STABILIZATION_QA_PHASE.md](STABILIZATION_QA_PHASE.md).
+Индекс: [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md).  
+После каждого prod deploy обновляйте PREV в [RELEASE_GATE_CHECKLIST.md](RELEASE_GATE_CHECKLIST.md).
 
 ## Rollback (2–5 минут)
 

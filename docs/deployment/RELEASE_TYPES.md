@@ -1,9 +1,20 @@
 # Release Types — MyWaveWake
 
 **Фаза:** Production Stabilization + QA Discipline  
-**Baselines:** runtime `3de56f8c` · frontend `48dc9c64` · governance `0a2a0e1a`
+**Индекс:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)
 
-Каждый production deploy классифицируется **одним** основным типом. См. [RELEASE_GATE_CHECKLIST.md](RELEASE_GATE_CHECKLIST.md).
+| Baseline | Commit | Статус |
+|----------|--------|--------|
+| Runtime Foundation | `3de56f8c` | FROZEN |
+| Frontend/docs | `48dc9c64` | ACTIVE |
+| QA/Ops governance | `0a2a0e1a` | ACTIVE |
+| Production state/docs | `94fbc211` | ACTIVE |
+
+## Правило: ОДИН DEPLOY = ОДИН RELEASE TYPE
+
+Каждый production deploy классифицируется **ровно одним** типом. См. [RELEASE_GATE_CHECKLIST.md](RELEASE_GATE_CHECKLIST.md).
+
+**Запрещено:** смешанный runtime + frontend (или runtime + ops) hotfix в одном deploy без отдельного issue, gate и approval.
 
 ---
 
