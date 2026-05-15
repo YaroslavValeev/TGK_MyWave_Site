@@ -1,11 +1,13 @@
 # Mobile QA Matrix — MyWaveWake
 
-**Фаза:** Production Stabilization + QA Discipline  
-**Фаза:** Formal Runtime Governance  
-**Baseline:** runtime `3de56f8c` (FROZEN) · frontend `48dc9c64` · governance `30f991da`  
-**Production URL:** https://mywavewake.ru
+**Фаза:** Operational Maturity · Stabilization execution  
+**Baseline:** runtime `3de56f8c` (FROZEN) · frontend `48dc9c64`  
+**Production URL:** https://mywavewake.ru  
+**Active run:** [MOBILE_QA_RUN_2026-05-15.md](MOBILE_QA_RUN_2026-05-15.md) — **PENDING device execution**  
+**Screenshots:** [screenshots/2026-05-15/](screenshots/2026-05-15/)
 
-Матрица обязательна **перед** закрытием любого UX-deploy и **перед** release gate ([RELEASE_GATE_CHECKLIST.md](../deployment/RELEASE_GATE_CHECKLIST.md)).
+Матрица обязательна перед UX-deploy. Без PASS → deploy **governance-incomplete**.  
+Gate: [RELEASE_GATE_CHECKLIST.md](../deployment/RELEASE_GATE_CHECKLIST.md)
 
 ---
 
@@ -124,4 +126,12 @@
 
 | Дата | Commit | Tester | Summary |
 |------|--------|--------|---------|
-| | | | |
+| 2026-05-15 | `48dc9c64` | pending | Run created — [MOBILE_QA_RUN_2026-05-15.md](MOBILE_QA_RUN_2026-05-15.md); device PASS/FAIL not yet recorded |
+
+## Overall sign-off (2026-05-15)
+
+| Field | Value |
+|-------|-------|
+| Overall | **PENDING** |
+| Release gate ready | **NO** |
+| Blocker | Real device QA + screenshots required |
