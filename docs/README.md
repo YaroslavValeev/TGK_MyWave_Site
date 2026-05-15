@@ -7,7 +7,8 @@
 | Документ | Когда читать |
 |----------|--------------|
 | **[PLATFORM_STATE.md](PLATFORM_STATE.md)** | Canonical snapshot — **всегда первым** |
-| [ENGINEERING_MATURITY_ROADMAP.md](deployment/ENGINEERING_MATURITY_ROADMAP.md) | Текущие фазы 1–4, приоритеты, blockers |
+| **[PHASE1_MOBILE_QA_STATUS.md](qa/PHASE1_MOBILE_QA_STATUS.md)** | Phase 1 living status — **сейчас** |
+| [ENGINEERING_MATURITY_ROADMAP.md](deployment/ENGINEERING_MATURITY_ROADMAP.md) | Фазы 1–4 |
 | [PRODUCTION_GOVERNANCE.md](PRODUCTION_GOVERNANCE.md) | Governance index |
 
 ## Governance stack (5)

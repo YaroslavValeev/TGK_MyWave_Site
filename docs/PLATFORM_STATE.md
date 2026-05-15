@@ -148,7 +148,12 @@ Rollback обязателен при: health unhealthy · booking failure · res
 
 ### Текущий приоритет (Phase 1 — BLOCKER)
 
-**Real Mobile QA execution** — [ENGINEERING_MATURITY_ROADMAP.md](deployment/ENGINEERING_MATURITY_ROADMAP.md#phase-1--real-mobile-qa-execution-текущий-blocker)
+**Status:** `IN PROGRESS — BLOCKER` · [PHASE1_MOBILE_QA_STATUS.md](qa/PHASE1_MOBILE_QA_STATUS.md)
+
+1. **Step 0:** frontend deploy — prod `mobile-home.css?v=2` → нужен `?v=3` (не runtime)  
+2. **Step 1:** manual device QA (A1/A2/I1/T1) после подтверждения `?v=3`  
+
+Precheck `000a7100`: smoke PASS · HTML version FAIL
 
 ### P1 (после QA)
 

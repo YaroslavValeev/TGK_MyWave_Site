@@ -36,7 +36,25 @@
 
 ## Phase 1 — REAL MOBILE QA EXECUTION (текущий BLOCKER)
 
+**Status:** `IN PROGRESS — BLOCKER` · living doc: [PHASE1_MOBILE_QA_STATUS.md](../qa/PHASE1_MOBILE_QA_STATUS.md)
+
 **Главный приоритет платформы.** До завершения: frontend release = **governance-incomplete**.
+
+### Step 0 — Deploy mobile v3 to production (сейчас)
+
+Prod HTML: `?v=2` → нужен `?v=3`. **Frontend release**, не runtime.
+
+```bash
+cd /var/www/mywave && git pull --ff-only origin main
+grep mobile-home templates/base.html
+sudo systemctl reload mywave-site
+curl -sS https://mywavewake.ru/ | grep mobile-home
+bash scripts/qa_mobile_precheck.sh && bash scripts/production_smoke.sh
+```
+
+Precheck: `000a7100` · [MOBILE_QA_AUTOMATED_PRECHECK_2026-05-15.md](../qa/MOBILE_QA_AUTOMATED_PRECHECK_2026-05-15.md)
+
+### Step 1 — Manual device QA (после `?v=3`)
 
 ### Platforms (обязательно)
 
@@ -176,7 +194,7 @@ Gunicorn/runtime **не** перезапускать без runtime-release.
 
 | Phase | Focus | Status |
 |-------|-------|--------|
-| 1 | Real Mobile QA execution | **IN PROGRESS — BLOCKER** (pre-check OK; prod `?v=2` → deploy `?v=3`; device QA pending) |
+| 1 | Real Mobile QA execution | **IN PROGRESS — BLOCKER** — Step 0: deploy `?v=3`; Step 1: device QA |
 | 2 | P1 visual polish | pending (after QA) |
 | 3 | P2 hardening | pending |
 | 4 | Operational maturity | partial |
