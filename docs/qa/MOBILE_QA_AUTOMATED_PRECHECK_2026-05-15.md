@@ -31,7 +31,7 @@
 cd /var/www/mywave
 git fetch origin && git pull --ff-only origin main
 # убедиться: grep mobile-home templates/base.html  →  ?v=3
-sudo systemctl reload mywave-site   # templates pick-up
+sudo systemctl restart mywave-site   # templates pick-up (reload не в unit)
 curl -sS https://mywavewake.ru/ | grep mobile-home
 ```
 

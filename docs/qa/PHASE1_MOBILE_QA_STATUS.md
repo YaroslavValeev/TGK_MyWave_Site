@@ -36,7 +36,7 @@ cd /var/www/mywave
 git fetch origin
 git pull --ff-only origin main
 grep mobile-home templates/base.html    # ожидается ?v=3
-sudo systemctl reload mywave-site
+sudo systemctl restart mywave-site   # reload не поддерживается unit-файлом
 curl -sS https://mywavewake.ru/ | grep mobile-home
 bash scripts/qa_mobile_precheck.sh
 bash scripts/production_smoke.sh

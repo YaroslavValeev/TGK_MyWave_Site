@@ -47,7 +47,7 @@ Prod HTML: `?v=2` → нужен `?v=3`. **Frontend release**, не runtime.
 ```bash
 cd /var/www/mywave && git pull --ff-only origin main
 grep mobile-home templates/base.html
-sudo systemctl reload mywave-site
+sudo systemctl restart mywave-site
 curl -sS https://mywavewake.ru/ | grep mobile-home
 bash scripts/qa_mobile_precheck.sh && bash scripts/production_smoke.sh
 ```
