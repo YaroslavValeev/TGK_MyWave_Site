@@ -2,7 +2,8 @@
 
 **Production:** https://mywavewake.ru  
 **Phase status:** `IN PROGRESS` — Step 0 **CLOSED** · Step 1 manual device QA **BLOCKER**  
-**Precheck fix:** `3ae20741` (`curl --compressed`) · `f3a5256b` (`grep -Fq` — ложный WARN на `?v=3`) · `f3a5256b` (`grep -Fq` — ложный WARN на `?v=3`)  
+**Precheck fix:** `3ae20741` (`--compressed`) · `f3a5256b` (`grep -Fq`) · `dc08c500` (HTML check **до** burst curl — ложный FAIL при OK manual)  
+**Сервер:** [SERVER_PHASE1_VERIFY.md](SERVER_PHASE1_VERIFY.md)  
 **Roadmap:** [ENGINEERING_MATURITY_ROADMAP.md](../deployment/ENGINEERING_MATURITY_ROADMAP.md)  
 **Runtime:** `3de56f8c` FROZEN — не трогать
 
@@ -22,7 +23,7 @@
 | Runtime | operational |
 | Governance | operational |
 | Frontend QA phase | Step 0 done · Step 1 manual QA pending |
-| Automated precheck | **PASS** (after `3ae20741` + `git pull`) |
+| Automated precheck | **PASS** после `git pull` → `dc08c500` (prod HTML `?v=3` уже OK вручную) |
 | Sign-off | **NO** — until 4 platforms PASS |
 
 ---
@@ -54,11 +55,11 @@
 | Home HTML `?v=3` | **PASS** |
 | Precheck script (`3ae20741`) | **PASS** (gzip fix: `--compressed`) |
 
-**Ложный FAIL устранён:** скрипт без `--compressed` не декодировал gzip; ручной `curl | grep` работал корректно.
+**Ложный FAIL (история):** (1) gzip без `--compressed`; (2) `grep ?` как regex; (3) старый скрипт качал HTML **после** 6 curl — ручной `curl | grep` OK, скрипт FAIL. Фикс: `dc08c500`.
 
-**FAIL «mobile-home.css not in home HTML» при OK static:** HTML от Gunicorn без ссылки (старые workers/шаблоны). Статика с диска уже `?v=3`. Лечение: `git pull` → проверить `templates/base.html` → **`sudo systemctl restart mywave-site`** → precheck снова.
+**Prod HTML `?v=3`:** подтверждено вручную на сервере 2026-05-15 после `restart`.
 
-На сервере: `git pull` → `bash scripts/qa_mobile_precheck.sh` → `PRECHECK OK`.
+На сервере после `git push` с ПК: см. [SERVER_PHASE1_VERIFY.md](SERVER_PHASE1_VERIFY.md) → `PRECHECK OK`.
 
 ---
 

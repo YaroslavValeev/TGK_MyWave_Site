@@ -32,7 +32,9 @@
 | 2026-05-15 | Mobile QA automated pre-check | ops | `000a7100` | PARTIAL | smoke PASS; prod mobile-home v=2 not v=3 |
 | 2026-05-15 | Phase 1 status board + Step 0 deploy runbook | ops | `b851d634` | PASS | Step 0 closed |
 | 2026-05-15 | Precheck gzip fix (`curl --compressed`) | ops | `3ae20741` | PASS | automated precheck aligned with manual curl |
-| 2026-05-15 | Phase 1 → manual device QA blocker | ops | pending | OPEN | A1/A2/I1/T1 + screenshots |
+| 2026-05-15 | Phase 1 Step 0 — prod HTML mobile-home v=3 | frontend | restart | PASS | manual curl OK; templates ?v=3 |
+| 2026-05-15 | Precheck script — HTML check order + grep -F | ops | `dc08c500` | PASS | fixes false FAIL when manual curl OK |
+| 2026-05-15 | Phase 1 → manual device QA blocker | ops | `dc08c500` | OPEN | push from PC → server git pull → precheck; A1/A2/I1/T1 |
 
 ---
 

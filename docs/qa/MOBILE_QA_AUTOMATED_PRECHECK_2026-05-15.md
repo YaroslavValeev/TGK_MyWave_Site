@@ -4,8 +4,9 @@
 **Run by:** Cursor agent (remote)  
 **Script:** `scripts/qa_mobile_precheck.sh`  
 **Does NOT replace:** real device QA (A1/A2/I1/T1)  
-**Precheck fix commit:** `3ae20741` — `curl --compressed` + pipe to `grep`  
-**Status:** Step 0 closed · automated precheck **PASS** after fix
+**Precheck fixes:** `3ae20741` (`--compressed`) · `f3a5256b` (`grep -Fq`) · `dc08c500` (HTML first)  
+**Status:** Step 0 closed on prod (manual curl `?v=3`) · script **PASS** after `git pull` → `dc08c500`  
+**Server runbook:** [SERVER_PHASE1_VERIFY.md](SERVER_PHASE1_VERIFY.md)
 
 ---
 

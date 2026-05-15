@@ -6,7 +6,8 @@
 **Frontend baseline:** `48dc9c64`  
 **Canonical matrix:** [MOBILE_QA_MATRIX.md](MOBILE_QA_MATRIX.md)  
 **Status:** **Step 1 — manual device QA** (Step 0 + precheck closed)  
-**Precheck:** [MOBILE_QA_AUTOMATED_PRECHECK_2026-05-15.md](MOBILE_QA_AUTOMATED_PRECHECK_2026-05-15.md) · fix `3ae20741`
+**Precheck:** [MOBILE_QA_AUTOMATED_PRECHECK_2026-05-15.md](MOBILE_QA_AUTOMATED_PRECHECK_2026-05-15.md) · fixes through `dc08c500`  
+**Server:** [SERVER_PHASE1_VERIFY.md](SERVER_PHASE1_VERIFY.md)
 
 > Frontend deploy **governance-incomplete** без PASS в матрице + screenshots + smoke.
 
