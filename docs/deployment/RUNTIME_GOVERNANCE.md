@@ -28,7 +28,7 @@ Runtime рассматривается как неизменяемый слой 
 4. Production justification  
 5. **Explicit approval** (owner / tech lead)
 
-Без всех пяти пунктов — **change rejected**.
+**Без всех пяти пунктов: CHANGE REJECTED.**
 
 Release type: `runtime` only. См. [RELEASE_TYPES.md](RELEASE_TYPES.md).
 

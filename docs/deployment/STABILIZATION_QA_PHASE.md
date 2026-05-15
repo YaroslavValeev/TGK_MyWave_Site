@@ -1,11 +1,12 @@
 # Production Stabilization + QA Discipline
 
-**Фаза:** Formal Runtime Governance (в рамках stabilization)  
+**Платформа:** formal production-governed · stabilization execution model  
+**Фаза:** Formal Runtime Governance + Stabilization  
 **Governance entrypoint:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)  
 **Runtime rules:** [RUNTIME_GOVERNANCE.md](RUNTIME_GOVERNANCE.md)  
 **Дата фиксации:** 2026-05  
 **Production:** https://mywavewake.ru  
-**Статус:** production operational, runtime = stable infrastructure foundation.
+**Статус:** production operational, runtime = infrastructure foundation.
 
 ---
 
@@ -324,3 +325,4 @@ Placeholder webp → финальные иллюстрации, art direction, o
 | `94fbc211` | Production state / canonical governance docs |
 | `4d1ded82` | Governance index + release taxonomy canon |
 | `30f991da` | Formal runtime governance canon |
+| `56b98c49` | Phase transition canon |

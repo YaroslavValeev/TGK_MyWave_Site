@@ -1,34 +1,35 @@
 # MyWaveWake — Production Governance
 
-**Фаза:** Formal Runtime Governance  
-**Production:** https://mywavewake.ru  
-**Модель:** production-governed система · слои: runtime · UX · content · ops
+**Платформа:** formal production-governed platform  
+**Модель:** runtime governance · release discipline · stabilization execution  
+**Фаза:** Formal Runtime Governance + Stabilization  
+**Production:** https://mywavewake.ru
 
 ## Каноническая тройка governance
 
 | Документ | Назначение |
 |----------|------------|
 | **`docs/PRODUCTION_GOVERNANCE.md`** | Governance entrypoint (этот файл) |
-| [deployment/STABILIZATION_QA_PHASE.md](deployment/STABILIZATION_QA_PHASE.md) | Operational scope, P1/P2, exit criteria |
+| [deployment/STABILIZATION_QA_PHASE.md](deployment/STABILIZATION_QA_PHASE.md) | Operational scope / P1 / P2 / execution |
 | [deployment/RUNTIME_GOVERNANCE.md](deployment/RUNTIME_GOVERNANCE.md) | Runtime freeze / change control |
 
 Все production-решения синхронизируются **только** через эти три документа.
 
 ---
 
-## Production статус
+## Production status
 
-Production **operational**. Runtime стабилен.
+Production **operational**. Runtime стабилен = **infrastructure foundation**.
 
 | Компонент | Статус |
 |-----------|--------|
 | Flask/Gunicorn runtime | operational |
 | Redis | operational |
 | Google integrations | operational |
-| Booking | operational |
+| Booking slots | operational |
 | Socket.IO | operational |
 | Node proxy | operational |
-| systemd | operational |
+| systemd services | operational |
 | Nginx | operational |
 | SSL | operational |
 | Health endpoints | operational |
@@ -47,46 +48,59 @@ Production **operational**. Runtime стабилен.
 | Production state/docs | `94fbc211` | ACTIVE |
 | Governance index | `4d1ded82` | ACTIVE |
 | Formal runtime governance | `30f991da` | ACTIVE |
+| Phase transition canon | `56b98c49` | ACTIVE |
 
 ---
 
-## Главное правило
+## Four-layer model
 
-**Runtime Foundation заморожен на `3de56f8c`.**
+Изменения между слоями **минимально связаны**.
 
-Runtime = production infrastructure foundation. Backend operational и стабилен.
+| # | Слой | Baseline | Статус |
+|---|------|----------|--------|
+| 1 | **Runtime Foundation** | `3de56f8c` | FROZEN |
+| 2 | **Frontend UX** | `48dc9c64` | ACTIVE |
+| 3 | **Content Pipeline** | Sheets / parser | ACTIVE (data) |
+| 4 | **Ops / Observability** | runbooks + scripts | ACTIVE |
+
+---
+
+## Formal runtime governance
+
+**Runtime Foundation baseline:** `3de56f8c`  
+Runtime Foundation = production infrastructure foundation.
 
 Любые runtime changes допускаются только через:
 
-- отдельный issue  
-- rollback plan  
-- smoke strategy  
-- production justification  
-- **explicit approval**
+1. отдельный issue  
+2. rollback plan  
+3. smoke strategy  
+4. production justification  
+5. explicit approval  
 
-Детали: [RUNTIME_GOVERNANCE.md](deployment/RUNTIME_GOVERNANCE.md)
+**Без всех пяти пунктов: CHANGE REJECTED.**
+
+### Freeze scope
+
+Без explicit approval не изменяются:
+
+- Flask bootstrap  
+- Gunicorn wiring  
+- SQLAlchemy init  
+- Redis architecture  
+- Socket.IO runtime  
+- booking API architecture  
+- Google services init  
+- env loading  
+- health routing  
+- websocket architecture  
+- runtime SSL/DNS patches  
+
+Полный регламент: [RUNTIME_GOVERNANCE.md](deployment/RUNTIME_GOVERNANCE.md)
 
 ---
 
-## Канонические governance-документы
-
-| Документ | Путь | Назначение |
-|----------|------|------------|
-| **Governance index** | `docs/PRODUCTION_GOVERNANCE.md` | этот файл |
-| Stabilization scope | [STABILIZATION_QA_PHASE.md](deployment/STABILIZATION_QA_PHASE.md) | P1/P2, exit criteria |
-| Runtime governance | [RUNTIME_GOVERNANCE.md](deployment/RUNTIME_GOVERNANCE.md) | freeze, change control |
-| UX/mobile | [FRONTEND_POLISH_PHASE.md](deployment/FRONTEND_POLISH_PHASE.md) | frontend scope |
-| Mobile QA | [MOBILE_QA_MATRIX.md](qa/MOBILE_QA_MATRIX.md) | PASS/FAIL matrix |
-| Blog content | [BLOG_CONTENT_VISIBILITY.md](deployment/BLOG_CONTENT_VISIBILITY.md) | visibility rules |
-| Incidents | [PRODUCTION_INCIDENT_POLICY.md](ops/PRODUCTION_INCIDENT_POLICY.md) | SEV / rollback |
-| Release gate | [RELEASE_GATE_CHECKLIST.md](deployment/RELEASE_GATE_CHECKLIST.md) | pre-deploy gate |
-| Release types | [RELEASE_TYPES.md](deployment/RELEASE_TYPES.md) | taxonomy |
-| Server ops | [TIMEWEB_PRODUCTION_RUNBOOK.md](deployment/TIMEWEB_PRODUCTION_RUNBOOK.md) | Timeweb ops |
-| Rollback | [POST_DEPLOY_ROLLBACK.md](deployment/POST_DEPLOY_ROLLBACK.md) | known-good commits |
-
----
-
-## Release taxonomy
+## Release discipline
 
 **ОДИН DEPLOY = ОДИН RELEASE TYPE.**
 
@@ -97,11 +111,12 @@ Runtime = production infrastructure foundation. Backend operational и стаб�
 | `content` | parser / blog / Sheets |
 | `ops` | monitoring / security / deploy |
 
-Смешанные **runtime + UX** deploy запрещены без отдельного approval.
+Смешанные **runtime + UX** deploy запрещены без отдельного approval.  
+Детали: [RELEASE_TYPES.md](deployment/RELEASE_TYPES.md)
 
 ---
 
-## Канонический deploy flow
+## Deploy flow
 
 ```
 Изменение
@@ -114,43 +129,54 @@ Runtime = production infrastructure foundation. Backend operational и стаб�
   → rollback при FAIL
 ```
 
-Скрипты: `scripts/production_smoke.sh`, `scripts/healthcheck.sh`
+| Скрипт | Назначение |
+|--------|------------|
+| `scripts/production_smoke.sh` | post-deploy HTTP smoke |
+| `scripts/healthcheck.sh` | health / watchdog |
+
+Gate: [RELEASE_GATE_CHECKLIST.md](deployment/RELEASE_GATE_CHECKLIST.md)
 
 ---
 
-## P1 — текущие приоритеты
+## Stabilization execution model
 
-### Frontend UX (baseline `48dc9c64`)
+**До exit criteria:** никаких runtime refactor.
 
-mobile stability · swipe UX · typography · safe-area · touch ergonomics · no horizontal scroll · no clipped cards · readable forms · stable carousels
+### P1 — execute now
 
-QA: [MOBILE_QA_MATRIX.md](qa/MOBILE_QA_MATRIX.md) — Android Chrome, Yandex, iPhone Safari, Tablet.
+| Track | Действие | Артефакт |
+|-------|----------|----------|
+| Frontend UX | mobile-first incremental CSS/templates | [MOBILE_QA_MATRIX.md](qa/MOBILE_QA_MATRIX.md) |
+| Blog content | statuses, parser, slug, Sheets, cache | [BLOG_CONTENT_VISIBILITY.md](deployment/BLOG_CONTENT_VISIBILITY.md) |
+| Checklist visuals | финальные webp (не logic/routing) | design assets |
+| Static / reviews | avatars, cache, lazy/eager | nginx `/static/` |
 
-### Blog content pipeline
+**Frontend UX baseline:** `48dc9c64` — mobile stability, swipe UX, safe-area, typography, touch ergonomics, no horizontal scroll, stable carousels, readable forms.
 
-Routing/runtime стабилен. Visibility: statuses, parser sync, slug, Sheets mapping, cache invalidation.
+**Blog:** `APPROVED` ≠ visible. Нужно `READY_TO_PUBLISH` или `PUBLISHED`. Не: routing/runtime/template architecture rewrite.
 
-**`APPROVED` ≠ visible post.** Нужно: `READY_TO_PUBLISH` или `PUBLISHED`.  
-Не: routing rewrite, runtime refactor, template architecture rewrite.
+**Checklist:** placeholder webp → art direction + optimized assets. Не менять rendering logic, asset routing, template structure.
 
-### Checklist visuals
+### P2 — hardening & maturity
 
-Placeholder webp → финальные иллюстрации, art direction, optimized assets.  
-Не менять: rendering logic, asset routing, template structure.
+| Track | Items |
+|-------|-------|
+| Hardening | fail2ban, UFW, logrotate, backup cron, Redis persistence, gzip/cache, certbot, nginx rate limit, Telegram alerts, uptime/disk/log monitoring |
+| Observability | production_smoke.sh, healthcheck.sh, release smoke, rollback validation, alerts |
+| CI/CD | release tagging, deploy/rollback reproducibility, env isolation, release notes, secrets hygiene, cadence |
 
-### Static / reviews
-
-image optimization · nginx static cache · responsive avatars · eager/lazy loading · mobile consistency
+Полный чеклист: [STABILIZATION_QA_PHASE.md](deployment/STABILIZATION_QA_PHASE.md)
 
 ---
 
-## P2 — hardening & maturity
+## Supporting governance docs
 
-**Hardening:** fail2ban, UFW, logrotate, backup cron, Redis persistence, gzip/cache, certbot, nginx rate limiting, Telegram alerts, uptime/disk/log monitoring.
-
-**Observability:** production_smoke.sh, healthcheck.sh, release smoke discipline, rollback validation, alerts.
-
-**CI/CD:** release tagging, deploy/rollback reproducibility, environment isolation, release notes, secrets hygiene, release cadence.
+| Документ | Путь |
+|----------|------|
+| UX scope | [FRONTEND_POLISH_PHASE.md](deployment/FRONTEND_POLISH_PHASE.md) |
+| Incidents | [PRODUCTION_INCIDENT_POLICY.md](ops/PRODUCTION_INCIDENT_POLICY.md) |
+| Server ops | [TIMEWEB_PRODUCTION_RUNBOOK.md](deployment/TIMEWEB_PRODUCTION_RUNBOOK.md) |
+| Rollback | [POST_DEPLOY_ROLLBACK.md](deployment/POST_DEPLOY_ROLLBACK.md) |
 
 ---
 
@@ -180,9 +206,9 @@ image optimization · nginx static cache · responsive avatars · eager/lazy loa
 
 ---
 
-## Stabilization phase goal
+## Current stabilization goal
 
-**Exit:** stable · polished · mobile-ready · hardened · observable · investor/demo ready.
+**Exit criteria:** stable · polished · mobile-ready · hardened · observable · investor/demo ready.
 
 **После exit:** SEO, parser scaling, sponsor platform, AI orchestration, tourism ecosystem, advanced analytics, growth automation.
 

@@ -12,8 +12,9 @@
 | QA/Ops governance | `0a2a0e1a` | ACTIVE |
 | Production state/docs | `94fbc211` | ACTIVE |
 | Governance index | `4d1ded82` | ACTIVE |
+| Phase transition | `56b98c49` | ACTIVE |
 
-**ОДИН DEPLOY = ОДИН RELEASE TYPE** — [RELEASE_TYPES.md](RELEASE_TYPES.md) · [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md) · runtime: [RUNTIME_GOVERNANCE.md](RUNTIME_GOVERNANCE.md)
+**Платформа:** production-governed · **ОДИН DEPLOY = ОДИН RELEASE TYPE** — [RELEASE_TYPES.md](RELEASE_TYPES.md) · [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md) · runtime: [RUNTIME_GOVERNANCE.md](RUNTIME_GOVERNANCE.md)
 
 ---
 
