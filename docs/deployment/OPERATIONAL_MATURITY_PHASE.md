@@ -19,13 +19,15 @@ Production **operational**. Runtime Foundation стабилен = **infrastructu
 
 ---
 
-## Governance entrypoint (каноническая тройка)
+## Governance entrypoint
 
 | Документ | Роль |
 |----------|------|
 | [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md) | Governance index |
+| [PLATFORM_STATE.md](../PLATFORM_STATE.md) | **Canonical platform snapshot** |
 | [STABILIZATION_QA_PHASE.md](STABILIZATION_QA_PHASE.md) | Operational scope / P1 / P2 |
 | [RUNTIME_GOVERNANCE.md](RUNTIME_GOVERNANCE.md) | Runtime freeze + change control |
+| [OPERATIONAL_MATURITY_PHASE.md](OPERATIONAL_MATURITY_PHASE.md) | Current phase (этот файл) |
 
 Все production-решения синхронизируются **только** через эти документы.
 
@@ -92,7 +94,7 @@ Runtime + frontend mixed deploy **запрещён** без approval. См. [REL
 
 ## Обязательные post-deploy действия
 
-**Без этого deploy считается незавершённым.**
+**Без этого deploy считается governance-incomplete / незавершённым.**
 
 | # | Действие | Артефакт |
 |---|----------|----------|

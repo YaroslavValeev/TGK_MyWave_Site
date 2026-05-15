@@ -7,15 +7,17 @@
 
 > Главный актив проекта — **operational governance discipline**. Её необходимо сохранять.
 
-## Каноническая тройка governance
+## Governance entrypoint (канонический stack)
 
 | Документ | Назначение |
 |----------|------------|
-| **`docs/PRODUCTION_GOVERNANCE.md`** | Governance entrypoint (этот файл) |
-| [deployment/STABILIZATION_QA_PHASE.md](deployment/STABILIZATION_QA_PHASE.md) | Operational scope / P1 / P2 / execution |
+| [PRODUCTION_GOVERNANCE.md](PRODUCTION_GOVERNANCE.md) | Governance index (этот файл) |
+| [PLATFORM_STATE.md](PLATFORM_STATE.md) | **Canonical platform snapshot** |
+| [deployment/STABILIZATION_QA_PHASE.md](deployment/STABILIZATION_QA_PHASE.md) | Operational scope / P1 / P2 |
 | [deployment/RUNTIME_GOVERNANCE.md](deployment/RUNTIME_GOVERNANCE.md) | Runtime freeze / change control |
+| [deployment/OPERATIONAL_MATURITY_PHASE.md](deployment/OPERATIONAL_MATURITY_PHASE.md) | Current operational phase |
 
-Все production-решения синхронизируются **только** через эти три документа.
+Все production-решения синхронизируются **только** через эти документы.
 
 ---
 
@@ -54,6 +56,7 @@ Production **operational**. Runtime стабилен = **infrastructure foundati
 | Platform canon | `15ee2680` | ACTIVE |
 | Operational maturity pack | `1858292d` | ACTIVE |
 | Operational Maturity Phase | `258c4df5` | ACTIVE |
+| Platform state canon | `23ab28ee` / `1ad1427c` | ACTIVE |
 
 ---
 
@@ -72,7 +75,7 @@ Production **operational**. Runtime стабилен = **infrastructure foundati
 
 ## Post-deploy (обязательно)
 
-Deploy **незавершён**, пока не выполнено:
+Deploy **governance-incomplete** / незавершён, пока не выполнено:
 
 1. Строка в [PRODUCTION_AUDIT_LOG.md](ops/PRODUCTION_AUDIT_LOG.md)  
 2. Release note в [releases/](releases/)  
@@ -81,15 +84,17 @@ Deploy **незавершён**, пока не выполнено:
 
 ---
 
-## Operational maturity артефакты
+## Operational maturity артефакты (обязательные)
+
+Часть **production governance**, не optional documentation.
 
 | Артефакт | Путь | Назначение |
 |----------|------|------------|
-| Ownership matrix | [ops/OWNERSHIP_MATRIX.md](ops/OWNERSHIP_MATRIX.md) | Zone owners |
+| Ownership matrix | [ops/OWNERSHIP_MATRIX.md](ops/OWNERSHIP_MATRIX.md) | Zone owners — **заполнить имена** |
+| Release notes registry | [releases/](releases/) | Каждый prod deploy |
+| Environment policy | [deployment/ENVIRONMENT_POLICY.md](deployment/ENVIRONMENT_POLICY.md) | local / staging / prod |
 | Severity escalation | [ops/SEVERITY_ESCALATION_MATRIX.md](ops/SEVERITY_ESCALATION_MATRIX.md) | SEV → action |
 | Production audit log | [ops/PRODUCTION_AUDIT_LOG.md](ops/PRODUCTION_AUDIT_LOG.md) | Deploy history |
-| Environment policy | [deployment/ENVIRONMENT_POLICY.md](deployment/ENVIRONMENT_POLICY.md) | local / staging / prod |
-| Release notes registry | [releases/](releases/) | Audit trail, onboarding |
 
 ---
 

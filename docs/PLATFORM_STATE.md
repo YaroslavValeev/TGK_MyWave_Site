@@ -1,11 +1,12 @@
 # MyWaveWake — Platform State (canonical snapshot)
 
 **Production:** https://mywavewake.ru  
-**Модель:** formal production-governed platform · operational maturity governance  
-**Governance index:** [PRODUCTION_GOVERNANCE.md](PRODUCTION_GOVERNANCE.md)  
-**Phase:** [deployment/OPERATIONAL_MATURITY_PHASE.md](deployment/OPERATIONAL_MATURITY_PHASE.md)
+**Модель:** formal production-governed platform · operational maturity governance
 
-> Главный актив проекта — **operational governance discipline**. Её необходимо сохранять.
+> **Этот документ — canonical operational snapshot платформы.**  
+> Главный актив — **operational governance discipline**. Её необходимо сохранять.
+
+Фиксирует: production status · governance entrypoint · runtime freeze · four-layer model · release discipline · post-deploy policy · maturity artifacts · severity governance · P1/P2 · exit criteria.
 
 ---
 
@@ -98,7 +99,7 @@ Flask bootstrap · Gunicorn wiring · SQLAlchemy init · Redis architecture · S
 
 ## Post-deploy policy
 
-Deploy **НЕЗАВЕРШЁН**, пока нет:
+Deploy **governance-incomplete** / НЕЗАВЕРШЁН, пока нет:
 
 | # | Требование |
 |---|------------|
@@ -109,7 +110,9 @@ Deploy **НЕЗАВЕРШЁН**, пока нет:
 
 ---
 
-## Operational maturity artifacts
+## Operational maturity artifacts (обязательные)
+
+Часть production governance, **не** optional documentation.
 
 | # | Артефакт | Путь |
 |---|----------|------|
@@ -129,6 +132,8 @@ Deploy **НЕЗАВЕРШЁН**, пока нет:
 | SEV-2 | deploy freeze |
 | SEV-3 | monitored degradation |
 | SEV-4 | backlog |
+
+Rollback обязателен при: health unhealthy · booking failure · restart loops · массовых 5xx · smoke FAIL.
 
 Детали: [SEVERITY_ESCALATION_MATRIX.md](ops/SEVERITY_ESCALATION_MATRIX.md) · [PRODUCTION_INCIDENT_POLICY.md](ops/PRODUCTION_INCIDENT_POLICY.md)
 
@@ -150,6 +155,14 @@ Deploy **НЕЗАВЕРШЁН**, пока нет:
 - CI/CD discipline  
 
 **До stabilization exit:** никаких runtime refactor.
+
+### Следующие практические шаги
+
+1. Заполнить ownership names в [OWNERSHIP_MATRIX.md](ops/OWNERSHIP_MATRIX.md)  
+2. Выполнить [MOBILE_QA_MATRIX.md](qa/MOBILE_QA_MATRIX.md)  
+3. Завершить P2 hardening на сервере  
+4. Вести audit log после каждого deploy  
+5. Release notes на каждый production deploy  
 
 ---
 
@@ -184,4 +197,4 @@ Deploy **НЕЗАВЕРШЁН**, пока нет:
 | Frontend/docs | `48dc9c64` | ACTIVE |
 | Operational maturity pack | `1858292d` | ACTIVE |
 | Operational Maturity Phase | `258c4df5` | ACTIVE |
-| Platform state canon | `23ab28ee` | ACTIVE |
+| Platform state canon | `1ad1427c` | ACTIVE |

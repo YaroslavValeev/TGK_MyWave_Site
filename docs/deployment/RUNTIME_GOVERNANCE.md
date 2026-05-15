@@ -2,6 +2,7 @@
 
 **Фаза:** Formal Runtime Governance  
 **Production:** https://mywavewake.ru  
+**Snapshot:** [PLATFORM_STATE.md](../PLATFORM_STATE.md)  
 **Governance index:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)  
 **Operational scope:** [STABILIZATION_QA_PHASE.md](STABILIZATION_QA_PHASE.md)
 

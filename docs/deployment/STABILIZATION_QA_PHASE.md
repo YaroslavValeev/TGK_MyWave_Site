@@ -2,8 +2,10 @@
 
 **Платформа:** formal production-governed · operational maturity  
 **Фаза:** [Operational Maturity Phase](OPERATIONAL_MATURITY_PHASE.md) (stabilization execution продолжается)  
-**Governance entrypoint:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)  
+**Snapshot:** [PLATFORM_STATE.md](../PLATFORM_STATE.md)  
+**Governance index:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)  
 **Runtime rules:** [RUNTIME_GOVERNANCE.md](RUNTIME_GOVERNANCE.md)  
+**Phase:** [OPERATIONAL_MATURITY_PHASE.md](OPERATIONAL_MATURITY_PHASE.md)  
 **Дата фиксации:** 2026-05  
 **Production:** https://mywavewake.ru  
 **Статус:** production operational, runtime = infrastructure foundation.
