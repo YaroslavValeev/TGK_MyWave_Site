@@ -46,13 +46,15 @@
 
 ---
 
-## Имена (заполнить)
+## Имена (заполнить) — **следующий практический шаг фазы**
+
+> Operational Maturity Phase не считается полностью активированной, пока таблица ниже не заполнена владельцем проекта.
 
 | Role | Имя / контакт | Дата назначения |
 |------|---------------|-----------------|
-| backend lead | | |
-| frontend lead | | |
-| parser / content | | |
-| ops | | |
-| release manager | | |
-| project owner | | |
+| backend lead | _TBD_ | |
+| frontend lead | _TBD_ | |
+| parser / content | _TBD_ | |
+| ops | _TBD_ | |
+| release manager | _TBD_ | |
+| project owner | _TBD_ | |

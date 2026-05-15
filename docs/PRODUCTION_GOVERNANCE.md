@@ -2,10 +2,11 @@
 
 **Платформа:** formal production-governed platform  
 **Модель:** runtime governance · release discipline · stabilization execution · **operational maturity**  
-**Фаза:** Formal Runtime Governance + Stabilization → Operational Maturity  
+**Фаза:** **Operational Maturity Phase**  
+**Phase doc:** [deployment/OPERATIONAL_MATURITY_PHASE.md](deployment/OPERATIONAL_MATURITY_PHASE.md)  
 **Production:** https://mywavewake.ru
 
-> Главный актив проекта — **governance discipline**. Её необходимо сохранять при всех P1/P2 работах.
+> Главный актив проекта — **operational governance discipline**. Её необходимо сохранять.
 
 ## Каноническая тройка governance
 
@@ -52,10 +53,22 @@ Production **operational**. Runtime стабилен = **infrastructure foundati
 | Formal runtime governance | `30f991da` | ACTIVE |
 | Phase transition canon | `56b98c49` | ACTIVE |
 | Platform canon | `15ee2680` | ACTIVE |
+| Operational maturity pack | `1858292d` | ACTIVE |
 
 ---
 
-## Operational maturity (P2 governance)
+## Post-deploy (обязательно)
+
+Deploy **незавершён**, пока не выполнено:
+
+1. Строка в [PRODUCTION_AUDIT_LOG.md](ops/PRODUCTION_AUDIT_LOG.md)  
+2. Release note в [releases/](releases/)  
+3. `production_smoke.sh` → PASS  
+4. Mobile QA (если `frontend`) → [MOBILE_QA_MATRIX.md](qa/MOBILE_QA_MATRIX.md)  
+
+---
+
+## Operational maturity артефакты
 
 | Артефакт | Путь | Назначение |
 |----------|------|------------|

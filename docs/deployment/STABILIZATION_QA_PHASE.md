@@ -1,7 +1,7 @@
 # Production Stabilization + QA Discipline
 
-**Платформа:** formal production-governed · stabilization execution model  
-**Фаза:** Formal Runtime Governance + Stabilization  
+**Платформа:** formal production-governed · operational maturity  
+**Фаза:** [Operational Maturity Phase](OPERATIONAL_MATURITY_PHASE.md) (stabilization execution продолжается)  
 **Governance entrypoint:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)  
 **Runtime rules:** [RUNTIME_GOVERNANCE.md](RUNTIME_GOVERNANCE.md)  
 **Дата фиксации:** 2026-05  
