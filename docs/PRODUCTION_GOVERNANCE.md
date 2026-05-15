@@ -1,9 +1,11 @@
 # MyWaveWake — Production Governance
 
 **Платформа:** formal production-governed platform  
-**Модель:** runtime governance · release discipline · stabilization execution  
-**Фаза:** Formal Runtime Governance + Stabilization  
+**Модель:** runtime governance · release discipline · stabilization execution · **operational maturity**  
+**Фаза:** Formal Runtime Governance + Stabilization → Operational Maturity  
 **Production:** https://mywavewake.ru
+
+> Главный актив проекта — **governance discipline**. Её необходимо сохранять при всех P1/P2 работах.
 
 ## Каноническая тройка governance
 
@@ -49,6 +51,19 @@ Production **operational**. Runtime стабилен = **infrastructure foundati
 | Governance index | `4d1ded82` | ACTIVE |
 | Formal runtime governance | `30f991da` | ACTIVE |
 | Phase transition canon | `56b98c49` | ACTIVE |
+| Platform canon | `15ee2680` | ACTIVE |
+
+---
+
+## Operational maturity (P2 governance)
+
+| Артефакт | Путь | Назначение |
+|----------|------|------------|
+| Ownership matrix | [ops/OWNERSHIP_MATRIX.md](ops/OWNERSHIP_MATRIX.md) | Zone owners |
+| Severity escalation | [ops/SEVERITY_ESCALATION_MATRIX.md](ops/SEVERITY_ESCALATION_MATRIX.md) | SEV → action |
+| Production audit log | [ops/PRODUCTION_AUDIT_LOG.md](ops/PRODUCTION_AUDIT_LOG.md) | Deploy history |
+| Environment policy | [deployment/ENVIRONMENT_POLICY.md](deployment/ENVIRONMENT_POLICY.md) | local / staging / prod |
+| Release notes registry | [releases/](releases/) | Audit trail, onboarding |
 
 ---
 
@@ -175,6 +190,11 @@ Gate: [RELEASE_GATE_CHECKLIST.md](deployment/RELEASE_GATE_CHECKLIST.md)
 |----------|------|
 | UX scope | [FRONTEND_POLISH_PHASE.md](deployment/FRONTEND_POLISH_PHASE.md) |
 | Incidents | [PRODUCTION_INCIDENT_POLICY.md](ops/PRODUCTION_INCIDENT_POLICY.md) |
+| Severity matrix | [SEVERITY_ESCALATION_MATRIX.md](ops/SEVERITY_ESCALATION_MATRIX.md) |
+| Ownership | [OWNERSHIP_MATRIX.md](ops/OWNERSHIP_MATRIX.md) |
+| Environments | [ENVIRONMENT_POLICY.md](deployment/ENVIRONMENT_POLICY.md) |
+| Audit log | [PRODUCTION_AUDIT_LOG.md](ops/PRODUCTION_AUDIT_LOG.md) |
+| Releases | [releases/README.md](releases/README.md) |
 | Server ops | [TIMEWEB_PRODUCTION_RUNBOOK.md](deployment/TIMEWEB_PRODUCTION_RUNBOOK.md) |
 | Rollback | [POST_DEPLOY_ROLLBACK.md](deployment/POST_DEPLOY_ROLLBACK.md) |
 

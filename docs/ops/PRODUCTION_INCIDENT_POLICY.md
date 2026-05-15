@@ -19,6 +19,8 @@
 
 ---
 
+**Escalation matrix:** [SEVERITY_ESCALATION_MATRIX.md](SEVERITY_ESCALATION_MATRIX.md)
+
 ## Severity levels
 
 | Level | Название | Примеры | SLA реакции | Действие |

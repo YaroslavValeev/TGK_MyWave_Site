@@ -326,3 +326,12 @@ Placeholder webp → финальные иллюстрации, art direction, o
 | `4d1ded82` | Governance index + release taxonomy canon |
 | `30f991da` | Formal runtime governance canon |
 | `56b98c49` | Phase transition canon |
+| `15ee2680` | Platform canon + execution model |
+
+### Operational maturity (P2 governance)
+
+- [OWNERSHIP_MATRIX.md](../ops/OWNERSHIP_MATRIX.md)  
+- [SEVERITY_ESCALATION_MATRIX.md](../ops/SEVERITY_ESCALATION_MATRIX.md)  
+- [PRODUCTION_AUDIT_LOG.md](../ops/PRODUCTION_AUDIT_LOG.md)  
+- [ENVIRONMENT_POLICY.md](ENVIRONMENT_POLICY.md)  
+- [releases/](../releases/)  
