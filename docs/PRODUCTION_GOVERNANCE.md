@@ -1,9 +1,8 @@
 # MyWaveWake — Production Governance
 
-**Платформа:** formal production-governed platform  
-**Модель:** runtime governance · release discipline · stabilization execution · **operational maturity**  
-**Фаза:** **Operational Maturity Phase**  
-**Phase doc:** [deployment/OPERATIONAL_MATURITY_PHASE.md](deployment/OPERATIONAL_MATURITY_PHASE.md)  
+**Платформа:** formal production-governed platform · operational maturity governance  
+**Snapshot:** [PLATFORM_STATE.md](PLATFORM_STATE.md) (одностраничный канон состояния)  
+**Фаза:** [Operational Maturity Phase](deployment/OPERATIONAL_MATURITY_PHASE.md)  
 **Production:** https://mywavewake.ru
 
 > Главный актив проекта — **operational governance discipline**. Её необходимо сохранять.
@@ -54,6 +53,20 @@ Production **operational**. Runtime стабилен = **infrastructure foundati
 | Phase transition canon | `56b98c49` | ACTIVE |
 | Platform canon | `15ee2680` | ACTIVE |
 | Operational maturity pack | `1858292d` | ACTIVE |
+| Operational Maturity Phase | `258c4df5` | ACTIVE |
+
+---
+
+## Severity governance
+
+| Severity | Action |
+|----------|--------|
+| SEV-1 | immediate rollback |
+| SEV-2 | deploy freeze |
+| SEV-3 | monitored degradation |
+| SEV-4 | backlog |
+
+См. [SEVERITY_ESCALATION_MATRIX.md](ops/SEVERITY_ESCALATION_MATRIX.md)
 
 ---
 

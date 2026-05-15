@@ -2,7 +2,8 @@
 
 **Production:** https://mywavewake.ru  
 **Дата входа в фазу:** 2026-05  
-**Governance index:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)
+**Governance index:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)  
+**Platform snapshot:** [PLATFORM_STATE.md](../PLATFORM_STATE.md)
 
 Проект перешёл из **Formal Runtime Governance + Stabilization** в фазу **Operational Maturity**: расширенный operational control при сохранении frozen runtime и stabilization execution.
 
