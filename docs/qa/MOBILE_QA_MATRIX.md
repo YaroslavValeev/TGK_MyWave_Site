@@ -127,7 +127,7 @@ Gate: [RELEASE_GATE_CHECKLIST.md](../deployment/RELEASE_GATE_CHECKLIST.md)
 
 | Дата | Commit | Tester | Summary |
 |------|--------|--------|---------|
-| 2026-05-15 | `48dc9c64` | pending | Run created — [MOBILE_QA_RUN_2026-05-15.md](MOBILE_QA_RUN_2026-05-15.md); device PASS/FAIL not yet recorded |
+| 2026-05-15 | `48dc9c64` | agent+owner | Automated pre-check PASS; prod HTML still `?v=2` — [MOBILE_QA_AUTOMATED_PRECHECK_2026-05-15.md](MOBILE_QA_AUTOMATED_PRECHECK_2026-05-15.md); device QA PENDING |
 
 ## Overall sign-off (2026-05-15)
 

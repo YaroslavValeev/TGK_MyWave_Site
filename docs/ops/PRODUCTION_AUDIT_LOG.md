@@ -29,6 +29,7 @@
 | 2026-05-15 | Ownership matrix filled + Mobile QA run pack | ops | `0d07eee7` | INTEGRATED | ownership filled; QA PENDING devices |
 | 2026-05-15 | Operational pack refs sync | ops | `544f518a` | PASS | governance stack synced |
 | 2026-05-15 | Engineering maturity roadmap canon | ops | `af153b05` | PASS | phased execution integrated |
+| 2026-05-15 | Mobile QA automated pre-check | ops | pending | PARTIAL | smoke PASS; prod mobile-home v=2 not v=3 |
 | | | | | | |
 
 ---

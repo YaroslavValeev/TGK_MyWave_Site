@@ -176,7 +176,7 @@ Gunicorn/runtime **не** перезапускать без runtime-release.
 
 | Phase | Focus | Status |
 |-------|-------|--------|
-| 1 | Real Mobile QA execution | **IN PROGRESS — BLOCKER** |
+| 1 | Real Mobile QA execution | **IN PROGRESS — BLOCKER** (pre-check OK; prod `?v=2` → deploy `?v=3`; device QA pending) |
 | 2 | P1 visual polish | pending (after QA) |
 | 3 | P2 hardening | pending |
 | 4 | Operational maturity | partial |

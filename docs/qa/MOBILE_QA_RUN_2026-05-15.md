@@ -5,9 +5,24 @@
 **Runtime baseline:** `3de56f8c` FROZEN  
 **Frontend baseline:** `48dc9c64`  
 **Canonical matrix:** [MOBILE_QA_MATRIX.md](MOBILE_QA_MATRIX.md)  
-**Status:** **PENDING — требуется реальный прогон на устройствах**
+**Status:** **PENDING device run** · automated pre-check: [MOBILE_QA_AUTOMATED_PRECHECK_2026-05-15.md](MOBILE_QA_AUTOMATED_PRECHECK_2026-05-15.md)
 
 > Frontend deploy **governance-incomplete** без PASS в матрице + screenshots + smoke.
+
+---
+
+## Automated pre-check (2026-05-15, remote)
+
+| Check | Result |
+|-------|--------|
+| `production_smoke.sh` | **PASS** |
+| Key pages HTTP 200 | **PASS** |
+| `mobile-home.css` static | **PASS** |
+| Home HTML `?v=3` | **FAIL** — prod shows `?v=2`, need frontend deploy |
+
+**Action:** `git pull` + reload Gunicorn → verify `?v=3` in HTML → then manual device QA.
+
+Script: `bash scripts/qa_mobile_precheck.sh`
 
 ---
 
@@ -110,7 +125,8 @@ Screenshots: `docs/qa/screenshots/2026-05-15/`
 | Typography readable | PENDING |
 | Chat vs CTA | PENDING |
 | Booking modal | PENDING |
-| Blog HTTP 200 | PENDING |
+| Blog HTTP 200 | **PASS** (automated) |
+| Home HTML mobile-home v=3 | **FAIL** (prod v=2) |
 
 ---
 
