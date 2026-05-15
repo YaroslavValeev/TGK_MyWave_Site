@@ -56,7 +56,9 @@
 
 **Ложный FAIL устранён:** скрипт без `--compressed` не декодировал gzip; ручной `curl | grep` работал корректно.
 
-На сервере: `git pull` → `bash scripts/qa_mobile_precheck.sh` → `PRECHECK OK` (без WARN `html_mobile_home_version` после `f3a5256b`).
+**FAIL «mobile-home.css not in home HTML» при OK static:** HTML от Gunicorn без ссылки (старые workers/шаблоны). Статика с диска уже `?v=3`. Лечение: `git pull` → проверить `templates/base.html` → **`sudo systemctl restart mywave-site`** → precheck снова.
+
+На сервере: `git pull` → `bash scripts/qa_mobile_precheck.sh` → `PRECHECK OK`.
 
 ---
 
