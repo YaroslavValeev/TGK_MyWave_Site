@@ -10,6 +10,12 @@
 - Canonical домен: `mywavewake.ru`
 - `www.mywavewake.ru` должен редиректить на `https://mywavewake.ru`
 
+## Production runtime baseline (заморожен)
+
+**Backend baseline commit:** `3de56f8c` — не менять runtime без issue + rollback + smoke.
+
+Текущая фаза: **frontend polish + hardening + observability**. См. [FRONTEND_POLISH_PHASE.md](FRONTEND_POLISH_PHASE.md).
+
 ## Release preflight
 
 В репозитории:

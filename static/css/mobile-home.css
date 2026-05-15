@@ -1,13 +1,51 @@
 /**
- * Mobile layout fixes — главная, карусели, контакты, отзывы, чат.
- * Подключается после style.css и services-carousel.css.
+ * Mobile layout — главная, карусели, контакты, отзывы, чат.
+ * Frontend-only. Не трогает backend/runtime.
  */
 
 @media (max-width: 768px) {
-  /* --- Hero: убрать лишнюю высоту и отрицательные отступы --- */
+  :root {
+    --mw-section-pad-x: max(1rem, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+    --mw-card-width: min(92vw, 380px);
+    --mw-carousel-gap: 14px;
+    --mw-chat-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  main {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+    overflow-x: hidden;
+  }
+
+  /* --- Секции: меньше вертикальных «дыр» --- */
+  .features {
+    padding: 1.25rem var(--mw-section-pad-x);
+  }
+
+  .services-section,
+  .store-section,
+  .projects-section,
+  .blog-section,
+  .reviews-section {
+    margin: 1.25rem auto !important;
+    padding: 0.75rem var(--mw-section-pad-x) !important;
+    max-width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .services-section h2,
+  .store-section h2,
+  .projects-section h2,
+  .blog-section h2,
+  .reviews-section h2 {
+    font-size: clamp(1.35rem, 5vw, 1.65rem);
+    margin-bottom: 0.75rem;
+    padding: 0 0.25rem;
+  }
+
+  /* --- Hero --- */
   .hero-section {
-    min-height: clamp(300px, 50vh, 420px);
-    max-height: none;
+    min-height: clamp(280px, 48vh, 400px);
     padding-top: 0;
     align-items: flex-end;
     justify-content: center;
@@ -17,37 +55,38 @@
   .hero-section .hero-content.center-padding,
   .hero-section .hero-content-relative {
     margin-top: 0 !important;
-    padding: 1rem 1rem 1.25rem !important;
+    padding: 0.85rem var(--mw-section-pad-x) 1.1rem !important;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
   }
 
   .hero-title {
-    font-size: clamp(1.75rem, 8vw, 2.25rem) !important;
-    line-height: 1.1 !important;
+    font-size: clamp(1.65rem, 7.5vw, 2.1rem) !important;
+    line-height: 1.08 !important;
+    margin-bottom: 0.5rem !important;
   }
 
   .hero-subtitle {
-    font-size: 1rem !important;
+    font-size: 0.95rem !important;
+    line-height: 1.35 !important;
     max-width: 100% !important;
-    margin-bottom: 1rem !important;
+    margin-bottom: 0.85rem !important;
   }
 
   .hero-section .btn-primary {
     width: 100%;
-    max-width: 320px;
+    max-width: 20rem;
+    min-height: 44px;
   }
 
-  /* --- Карусели: без обрезки, свайп, стрелки не перекрывают карточки --- */
+  /* --- Карусели: шире карточки, snap, без desktop-стрелок --- */
   .services-carousel,
   .products-carousel,
   .projects-carousel {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
-    margin: 0.75em 0;
-    padding: 0 0.25rem;
+    display: block;
+    margin: 0.5rem 0 0;
+    padding: 0;
   }
 
   .services-carousel > .carousel-prev,
@@ -56,207 +95,270 @@
   .products-carousel > .carousel-next,
   .projects-carousel > .carousel-prev,
   .projects-carousel > .carousel-next {
-    display: none;
+    display: none !important;
   }
 
   .services-carousel .carousel-track,
   .products-carousel .carousel-track,
   .projects-carousel .carousel-track {
+    display: flex;
     width: 100%;
     max-width: 100%;
-    padding: 0.25rem 0.5rem 0.75rem;
-    gap: 12px;
+    margin: 0;
+    padding: 0.25rem calc((100vw - var(--mw-card-width)) / 2) 0.85rem;
+    gap: var(--mw-carousel-gap);
     scroll-snap-type: x mandatory;
+    scroll-padding-inline: calc((100vw - var(--mw-card-width)) / 2);
     -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
   .services-carousel .service-card,
   .products-carousel .product-card,
   .projects-carousel .project-card {
-    flex: 0 0 calc(100vw - 2.5rem);
-    min-width: calc(100vw - 2.5rem);
-    max-width: calc(100vw - 2.5rem);
+    flex: 0 0 var(--mw-card-width) !important;
+    min-width: var(--mw-card-width) !important;
+    max-width: var(--mw-card-width) !important;
+    width: var(--mw-card-width) !important;
     scroll-snap-align: center;
+    scroll-snap-stop: always;
     box-sizing: border-box;
     overflow: hidden;
+    padding: 0.75rem 0.85rem 1rem;
   }
 
   .services-carousel .service-card h4,
   .products-carousel .product-card h4,
-  .projects-carousel .project-card h4,
+  .projects-carousel .project-card h4 {
+    font-size: 1.05rem;
+    line-height: 1.25;
+    margin: 0.5rem 0 0.35rem;
+  }
+
   .services-carousel .service-card p,
   .products-carousel .product-card p,
-  .projects-carousel .project-card p {
+  .projects-carousel .project-card p,
+  .service-description--short {
+    font-size: 0.9rem;
+    line-height: 1.4;
     max-width: 100%;
     overflow-wrap: anywhere;
     word-break: break-word;
   }
 
-  .project-card--wake-challenge {
-    min-width: calc(100vw - 2.5rem) !important;
-    max-width: calc(100vw - 2.5rem) !important;
+  .services-carousel .service-card .btn-secondary,
+  .products-carousel .product-card .btn-secondary,
+  .projects-carousel .project-card .btn-secondary,
+  .services-carousel .service-card .btn-book {
+    width: 100%;
+    min-height: 44px;
+    margin-top: 0.5rem;
+    box-sizing: border-box;
   }
 
-  .services-section,
-  .store-section,
-  .projects-section,
-  .blog-section {
-    margin: 1.5em auto;
-    padding: 0.75rem 0.5rem;
-    max-width: 100%;
-    overflow: hidden;
+  .project-card--wake-challenge,
+  .project-card--ruza-camp,
+  .project-card--wakesurf-safari,
+  .project-card--checklist {
+    min-width: var(--mw-card-width) !important;
+    max-width: var(--mw-card-width) !important;
   }
 
-  /* --- Отзывы: фото и читаемая карточка --- */
-  .reviews-section {
-    padding: 0 0.5rem;
-    overflow: hidden;
-  }
-
+  /* --- Отзывы --- */
   .reviews-slider {
-    padding: 0.5rem;
-    gap: 12px;
+    display: flex;
+    overflow-x: auto;
+    gap: var(--mw-carousel-gap);
+    padding: 0.35rem calc((100vw - var(--mw-card-width)) / 2) 0.5rem;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: calc((100vw - var(--mw-card-width)) / 2);
+    -webkit-overflow-scrolling: touch;
   }
 
   .review {
-    flex: 0 0 min(100%, calc(100vw - 2rem));
+    flex: 0 0 var(--mw-card-width);
+    max-width: var(--mw-card-width);
     min-width: 0;
-    max-width: calc(100vw - 2rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.1rem 1rem;
     box-sizing: border-box;
+    scroll-snap-align: center;
   }
 
   .review img {
     display: block;
-    width: 64px;
-    height: 64px;
-    min-width: 64px;
-    min-height: 64px;
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+    min-height: 72px;
     flex-shrink: 0;
     object-fit: cover;
+    object-position: center top;
     border-radius: 50%;
+    margin: 0 auto 0.65rem;
     background: #e8ecef;
+    border: 2px solid rgba(0, 188, 212, 0.25);
   }
 
-  /* --- Контакты: колонка без наложений --- */
+  .review p {
+    font-size: 0.92rem;
+    line-height: 1.45;
+    margin: 0 0 0.5rem;
+  }
+
+  .review strong {
+    font-size: 0.95rem;
+  }
+
+  /* --- Контакты --- */
   .contacts-section {
-    padding: 1.5rem 1rem 2rem;
-    margin: 1.5rem auto 0;
+    padding: 1.25rem var(--mw-section-pad-x) calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    margin: 1.25rem auto 0 !important;
     max-width: 100%;
     box-sizing: border-box;
   }
 
   .contacts-section h2 {
-    font-size: 1.5rem;
-    margin-bottom: 1.25rem;
-    line-height: 1.2;
+    font-size: 1.45rem;
+    margin-bottom: 1rem;
+    line-height: 1.15;
+    text-align: center;
   }
 
   .contact-info {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 1.25rem;
-    max-width: 100%;
+    gap: 1rem;
     width: 100%;
+    max-width: 100%;
   }
 
-  .contact-details,
-  .contact {
+  .contact-details {
+    order: 1;
     width: 100%;
-    max-width: 100%;
     height: auto !important;
     min-height: 0 !important;
     flex: none;
-    align-items: flex-start;
-    padding: 1.25rem;
+    padding: 1rem 1.1rem;
     box-sizing: border-box;
+  }
+
+  .contact {
+    order: 2;
+    width: 100%;
+    height: auto !important;
+    min-height: 0 !important;
+    flex: none;
+    padding: 1rem 1.1rem 1.15rem;
+    margin: 0;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1;
+  }
+
+  .contact h3 {
+    font-size: 1.15rem;
+    margin: 0 0 0.85rem;
+    width: 100%;
+    line-height: 1.2;
   }
 
   .contact-phone,
   .contact-social {
-    font-size: 1rem;
+    font-size: 0.95rem;
     line-height: 1.45;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.65rem;
     width: 100%;
+    word-break: break-word;
   }
 
   .social-links {
     flex-wrap: wrap;
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-
-  .contact h3 {
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-    width: 100%;
+    justify-content: flex-start;
+    gap: 0.85rem;
+    margin-top: 0.75rem;
   }
 
   .input-group {
     width: 100%;
-    margin-bottom: 1rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .input-group label {
+    font-size: 0.9rem;
   }
 
   .input-group input {
-    max-width: 100%;
+    width: 100%;
+    min-height: 44px;
+    font-size: 16px;
     box-sizing: border-box;
   }
 
-  /* Нижняя CTA не под чатом */
+  .contact .btn-primary {
+    width: 100%;
+    min-height: 44px;
+  }
+
   .chat-margin {
     display: block;
     width: calc(100% - 2rem);
-    max-width: 320px;
-    margin: 1.5rem auto calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    max-width: 20rem;
+    margin: 1.25rem auto calc(5.75rem + env(safe-area-inset-bottom, 0px));
     text-align: center;
+    min-height: 44px;
+    line-height: 44px;
     box-sizing: border-box;
   }
 
-  /* --- Плавающий чат: выше CTA и safe-area --- */
-  main {
-    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
-  }
-
+  /* --- Чат --- */
   .floating-chat {
-    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    bottom: var(--mw-chat-bottom);
     right: max(0.75rem, env(safe-area-inset-right, 0px));
-    z-index: 900;
+    z-index: 850;
   }
 
   .chat-toggle {
     width: 52px;
     height: 52px;
     font-size: 20px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
   }
 
   .chat-widget:not(.hidden) {
-    bottom: calc(4.25rem + env(safe-area-inset-bottom, 0px));
-    right: 0;
+    bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
     left: 0;
+    right: 0;
     width: 100%;
-    max-height: min(70vh, 520px);
-    height: auto;
-    border-radius: 12px 12px 0 0;
+    max-height: min(72vh, 540px);
+    border-radius: 14px 14px 0 0;
   }
 
   #step-indicator {
-    bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+    bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
 @media (max-width: 480px) {
+  :root {
+    --mw-card-width: min(94vw, 360px);
+  }
+
   .hero-section {
-    min-height: clamp(280px, 46vh, 380px);
+    min-height: clamp(260px, 44vh, 360px);
   }
+}
 
-  .features .feature-list {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .feature-item {
-    width: 100%;
-    max-width: 320px;
+@media (min-width: 769px) and (max-width: 1024px) {
+  .services-carousel .service-card,
+  .products-carousel .product-card,
+  .projects-carousel .project-card {
+    min-width: 300px;
+    max-width: 340px;
   }
 }
