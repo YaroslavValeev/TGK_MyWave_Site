@@ -1,11 +1,13 @@
 # Engineering Maturity Roadmap — MyWaveWake
 
+**Status:** accepted and integrated in platform governance  
+**Canon commit:** `af153b05`  
 **Production:** https://mywavewake.ru  
 **Runtime baseline:** `3de56f8c` (**FROZEN**) — operationally stable  
-**Governance:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md) · [PLATFORM_STATE.md](../PLATFORM_STATE.md)  
-**Phase context:** [OPERATIONAL_MATURITY_PHASE.md](OPERATIONAL_MATURITY_PHASE.md)
 
-После синхронизации governance stack и стабилизации production runtime платформа переходит в **engineering maturity phase**.
+**Integrated in:** [PLATFORM_STATE.md](../PLATFORM_STATE.md) · [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md) · [docs/README.md](../README.md)
+
+После синхронизации governance stack платформа в **engineering maturity phase**.
 
 > Приоритет **не** — новые функции любой ценой.  
 > Приоритет — reproducible deploys, predictable releases, rollback confidence, observability, QA consistency, ownership accountability, operational execution discipline.
@@ -34,19 +36,36 @@
 
 ## Phase 1 — REAL MOBILE QA EXECUTION (текущий BLOCKER)
 
-**Главный приоритет.** Frontend deploy = **governance-incomplete** до закрытия.
+**Главный приоритет платформы.** До завершения: frontend release = **governance-incomplete**.
 
-| Действие | Артефакт |
-|----------|----------|
-| Device-runs A1/A2/I1/T1 | [MOBILE_QA_RUN_2026-05-15.md](../qa/MOBILE_QA_RUN_2026-05-15.md) |
-| PASS/FAIL + screenshots | [MOBILE_QA_MATRIX.md](../qa/MOBILE_QA_MATRIX.md) · `docs/qa/screenshots/2026-05-15/` |
-| Sign-off YES | Ready for release gate |
+### Platforms (обязательно)
 
-**URL:** https://mywavewake.ru — инкогнито, `mobile-home.css?v=3`
+| Platform |
+|----------|
+| Android Chrome |
+| Android Yandex |
+| iPhone Safari |
+| Tablet |
 
-**Критические зоны:** hero · carousel/cards · contacts · chat widget · checklist · reviews · spacing/safe-area · tablet responsiveness
+### Execution checklist
 
-**После QA:** обновить matrix → sign-off → снять frontend governance-incomplete.
+- [ ] инкогнито / private mode  
+- [ ] hard refresh  
+- [ ] `mobile-home.css?v=3` в Network  
+
+### Что проверяем
+
+hero · carousel/cards · contacts · chat widget · checklist · reviews · safe-area · tablet responsiveness · spacing consistency · visual clipping · overlay correctness
+
+### Артефакты
+
+| Действие | Файл |
+|----------|------|
+| Device run | [MOBILE_QA_RUN_2026-05-15.md](../qa/MOBILE_QA_RUN_2026-05-15.md) |
+| Matrix | [MOBILE_QA_MATRIX.md](../qa/MOBILE_QA_MATRIX.md) |
+| Screenshots | `docs/qa/screenshots/2026-05-15/*.png` |
+
+Заменить `PENDING` → `PASS` / `FAIL`. После завершения: **Ready for release gate: YES**.
 
 ---
 
@@ -155,9 +174,20 @@ Gunicorn/runtime **не** перезапускать без runtime-release.
 
 ## Progress tracker
 
-| Phase | Status |
-|-------|--------|
-| 1 — Mobile QA | **IN PROGRESS** (PENDING device run) |
-| 2 — P1 visual polish | blocked |
-| 3 — P2 hardening | pending |
-| 4 — Operational maturity | partial (ownership filled, contacts TBD) |
+| Phase | Focus | Status |
+|-------|-------|--------|
+| 1 | Real Mobile QA execution | **IN PROGRESS — BLOCKER** |
+| 2 | P1 visual polish | pending (after QA) |
+| 3 | P2 hardening | pending |
+| 4 | Operational maturity | partial |
+
+## Критерии зрелости (текущий фокус)
+
+Не количество новых функций, а:
+
+- predictable deploys  
+- rollback confidence  
+- audit traceability  
+- ownership clarity  
+- QA consistency  
+- operational execution discipline  

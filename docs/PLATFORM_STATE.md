@@ -224,3 +224,4 @@ Release note: [releases/2026-05-15-operational-pack-ownership-qa.md](releases/20
 | Platform state canon | `1ad1427c` | ACTIVE |
 | Governance stack canon | `2a8a5256` | ACTIVE |
 | Operational pack | `0d07eee7` / `544f518a` | ACTIVE |
+| Engineering maturity roadmap | `af153b05` | ACTIVE |
