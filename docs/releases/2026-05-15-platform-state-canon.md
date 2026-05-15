@@ -4,7 +4,7 @@
 |-------|-------|
 | Date | 2026-05-15 |
 | Release type | ops |
-| Commit | TBD after merge |
+| Commit | `23ab28ee` |
 | Runtime | `3de56f8c` (unchanged) |
 | Smoke | N/A (docs) |
 

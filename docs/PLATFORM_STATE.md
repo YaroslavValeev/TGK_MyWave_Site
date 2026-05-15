@@ -184,3 +184,4 @@ Deploy **НЕЗАВЕРШЁН**, пока нет:
 | Frontend/docs | `48dc9c64` | ACTIVE |
 | Operational maturity pack | `1858292d` | ACTIVE |
 | Operational Maturity Phase | `258c4df5` | ACTIVE |
+| Platform state canon | `23ab28ee` | ACTIVE |

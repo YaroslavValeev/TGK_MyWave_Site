@@ -23,6 +23,7 @@
 | 2026-05 | Platform canon + execution model | ops | `15ee2680` | PASS | stabilization execution |
 | 2026-05-15 | **Operational Maturity Phase** — maturity artifacts | ops | `1858292d` | PASS | ownership, env, audit log, releases |
 | 2026-05-15 | Operational Maturity Phase charter | ops | `258c4df5` | PASS | phase doc, post-deploy policy |
+| 2026-05-15 | Platform state canonical snapshot | ops | `23ab28ee` | PASS | PLATFORM_STATE.md |
 | | | | | | |
 
 ---
