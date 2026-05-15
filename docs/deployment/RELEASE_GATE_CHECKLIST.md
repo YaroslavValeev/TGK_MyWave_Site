@@ -3,7 +3,15 @@
 **Обязателен перед любым production deploy.**
 
 Фаза: Production Stabilization + QA Discipline  
-Baselines: runtime `3de56f8c` · frontend/docs `48dc9c64`
+**Production:** https://mywavewake.ru  
+
+| Baseline | Commit | Статус |
+|----------|--------|--------|
+| Runtime Foundation | `3de56f8c` | FROZEN |
+| Frontend/docs | `48dc9c64` | ACTIVE |
+| QA/Ops governance | `0a2a0e1a` | ACTIVE |
+
+Release type: см. [RELEASE_TYPES.md](RELEASE_TYPES.md)
 
 ---
 

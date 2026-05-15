@@ -4,7 +4,7 @@
 
 **Дата фиксации:** 2026-05  
 **Production runtime baseline (заморожен):** `3de56f8c9316158aa992cfb7e74f0330eec0171c`  
-**Frontend/docs baseline:** `48dc9c64`
+**Frontend/docs baseline:** `48dc9c64` · **QA/Ops governance:** `0a2a0e1a`
 
 Критическая фаза backend instability **завершена**. Backend operational:
 

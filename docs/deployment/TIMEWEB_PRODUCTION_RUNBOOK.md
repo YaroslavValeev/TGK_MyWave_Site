@@ -12,10 +12,13 @@
 
 ## Production runtime baseline (заморожен)
 
-| Baseline | Commit |
-|----------|--------|
-| Runtime (frozen) | `3de56f8c` |
-| Frontend/docs | `48dc9c64` |
+| Baseline | Commit | Статус |
+|----------|--------|--------|
+| Runtime (frozen) | `3de56f8c` | FROZEN |
+| Frontend/docs | `48dc9c64` | ACTIVE |
+| QA/Ops governance | `0a2a0e1a` | ACTIVE |
+
+**Production:** https://mywavewake.ru · Timeweb Cloud · Ubuntu 22.04 · 2 CPU / 4 GB / 50 GB NVMe
 
 Не менять runtime без issue + rollback + smoke.  
 Фаза: **Production Stabilization + QA Discipline** — [STABILIZATION_QA_PHASE.md](STABILIZATION_QA_PHASE.md).

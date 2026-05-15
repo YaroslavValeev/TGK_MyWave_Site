@@ -1,9 +1,13 @@
 # Production Incident Policy — MyWaveWake
 
 **Фаза:** Production Stabilization + QA Discipline  
-**Runtime baseline (frozen):** `3de56f8c`  
-**Frontend/docs baseline:** `48dc9c64`  
-**Production:** https://mywavewake.ru
+| Baseline | Commit | Статус |
+|----------|--------|--------|
+| Runtime Foundation | `3de56f8c` | FROZEN |
+| Frontend/docs | `48dc9c64` | ACTIVE |
+| QA/Ops governance | `0a2a0e1a` | ACTIVE |
+
+**Production:** https://mywavewake.ru · Governance: [STABILIZATION_QA_PHASE.md](../deployment/STABILIZATION_QA_PHASE.md)
 
 ---
 
