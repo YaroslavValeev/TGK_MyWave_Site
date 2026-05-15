@@ -5,7 +5,9 @@
 **Governance index:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)  
 **Platform snapshot:** [PLATFORM_STATE.md](../PLATFORM_STATE.md)
 
-Проект перешёл из **Formal Runtime Governance + Stabilization** в фазу **Operational Maturity**: расширенный operational control при сохранении frozen runtime и stabilization execution.
+Проект в **Operational Maturity** с переходом к **Engineering Maturity** — см. [ENGINEERING_MATURITY_ROADMAP.md](ENGINEERING_MATURITY_ROADMAP.md).
+
+Приоритет: reproducible deploys · predictable releases · rollback confidence · observability · QA consistency · ownership accountability — **не** новые функции любой ценой.
 
 > Главный актив проекта — **operational governance discipline**, не только runtime. Её необходимо сохранять.
 

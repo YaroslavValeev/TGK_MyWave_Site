@@ -1,7 +1,8 @@
 # MyWaveWake — Platform State
 
 **Production:** https://mywavewake.ru  
-**Модель:** formal production-governed platform · **canonical operational governance model**
+**Модель:** formal production-governed platform · engineering maturity phase  
+**Roadmap:** [deployment/ENGINEERING_MATURITY_ROADMAP.md](deployment/ENGINEERING_MATURITY_ROADMAP.md)
 
 > **Canonical operational snapshot платформы** — главный документ текущего состояния.  
 > **Главный актив платформы:** operational governance discipline (не только runtime).
@@ -145,12 +146,15 @@ Rollback обязателен при: health unhealthy · booking failure · res
 
 ## Stabilization execution (текущая работа)
 
-### P1
+### Текущий приоритет (Phase 1 — BLOCKER)
 
-- Mobile QA matrix  
-- Blog visibility  
+**Real Mobile QA execution** — [ENGINEERING_MATURITY_ROADMAP.md](deployment/ENGINEERING_MATURITY_ROADMAP.md#phase-1--real-mobile-qa-execution-текущий-blocker)
+
+### P1 (после QA)
+
 - Checklist visuals  
 - Reviews/static polish  
+- Blog visibility  
 
 ### P2
 

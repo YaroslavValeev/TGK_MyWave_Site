@@ -6,8 +6,9 @@
 
 | Документ | Когда читать |
 |----------|--------------|
-| **[PLATFORM_STATE.md](PLATFORM_STATE.md)** | Canonical operational snapshot — **всегда первым** |
-| [PRODUCTION_GOVERNANCE.md](PRODUCTION_GOVERNANCE.md) | Governance index, ссылки на артефакты |
+| **[PLATFORM_STATE.md](PLATFORM_STATE.md)** | Canonical snapshot — **всегда первым** |
+| [ENGINEERING_MATURITY_ROADMAP.md](deployment/ENGINEERING_MATURITY_ROADMAP.md) | Текущие фазы 1–4, приоритеты, blockers |
+| [PRODUCTION_GOVERNANCE.md](PRODUCTION_GOVERNANCE.md) | Governance index |
 
 ## Governance stack (5)
 

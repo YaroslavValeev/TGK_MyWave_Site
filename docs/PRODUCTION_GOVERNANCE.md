@@ -3,7 +3,8 @@
 **Роль:** governance index для **canonical operational governance model**  
 **Платформа:** formal production-governed platform  
 **Canonical snapshot:** [PLATFORM_STATE.md](PLATFORM_STATE.md) — **читать первым**  
-**Фаза:** [Operational Maturity Phase](deployment/OPERATIONAL_MATURITY_PHASE.md)  
+**Фаза:** Operational Maturity → **Engineering Maturity**  
+**Phase:** [OPERATIONAL_MATURITY_PHASE.md](deployment/OPERATIONAL_MATURITY_PHASE.md) · **Roadmap:** [ENGINEERING_MATURITY_ROADMAP.md](deployment/ENGINEERING_MATURITY_ROADMAP.md)  
 **Production:** https://mywavewake.ru
 
 > Главный актив платформы — **governance discipline**. Её необходимо сохранять.
