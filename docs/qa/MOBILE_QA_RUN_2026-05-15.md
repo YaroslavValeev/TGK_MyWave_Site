@@ -18,9 +18,9 @@
 | `production_smoke.sh` | **PASS** |
 | Key pages HTTP 200 | **PASS** |
 | `mobile-home.css` static | **PASS** |
-| Home HTML `?v=3` | **FAIL** — prod shows `?v=2`, need frontend deploy |
+| Home HTML `?v=3` | **PASS** — after `systemctl restart mywave-site` |
 
-**Action:** `git pull` + reload Gunicorn → verify `?v=3` in HTML → then manual device QA.
+**Step 0 closed.** Proceed to manual device QA (A1/A2/I1/T1).
 
 Script: `bash scripts/qa_mobile_precheck.sh`
 

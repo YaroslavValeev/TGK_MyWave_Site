@@ -17,25 +17,26 @@
 | Checklist `/projects/checklist-org` | **PASS** | HTTP 200 |
 | `mobile-home.css` (static file) | **PASS** | HTTP 200 with `?v=3` |
 | `checklist.css` | **PASS** | HTTP 200 |
-| Home HTML links `mobile-home.css` | **FAIL** | Production HTML: `?v=2` — repo canon: `?v=3` |
+| Home HTML links `mobile-home.css` | **PASS** (after restart) | `?v=3` confirmed on prod |
+| Home HTML `?v=3` | **PASS** | Step 0 closed 2026-05-15 |
 
 ---
 
-## Blocker для Phase 1 QA
+## Step 0 — CLOSED
 
-На production **ещё не задеплоен** frontend baseline с `templates/base.html` → `mobile-home.css?v=3`.
+После `git pull` + `sudo systemctl restart mywave-site` production отдаёт:
 
-**Рекомендуемое действие (frontend release, не runtime refactor):**
-
-```bash
-cd /var/www/mywave
-git fetch origin && git pull --ff-only origin main
-# убедиться: grep mobile-home templates/base.html  →  ?v=3
-sudo systemctl restart mywave-site   # templates pick-up (reload не в unit)
-curl -sS https://mywavewake.ru/ | grep mobile-home
+```html
+<link rel="stylesheet" href="/static/css/mobile-home.css?v=3" />
 ```
 
-После подтверждения `?v=3` в HTML — выполнить manual device QA.
+**Примечание:** `systemctl reload` не работает для `mywave-site` (нет ExecReload) — нужен **restart**.
+
+Перепроверка: `bash scripts/qa_mobile_precheck.sh` → ожидается `PRECHECK OK`.
+
+---
+
+## Следующий шаг: manual device QA
 
 ---
 
