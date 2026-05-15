@@ -3,8 +3,9 @@
 **Индекс governance:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)  
 **Дата фиксации:** 2026-05  
 **Production:** https://mywavewake.ru  
-**Модель:** production-governed система (runtime · UX · content · ops)  
-**Статус:** Timeweb Cloud deploy успешен; backend operational, runtime стабилен.
+**Модель:** production-governed система с formal runtime governance  
+**Runtime rules:** [RUNTIME_GOVERNANCE.md](RUNTIME_GOVERNANCE.md)  
+**Статус:** production operational, runtime стабилен.
 
 ---
 
@@ -47,8 +48,9 @@
 | **Frontend/docs** | `48dc9c64` | ACTIVE |
 | **QA/Ops governance** | `0a2a0e1a` | ACTIVE |
 | **Production state/docs** | `94fbc211` | ACTIVE |
+| **Governance index** | `4d1ded82` | ACTIVE |
 
-**Runtime Foundation** = production runtime foundation. Любое изменение runtime:
+**Runtime Foundation** = production infrastructure foundation. Любое изменение runtime:
 
 - только через отдельный issue  
 - rollback plan  
@@ -63,6 +65,8 @@
 
 | Документ | Путь | Назначение |
 |----------|------|------------|
+| Governance index | [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md) | Entrypoint |
+| Runtime governance | [RUNTIME_GOVERNANCE.md](RUNTIME_GOVERNANCE.md) | Formal freeze / change control |
 | Stabilization governance | [STABILIZATION_QA_PHASE.md](STABILIZATION_QA_PHASE.md) | Этот документ — фаза, baselines, P1/P2 |
 | UX/mobile scope | [FRONTEND_POLISH_PHASE.md](FRONTEND_POLISH_PHASE.md) | Frontend polish, CSS paths |
 | Mobile QA | [MOBILE_QA_MATRIX.md](../qa/MOBILE_QA_MATRIX.md) | PASS/FAIL matrix |
@@ -316,3 +320,4 @@ Placeholder webp → финальные иллюстрации, art direction, o
 | `48dc9c64` | Frontend/docs — mobile v3, smoke |
 | `0a2a0e1a` | QA/Ops governance artifacts |
 | `94fbc211` | Production state / canonical governance docs |
+| `4d1ded82` | Governance index + release taxonomy canon |

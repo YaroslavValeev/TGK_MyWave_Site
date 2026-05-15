@@ -9,8 +9,9 @@
 | `48dc9c64` | Frontend/docs — mobile v3, smoke, runbooks |
 | `0a2a0e1a` | QA/Ops governance — matrix, incident policy, release gate |
 | `94fbc211` | Production state / canonical governance |
+| `4d1ded82` | Governance index |
 
-Индекс: [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md).  
+Индекс: [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md) · Runtime: [RUNTIME_GOVERNANCE.md](RUNTIME_GOVERNANCE.md).  
 После каждого prod deploy обновляйте PREV в [RELEASE_GATE_CHECKLIST.md](RELEASE_GATE_CHECKLIST.md).
 
 ## Rollback (2–5 минут)

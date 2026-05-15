@@ -11,8 +11,9 @@
 | Frontend/docs | `48dc9c64` | ACTIVE |
 | QA/Ops governance | `0a2a0e1a` | ACTIVE |
 | Production state/docs | `94fbc211` | ACTIVE |
+| Governance index | `4d1ded82` | ACTIVE |
 
-**ОДИН DEPLOY = ОДИН RELEASE TYPE** — см. [RELEASE_TYPES.md](RELEASE_TYPES.md) · индекс [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)
+**ОДИН DEPLOY = ОДИН RELEASE TYPE** — [RELEASE_TYPES.md](RELEASE_TYPES.md) · [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md) · runtime: [RUNTIME_GOVERNANCE.md](RUNTIME_GOVERNANCE.md)
 
 ---
 
