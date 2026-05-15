@@ -44,6 +44,12 @@ git log --oneline -5
 - Telegram webhook/runtime сайта работает внутри Flask-приложения;
 - `mywave-node.service` держим включённым только если нужен путь `/node-chat/*`.
 
+## Google Service Account
+
+См. [GOOGLE_SERVICE_ACCOUNT_SETUP.md](GOOGLE_SERVICE_ACCOUNT_SETUP.md).
+
+Кратко: положить JSON в `/var/www/mywave/instance/service_account.json`, `chmod 600`, выдать SA доступ к Sheet/Calendar/Drive.
+
 ## Env variables
 
 Заполняются только на сервере в `/var/www/mywave/.env`.
@@ -100,6 +106,45 @@ Runtime / optional:
 - `OPENAI_API_KEY` содержит только API key
 - `GPTS_MODEL` / `FALLBACK_MODEL` содержат только имена моделей
 - `.env` и `service_account.json` не хранятся в Git
+
+## Redis (production)
+
+```bash
+sudo apt install -y redis-server
+sudo systemctl enable redis-server
+```
+
+В `.env`:
+
+```env
+REDIS_URL=redis://127.0.0.1:6379/0
+RATELIMIT_STORAGE_URI=redis://127.0.0.1:6379/0
+SOCKETIO_MESSAGE_QUEUE=redis://127.0.0.1:6379/0
+```
+
+## Booking API (канонический endpoint)
+
+```text
+GET /api/calendar/slots/<YYYY-MM-DD>?service=boat|gym|camp|...
+```
+
+Пути `/api/calendar/available_slots/` и `/api/available_slots/` **не используются**.
+
+## Health endpoints
+
+| URL | Назначение |
+|-----|------------|
+| `/health/live` | liveness, всегда `200` |
+| `/health/ready` | readiness, `503` только если БД недоступна |
+| `/health` | `ok` / `degraded` (`200`) / `unhealthy` (`503`) |
+
+Optional (Redis, Sentry, Google SA file) дают `degraded`, но не `503`.
+
+Проверка зависимостей перед деплоем:
+
+```bash
+bash scripts/import_preflight.sh
+```
 
 ## Deploy commands
 
@@ -166,19 +211,22 @@ Rollback checklist:
 1. `https://mywavewake.ru` открывается.
 2. `https://www.mywavewake.ru` редиректит на `https://mywavewake.ru`.
 3. SSL активен, `certbot renew --dry-run` проходит.
-4. `/health` возвращает `200`.
-5. `/metrics` отдаёт метрики.
-6. `https://mywavewake.ru/node-chat/health` отвечает, если Node включён.
-7. Чат открывается на сайте.
-8. Socket.IO не даёт ошибок подключения и reconnect spam.
-9. Запись на тренировку проходит.
-10. Google Sheets обновляется.
-11. Google Calendar создаёт событие без дублей.
-12. Telegram-уведомление приходит.
-13. Media upload возвращает `public_url`, `url`, `cover_image_url`, `image_url` на `https://mywavewake.ru/...`.
-14. Parser получает корректные публичные URL.
-15. В логах нет `500`, `Traceback`, `Permission denied`, `Worker timeout`, repeated restart.
-16. После reboot сервисы поднимаются автоматически.
+4. `/health` возвращает `200` (`ok` или `degraded`).
+5. `/blog` возвращает `200` (даже без постов).
+6. `GET /api/calendar/slots/<date>?service=boat` возвращает `200` (массив, может быть пустым).
+7. `/metrics` отдаёт метрики.
+8. `https://mywavewake.ru/node-chat/health` отвечает, если Node включён.
+9. Чат открывается на сайте.
+10. Socket.IO не даёт ошибок подключения и reconnect spam.
+11. Запись на тренировку проходит.
+12. Google Sheets обновляется.
+13. Google Calendar создаёт событие без дублей.
+14. Telegram-уведомление приходит.
+15. Media upload возвращает `public_url`, `url`, `cover_image_url`, `image_url` на `https://mywavewake.ru/...`.
+16. Parser получает корректные публичные URL.
+17. Фото отзывов и иллюстрации чек-листа без 404 в Network.
+18. В логах нет `500`, `Traceback`, `Permission denied`, `Worker timeout`, repeated restart.
+19. После reboot сервисы поднимаются автоматически.
 
 ## Known limitations
 

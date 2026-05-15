@@ -100,15 +100,18 @@ Cron (пример):
 
 ---
 
-## 8. Секреты
+## 8. Секреты и зависимости
 
 ```bash
 cd /var/www/mywave
 git status
 git check-ignore -v .env
 bash scripts/release_preflight.sh
+bash scripts/import_preflight.sh
 bash scripts/verify_repo_secrets.sh
 ```
+
+Google SA: см. `docs/deployment/GOOGLE_SERVICE_ACCOUNT_SETUP.md`.
 
 **Критерий:** `.env` в `.gitignore`; `.env.example` обновлён; `verify_repo_secrets.sh` = 0; ротация ключей вручную в `.env` и в провайдерах (OpenAI, Telegram, admin).
 
@@ -140,9 +143,30 @@ ab -n 200 -c 10 https://mywavewake.ru/
 
 ---
 
+## 10. UFW / fail2ban (рекомендуется)
+
+```bash
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow 22/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw enable
+sudo ufw status
+```
+
+Fail2ban (пример): `deploy/fail2ban/jail.d/mywave.local`  
+Logrotate: `deploy/logrotate/mywave`
+
+---
+
 ## 12. Критерий 10/10
 
 - [ ] `mywave-site`, `mywave-telegram-bot` после `reboot` — active.
+- [ ] `/health` → `200` (`ok` или `degraded`).
+- [ ] `/blog` → `200`.
+- [ ] `GET /api/calendar/slots/<date>` → `200` (после Google SA).
+- [ ] `bash scripts/import_preflight.sh` проходит.
 - [ ] `mywave-node` active только если `/node-chat/*` реально используется.
 - [ ] Prometheus target UP, Grafana панели обновляются, если extended monitoring включён.
 - [ ] Telegram-алерт по healthcheck.  
@@ -183,3 +207,8 @@ ab -n 200 -c 10 https://mywavewake.ru/
 | `deploy/prometheus/`, `deploy/grafana/provisioning/` |
 | `docs/deployment/PRODUCTION_STACK.md` |
 | `docs/deployment/TIMEWEB_PRODUCTION_RUNBOOK.md` |
+| `docs/deployment/GOOGLE_SERVICE_ACCOUNT_SETUP.md` |
+| `docs/deployment/POST_DEPLOY_ROLLBACK.md` |
+| `scripts/import_preflight.sh` |
+| `deploy/logrotate/mywave` |
+| `deploy/fail2ban/jail.d/mywave.local` |

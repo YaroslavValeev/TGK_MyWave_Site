@@ -15,8 +15,13 @@ URL="${HEALTHCHECK_URL:-https://mywavewake.ru/health}"
 BOT="${ALERT_TELEGRAM_BOT_TOKEN:-${NOTIFICATION_BOT_TOKEN:-}}"
 CHAT="${ALERT_TELEGRAM_CHAT_ID:-${TRAINER_CHAT_ID:-}}"
 
-if ! curl -fsS --max-time 15 "$URL" >/dev/null; then
-  MSG="MyWave: healthcheck failed ${URL}"
+TMP="$(mktemp)"
+trap 'rm -f "$TMP"' EXIT
+HTTP_CODE="$(curl -fsS --max-time 15 -o "$TMP" -w '%{http_code}' "$URL" || echo "000")"
+STATUS="$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('status',''))" "$TMP" 2>/dev/null || echo "")"
+
+if [[ "$HTTP_CODE" != "200" ]] || [[ "$STATUS" == "unhealthy" ]]; then
+  MSG="MyWave: healthcheck failed ${URL} http=${HTTP_CODE} status=${STATUS:-unknown}"
   logger -t mywave-healthcheck "$MSG" || true
   if [[ -n "$BOT" && -n "$CHAT" ]]; then
     curl -fsS -X POST "https://api.telegram.org/bot${BOT}/sendMessage" \

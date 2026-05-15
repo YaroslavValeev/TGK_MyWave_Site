@@ -63,6 +63,7 @@ if os.getenv("DISABLE_TELEGRAM") != "1":
         logging.getLogger(__name__).exception('Failed to import telegram_bp; continuing without telegram support')
 from app.routes.content_calendar import bp as content_bp, get_events_by_month
 from app.routes.health import health_bp
+from app.jinja_filters import register_jinja_filters
 
 # Создаем экземпляры расширений
 migrate = Migrate()
@@ -73,7 +74,8 @@ def create_app(config_name="development"):
     template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates"))
     static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "static"))
     app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
-    
+    register_jinja_filters(app)
+
     # Применяем SSL-патч
     if patch_ssl():
         app.logger.info("SSL patch applied successfully")

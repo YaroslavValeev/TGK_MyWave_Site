@@ -38,3 +38,6 @@ if [[ -n "$STATUS_OUTPUT" ]]; then
 fi
 
 echo "Release preflight OK."
+echo
+echo "Tip: run dependency/import check:"
+echo "  bash scripts/import_preflight.sh"

@@ -1,0 +1,262 @@
+/**
+ * Mobile layout fixes — главная, карусели, контакты, отзывы, чат.
+ * Подключается после style.css и services-carousel.css.
+ */
+
+@media (max-width: 768px) {
+  /* --- Hero: убрать лишнюю высоту и отрицательные отступы --- */
+  .hero-section {
+    min-height: clamp(300px, 50vh, 420px);
+    max-height: none;
+    padding-top: 0;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .hero-section .hero-content,
+  .hero-section .hero-content.center-padding,
+  .hero-section .hero-content-relative {
+    margin-top: 0 !important;
+    padding: 1rem 1rem 1.25rem !important;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .hero-title {
+    font-size: clamp(1.75rem, 8vw, 2.25rem) !important;
+    line-height: 1.1 !important;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem !important;
+    max-width: 100% !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .hero-section .btn-primary {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  /* --- Карусели: без обрезки, свайп, стрелки не перекрывают карточки --- */
+  .services-carousel,
+  .products-carousel,
+  .projects-carousel {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    margin: 0.75em 0;
+    padding: 0 0.25rem;
+  }
+
+  .services-carousel > .carousel-prev,
+  .services-carousel > .carousel-next,
+  .products-carousel > .carousel-prev,
+  .products-carousel > .carousel-next,
+  .projects-carousel > .carousel-prev,
+  .projects-carousel > .carousel-next {
+    display: none;
+  }
+
+  .services-carousel .carousel-track,
+  .products-carousel .carousel-track,
+  .projects-carousel .carousel-track {
+    width: 100%;
+    max-width: 100%;
+    padding: 0.25rem 0.5rem 0.75rem;
+    gap: 12px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .services-carousel .service-card,
+  .products-carousel .product-card,
+  .projects-carousel .project-card {
+    flex: 0 0 calc(100vw - 2.5rem);
+    min-width: calc(100vw - 2.5rem);
+    max-width: calc(100vw - 2.5rem);
+    scroll-snap-align: center;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .services-carousel .service-card h4,
+  .products-carousel .product-card h4,
+  .projects-carousel .project-card h4,
+  .services-carousel .service-card p,
+  .products-carousel .product-card p,
+  .projects-carousel .project-card p {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .project-card--wake-challenge {
+    min-width: calc(100vw - 2.5rem) !important;
+    max-width: calc(100vw - 2.5rem) !important;
+  }
+
+  .services-section,
+  .store-section,
+  .projects-section,
+  .blog-section {
+    margin: 1.5em auto;
+    padding: 0.75rem 0.5rem;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  /* --- Отзывы: фото и читаемая карточка --- */
+  .reviews-section {
+    padding: 0 0.5rem;
+    overflow: hidden;
+  }
+
+  .reviews-slider {
+    padding: 0.5rem;
+    gap: 12px;
+  }
+
+  .review {
+    flex: 0 0 min(100%, calc(100vw - 2rem));
+    min-width: 0;
+    max-width: calc(100vw - 2rem);
+    box-sizing: border-box;
+  }
+
+  .review img {
+    display: block;
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    min-height: 64px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: 50%;
+    background: #e8ecef;
+  }
+
+  /* --- Контакты: колонка без наложений --- */
+  .contacts-section {
+    padding: 1.5rem 1rem 2rem;
+    margin: 1.5rem auto 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .contacts-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.25rem;
+    line-height: 1.2;
+  }
+
+  .contact-info {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.25rem;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .contact-details,
+  .contact {
+    width: 100%;
+    max-width: 100%;
+    height: auto !important;
+    min-height: 0 !important;
+    flex: none;
+    align-items: flex-start;
+    padding: 1.25rem;
+    box-sizing: border-box;
+  }
+
+  .contact-phone,
+  .contact-social {
+    font-size: 1rem;
+    line-height: 1.45;
+    margin-bottom: 0.75rem;
+    width: 100%;
+  }
+
+  .social-links {
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .contact h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    width: 100%;
+  }
+
+  .input-group {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .input-group input {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Нижняя CTA не под чатом */
+  .chat-margin {
+    display: block;
+    width: calc(100% - 2rem);
+    max-width: 320px;
+    margin: 1.5rem auto calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  /* --- Плавающий чат: выше CTA и safe-area --- */
+  main {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .floating-chat {
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    right: max(0.75rem, env(safe-area-inset-right, 0px));
+    z-index: 900;
+  }
+
+  .chat-toggle {
+    width: 52px;
+    height: 52px;
+    font-size: 20px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .chat-widget:not(.hidden) {
+    bottom: calc(4.25rem + env(safe-area-inset-bottom, 0px));
+    right: 0;
+    left: 0;
+    width: 100%;
+    max-height: min(70vh, 520px);
+    height: auto;
+    border-radius: 12px 12px 0 0;
+  }
+
+  #step-indicator {
+    bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    min-height: clamp(280px, 46vh, 380px);
+  }
+
+  .features .feature-list {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .feature-item {
+    width: 100%;
+    max-width: 320px;
+  }
+}

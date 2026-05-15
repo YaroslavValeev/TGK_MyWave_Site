@@ -17,6 +17,14 @@ flask-wtf==1.2.1
 flask-admin==1.6.1
 flask-talisman==1.0.0  # For security headers
 flask-limiter>=4.0  # For rate limiting (WSC, Safari API)
+Flask-Cors>=4.0.0
+flask-restx>=1.3.0
+Flask-Caching>=2.3.0
+marshmallow>=3.20.0
+Pillow>=10.0.0
+tenacity>=8.2.0
+bleach>=6.0.0
+markdown>=3.5.0
 flask_socketio==5.3.6  # For WebSocket
 flask-sqlalchemy==3.1.1
 gunicorn==21.2.0  # Production WSGI server

@@ -19,6 +19,26 @@ calendar_bp = Blueprint('calendar', __name__)
 
 MAX_PER_SLOT = 2  # Максимальное количество записей на один слот
 
+
+def _masked_config_id(key: str) -> str:
+    raw = str(current_app.config.get(key) or "").strip()
+    if not raw:
+        return "unset"
+    if len(raw) <= 8:
+        return "***"
+    return f"{raw[:4]}…{raw[-4:]}"
+
+
+def _log_slots_context(date_str: str, service_type: str | None) -> None:
+    current_app.logger.info(
+        "slots_request date=%s service=%s spreadsheet=%s calendar=%s sa_file=%s",
+        date_str,
+        service_type or "-",
+        _masked_config_id("SPREADSHEET_ID"),
+        _masked_config_id("GOOGLE_CALENDAR_ID"),
+        "present" if os.path.isfile(str(current_app.config.get("GOOGLE_SERVICE_ACCOUNT_FILE") or "")) else "missing",
+    )
+
 # RLock для защиты одновременного доступа к Google Sheets API (eventlet issue)
 # RLock позволяет одному потоку захватить lock несколько раз (переиспользуемый lock)
 _google_sheets_lock = threading.RLock()
@@ -409,9 +429,7 @@ def get_slots(date_str):
 
         # Читаем тип услуги (boat, gym, и т.п.)
         service_type = request.args.get('service')
-        current_app.logger.info(
-            f"Запрос слотов на дату: {date_str}, service={service_type}"
-        )
+        _log_slots_context(date_str, service_type)
 
         # Camp (Ruza 2026) — фиксированное окно дат. Для него НЕ применяем лимит +90 дней.
         if service_type == 'camp':
@@ -455,9 +473,16 @@ def get_slots(date_str):
         return jsonify({"error": "Ошибка валидации данных", "details": error_msg}), 400
 
     except FileNotFoundError as fe:
-        error_msg = str(fe)
-        current_app.logger.critical(f"Ошибка конфигурации: {error_msg}")
-        return jsonify({"error": "Ошибка настройки сервера. Пожалуйста, обратитесь к администратору."}), 500
+        current_app.logger.critical(
+            "slots_config_error date=%s service=%s detail=%s",
+            date_str,
+            request.args.get("service"),
+            str(fe),
+        )
+        return jsonify({
+            "error": "Сервис бронирования временно недоступен. Обратитесь к администратору.",
+            "code": "google_credentials_missing",
+        }), 503
 
     except HttpError as he:
         error_msg = str(he)
@@ -466,9 +491,23 @@ def get_slots(date_str):
             return jsonify({"error": "Ошибка авторизации сервера. Пожалуйста, попробуйте позже."}), 503
         return jsonify({"error": "Временная ошибка сервера. Пожалуйста, попробуйте позже."}), 502
 
+    except ValueError as ve:
+        current_app.logger.warning(
+            "slots_config_value_error date=%s service=%s detail=%s",
+            date_str,
+            request.args.get("service"),
+            str(ve),
+        )
+        return jsonify({"error": str(ve), "code": "configuration_error"}), 503
+
     except Exception as e:
-        current_app.logger.error(f"Непредвиденная ошибка: {str(e)}", exc_info=True)
-        # В режиме разработки возвращаем подробный трейсбэк для диагностики
+        current_app.logger.error(
+            "slots_unexpected_error date=%s service=%s err=%s",
+            date_str,
+            request.args.get("service"),
+            type(e).__name__,
+            exc_info=True,
+        )
         try:
             if current_app.config.get('DEBUG'):
                 import traceback

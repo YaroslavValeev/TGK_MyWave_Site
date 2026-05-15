@@ -314,7 +314,7 @@ h1, h2, h3, h4, p {
   max-width: 800px;
   width: 100%;
   z-index: 2;
-  margin-top: -180px; /* Поднято выше на ~1 см (было -140px) */
+  margin-top: clamp(-80px, -12vh, -24px);
   background: none;
   position: relative;
   padding: 20px;

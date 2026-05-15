@@ -90,17 +90,31 @@ def blog_index():
     has_next = (page * per_page) < total
     has_prev = page > 1
 
-    return render_template(
-        "blog/index.html",
-        posts=items,
-        page=page,
-        per_page=per_page,
-        total=total,
-        has_next=has_next,
-        has_prev=has_prev,
-        tag=tag,
-        q=query,
-    )
+    try:
+        return render_template(
+            "blog/index.html",
+            posts=items,
+            page=page,
+            per_page=per_page,
+            total=total,
+            has_next=has_next,
+            has_prev=has_prev,
+            tag=tag,
+            q=query,
+        )
+    except Exception as render_err:
+        logger.error("blog: ошибка рендера index: %s", render_err)
+        return render_template(
+            "blog/index.html",
+            posts=[],
+            page=1,
+            per_page=per_page,
+            total=0,
+            has_next=False,
+            has_prev=False,
+            tag=tag,
+            q=query,
+        )
 
 
 @blog_bp.get("/blog/<slug>")

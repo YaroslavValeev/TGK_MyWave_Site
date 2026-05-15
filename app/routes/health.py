@@ -1,119 +1,164 @@
-"""Health check endpoint for monitoring service status.
+"""Health endpoints for monitoring: liveness, readiness, and aggregate status."""
+from __future__ import annotations
 
-Checks database, cache (Redis), Sentry configuration, and optionally AI gateway.
-"""
-from flask import Blueprint, jsonify, current_app
-from sqlalchemy import text
 import os
 import time
+from typing import Any, Dict, Tuple
 
-health_bp = Blueprint('health', __name__)
+from flask import Blueprint, current_app, jsonify
+from sqlalchemy import text
+
+health_bp = Blueprint("health", __name__)
 
 
-@health_bp.route('/health', methods=['GET'])
-def health_check():
-    """
-    Enhanced health check:
-    - basic status + version
-    - DB check (if SQLALCHEMY_DATABASE_URI set)
-    - Redis check (if REDIS_URL set)
-    - Sentry DSN check (configuration presence)
-    - optional AI gateway quick ping (only when ENABLE_AI_HEALTH_CHECK=1)
-    """
-    checks = {}
-    overall_ok = True
+def _mask_id(value: str | None) -> str:
+    raw = (value or "").strip()
+    if len(raw) <= 8:
+        return "unset" if not raw else "***"
+    return f"{raw[:4]}…{raw[-4:]}"
 
-    # Basic info
-    checks['version'] = current_app.config.get('VERSION', 'unknown')
-    checks['mode'] = os.environ.get('MYWAVE_AI_MODE', 'mock')
 
-    # DB check
+def _google_credentials_path() -> str | None:
+    for key in (
+        "GOOGLE_SERVICE_ACCOUNT_FILE",
+        "GOOGLE_SHEETS_CREDENTIALS",
+        "GOOGLE_APPLICATION_CREDENTIALS",
+    ):
+        val = (current_app.config.get(key) or os.getenv(key) or "").strip()
+        if val:
+            return val
+    return None
+
+
+def _check_database() -> Dict[str, Any]:
+    db_uri = current_app.config.get("SQLALCHEMY_DATABASE_URI")
+    if not db_uri:
+        return {"ok": False, "critical": True, "error": "SQLALCHEMY_DATABASE_URI not configured"}
     try:
-        db_uri = current_app.config.get('SQLALCHEMY_DATABASE_URI')
-        if db_uri:
-            try:
-                from app.extensions import db
-                # simple lightweight query
-                res = db.session.execute(text("SELECT 1"))
-                _ = res.fetchall()
-                checks['database'] = {'ok': True}
-            except Exception as e:
-                checks['database'] = {'ok': False, 'error': str(e)}
-                overall_ok = False
-        else:
-            checks['database'] = {'ok': False, 'error': 'SQLALCHEMY_DATABASE_URI not configured'}
-            # non-fatal if app intentionally has no DB; mark as missing rather than failure
-    except Exception as e:
-        checks['database'] = {'ok': False, 'error': f'unexpected: {e}'}
-        overall_ok = False
+        from app.extensions import db
 
-    # Redis check
+        with current_app.app_context():
+            db.session.execute(text("SELECT 1"))
+            db.session.commit()
+        return {"ok": True, "critical": True}
+    except Exception as exc:
+        return {"ok": False, "critical": True, "error": str(exc)}
+
+
+def _check_redis() -> Dict[str, Any]:
+    redis_url = (
+        current_app.config.get("REDIS_URL")
+        or current_app.config.get("AI_GATEWAY_REDIS_URL")
+        or os.getenv("REDIS_URL")
+    )
+    if not redis_url:
+        return {"ok": False, "optional": True, "configured": False, "error": "REDIS_URL not configured"}
     try:
-        redis_url = current_app.config.get('REDIS_URL') or current_app.config.get('AI_GATEWAY_REDIS_URL')
-        if redis_url:
-            try:
-                import redis
-                client = redis.Redis.from_url(redis_url, socket_connect_timeout=2)
-                client.ping()
-                checks['redis'] = {'ok': True}
-            except Exception as e:
-                checks['redis'] = {'ok': False, 'error': str(e)}
-                # Redis is optional, so don't mark overall as unhealthy
-                # overall_ok = False
-        else:
-            checks['redis'] = {'ok': False, 'error': 'REDIS_URL not configured'}
-    except ImportError:
-        checks['redis'] = {'ok': False, 'error': 'redis package not available'}
-    except Exception as e:
-        checks['redis'] = {'ok': False, 'error': f'unexpected: {e}'}
+        import redis
 
-    # Cache check (try a set/get when cache is available)
+        client = redis.Redis.from_url(redis_url, socket_connect_timeout=2)
+        client.ping()
+        return {"ok": True, "optional": True, "configured": True}
+    except Exception as exc:
+        return {"ok": False, "optional": True, "configured": True, "error": str(exc)}
+
+
+def _check_cache() -> Dict[str, Any]:
     try:
         from app.extensions import cache
+
         key = f"health_check_{int(time.time())}"
-        try:
-            cache.set(key, '1', timeout=5)
-            val = cache.get(key)
-            if str(val) == '1':
-                checks['cache'] = {'ok': True}
-            else:
-                checks['cache'] = {'ok': False, 'error': 'cache mismatch'}
-                overall_ok = False
-        except Exception as e:
-            checks['cache'] = {'ok': False, 'error': str(e)}
-            overall_ok = False
-    except Exception:
-        # Cache extension missing or not configured - report as not present but non-fatal
-        checks['cache'] = {'ok': False, 'error': 'cache extension not available'}
+        cache.set(key, "1", timeout=5)
+        val = cache.get(key)
+        if str(val) == "1":
+            return {"ok": True, "optional": True}
+        return {"ok": False, "optional": True, "error": "cache mismatch"}
+    except Exception as exc:
+        return {"ok": False, "optional": True, "error": str(exc)}
 
-    # Sentry DSN check (configuration presence)
+
+def _check_sentry() -> Dict[str, Any]:
+    sentry_dsn = os.getenv("SENTRY_DSN") or current_app.config.get("SENTRY_DSN")
+    if sentry_dsn:
+        return {"ok": True, "optional": True, "configured": True}
+    return {"ok": False, "optional": True, "configured": False, "error": "SENTRY_DSN not configured"}
+
+
+def _check_google() -> Dict[str, Any]:
+    path = _google_credentials_path()
+    if not path:
+        return {"ok": False, "optional": True, "configured": False, "error": "credentials path not set"}
+    if os.path.isfile(path):
+        return {"ok": True, "optional": True, "configured": True}
+    return {"ok": False, "optional": True, "configured": True, "error": "service account file missing"}
+
+
+def _check_ai_gateway() -> Dict[str, Any]:
+    enable = os.getenv("ENABLE_AI_HEALTH_CHECK") or current_app.config.get("ENABLE_AI_HEALTH_CHECK")
+    if str(enable).lower() not in ("1", "true", "yes"):
+        return {"ok": False, "optional": True, "error": "ai health check disabled"}
     try:
-        sentry_dsn = os.getenv('SENTRY_DSN') or current_app.config.get('SENTRY_DSN')
-        if sentry_dsn:
-            checks['sentry'] = {'ok': True, 'configured': True}
-        else:
-            checks['sentry'] = {'ok': False, 'configured': False, 'error': 'SENTRY_DSN not configured'}
-    except Exception as e:
-        checks['sentry'] = {'ok': False, 'error': f'unexpected: {e}'}
+        from app.ai.core_gateway import create_default_gateway
 
-    # Optional AI gateway quick check
-    try:
-        enable_ai_check = os.getenv('ENABLE_AI_HEALTH_CHECK') or current_app.config.get('ENABLE_AI_HEALTH_CHECK')
-        if str(enable_ai_check).lower() in ('1', 'true', 'yes'):
-            try:
-                from app.ai.core_gateway import create_default_gateway
-                gw = create_default_gateway()
-                # perform a lightweight mock ping - non-destructive
-                resp = gw.handle_message('__health_ping__')
-                checks['ai_gateway'] = {'ok': True, 'response_type': resp.get('type')}
-            except Exception as e:
-                checks['ai_gateway'] = {'ok': False, 'error': str(e)}
-                overall_ok = False
-        else:
-            checks['ai_gateway'] = {'ok': False, 'error': 'ai health check disabled'}
-    except Exception as e:
-        checks['ai_gateway'] = {'ok': False, 'error': f'unexpected: {e}'}
+        gw = create_default_gateway()
+        resp = gw.handle_message("__health_ping__")
+        return {"ok": True, "optional": True, "response_type": resp.get("type")}
+    except Exception as exc:
+        return {"ok": False, "optional": True, "error": str(exc)}
 
-    status_code = 200 if overall_ok else 503
-    return jsonify(status=('ok' if overall_ok else 'unhealthy'), checks=checks), status_code
 
+def _collect_checks() -> Tuple[Dict[str, Any], bool, bool]:
+    checks: Dict[str, Any] = {
+        "version": current_app.config.get("VERSION", "unknown"),
+        "mode": os.environ.get("MYWAVE_AI_MODE", "mock"),
+        "spreadsheet_id": _mask_id(current_app.config.get("SPREADSHEET_ID")),
+    }
+    checks["database"] = _check_database()
+    checks["redis"] = _check_redis()
+    checks["cache"] = _check_cache()
+    checks["sentry"] = _check_sentry()
+    checks["google"] = _check_google()
+    checks["ai_gateway"] = _check_ai_gateway()
+
+    critical_ok = checks["database"].get("ok", False)
+    optional_keys = ("redis", "cache", "sentry", "google", "ai_gateway")
+    degraded = any(not checks[k].get("ok", False) for k in optional_keys)
+    return checks, critical_ok, degraded
+
+
+def _health_payload(*, readiness: bool = False) -> Tuple[dict, int]:
+    checks, critical_ok, degraded = _collect_checks()
+    if not critical_ok:
+        status = "unhealthy"
+        code = 503
+    elif degraded:
+        status = "degraded"
+        code = 200
+    else:
+        status = "ok"
+        code = 200
+
+    if readiness and not critical_ok:
+        code = 503
+
+    return {"status": status, "checks": checks}, code
+
+
+@health_bp.route("/health/live", methods=["GET"])
+@health_bp.route("/api/health/live", methods=["GET"])
+def health_live():
+    return jsonify(status="ok", live=True), 200
+
+
+@health_bp.route("/health/ready", methods=["GET"])
+@health_bp.route("/api/health/ready", methods=["GET"])
+def health_ready():
+    payload, code = _health_payload(readiness=True)
+    return jsonify(payload), code
+
+
+@health_bp.route("/health", methods=["GET"])
+@health_bp.route("/api/health", methods=["GET"])
+def health_check():
+    payload, code = _health_payload(readiness=False)
+    return jsonify(payload), code
