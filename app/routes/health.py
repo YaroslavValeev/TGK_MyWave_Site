@@ -31,15 +31,14 @@ def _google_credentials_path() -> str | None:
 
 
 def _check_database() -> Dict[str, Any]:
+    """Ping DB via the same SQLAlchemy instance as models (app.database.models.db)."""
     db_uri = current_app.config.get("SQLALCHEMY_DATABASE_URI")
     if not db_uri:
         return {"ok": False, "critical": True, "error": "SQLALCHEMY_DATABASE_URI not configured"}
     try:
-        from app.extensions import db
+        from app.database.models import db
 
-        with current_app.app_context():
-            db.session.execute(text("SELECT 1"))
-            db.session.commit()
+        db.session.execute(text("SELECT 1"))
         return {"ok": True, "critical": True}
     except Exception as exc:
         return {"ok": False, "critical": True, "error": str(exc)}

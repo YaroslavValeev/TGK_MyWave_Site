@@ -2,6 +2,7 @@ from flask import Blueprint, abort, current_app, jsonify, render_template, reque
 
 from app.extensions import csrf
 from app.modules.logger import get_logger
+from app.services.blog.display_text import plain_excerpt_for_display, plain_title_for_display
 from app.services.blog.store import (
     get_posts,
     get_post_by_slug,
@@ -12,6 +13,16 @@ from app.services.blog.store import (
 logger = get_logger(__name__)
 
 blog_bp = Blueprint("blog", __name__, template_folder="../templates")
+
+
+def _normalize_posts_for_template(posts: list) -> list:
+    """Санитизация title/excerpt до рендера — не зависит от Jinja filter registry."""
+    for p in posts:
+        if not isinstance(p, dict):
+            continue
+        p["title"] = plain_title_for_display(p.get("title"))
+        p["excerpt"] = plain_excerpt_for_display(p.get("excerpt"))
+    return posts
 
 
 def _blog_cache_invalidate_token_ok() -> bool:
@@ -85,6 +96,7 @@ def blog_index():
     start = (page - 1) * per_page
     end = start + per_page
     items = items[start:end]
+    items = _normalize_posts_for_template(items)
 
     # Простая пагинация
     has_next = (page * per_page) < total

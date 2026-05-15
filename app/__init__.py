@@ -74,7 +74,6 @@ def create_app(config_name="development"):
     template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates"))
     static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "static"))
     app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
-    register_jinja_filters(app)
 
     # Применяем SSL-патч
     if patch_ssl():
@@ -738,6 +737,8 @@ def create_app(config_name="development"):
         log_openai_chat_config_startup(app)
     except Exception as e:
         app.logger.debug("OpenAI chat runtime config log skipped: %s", e)
+
+    register_jinja_filters(app)
 
     return app
 
