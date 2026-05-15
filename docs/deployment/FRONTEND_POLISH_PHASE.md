@@ -1,7 +1,10 @@
 # MyWaveWake — фаза Frontend Polish + Hardening
 
+> **Актуальная управляющая фаза:** [STABILIZATION_QA_PHASE.md](STABILIZATION_QA_PHASE.md) — Production Stabilization + QA Discipline (4 слоя).
+
 **Дата фиксации:** 2026-05  
-**Production runtime baseline (заморожен):** `3de56f8c9316158aa992cfb7e74f0330eec0171c`
+**Production runtime baseline (заморожен):** `3de56f8c9316158aa992cfb7e74f0330eec0171c`  
+**Frontend/docs baseline:** `48dc9c64`
 
 Критическая фаза backend instability **завершена**. Backend operational:
 
@@ -59,23 +62,15 @@ Backend = **production runtime foundation**.
 
 ### QA matrix (обязательно перед «done»)
 
-| Платформа | Браузер |
-|-----------|---------|
-| Android | Chrome |
-| Android | Yandex Browser |
-| iOS | Safari |
-| Tablet | 768–1024px viewport |
+Заполнять в **[MOBILE_QA_MATRIX.md](../qa/MOBILE_QA_MATRIX.md)** (PASS/FAIL + screenshots).
 
-### Контрольные точки
+Перед prod deploy: **[RELEASE_GATE_CHECKLIST.md](RELEASE_GATE_CHECKLIST.md)**.
 
-- [ ] Hero compact, нет giant whitespace  
-- [ ] Swipe-карусели, scroll-snap  
-- [ ] Карточки не режутся, нет horizontal scroll  
-- [ ] Typography читаема, touch targets ≥ 44px  
-- [ ] Формы и контакты не ломаются  
-- [ ] safe-area (iPhone/Android)  
-- [ ] Chat button не перекрывает CTA  
-- [ ] Не трогать backend ради UX  
+### Контрольные точки (кратко)
+
+- Hero compact, swipe-карусели, safe-area, chat vs CTA  
+- Нет horizontal scroll, touch targets ≥ 44px  
+- **Не трогать backend** ради UX  
 
 **Deploy frontend-only:** `git pull` + hard refresh / `?v=3`; restart Gunicorn не обязателен для CSS.
 
@@ -178,3 +173,13 @@ Placeholder webp в `static/images/Project/Cards/checklist/`.
 | `68b46537` | Timeweb prod baseline |
 | `8ee0ca40` | Post-deploy pack + mobile v1 |
 | `3de56f8c` | **Frozen runtime** — blog/health P0 |
+| `48dc9c64` | Frontend/docs — mobile v3, smoke, runbooks |
+
+## Связанные артефакты QA/Ops
+
+| Документ | Путь |
+|----------|------|
+| Stabilization phase | [STABILIZATION_QA_PHASE.md](STABILIZATION_QA_PHASE.md) |
+| Mobile QA | [MOBILE_QA_MATRIX.md](../qa/MOBILE_QA_MATRIX.md) |
+| Release gate | [RELEASE_GATE_CHECKLIST.md](RELEASE_GATE_CHECKLIST.md) |
+| Incidents | [PRODUCTION_INCIDENT_POLICY.md](../ops/PRODUCTION_INCIDENT_POLICY.md) |

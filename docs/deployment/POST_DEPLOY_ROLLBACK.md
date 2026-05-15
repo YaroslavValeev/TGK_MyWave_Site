@@ -2,9 +2,13 @@
 
 ## Known-good release
 
-- `68b465374c498cd55a8c1e48d33cf12f84000439` — Timeweb production release baseline
+| Commit | Назначение |
+|--------|------------|
+| `68b46537` | Timeweb production release baseline |
+| `3de56f8c` | **Frozen runtime** — откат backend |
+| `48dc9c64` | Frontend/docs — mobile v3, smoke, runbooks |
 
-После post-deploy fixes зафиксируйте новый commit hash из `git rev-parse HEAD`.
+После каждого prod deploy обновляйте PREV в [RELEASE_GATE_CHECKLIST.md](RELEASE_GATE_CHECKLIST.md).
 
 ## Rollback (2–5 минут)
 

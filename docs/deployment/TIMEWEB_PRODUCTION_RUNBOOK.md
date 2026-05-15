@@ -12,9 +12,20 @@
 
 ## Production runtime baseline (заморожен)
 
-**Backend baseline commit:** `3de56f8c` — не менять runtime без issue + rollback + smoke.
+| Baseline | Commit |
+|----------|--------|
+| Runtime (frozen) | `3de56f8c` |
+| Frontend/docs | `48dc9c64` |
 
-Текущая фаза: **frontend polish + hardening + observability**. См. [FRONTEND_POLISH_PHASE.md](FRONTEND_POLISH_PHASE.md).
+Не менять runtime без issue + rollback + smoke.  
+Фаза: **Production Stabilization + QA Discipline** — [STABILIZATION_QA_PHASE.md](STABILIZATION_QA_PHASE.md).
+
+| Gate / QA | Документ |
+|-----------|----------|
+| Release gate | [RELEASE_GATE_CHECKLIST.md](RELEASE_GATE_CHECKLIST.md) |
+| Mobile QA | [MOBILE_QA_MATRIX.md](../qa/MOBILE_QA_MATRIX.md) |
+| Incidents | [PRODUCTION_INCIDENT_POLICY.md](../ops/PRODUCTION_INCIDENT_POLICY.md) |
+| UX scope | [FRONTEND_POLISH_PHASE.md](FRONTEND_POLISH_PHASE.md) |
 
 ## Release preflight
 
