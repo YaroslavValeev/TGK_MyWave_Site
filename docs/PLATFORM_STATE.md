@@ -1,12 +1,16 @@
-# MyWaveWake — Platform State (canonical snapshot)
+# MyWaveWake — Platform State
 
 **Production:** https://mywavewake.ru  
-**Модель:** formal production-governed platform · operational maturity governance
+**Модель:** formal production-governed platform · **canonical operational governance model**
 
-> **Этот документ — canonical operational snapshot платформы.**  
-> Главный актив — **operational governance discipline**. Её необходимо сохранять.
+> **Canonical operational snapshot платформы** — главный документ текущего состояния.  
+> **Главный актив платформы:** operational governance discipline (не только runtime).
 
-Фиксирует: production status · governance entrypoint · runtime freeze · four-layer model · release discipline · post-deploy policy · maturity artifacts · severity governance · P1/P2 · exit criteria.
+| Раздел snapshot |
+|-----------------|
+| production status · governance stack (5 docs) · runtime freeze · four-layer model |
+| release discipline · post-deploy policy · operational maturity artifacts |
+| severity governance · P1/P2 execution · exit criteria |
 
 ---
 
@@ -99,7 +103,7 @@ Flask bootstrap · Gunicorn wiring · SQLAlchemy init · Redis architecture · S
 
 ## Post-deploy policy
 
-Deploy **governance-incomplete** / НЕЗАВЕРШЁН, пока нет:
+Deploy **governance-incomplete** / **operationally incomplete** / НЕЗАВЕРШЁН, пока нет:
 
 | # | Требование |
 |---|------------|
@@ -198,3 +202,4 @@ Rollback обязателен при: health unhealthy · booking failure · res
 | Operational maturity pack | `1858292d` | ACTIVE |
 | Operational Maturity Phase | `258c4df5` | ACTIVE |
 | Platform state canon | `1ad1427c` | ACTIVE |
+| Governance stack canon | `2a8a5256` | ACTIVE |

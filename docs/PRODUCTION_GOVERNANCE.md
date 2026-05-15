@@ -1,11 +1,12 @@
 # MyWaveWake — Production Governance
 
-**Платформа:** formal production-governed platform · operational maturity governance  
-**Snapshot:** [PLATFORM_STATE.md](PLATFORM_STATE.md) (одностраничный канон состояния)  
+**Роль:** governance index для **canonical operational governance model**  
+**Платформа:** formal production-governed platform  
+**Canonical snapshot:** [PLATFORM_STATE.md](PLATFORM_STATE.md) — **читать первым**  
 **Фаза:** [Operational Maturity Phase](deployment/OPERATIONAL_MATURITY_PHASE.md)  
 **Production:** https://mywavewake.ru
 
-> Главный актив проекта — **operational governance discipline**. Её необходимо сохранять.
+> Главный актив платформы — **governance discipline**. Её необходимо сохранять.
 
 ## Governance entrypoint (канонический stack)
 
@@ -56,7 +57,8 @@ Production **operational**. Runtime стабилен = **infrastructure foundati
 | Platform canon | `15ee2680` | ACTIVE |
 | Operational maturity pack | `1858292d` | ACTIVE |
 | Operational Maturity Phase | `258c4df5` | ACTIVE |
-| Platform state canon | `23ab28ee` / `1ad1427c` | ACTIVE |
+| Platform state canon | `1ad1427c` | ACTIVE |
+| Governance stack canon | `2a8a5256` | ACTIVE |
 
 ---
 
@@ -75,7 +77,7 @@ Production **operational**. Runtime стабилен = **infrastructure foundati
 
 ## Post-deploy (обязательно)
 
-Deploy **governance-incomplete** / незавершён, пока не выполнено:
+Deploy **governance-incomplete** / **operationally incomplete** / незавершён, пока не выполнено:
 
 1. Строка в [PRODUCTION_AUDIT_LOG.md](ops/PRODUCTION_AUDIT_LOG.md)  
 2. Release note в [releases/](releases/)  
