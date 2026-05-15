@@ -4,6 +4,7 @@
 |-------|-------|
 | Date | 2026-05-15 |
 | Release type | ops |
+| Commit | `0d07eee7` |
 | Runtime | `3de56f8c` (unchanged) |
 | Scope | governance docs only |
 

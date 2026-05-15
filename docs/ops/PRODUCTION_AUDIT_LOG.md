@@ -26,7 +26,7 @@
 | 2026-05-15 | Platform state canonical snapshot | ops | `23ab28ee` | PASS | PLATFORM_STATE.md |
 | 2026-05-15 | Canonical 5-doc governance stack | ops | `2a8a5256` | PASS | governance model sync |
 | 2026-05-15 | Operational governance model canon | ops | `13612e63` | PASS | PLATFORM_STATE + docs README |
-| 2026-05-15 | Ownership matrix filled + Mobile QA run pack | ops | pending | PENDING | QA run pending devices |
+| 2026-05-15 | Ownership matrix filled + Mobile QA run pack | ops | `0d07eee7` | PENDING | QA run pending devices |
 | | | | | | |
 
 ---
