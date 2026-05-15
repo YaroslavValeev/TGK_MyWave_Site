@@ -1,10 +1,12 @@
 # Runtime Governance — MyWaveWake
 
+**Фаза:** Formal Runtime Governance  
 **Production:** https://mywavewake.ru  
 **Governance index:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)  
 **Operational scope:** [STABILIZATION_QA_PHASE.md](STABILIZATION_QA_PHASE.md)
 
-Runtime Foundation — **production infrastructure foundation**. Formal freeze действует с baseline `3de56f8c`.
+Production backend operational. Runtime Foundation — **production infrastructure foundation**.  
+Formal freeze: baseline `3de56f8c` · governance canon: `30f991da`.
 
 ---
 
@@ -24,8 +26,9 @@ Runtime рассматривается как неизменяемый слой 
 2. Rollback plan (target: `3de56f8c`)  
 3. Smoke strategy (`production_smoke.sh` + health + slots)  
 4. Production justification  
+5. **Explicit approval** (owner / tech lead)
 
-Без всех четырёх пунктов — **change rejected**.
+Без всех пяти пунктов — **change rejected**.
 
 Release type: `runtime` only. См. [RELEASE_TYPES.md](RELEASE_TYPES.md).
 

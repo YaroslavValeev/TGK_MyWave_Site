@@ -1,7 +1,8 @@
 # Mobile QA Matrix — MyWaveWake
 
 **Фаза:** Production Stabilization + QA Discipline  
-**Baseline:** backend `3de56f8c` · frontend/docs `48dc9c64`  
+**Фаза:** Formal Runtime Governance  
+**Baseline:** runtime `3de56f8c` (FROZEN) · frontend `48dc9c64` · governance `30f991da`  
 **Production URL:** https://mywavewake.ru
 
 Матрица обязательна **перед** закрытием любого UX-deploy и **перед** release gate ([RELEASE_GATE_CHECKLIST.md](../deployment/RELEASE_GATE_CHECKLIST.md)).

@@ -18,9 +18,12 @@
 | Frontend/docs | `48dc9c64` | ACTIVE |
 | QA/Ops governance | `0a2a0e1a` | ACTIVE |
 | Production state/docs | `94fbc211` | ACTIVE |
+| Formal runtime governance | `30f991da` | ACTIVE |
 
+**Фаза:** Formal Runtime Governance  
 **Production:** https://mywavewake.ru · Timeweb Cloud · Ubuntu 22.04 · 2 CPU / 4 GB / 50 GB NVMe  
-**Governance index:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)
+
+Governance: [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md) · [RUNTIME_GOVERNANCE.md](RUNTIME_GOVERNANCE.md)
 
 Не менять runtime без issue + rollback + smoke.  
 Фаза: **Production Stabilization + QA Discipline** — [STABILIZATION_QA_PHASE.md](STABILIZATION_QA_PHASE.md).

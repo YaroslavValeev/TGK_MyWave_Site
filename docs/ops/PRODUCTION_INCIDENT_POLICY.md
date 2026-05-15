@@ -6,8 +6,10 @@
 | Runtime Foundation | `3de56f8c` | FROZEN |
 | Frontend/docs | `48dc9c64` | ACTIVE |
 | QA/Ops governance | `0a2a0e1a` | ACTIVE |
+| Formal runtime governance | `30f991da` | ACTIVE |
 
-**Production:** https://mywavewake.ru · Governance: [STABILIZATION_QA_PHASE.md](../deployment/STABILIZATION_QA_PHASE.md)
+**Фаза:** Formal Runtime Governance  
+**Production:** https://mywavewake.ru · [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)
 
 ---
 

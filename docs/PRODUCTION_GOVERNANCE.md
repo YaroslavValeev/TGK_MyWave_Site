@@ -1,14 +1,18 @@
 # MyWaveWake — Production Governance
 
+**Фаза:** Formal Runtime Governance  
 **Production:** https://mywavewake.ru  
-**Модель:** production-governed система с **formal runtime governance**  
-**Слои:** runtime · UX · content · ops
+**Модель:** production-governed система · слои: runtime · UX · content · ops
 
-> **Этот файл — канонический governance entrypoint.**  
-> Детальный operational scope: [deployment/STABILIZATION_QA_PHASE.md](deployment/STABILIZATION_QA_PHASE.md)  
-> Formal runtime rules: [deployment/RUNTIME_GOVERNANCE.md](deployment/RUNTIME_GOVERNANCE.md)
+## Каноническая тройка governance
 
-Все production-решения синхронизируются через эти документы.
+| Документ | Назначение |
+|----------|------------|
+| **`docs/PRODUCTION_GOVERNANCE.md`** | Governance entrypoint (этот файл) |
+| [deployment/STABILIZATION_QA_PHASE.md](deployment/STABILIZATION_QA_PHASE.md) | Operational scope, P1/P2, exit criteria |
+| [deployment/RUNTIME_GOVERNANCE.md](deployment/RUNTIME_GOVERNANCE.md) | Runtime freeze / change control |
+
+Все production-решения синхронизируются **только** через эти три документа.
 
 ---
 
@@ -42,6 +46,7 @@ Production **operational**. Runtime стабилен.
 | QA/Ops governance | `0a2a0e1a` | ACTIVE |
 | Production state/docs | `94fbc211` | ACTIVE |
 | Governance index | `4d1ded82` | ACTIVE |
+| Formal runtime governance | `30f991da` | ACTIVE |
 
 ---
 
@@ -49,16 +54,17 @@ Production **operational**. Runtime стабилен.
 
 **Runtime Foundation заморожен на `3de56f8c`.**
 
-Runtime = production infrastructure foundation.
+Runtime = production infrastructure foundation. Backend operational и стабилен.
 
-Любые runtime changes:
+Любые runtime changes допускаются только через:
 
-- только через отдельный issue  
-- только с rollback plan  
-- только со smoke strategy  
-- только с production justification  
+- отдельный issue  
+- rollback plan  
+- smoke strategy  
+- production justification  
+- **explicit approval**
 
-Freeze scope: [RUNTIME_GOVERNANCE.md](deployment/RUNTIME_GOVERNANCE.md)
+Детали: [RUNTIME_GOVERNANCE.md](deployment/RUNTIME_GOVERNANCE.md)
 
 ---
 

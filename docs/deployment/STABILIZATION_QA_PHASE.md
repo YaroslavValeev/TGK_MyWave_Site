@@ -1,11 +1,11 @@
 # Production Stabilization + QA Discipline
 
-**Индекс governance:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)  
+**Фаза:** Formal Runtime Governance (в рамках stabilization)  
+**Governance entrypoint:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md)  
+**Runtime rules:** [RUNTIME_GOVERNANCE.md](RUNTIME_GOVERNANCE.md)  
 **Дата фиксации:** 2026-05  
 **Production:** https://mywavewake.ru  
-**Модель:** production-governed система с formal runtime governance  
-**Runtime rules:** [RUNTIME_GOVERNANCE.md](RUNTIME_GOVERNANCE.md)  
-**Статус:** production operational, runtime стабилен.
+**Статус:** production operational, runtime = stable infrastructure foundation.
 
 ---
 
@@ -49,13 +49,15 @@
 | **QA/Ops governance** | `0a2a0e1a` | ACTIVE |
 | **Production state/docs** | `94fbc211` | ACTIVE |
 | **Governance index** | `4d1ded82` | ACTIVE |
+| **Formal runtime governance** | `30f991da` | ACTIVE |
 
 **Runtime Foundation** = production infrastructure foundation. Любое изменение runtime:
 
-- только через отдельный issue  
+- отдельный issue  
 - rollback plan  
 - smoke strategy  
 - production justification  
+- explicit approval  
 
 ---
 
@@ -321,3 +323,4 @@ Placeholder webp → финальные иллюстрации, art direction, o
 | `0a2a0e1a` | QA/Ops governance artifacts |
 | `94fbc211` | Production state / canonical governance docs |
 | `4d1ded82` | Governance index + release taxonomy canon |
+| `30f991da` | Formal runtime governance canon |
