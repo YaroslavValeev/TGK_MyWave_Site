@@ -128,20 +128,41 @@ Runtime + frontend mixed deploy **запрещён** без approval. См. [REL
 
 ---
 
+## Operational pack — интегрирован (2026-05-15)
+
+**Commits:** `0d07eee7` · `544f518a` · release: [2026-05-15-operational-pack-ownership-qa.md](../releases/2026-05-15-operational-pack-ownership-qa.md)
+
+| Компонент | Статус |
+|-----------|--------|
+| Ownership matrix | filled — [OWNERSHIP_MATRIX.md](../ops/OWNERSHIP_MATRIX.md) |
+| Mobile QA run | **PENDING** — [MOBILE_QA_RUN_2026-05-15.md](../qa/MOBILE_QA_RUN_2026-05-15.md) |
+| Frontend deploy gate | **blocked** until Mobile QA PASS |
+
+### Критические роли (зафиксированы)
+
+| Role | Owner |
+|------|-------|
+| runtime owner | Ярослав / MyWave |
+| release manager | Ярослав / MyWave (temporary) |
+| rollback owner | runtime owner |
+| infra owner | MyWave ops |
+
+**Follow-up:** temporary → реальные имена; Telegram/GitHub contacts.
+
 ## Следующие практические шаги
 
-1. Заполнить реальные ownership names в [OWNERSHIP_MATRIX.md](../ops/OWNERSHIP_MATRIX.md)  
-2. Начать Mobile QA matrix (A1, A2, I1, T1)  
-3. Завершить P2 hardening на сервере ([TIMEWEB_PRODUCTION_RUNBOOK.md](TIMEWEB_PRODUCTION_RUNBOOK.md))  
-4. Вести audit log после каждого deploy  
-5. Соблюдать release discipline (один type на deploy)  
+1. **Mobile QA execution** (blocking) — инкогнито, `mobile-home.css?v=3`, screenshots → `docs/qa/screenshots/2026-05-15/`  
+2. Ownership names + contacts в [OWNERSHIP_MATRIX.md](../ops/OWNERSHIP_MATRIX.md)  
+3. P2 hardening — [TIMEWEB_PRODUCTION_RUNBOOK.md](TIMEWEB_PRODUCTION_RUNBOOK.md)  
+4. Audit log + release notes на каждый deploy  
 
 ---
 
 ## Exit criteria (stabilization + maturity)
 
-- [ ] Ownership matrix — имена назначены  
-- [ ] Mobile QA — все платформы PASS  
+- [x] Ownership matrix — структура и критические роли (2026-05-15)  
+- [ ] Ownership matrix — реальные имена + contacts  
+- [ ] Mobile QA — все платформы PASS (run PENDING)  
 - [ ] P2 hardening завершён  
 - [ ] Blog visible content (content layer)  
 - [ ] Audit log ведётся на каждом deploy  

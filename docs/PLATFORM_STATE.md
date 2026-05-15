@@ -160,13 +160,29 @@ Rollback обязателен при: health unhealthy · booking failure · res
 
 **До stabilization exit:** никаких runtime refactor.
 
-### Следующие практические шаги
+### Operational pack (интегрирован 2026-05-15)
 
-1. Заполнить ownership names в [OWNERSHIP_MATRIX.md](ops/OWNERSHIP_MATRIX.md)  
-2. Выполнить [MOBILE_QA_MATRIX.md](qa/MOBILE_QA_MATRIX.md)  
-3. Завершить P2 hardening на сервере  
-4. Вести audit log после каждого deploy  
-5. Release notes на каждый production deploy  
+| Commit | Содержание |
+|--------|------------|
+| `0d07eee7` | ownership matrix + Mobile QA run |
+| `544f518a` | refs / audit sync |
+
+Release note: [releases/2026-05-15-operational-pack-ownership-qa.md](releases/2026-05-15-operational-pack-ownership-qa.md)
+
+| Артефакт | Статус |
+|----------|--------|
+| [OWNERSHIP_MATRIX.md](ops/OWNERSHIP_MATRIX.md) | **filled** — follow-up: реальные имена + contacts |
+| [MOBILE_QA_RUN_2026-05-15.md](qa/MOBILE_QA_RUN_2026-05-15.md) | **PENDING** — device run required |
+| [MOBILE_QA_MATRIX.md](qa/MOBILE_QA_MATRIX.md) | sign-off **NO** до PASS |
+
+**Зрелость платформы сейчас:** deploy discipline · quality gates · audit traceability · ownership clarity · rollback readiness · execution consistency.
+
+### Следующие практические шаги (blocking)
+
+1. **Mobile QA execution** — A1/A2/I1/T1 на https://mywavewake.ru → screenshots → PASS/FAIL → sign-off YES  
+2. Заменить temporary roles в [OWNERSHIP_MATRIX.md](ops/OWNERSHIP_MATRIX.md)  
+3. P2 hardening на сервере  
+4. Audit log + release notes на каждый deploy  
 
 ---
 
@@ -203,3 +219,4 @@ Rollback обязателен при: health unhealthy · booking failure · res
 | Operational Maturity Phase | `258c4df5` | ACTIVE |
 | Platform state canon | `1ad1427c` | ACTIVE |
 | Governance stack canon | `2a8a5256` | ACTIVE |
+| Operational pack | `0d07eee7` / `544f518a` | ACTIVE |

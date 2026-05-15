@@ -2,8 +2,9 @@
 
 **Production:** https://mywavewake.ru  
 **Governance:** [PRODUCTION_GOVERNANCE.md](../PRODUCTION_GOVERNANCE.md) · [PLATFORM_STATE.md](../PLATFORM_STATE.md)  
-**Status:** filled (Owner draft 2026-05-15) — часть **production governance**, не optional  
-**Updated:** 2026-05-15
+**Status:** integrated in governance model (`0d07eee7` / `544f518a`) — часть **production governance**  
+**Updated:** 2026-05-15  
+**Release:** [2026-05-15-operational-pack-ownership-qa.md](../releases/2026-05-15-operational-pack-ownership-qa.md)
 
 Фиксирует **ownership зон production**. Критические роли закреплены за Owner / MyWave с эскалацией к project owner до назначения внешней команды.
 

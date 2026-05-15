@@ -3,7 +3,8 @@
 **Фаза:** Operational Maturity · Stabilization execution  
 **Baseline:** runtime `3de56f8c` (FROZEN) · frontend `48dc9c64`  
 **Production URL:** https://mywavewake.ru  
-**Active run:** [MOBILE_QA_RUN_2026-05-15.md](MOBILE_QA_RUN_2026-05-15.md) — **PENDING device execution**  
+**Active run:** [MOBILE_QA_RUN_2026-05-15.md](MOBILE_QA_RUN_2026-05-15.md) — **PENDING** (operational pack `0d07eee7`; device run required)  
+**Blocking:** frontend deploy = governance-incomplete until PASS + sign-off YES  
 **Screenshots:** [screenshots/2026-05-15/](screenshots/2026-05-15/)
 
 Матрица обязательна перед UX-deploy. Без PASS → deploy **governance-incomplete**.  
