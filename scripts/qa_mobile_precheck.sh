@@ -34,15 +34,16 @@ _check "static_review" "$BASE/static/images/students/Elya_Vesnina.jpg"
 # Same as manual: curl | grep (use --compressed: nginx may send gzip to script curl)
 _curl_home() { curl -sS --compressed -L --max-time 25 "$BASE/" 2>/dev/null; }
 
-if _curl_home | grep -q 'mobile-home.css'; then
+if _curl_home | grep -Fq 'mobile-home.css'; then
   echo "OK   html_links_mobile_home_css"
-  if _curl_home | grep -q 'mobile-home.css?v=3'; then
+  if _curl_home | grep -Fq 'mobile-home.css?v=3'; then
     echo "OK   html_mobile_home_version  v=3"
-  elif _curl_home | grep -q 'mobile-home.css?v=2'; then
+  elif _curl_home | grep -Fq 'mobile-home.css?v=2'; then
     echo "FAIL html_mobile_home_version  prod still v=2 — run: sudo systemctl restart mywave-site"
     FAIL=1
   else
     echo "WARN html_mobile_home_version  mobile-home present but ?v= not 3 (check manually)"
+    echo "     run: curl -sS $BASE/ | grep -F mobile-home"
   fi
 else
   echo "FAIL html_links_mobile_home_css  (mobile-home.css not in home HTML)"
