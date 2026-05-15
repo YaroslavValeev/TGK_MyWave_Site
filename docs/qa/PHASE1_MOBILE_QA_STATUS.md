@@ -2,7 +2,7 @@
 
 **Production:** https://mywavewake.ru  
 **Phase status:** `IN PROGRESS` — Step 0 **CLOSED** · Step 1 manual device QA **BLOCKER**  
-**Precheck fix:** `3ae20741` (`curl --compressed`)  
+**Precheck fix:** `3ae20741` (`curl --compressed`) · `f3a5256b` (`grep -Fq` — ложный WARN на `?v=3`) · `f3a5256b` (`grep -Fq` — ложный WARN на `?v=3`)  
 **Roadmap:** [ENGINEERING_MATURITY_ROADMAP.md](../deployment/ENGINEERING_MATURITY_ROADMAP.md)  
 **Runtime:** `3de56f8c` FROZEN — не трогать
 
@@ -56,7 +56,7 @@
 
 **Ложный FAIL устранён:** скрипт без `--compressed` не декодировал gzip; ручной `curl | grep` работал корректно.
 
-На сервере: `git pull` → `bash scripts/qa_mobile_precheck.sh` → `PRECHECK OK`.
+На сервере: `git pull` → `bash scripts/qa_mobile_precheck.sh` → `PRECHECK OK` (без WARN `html_mobile_home_version` после `f3a5256b`).
 
 ---
 
