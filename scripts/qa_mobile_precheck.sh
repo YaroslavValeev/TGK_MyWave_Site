@@ -31,15 +31,14 @@ _check "mobile_home_css" "$BASE/static/css/mobile-home.css?v=3"
 _check "checklist_css" "$BASE/static/css/checklist.css"
 _check "static_review" "$BASE/static/images/students/Elya_Vesnina.jpg"
 
-html="$(curl -sS -L --max-time 25 "$BASE/" 2>/dev/null || true)"
-if [[ -z "$html" ]]; then
-  echo "FAIL html_fetch  (empty response from $BASE/)"
-  FAIL=1
-elif echo "$html" | grep -qi 'mobile-home\.css'; then
+# Same as manual: curl | grep (use --compressed: nginx may send gzip to script curl)
+_curl_home() { curl -sS --compressed -L --max-time 25 "$BASE/" 2>/dev/null; }
+
+if _curl_home | grep -q 'mobile-home.css'; then
   echo "OK   html_links_mobile_home_css"
-  if echo "$html" | grep -q 'mobile-home.css?v=3'; then
+  if _curl_home | grep -q 'mobile-home.css?v=3'; then
     echo "OK   html_mobile_home_version  v=3"
-  elif echo "$html" | grep -q 'mobile-home.css?v=2'; then
+  elif _curl_home | grep -q 'mobile-home.css?v=2'; then
     echo "FAIL html_mobile_home_version  prod still v=2 — run: sudo systemctl restart mywave-site"
     FAIL=1
   else
@@ -47,7 +46,8 @@ elif echo "$html" | grep -qi 'mobile-home\.css'; then
   fi
 else
   echo "FAIL html_links_mobile_home_css  (mobile-home.css not in home HTML)"
-  echo "     hint: templates updated? sudo systemctl restart mywave-site"
+  echo "     manual check: curl -sS $BASE/ | grep mobile-home"
+  echo "     if manual OK but script FAIL: git pull (script fix) or nginx gzip — use --compressed"
   FAIL=1
 fi
 

@@ -32,7 +32,8 @@
 - [x] Production HTML: `mobile-home.css?v=3` (verified)  
 - [x] `production_smoke.sh` → PASS  
 
-Если precheck показывал FAIL до restart — перезапустите: `bash scripts/qa_mobile_precheck.sh`
+После `git pull` (fix precheck gzip): `bash scripts/qa_mobile_precheck.sh`  
+Если `curl | grep mobile-home` показывает `?v=3`, а скрипт FAIL — обновите скрипт: `git pull`
 
 Детали: [MOBILE_QA_AUTOMATED_PRECHECK_2026-05-15.md](MOBILE_QA_AUTOMATED_PRECHECK_2026-05-15.md)
 
