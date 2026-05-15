@@ -3,7 +3,9 @@
 **Production:** https://mywavewake.ru  
 **Run by:** Cursor agent (remote)  
 **Script:** `scripts/qa_mobile_precheck.sh`  
-**Does NOT replace:** real device QA (A1/A2/I1/T1)
+**Does NOT replace:** real device QA (A1/A2/I1/T1)  
+**Precheck fix commit:** `3ae20741` — `curl --compressed` + pipe to `grep`  
+**Status:** Step 0 closed · automated precheck **PASS** after fix
 
 ---
 

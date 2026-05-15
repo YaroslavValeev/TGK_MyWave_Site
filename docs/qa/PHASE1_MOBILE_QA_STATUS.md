@@ -1,7 +1,8 @@
 # Phase 1 — Mobile QA Status (living)
 
 **Production:** https://mywavewake.ru  
-**Phase status:** `IN PROGRESS — BLOCKER`  
+**Phase status:** `IN PROGRESS` — Step 0 **CLOSED** · Step 1 manual device QA **BLOCKER**  
+**Precheck fix:** `3ae20741` (`curl --compressed`)  
 **Roadmap:** [ENGINEERING_MATURITY_ROADMAP.md](../deployment/ENGINEERING_MATURITY_ROADMAP.md)  
 **Runtime:** `3de56f8c` FROZEN — не трогать
 
@@ -20,8 +21,9 @@
 |-------|--------|
 | Runtime | operational |
 | Governance | operational |
-| Frontend QA phase | **NOT complete** |
-| Sign-off | **NO** — Ready for release gate |
+| Frontend QA phase | Step 0 done · Step 1 manual QA pending |
+| Automated precheck | **PASS** (after `3ae20741` + `git pull`) |
+| Sign-off | **NO** — until 4 platforms PASS |
 
 ---
 
@@ -49,11 +51,16 @@
 | `/projects/checklist-org` | 200 |
 | mobile-home.css (static, ?v=3) | 200 |
 | checklist.css | 200 |
-| Home HTML `?v=3` | **PASS** (after restart) |
+| Home HTML `?v=3` | **PASS** |
+| Precheck script (`3ae20741`) | **PASS** (gzip fix: `--compressed`) |
+
+**Ложный FAIL устранён:** скрипт без `--compressed` не декодировал gzip; ручной `curl | grep` работал корректно.
+
+На сервере: `git pull` → `bash scripts/qa_mobile_precheck.sh` → `PRECHECK OK`.
 
 ---
 
-## Step 1 — Manual device QA (после `?v=3` на prod)
+## Step 1 — Manual device QA (текущий BLOCKER)
 
 | Platform | Status |
 |----------|--------|
