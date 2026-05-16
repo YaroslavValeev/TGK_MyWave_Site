@@ -20,7 +20,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}">
 {# v= — сброс кэша браузера при правках чек-листа #}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/checklist.css') }}?v=cardbg12">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/checklist.css') }}?v=cardbg13">
 <meta name="description" content="Готовый чек-лист для организаторов соревнований по вейксерфингу. Структурированный контроль: судьи, документы, тайминг, безопасность. Скачайте PDF.">
 <link rel="canonical" href="{{ request.url }}">
 {% endblock %}
@@ -1041,6 +1041,6 @@
     });
   });
 </script>
-<script src="{{ url_for('static', filename='js/checklist.js') }}?v=cardbg12"></script>
+<script src="{{ url_for('static', filename='js/checklist.js') }}?v=cardbg13"></script>
 {% endblock %}
 

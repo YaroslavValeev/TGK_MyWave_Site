@@ -294,23 +294,28 @@
 
   function applyCardBackgrounds(container) {
     var base = getChecklistAssetBase(container);
-    var checkboxes = container.querySelectorAll('.wake-checklist__checkbox');
-    checkboxes.forEach(function(cb) {
+    container.querySelectorAll('.wake-checklist__checkbox').forEach(function(cb) {
       var card = getCard(cb);
       if (!card) return;
       var file = CHECKLIST_CARD_BACKGROUNDS[cb.id];
       if (!file) return;
       var imgUrl = base + file;
-      var cssUrl = 'url("' + imgUrl + '")';
-      card.style.setProperty('--checklist-card-bg', cssUrl);
       var art = card.querySelector('.wake-checklist__card-art');
       if (!art) return;
-      art.style.backgroundImage = cssUrl;
+
+      art.innerHTML = '';
       art.setAttribute('data-checklist-bg', 'pending');
-      var probe = new Image();
-      probe.onload = function() { art.setAttribute('data-checklist-bg', 'ok'); };
-      probe.onerror = function() { art.setAttribute('data-checklist-bg', 'missing'); };
-      probe.src = imgUrl;
+      art.setAttribute('data-checklist-file', file);
+
+      var img = document.createElement('img');
+      img.className = 'wake-checklist__card-art-img';
+      img.src = imgUrl;
+      img.alt = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.onload = function() { art.setAttribute('data-checklist-bg', 'ok'); };
+      img.onerror = function() { art.setAttribute('data-checklist-bg', 'missing'); };
+      art.appendChild(img);
     });
   }
 
@@ -392,16 +397,16 @@
       return;
     }
     container.querySelectorAll('.wake-checklist__card-art').forEach(function(art) {
+      var img = art.querySelector('.wake-checklist__card-art-img');
+      if (!img) return;
       art.addEventListener('mousemove', function(ev) {
         var rect = art.getBoundingClientRect();
         var x = ((ev.clientX - rect.left) / rect.width - 0.5) * 12;
         var y = ((ev.clientY - rect.top) / rect.height - 0.5) * 12;
-        art.style.setProperty('--checklist-card-shift-x', x.toFixed(1) + 'px');
-        art.style.setProperty('--checklist-card-shift-y', y.toFixed(1) + 'px');
+        img.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(1.06)';
       });
       art.addEventListener('mouseleave', function() {
-        art.style.setProperty('--checklist-card-shift-x', '0px');
-        art.style.setProperty('--checklist-card-shift-y', '0px');
+        img.style.transform = '';
       });
     });
   }
