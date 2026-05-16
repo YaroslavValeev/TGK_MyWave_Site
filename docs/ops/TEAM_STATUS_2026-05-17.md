@@ -45,8 +45,9 @@ card → mapping → js → img render → production
 
 - Assets: HTTP 200, маппинг через `checklist.js`, колонка иллюстрации на проде **работает** (см. QA screenshot).
 - Текущие webp — **placeholder-level art** (градиент + подпись категории).
-- Это **не** deploy / cache / runtime issue.
-- Финальный visual polish — **финальные webp от дизайна** в `static/images/Project/Cards/checklist/`.
+- Статус слоёв: `deploy OK` · `render OK` · **`content NOT OK`** — не технический блокер.
+- Это **не** deploy / cache / runtime issue; **не** менять `checklist.js` / mapping / backend.
+- Следующий шаг: **in-place замена** webp — [CHECKLIST_FINAL_ART_REPLACEMENT.md](CHECKLIST_FINAL_ART_REPLACEMENT.md) + [CHECKLIST_ART_FILE_MANIFEST.txt](CHECKLIST_ART_FILE_MANIFEST.txt) (55 файлов).
 
 ---
 
