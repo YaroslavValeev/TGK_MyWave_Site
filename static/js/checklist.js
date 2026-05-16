@@ -292,20 +292,28 @@
     });
   }
 
+  function getArtOverrideUrl(checkboxId) {
+    var overrides = (typeof window !== 'undefined' && window.__MW_CHECKLIST_ART_OVERRIDES__) || {};
+    var url = overrides[checkboxId];
+    return url ? String(url) : '';
+  }
+
   function applyCardBackgrounds(container) {
     var base = getChecklistAssetBase(container);
     container.querySelectorAll('.wake-checklist__checkbox').forEach(function(cb) {
       var card = getCard(cb);
       if (!card) return;
       var file = CHECKLIST_CARD_BACKGROUNDS[cb.id];
-      if (!file) return;
-      var imgUrl = base + file;
+      var overrideUrl = getArtOverrideUrl(cb.id);
+      if (!file && !overrideUrl) return;
+      var imgUrl = overrideUrl || (base + file);
       var art = card.querySelector('.wake-checklist__card-art');
       if (!art) return;
 
       art.innerHTML = '';
       art.setAttribute('data-checklist-bg', 'pending');
-      art.setAttribute('data-checklist-file', file);
+      if (file) art.setAttribute('data-checklist-file', file);
+      art.style.backgroundImage = 'url("' + imgUrl.replace(/"/g, '%22') + '")';
 
       var img = document.createElement('img');
       img.className = 'wake-checklist__card-art-img';
@@ -314,7 +322,10 @@
       img.loading = 'lazy';
       img.decoding = 'async';
       img.onload = function() { art.setAttribute('data-checklist-bg', 'ok'); };
-      img.onerror = function() { art.setAttribute('data-checklist-bg', 'missing'); };
+      img.onerror = function() {
+        art.setAttribute('data-checklist-bg', 'missing');
+        art.style.backgroundImage = '';
+      };
       art.appendChild(img);
     });
   }

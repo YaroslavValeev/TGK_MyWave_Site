@@ -45,10 +45,10 @@ fi
 c="$(_code "$BASE/static/images/Project/Cards/checklist/app/app_event_information.webp")"
 [[ "$c" == "200" ]] && _ok "checklist webp $c" || _fail "checklist webp $c"
 
-if curl -sS --compressed -L --max-time 25 "$BASE/projects/checklist-org" 2>/dev/null | grep -Fq 'checklist.js?v=cardbg13'; then
-  _ok "checklist page cardbg13"
+if curl -sS --compressed -L --max-time 25 "$BASE/projects/checklist-org" 2>/dev/null | grep -Fq 'checklist.js?v=cardbg14'; then
+  _ok "checklist page cardbg14"
 else
-  _fail "checklist page cardbg13 (git pull + restart?)"
+  _fail "checklist page cardbg14 (git pull + restart?)"
 fi
 
 echo

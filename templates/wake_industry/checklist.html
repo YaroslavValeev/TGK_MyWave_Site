@@ -20,7 +20,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}">
 {# v= — сброс кэша браузера при правках чек-листа #}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/checklist.css') }}?v=cardbg13">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/checklist.css') }}?v=cardbg14">
 <meta name="description" content="Готовый чек-лист для организаторов соревнований по вейксерфингу. Структурированный контроль: судьи, документы, тайминг, безопасность. Скачайте PDF.">
 <link rel="canonical" href="{{ request.url }}">
 {% endblock %}
@@ -1035,12 +1035,13 @@
 {% block scripts %}
 {{ super() }}
 <script nonce="{{ csp_nonce }}">
+  window.__MW_CHECKLIST_ART_OVERRIDES__ = {{ checklist_art_overrides | default({}) | tojson }};
   document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('#checklist-print-btn, .js-checklist-print').forEach(function(btn) {
       if (btn) btn.addEventListener('click', function() { window.print(); });
     });
   });
 </script>
-<script src="{{ url_for('static', filename='js/checklist.js') }}?v=cardbg13"></script>
+<script src="{{ url_for('static', filename='js/checklist.js') }}?v=cardbg14"></script>
 {% endblock %}
 
