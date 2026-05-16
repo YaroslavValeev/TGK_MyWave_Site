@@ -15,12 +15,7 @@
    ```
 3. **Не менять:** `checklist.js`, mapping, имена файлов, backend, runtime.
 4. `git add` только `static/images/Project/Cards/checklist/**/*.webp`
-5. `git push` → на сервере:
-   ```bash
-   cd /var/www/mywave
-   git pull --ff-only origin main
-   sudo systemctl restart mywave-site
-   ```
+5. `git push` → на сервере см. **[SERVER_CHECKLIST_ART_DEPLOY.md](SERVER_CHECKLIST_ART_DEPLOY.md)** (готовые команды с git identity).
 6. Браузер: https://mywavewake.ru/projects/checklist-org — **Ctrl+F5**
 7. Device QA + screenshots → [MOBILE_QA_MATRIX.md](../qa/MOBILE_QA_MATRIX.md)
 
