@@ -200,12 +200,12 @@
     {% set review_photo_fallback = url_for('static', filename='images/Place1Logo.png') %}
     <div class="reviews-slider">
       <div class="review">
-        <img src="{{ url_for('static', filename='images/students/Elya_Vesnina.jpg') }}" alt="Эля Веснина" width="64" height="64" loading="eager" decoding="async" data-fallback="{{ review_photo_fallback }}">
+        <img src="{{ url_for('static', filename='images/students/Elya_Vesnina.jpg') }}?v=2" alt="Эля Веснина" width="64" height="64" loading="eager" decoding="async" data-fallback="{{ review_photo_fallback }}">
         <p>"Очень понравились тренировки! Тренер — супер!"</p>
         <strong>Эля Веснина</strong>
       </div>
       <div class="review">
-        <img src="{{ url_for('static', filename='images/students/Elupova.jpg') }}" alt="Юля Елупова" width="64" height="64" loading="eager" decoding="async" data-fallback="{{ review_photo_fallback }}">
+        <img src="{{ url_for('static', filename='images/students/Elupova.jpg') }}?v=2" alt="Юля Елупова" width="64" height="64" loading="eager" decoding="async" data-fallback="{{ review_photo_fallback }}">
         <p>"Было весело и эффективно, всем советую!"</p>
         <strong>Юля Елупова</strong>
       </div>
