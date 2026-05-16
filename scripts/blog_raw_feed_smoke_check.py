@@ -70,6 +70,39 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _sheet_values_range(worksheet_title: str, a1: str = "A1:ZZ1000") -> str:
+    """A1-диапазон с экранированием имени листа (Sheets API)."""
+    title = str(worksheet_title or "").strip().replace("'", "''")
+    if not title:
+        raise ValueError("worksheet_title is empty")
+    return f"'{title}'!{a1}"
+
+
+def _fetch_sheet_values(svc, spreadsheet_id: str, worksheet_title: str) -> dict:
+    """
+    Читает values с fallback-диапазонами при Unable to parse range (P2 tooling).
+    Production read path — store.py; этот скрипт только диагностика.
+    """
+    last_err: Exception | None = None
+    for a1 in ("A1:ZZ1000", "A1:Z1000", "A1:T2000"):
+        try:
+            return (
+                svc.spreadsheets()
+                .values()
+                .get(
+                    spreadsheetId=spreadsheet_id,
+                    range=_sheet_values_range(worksheet_title, a1),
+                )
+                .execute()
+            )
+        except Exception as exc:
+            last_err = exc
+            if "Unable to parse range" not in str(exc):
+                raise
+    assert last_err is not None
+    raise last_err
+
+
 def main() -> int:
     args = _build_arg_parser().parse_args()
 
@@ -98,10 +131,7 @@ def main() -> int:
         spreadsheet_id, worksheet_title = resolve_parser_source()
         svc = get_google_services()[1]
 
-        result = svc.spreadsheets().values().get(
-            spreadsheetId=spreadsheet_id,
-            range=f"{worksheet_title}!A1:ZZ1000",
-        ).execute()
+        result = _fetch_sheet_values(svc, spreadsheet_id, worksheet_title)
         all_rows = result.get("values", [])
 
         if worksheet_title == "raw_feed":

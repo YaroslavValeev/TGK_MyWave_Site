@@ -3,7 +3,7 @@
 **Production:** https://mywavewake.ru  
 **Phase status:** `IN PROGRESS` — Step 0 **CLOSED** · Step 1 manual device QA **BLOCKER**  
 **Team brief (GM):** [TEAM_STATUS_2026-05-17.md](../ops/TEAM_STATUS_2026-05-17.md)  
-**Deploy 17.05:** reviews photos `3d718a00` · checklist `ad71c02b` · [SERVER_DEPLOY_2026-05-16.md](../ops/SERVER_DEPLOY_2026-05-16.md)  
+**Deploy 17.05:** reviews `3d718a00` · checklist `cardbg14` (`ad9f2b80`) · [SERVER_DEPLOY_2026-05-16.md](../ops/SERVER_DEPLOY_2026-05-16.md)  
 **Precheck fix:** `dc08c500` (HTML before burst curl)  
 **Сервер:** [SERVER_PHASE1_VERIFY.md](SERVER_PHASE1_VERIFY.md)  
 **Roadmap:** [ENGINEERING_MATURITY_ROADMAP.md](../deployment/ENGINEERING_MATURITY_ROADMAP.md)  
@@ -26,7 +26,7 @@
 | Governance | operational |
 | Frontend QA phase | Step 0 done · Step 1 manual QA pending |
 | Automated precheck | **PASS** (prod, 2026-05-17) |
-| Checklist pipeline | **READY** (placeholder webp; final art = design) |
+| Checklist pipeline | **READY** — placeholders visible on prod; final webp = design (Phase 2) |
 | Reviews photos | **FIXED** on prod (`images/students`, `?v=2`) |
 | Sign-off | **NO** — until 4 platforms PASS |
 

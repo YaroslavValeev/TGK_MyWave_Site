@@ -38,6 +38,8 @@
 | 2026-05-16 | Checklist card art img + cardbg13 | frontend | `ad71c02b` | PASS | pipeline ready; placeholder webp |
 | 2026-05-16 | Reviews student photos restore | frontend | `3d718a00` | PASS | images_old → images/students; ?v=2 |
 | 2026-05-17 | GM team status — Phase 1 blocker = device QA only | ops | — | OPEN | [TEAM_STATUS_2026-05-17.md](TEAM_STATUS_2026-05-17.md) |
+| 2026-05-17 | Checklist cardbg14 + blog xlsx analysis + server runbook | frontend/ops | `ad9f2b80` | PASS | placeholders OK; blog content = Sheets sync |
+| 2026-05-17 | Blog smoke P2 — quoted sheet range + fallbacks | tooling | pending | — | `blog_raw_feed_smoke_check.py` only |
 
 ---
 
