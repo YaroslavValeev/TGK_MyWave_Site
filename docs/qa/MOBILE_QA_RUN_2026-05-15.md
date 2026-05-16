@@ -6,8 +6,10 @@
 **Frontend baseline:** `48dc9c64`  
 **Canonical matrix:** [MOBILE_QA_MATRIX.md](MOBILE_QA_MATRIX.md)  
 **Status:** **Step 1 — manual device QA** (Step 0 + precheck closed)  
-**Precheck:** [MOBILE_QA_AUTOMATED_PRECHECK_2026-05-15.md](MOBILE_QA_AUTOMATED_PRECHECK_2026-05-15.md) · fixes through `dc08c500`  
-**Server:** [SERVER_PHASE1_VERIFY.md](SERVER_PHASE1_VERIFY.md)
+**GM brief:** [TEAM_STATUS_2026-05-17.md](../ops/TEAM_STATUS_2026-05-17.md)  
+**Чеклист для печати:** [MANUAL_DEVICE_QA_CHECKLIST.md](MANUAL_DEVICE_QA_CHECKLIST.md)  
+**Precheck:** PASS (prod 2026-05-17) · **Deploy:** reviews `3d718a00` · checklist `ad71c02b`  
+**Server:** [SERVER_DEPLOY_2026-05-16.md](../ops/SERVER_DEPLOY_2026-05-16.md)
 
 > Frontend deploy **governance-incomplete** без PASS в матрице + screenshots + smoke.
 
@@ -58,8 +60,8 @@ Screenshots: `docs/qa/screenshots/2026-05-15/`
 | Services carousel | PENDING | `A1-services.png` | swipe, snap |
 | Contacts | PENDING | `A1-contacts.png` | form visible |
 | Chat button | PENDING | `A1-chat.png` | no CTA overlap |
-| Reviews | PENDING | `A1-reviews.png` | avatars |
-| Checklist | PENDING | `A1-checklist.png` | `/wake-industry/checklist` |
+| Reviews | PENDING | `A1-reviews.png` | фото учеников `?v=2`, не логотип |
+| Checklist | PENDING | `A1-checklist.png` | `/projects/checklist-org` |
 | Booking modal | PENDING | `A1-booking.png` | slots/date/close |
 | Blog | PENDING | `A1-blog.png` | list/empty/cards |
 | Navigation | PENDING | `A1-nav.png` | menu/anchors |

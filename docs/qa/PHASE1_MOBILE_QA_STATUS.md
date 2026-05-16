@@ -82,7 +82,7 @@
 
 **Screenshots:** `docs/qa/screenshots/2026-05-15/`
 
-**Артефакты:** [MOBILE_QA_RUN_2026-05-15.md](MOBILE_QA_RUN_2026-05-15.md) · [MOBILE_QA_MATRIX.md](MOBILE_QA_MATRIX.md)
+**Артефакты:** [MOBILE_QA_RUN_2026-05-15.md](MOBILE_QA_RUN_2026-05-15.md) · [MOBILE_QA_MATRIX.md](MOBILE_QA_MATRIX.md) · [MANUAL_DEVICE_QA_CHECKLIST.md](MANUAL_DEVICE_QA_CHECKLIST.md)
 
 Заменить `PENDING` → `PASS` / `FAIL` → **Ready for release gate: YES**
 

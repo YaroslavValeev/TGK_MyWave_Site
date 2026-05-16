@@ -34,6 +34,7 @@ curl -sS -o /dev/null -w 'checklist webp: %{http_code}\n' \
 echo "=== 6. QA scripts ==="
 bash scripts/qa_mobile_precheck.sh
 bash scripts/production_smoke.sh
+bash scripts/verify_production_frontend.sh
 
 echo "=== DONE ==="
 echo "Браузер: главная Ctrl+F5 — отзывы с фото; /projects/checklist-org — cardbg13"

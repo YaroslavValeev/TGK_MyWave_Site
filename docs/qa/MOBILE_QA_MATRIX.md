@@ -3,8 +3,10 @@
 **Фаза:** Operational Maturity · Stabilization execution  
 **Baseline:** runtime `3de56f8c` (FROZEN) · frontend `48dc9c64`  
 **Production URL:** https://mywavewake.ru  
-**Active run:** [MOBILE_QA_RUN_2026-05-15.md](MOBILE_QA_RUN_2026-05-15.md) — **PENDING** (operational pack `0d07eee7`; device run required)  
-**Blocking:** frontend deploy = governance-incomplete until PASS + sign-off YES  
+**Active run:** [MOBILE_QA_RUN_2026-05-15.md](MOBILE_QA_RUN_2026-05-15.md) — **PENDING** (device run required)  
+**Printable checklist:** [MANUAL_DEVICE_QA_CHECKLIST.md](MANUAL_DEVICE_QA_CHECKLIST.md)  
+**GM brief:** [TEAM_STATUS_2026-05-17.md](../ops/TEAM_STATUS_2026-05-17.md)  
+**Blocking:** governance-incomplete until 4× PASS + sign-off YES  
 **Screenshots:** [screenshots/2026-05-15/](screenshots/2026-05-15/)
 
 Матрица обязательна перед UX-deploy. Без PASS → deploy **governance-incomplete**.  
@@ -48,7 +50,7 @@ Gate: [RELEASE_GATE_CHECKLIST.md](../deployment/RELEASE_GATE_CHECKLIST.md)
 | Contacts | | | форма, поля, клавиатура |
 | Chat button | | | не перекрывает CTA |
 | Reviews | | | аватары, lazy/eager |
-| Checklist | | | `/wake-industry/checklist` mobile block |
+| Checklist | | | `/projects/checklist-org` |
 | Booking modal | | | слоты, дата, закрытие |
 | Blog | | | `/blog` list, карточки |
 | Navigation | | | menu, anchor scroll |
