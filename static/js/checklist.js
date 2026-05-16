@@ -101,9 +101,12 @@
   var DEFAULT_PRIORITY = 'base';
   var DEFAULT_WEIGHT = 3;
 
-  /** База каталога иллюстраций: задаётся из шаблона через url_for(static), иначе относительный путь по умолчанию */
-  function getChecklistAssetBase() {
-    var b = (typeof window !== 'undefined' && window.__MW_CHECKLIST_ASSET_BASE__) || '';
+  /** База каталога иллюстраций: data-checklist-asset-base на .wake-checklist или legacy window var */
+  function getChecklistAssetBase(container) {
+    var root = container || document.querySelector('.wake-checklist');
+    var b = (root && root.getAttribute('data-checklist-asset-base')) ||
+      (typeof window !== 'undefined' && window.__MW_CHECKLIST_ASSET_BASE__) ||
+      '';
     b = String(b).replace(/\/+$/, '');
     if (b) return b + '/';
     return '/static/images/Project/Cards/checklist/';
@@ -290,16 +293,24 @@
   }
 
   function applyCardBackgrounds(container) {
+    var base = getChecklistAssetBase(container);
     var checkboxes = container.querySelectorAll('.wake-checklist__checkbox');
     checkboxes.forEach(function(cb) {
       var card = getCard(cb);
       if (!card) return;
       var file = CHECKLIST_CARD_BACKGROUNDS[cb.id];
       if (!file) return;
-      var url = 'url("' + getChecklistAssetBase() + file + '")';
-      card.style.setProperty('--checklist-card-bg', url);
+      var imgUrl = base + file;
+      var cssUrl = 'url("' + imgUrl + '")';
+      card.style.setProperty('--checklist-card-bg', cssUrl);
       var art = card.querySelector('.wake-checklist__card-art');
-      if (art) art.style.backgroundImage = url;
+      if (!art) return;
+      art.style.backgroundImage = cssUrl;
+      art.setAttribute('data-checklist-bg', 'pending');
+      var probe = new Image();
+      probe.onload = function() { art.setAttribute('data-checklist-bg', 'ok'); };
+      probe.onerror = function() { art.setAttribute('data-checklist-bg', 'missing'); };
+      probe.src = imgUrl;
     });
   }
 
