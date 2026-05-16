@@ -4,7 +4,7 @@
 **Date:** 2026-05-17 (sync с GM execution plan)  
 **Runtime baseline:** `3de56f8c` **FROZEN**  
 **Living QA board:** [PHASE1_MOBILE_QA_STATUS.md](../qa/PHASE1_MOBILE_QA_STATUS.md)  
-**Latest on `origin/main`:** `13ffaf36` (runbooks + art handoff) · checklist code: `ad9f2b80` (`cardbg14`)  
+**Latest on `origin/main`:** `c8101ae2` — final checklist art `1976d637` (~53/62 cards) · code `cardbg14` (`ad9f2b80`)  
 **Production server:** deploy target only — `git pull`, **no** `commit`/`push` с сервера
 
 ---
@@ -136,7 +136,7 @@ Runtime refactor · backend rewrite · websocket · Redis · booking API · mixe
 | Checklist render pipeline | DONE |
 | Production deploy flow | DONE |
 | Manual device QA | **PENDING** |
-| Final design assets (webp) | **PENDING** |
+| Final design assets (webp) | **PARTIAL** — в `main`, на prod после `git pull`; 9 participant ещё placeholder |
 
 ## 11. Deploy flow (mandatory)
 

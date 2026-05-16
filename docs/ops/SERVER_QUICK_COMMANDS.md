@@ -8,10 +8,13 @@
 
 ## Стандартный deploy (после push с ПК)
 
+**Важно:** commit `1976d637` (~150 MB webp) — `git pull` может занять **2–5 минут**.
+
 ```bash
 cd /var/www/mywave
 git fetch origin main
 git pull --ff-only origin main
+# ожидаемый tip: c8101ae2 или новее
 sudo systemctl restart mywave-site
 sleep 2
 sudo systemctl is-active mywave-site
