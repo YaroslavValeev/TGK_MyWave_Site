@@ -34,7 +34,10 @@
 | 2026-05-15 | Precheck gzip fix (`curl --compressed`) | ops | `3ae20741` | PASS | automated precheck aligned with manual curl |
 | 2026-05-15 | Phase 1 Step 0 — prod HTML mobile-home v=3 | frontend | restart | PASS | manual curl OK; templates ?v=3 |
 | 2026-05-15 | Precheck script — HTML check order + grep -F | ops | `dc08c500` | PASS | fixes false FAIL when manual curl OK |
-| 2026-05-15 | Phase 1 → manual device QA blocker | ops | `dc08c500` | OPEN | push from PC → server git pull → precheck; A1/A2/I1/T1 |
+| 2026-05-15 | Phase 1 → manual device QA blocker | ops | `dc08c500` | OPEN | A1/A2/I1/T1 |
+| 2026-05-16 | Checklist card art img + cardbg13 | frontend | `ad71c02b` | PASS | pipeline ready; placeholder webp |
+| 2026-05-16 | Reviews student photos restore | frontend | `3d718a00` | PASS | images_old → images/students; ?v=2 |
+| 2026-05-17 | GM team status — Phase 1 blocker = device QA only | ops | — | OPEN | [TEAM_STATUS_2026-05-17.md](TEAM_STATUS_2026-05-17.md) |
 
 ---
 

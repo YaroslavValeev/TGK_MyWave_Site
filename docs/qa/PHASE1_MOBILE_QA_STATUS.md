@@ -2,7 +2,9 @@
 
 **Production:** https://mywavewake.ru  
 **Phase status:** `IN PROGRESS` — Step 0 **CLOSED** · Step 1 manual device QA **BLOCKER**  
-**Precheck fix:** `3ae20741` (`--compressed`) · `f3a5256b` (`grep -Fq`) · `dc08c500` (HTML check **до** burst curl — ложный FAIL при OK manual)  
+**Team brief (GM):** [TEAM_STATUS_2026-05-17.md](../ops/TEAM_STATUS_2026-05-17.md)  
+**Deploy 17.05:** reviews photos `3d718a00` · checklist `ad71c02b` · [SERVER_DEPLOY_2026-05-16.md](../ops/SERVER_DEPLOY_2026-05-16.md)  
+**Precheck fix:** `dc08c500` (HTML before burst curl)  
 **Сервер:** [SERVER_PHASE1_VERIFY.md](SERVER_PHASE1_VERIFY.md)  
 **Roadmap:** [ENGINEERING_MATURITY_ROADMAP.md](../deployment/ENGINEERING_MATURITY_ROADMAP.md)  
 **Runtime:** `3de56f8c` FROZEN — не трогать
@@ -23,7 +25,9 @@
 | Runtime | operational |
 | Governance | operational |
 | Frontend QA phase | Step 0 done · Step 1 manual QA pending |
-| Automated precheck | **PASS** после `git pull` → `dc08c500` (prod HTML `?v=3` уже OK вручную) |
+| Automated precheck | **PASS** (prod, 2026-05-17) |
+| Checklist pipeline | **READY** (placeholder webp; final art = design) |
+| Reviews photos | **FIXED** on prod (`images/students`, `?v=2`) |
 | Sign-off | **NO** — until 4 platforms PASS |
 
 ---
