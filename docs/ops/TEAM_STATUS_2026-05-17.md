@@ -4,7 +4,8 @@
 **Date:** 2026-05-17 (sync с GM execution plan)  
 **Runtime baseline:** `3de56f8c` **FROZEN**  
 **Living QA board:** [PHASE1_MOBILE_QA_STATUS.md](../qa/PHASE1_MOBILE_QA_STATUS.md)  
-**Latest frontend deploy:** `ad9f2b80` (checklist `cardbg14`, blog xlsx reports)
+**Latest on `origin/main`:** `13ffaf36` (runbooks + art handoff) · checklist code: `ad9f2b80` (`cardbg14`)  
+**Production server:** deploy target only — `git pull`, **no** `commit`/`push` с сервера
 
 ---
 
@@ -126,12 +127,30 @@ Runtime refactor · backend rewrite · websocket · Redis · booking API · mixe
 
 ---
 
-## 10. Следующее действие
+## 10. Phase status (canon)
+
+| Phase | Status |
+|-------|--------|
+| Runtime stabilization | DONE |
+| Frontend pipeline | DONE |
+| Checklist render pipeline | DONE |
+| Production deploy flow | DONE |
+| Manual device QA | **PENDING** |
+| Final design assets (webp) | **PENDING** |
+
+## 11. Deploy flow (mandatory)
 
 ```text
-Закрыть REAL DEVICE QA на 4 платформах.
+ПК / Cursor → git push → GitHub origin/main → git pull → production server
 ```
 
-После PASS → matrix + sign-off → Phase 1 formally closed → Phase 2 execution.
+Push rejected `(fetch first)` на сервере = remote новее локальной копии, **не** auth-incident. Дополнительный push с prod **не нужен** после `git pull`.
+
+## 12. Следующее действие
+
+1. **Дизайн:** финальные webp → `static/images/Project/Cards/checklist/` (манифест).  
+2. **ПК:** `git add` → `commit` → `push`.  
+3. **Сервер:** только `git pull` + `restart` — [SERVER_CHECKLIST_ART_DEPLOY.md](SERVER_CHECKLIST_ART_DEPLOY.md).  
+4. **QA:** REAL DEVICE QA (4 платформы) → matrix → sign-off Phase 1.
 
 **Runbooks:** [SERVER_RUNBOOK_BLOG_CHECKLIST_2026-05-17.md](SERVER_RUNBOOK_BLOG_CHECKLIST_2026-05-17.md) · [SERVER_DEPLOY_2026-05-16.md](SERVER_DEPLOY_2026-05-16.md)
