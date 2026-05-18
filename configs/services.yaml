@@ -10,6 +10,13 @@ services:
     image_folder: "images/Services/Gym"
     # 0-based: третье по сортировке имён файла — первая обложка (первая давала плохое кадрирование)
     cover_index: 2
+    video_files:
+      - images/Services/Gym/VudsverhuBatut.mp4
+      - images/Services/Gym/PistolMic.mp4
+      - images/Services/Gym/MarKatSanBatut.mp4
+      - images/Services/Gym/KsuBatut.mp4
+      - images/Services/Gym/KatBatut.mp4
+      - images/Services/Gym/BodyBalanceRom.mp4
     modal_id: modalCalendar
     button_text: "Подробнее / Записаться"
 

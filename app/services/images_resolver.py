@@ -10,6 +10,7 @@ from typing import Any
 BASE_DIR = Path(__file__).resolve().parents[2]
 STATIC_ROOT = BASE_DIR / 'static'
 _IMG_EXT = frozenset({'.jpg', '.jpeg', '.png', '.gif', '.webp'})
+_VID_EXT = frozenset({'.mp4', '.webm', '.mov', '.avi'})
 FALLBACK = 'images/Place1Logo.png'
 
 
@@ -38,6 +39,19 @@ def scan_folder_images(rel_folder: str) -> list[str]:
     out = []
     for name in sorted(full.iterdir()):
         if name.suffix.lower() in _IMG_EXT:
+            out.append(str(name.relative_to(STATIC_ROOT)).replace('\\', '/'))
+    return out
+
+
+def scan_folder_videos(rel_folder: str) -> list[str]:
+    """Сканирует папку и возвращает относительные пути к видео (для static/)."""
+    norm = rel_folder.replace('\\', '/').strip().rstrip('/')
+    full = STATIC_ROOT / norm
+    if not full.exists() or not full.is_dir():
+        return []
+    out: list[str] = []
+    for name in sorted(full.iterdir()):
+        if name.suffix.lower() in _VID_EXT:
             out.append(str(name.relative_to(STATIC_ROOT)).replace('\\', '/'))
     return out
 

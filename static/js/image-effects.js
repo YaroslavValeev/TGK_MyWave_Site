@@ -1,6 +1,7 @@
 // Управление эффектами изображений
 document.addEventListener('DOMContentLoaded', () => {
     const images = document.querySelectorAll('.service-image');
+    const isCarouselSlide = (img) => Boolean(img.closest('.card-media-carousel'));
 
     function clearStallTimer(imageContainer) {
         const tid = imageContainer._imageEffectsStallTimer;
@@ -86,6 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Функция для загрузки изображения
     function loadImage(img) {
+        if (isCarouselSlide(img)) {
+            return;
+        }
         const container = setupImageContainer(img);
         const placeholder = container.querySelector('.image-placeholder');
 
@@ -160,10 +164,18 @@ document.addEventListener('DOMContentLoaded', () => {
             threshold: 0.1
         });
         
-        images.forEach(img => imageObserver.observe(img));
+        images.forEach(img => {
+            if (!isCarouselSlide(img)) {
+                imageObserver.observe(img);
+            }
+        });
     } else {
         // Для браузеров без поддержки Intersection Observer
-        images.forEach(loadImage);
+        images.forEach(img => {
+            if (!isCarouselSlide(img)) {
+                loadImage(img);
+            }
+        });
     }
     
     // Добавляем поддержку повторной попытки загрузки при клике

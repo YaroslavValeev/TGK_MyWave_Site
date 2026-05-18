@@ -32,11 +32,13 @@ def build_services_list(
         except (TypeError, ValueError):
             ci = 0
         imgs = rotate_images_to_cover_index(imgs, ci)
-        vids = scan_folder_videos(folder)
+        vids: list[str] = []
         for vf in s.get("video_files") or []:
             p = (vf or "").replace("\\", "/").strip()
             if p and p not in vids:
                 vids.append(p)
+        if not vids:
+            vids = scan_folder_videos(folder)
         item = {
             **{k: v for k, v in s.items() if k not in _SVC_SKIP},
             "cover": imgs[0],

@@ -33,12 +33,29 @@ def _resolve_healthcheck_url() -> str:
 
 
 def _resolve_service_account_file() -> str:
-    configured = (
-        os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE")
-        or os.getenv("GOOGLE_SHEETS_CREDENTIALS")
-        or os.path.join(CONFIG_DIR_PATH, "service_account.json")
-    )
-    return os.path.abspath(configured)
+    """Путь к JSON сервисного аккаунта Google.
+
+    Если в .env указан путь, но файла нет (типично Docker: SA в volume instance/),
+    перебираем стандартные расположения и берём первый существующий.
+    """
+    candidates = []
+    for env_key in ("GOOGLE_SERVICE_ACCOUNT_FILE", "GOOGLE_SHEETS_CREDENTIALS", "GOOGLE_APPLICATION_CREDENTIALS"):
+        env_path = (os.getenv(env_key) or "").strip()
+        if env_path:
+            candidates.append(os.path.abspath(env_path))
+    candidates.extend([
+        os.path.join(CONFIG_DIR_PATH, "service_account.json"),
+        os.path.join(BASE_DIR, "instance", "service_account.json"),
+        os.path.join(BASE_DIR, "service_account.json"),
+    ])
+    seen = set()
+    for path in candidates:
+        if path in seen:
+            continue
+        seen.add(path)
+        if os.path.isfile(path):
+            return path
+    return candidates[0] if candidates else os.path.join(CONFIG_DIR_PATH, "service_account.json")
 
 
 def _sqlite_file_url(path: str) -> str:
@@ -101,6 +118,7 @@ class Config:
     # Настройки для Telegram
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
     TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+    ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID") or os.getenv("TELEGRAM_CHAT_ID")
 
     # Настройки для Google Sheets, Drive и Calendar
     GOOGLE_SHEETS_CREDENTIALS = os.getenv("GOOGLE_SHEETS_CREDENTIALS") or os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE")
@@ -151,6 +169,21 @@ class Config:
     # Настройки уведомлений
     NOTIFICATION_BOT_TOKEN = os.getenv("NOTIFICATION_BOT_TOKEN")
     TRAINER_CHAT_ID = os.getenv("TRAINER_CHAT_ID")
+
+    # WakeSurf Challenge 2025
+    WSC2025_SPREADSHEET_ID = os.getenv("WSC2025_SPREADSHEET_ID") or os.getenv("SPREADSHEET_ID", "")
+    WSC2025_PARTICIPANTS_SHEET = os.getenv("WSC2025_PARTICIPANTS_SHEET", "WSC2025_Participants")
+    WSC2025_COACHES_SHEET = os.getenv("WSC2025_COACHES_SHEET", "WSC2025_Coaches")
+    WSC_ADMIN_EMAIL = os.getenv("WSC_ADMIN_EMAIL", "y.valeev@gmail.com")
+    SAFARI_SPREADSHEET_ID = os.getenv("SAFARI_SPREADSHEET_ID") or os.getenv("SPREADSHEET_ID", "")
+
+    # SMTP (опционально, для email-уведомлений о заявках WSC и др.)
+    MAIL_SERVER = os.getenv("MAIL_SERVER", "")
+    MAIL_PORT = int(os.getenv("MAIL_PORT", "587"))
+    MAIL_USE_TLS = os.getenv("MAIL_USE_TLS", "True").lower() in ("1", "true", "yes")
+    MAIL_USERNAME = os.getenv("MAIL_USERNAME", "")
+    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "")
+    MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER", "noreply@mywavewake.ru")
 
     CHAT_SYSTEM_PROMPT = "You are a helpful assistant."
 

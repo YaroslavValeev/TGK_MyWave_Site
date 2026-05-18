@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light only" />
   <meta http-equiv="content-language" content="ru" />
+  <script nonce="{{ g.csp_nonce }}">
+    try { localStorage.removeItem('theme'); } catch (e) {}
+    document.documentElement.removeAttribute('data-theme');
+  </script>
   <meta name="csrf-token" content="{{ csrf_token() }}" />
   
   <!-- SEO -->
@@ -29,8 +34,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/services-carousel.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=light-only" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/services-carousel.css') }}?v=media-contain1" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-home.css') }}?v=3" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/preloader.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/image-effects.css') }}" />
@@ -112,7 +117,6 @@
           <li><a href="{{ url_for('index') }}#contacts">Контакты</a></li>
         </ul>
       </nav>
-      <button id="dark-mode-toggle" class="theme-toggle" aria-label="Переключить тему">🌙</button>
       <button class="burger-menu" id="burger-menu" aria-label="Открыть меню">
         <span></span><span></span><span></span>
       </button>
@@ -195,7 +199,7 @@
   {% block scripts %}{% endblock %}
   <script src="{{ url_for('static', filename='js/carousel-arrows.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/services-expand.js') }}" defer></script>
-  <script src="{{ url_for('static', filename='js/card-gallery.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/card-gallery.js') }}?v=gym-videos2" defer></script>
   <script src="{{ url_for('static', filename='js/image-fallback.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/inline.js') }}"></script>
   <script src="{{ url_for('static', filename='js/preloader.js') }}"></script>
@@ -205,7 +209,7 @@
   {% include 'partials/booking_modals.html' %}
 
   <!-- booking.js, modals-close.js (надёжное закрытие Camp/CoachTriper/Consulting) и формы заявок -->
-  <script defer src="{{ url_for('static', filename='js/booking.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/booking.js') }}?v=boat-slots-hide-full"></script>
   <script defer src="{{ url_for('static', filename='js/modals-close.js') }}"></script>
   <script defer src="{{ url_for('static', filename='js/modal-lead-forms.js') }}"></script>
   <script defer src="{{ url_for('static', filename='js/ruza-lead-form.js') }}"></script>
@@ -222,36 +226,5 @@
     <p>Разработка: MyWave Team</p>
   </footer>
 
-  <script nonce="{{ g.csp_nonce }}">
-    const themeBtn = document.getElementById('dark-mode-toggle');
-    const boatCard = document.getElementById('boat-card');
-
-    if (themeBtn) {
-      // Авто-применение при загрузке
-      if (localStorage.getItem('theme') === 'dark') {
-        document.documentElement.setAttribute('data-theme','dark');
-        themeBtn.textContent = '☀️';
-      }
-
-      themeBtn.addEventListener('click', () => {
-        const isDark = document.documentElement.hasAttribute('data-theme');
-        if (isDark) {
-          document.documentElement.removeAttribute('data-theme');
-          localStorage.removeItem('theme');
-          themeBtn.textContent = '🌙';
-        } else {
-          document.documentElement.setAttribute('data-theme','dark');
-          localStorage.setItem('theme','dark');
-          themeBtn.textContent = '☀️';
-        }
-
-        // Подсветка карточки катера
-        if (boatCard) {
-          boatCard.classList.add('highlight-boat');
-          setTimeout(() => boatCard.classList.remove('highlight-boat'), 800);
-        }
-      });
-    }
-  </script>
 </body>
 </html>

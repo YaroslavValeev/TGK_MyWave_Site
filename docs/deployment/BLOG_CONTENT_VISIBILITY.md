@@ -49,6 +49,24 @@ curl -sS "https://mywavewake.ru/api/blog/posts?limit=5&db_only=1" | python3 -m j
 
 Если `db_only=1` даёт посты, а без него — пусто: проблема в **статусах/маппинге Sheets**, не в шаблоне.
 
+## Две разные таблицы (частая путаница)
+
+| Таблица | ID (пример) | Лист блога |
+|---------|-------------|------------|
+| **MyWave_Parser_News** (источник блога) | `1RJpw2mAMej3a-VC6yKAsKkVQvzGStcjUC7LijNNyn50` | `raw_feed` |
+| **MyWave_Admin_Tg_Bot** (бронь, клиенты, каталог) | `1kyNQVjeLLe4Ra6oWuf84fHqSjUlWXI8MakVMOrCgic0` | **нет** `raw_feed`; `Catalog_Posts` — не витрина блога |
+
+Файл `MyWave_Admin_Tg_Bot.xlsx` **не содержит** постов блога. Нужен экспорт **Parser News** (`raw_feed`) или синхронизация Parser Bot в онлайн-таблицу.
+
+Быстрый импорт на сервере из XLSX Parser News (fallback в SQLite):
+
+```bash
+flask migrate-blog   # один раз, если старая схема blog_post
+python scripts/blog_xlsx_import_to_db.py --xlsx /path/MyWave_Parser_News.xlsx --sheet raw_feed
+```
+
+Диагностика без секретов: `GET /api/blog/diagnostics`
+
 ## Типичные причины empty state
 
 1. **Статус в таблице** — Parser оставил `APPROVED` / `DRAFT`, не `READY_TO_PUBLISH`.

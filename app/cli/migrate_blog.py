@@ -26,6 +26,7 @@ COLUMNS_TO_ADD = [
     ("published_at", "DATETIME"),
     ("created_at", "DATETIME"),
     ("updated_at", "DATETIME"),
+    ("image_id", "INTEGER"),
 ]
 
 

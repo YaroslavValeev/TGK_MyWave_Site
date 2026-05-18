@@ -247,6 +247,47 @@ def to_markdown(report: Dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def load_raw_feed_records_from_xlsx(
+    xlsx_path: Path, sheet: Optional[str] = None
+) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    """Читает лист raw_feed из XLSX в список dict (как строки Sheets)."""
+    if not xlsx_path.exists():
+        raise FileNotFoundError(xlsx_path)
+
+    wb = openpyxl.load_workbook(str(xlsx_path), data_only=True)
+    if sheet:
+        if sheet not in wb.sheetnames:
+            raise ValueError(f"Лист '{sheet}' не найден. Доступно: {wb.sheetnames}")
+        ws = wb[sheet]
+    else:
+        ws = wb.active
+
+    rows = [list(r) for r in ws.iter_rows(values_only=True)]
+    has_header, header_idx, headers, meta = detect_schema(rows)
+    start_idx = (header_idx + 1) if has_header and header_idx is not None else 0
+    data_rows = rows[start_idx:]
+
+    records: List[Dict[str, Any]] = []
+    for row in data_rows:
+        if not any(cell is not None and str(cell).strip() for cell in row):
+            continue
+        raw = {
+            headers[idx]: row[idx] if idx < len(row) else None
+            for idx in range(len(headers))
+        }
+        records.append(raw)
+
+    schema = {
+        "sheet": ws.title,
+        "mode": meta["mode"],
+        "score": meta["score"],
+        "has_header_row": has_header,
+        "header_row_index": header_idx,
+        "headers_count": len(headers),
+    }
+    return records, schema
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Dry-run importer audit for blog XLSX")
     parser.add_argument("--xlsx", required=True, help="Path to XLSX file")
@@ -256,22 +297,10 @@ def main() -> int:
     args = parser.parse_args()
 
     xlsx_path = Path(args.xlsx).expanduser().resolve()
-    if not xlsx_path.exists():
-        raise SystemExit(f"Файл не найден: {xlsx_path}")
-
-    wb = openpyxl.load_workbook(str(xlsx_path), data_only=True)
-    if args.sheet:
-        if args.sheet not in wb.sheetnames:
-            raise SystemExit(f"Лист '{args.sheet}' не найден. Доступно: {wb.sheetnames}")
-        ws = wb[args.sheet]
-    else:
-        ws = wb.active
-
-    rows = [list(r) for r in ws.iter_rows(values_only=True)]
-    has_header, header_idx, headers, meta = detect_schema(rows)
-
-    start_idx = (header_idx + 1) if has_header and header_idx is not None else 0
-    data_rows = rows[start_idx:]
+    records, schema_meta = load_raw_feed_records_from_xlsx(xlsx_path, args.sheet)
+    has_header = schema_meta["has_header_row"]
+    header_idx = schema_meta["header_row_index"]
+    meta = {"mode": schema_meta["mode"], "score": schema_meta["score"]}
 
     normalized_rows: List[Dict[str, Any]] = []
     invalid_row_indices: List[int] = []
@@ -284,8 +313,7 @@ def main() -> int:
     ingest_ok_non_publishable_rows: List[int] = []
     approved_status_rows: List[int] = []
 
-    for i, row in enumerate(data_rows, start=start_idx + 1):
-        raw = {headers[idx]: row[idx] if idx < len(row) else None for idx in range(len(headers))}
+    for i, raw in enumerate(records, start=1):
         post = normalize_row(raw)
         normalized_rows.append(post)
 
@@ -319,17 +347,17 @@ def main() -> int:
     potential_publishable = sum(1 for p in normalized_rows if p["is_publishable"])
 
     report: Dict[str, Any] = {
-        "input": {"xlsx_path": str(xlsx_path), "sheet": ws.title},
+        "input": {"xlsx_path": str(xlsx_path), "sheet": schema_meta["sheet"]},
         "schema": {
             "mode": meta["mode"],
             "score": meta["score"],
             "has_header_row": has_header,
             "header_row_index": header_idx,
-            "headers_count": len(headers),
-            "headers_preview": headers[:40],
+            "headers_count": schema_meta["headers_count"],
+            "headers_preview": [],
         },
         "summary": {
-            "total_rows_scanned": len(data_rows),
+            "total_rows_scanned": len(records),
             "valid_rows": valid_rows,
             "invalid_rows": len(invalid_row_indices),
             "missing_title": missing_title,

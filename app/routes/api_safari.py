@@ -9,7 +9,7 @@ from flask_limiter.util import get_remote_address
 from flask_limiter.errors import RateLimitExceeded
 from datetime import datetime
 from app.services.google_sheets_service import append_record
-from app.services.notifications import send_telegram_notification
+from app.services.notifications import notify_safari_application
 from app.services.projects.validation import normalize_phone, sanitize_text
 from app.services.projects.analytics import get_session_data
 
@@ -113,29 +113,20 @@ def register_participant():
             except Exception as e:
                 logger.error(f"Ошибка сохранения в Google Sheets: {e}")
         
-        # Уведомление в Telegram
-        try:
-            notification_text = (
-                f"🌊 Новая заявка участника Wake Surf Safari 2026!\n\n"
-                f"👤 Имя: {full_name}\n"
-                f"📱 Телефон: {phone}\n"
-                f"📧 Email: {email}\n"
-                f"🎯 Формат: {participation_type or 'Не указан'}\n"
-                f"💬 Комментарий: {comment or 'Нет'}"
-            )
-            send_telegram_notification(
-                full_name,
-                phone,
-                notification_text
-            )
-        except Exception as e:
-            logger.warning(f"Не удалось отправить Telegram уведомление: {e}")
-        
+        notify_safari_application("participant", {
+            "full_name": full_name,
+            "phone": phone_normalized,
+            "email": email,
+            "participation_type": participation_type or "Не указан",
+            "skill_level": skill_level or "Не указан",
+            "comment": comment or "",
+        })
+
         return jsonify({
             "success": True,
             "message": "Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время."
         }), 200
-        
+
     except Exception as e:
         logger.error(f"Ошибка при регистрации участника Safari: {e}", exc_info=True)
         return jsonify({
@@ -184,7 +175,7 @@ def register_partner():
         analytics = get_session_data()
         
         # Сохранение в Sheets
-        spreadsheet_id = current_app.config.get('SPREADSHEET_ID')
+        spreadsheet_id = current_app.config.get('SAFARI_SPREADSHEET_ID') or current_app.config.get('SPREADSHEET_ID')
         if spreadsheet_id:
             row = [
                 datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -215,20 +206,15 @@ def register_partner():
             except Exception as e:
                 logger.error(f"Ошибка сохранения партнёра в Sheets: {e}")
         
-        # Уведомление
-        try:
-            notification_text = (
-                f"🤝 Новая заявка партнёра Wake Surf Safari 2026!\n\n"
-                f"🏢 Компания: {company_name}\n"
-                f"👤 Контакт: {contact_name}\n"
-                f"📱 Телефон: {phone}\n"
-                f"📧 Email: {email}\n"
-                f"📦 Интерес к пакету: {package_interest or 'Не указан'}"
-            )
-            send_telegram_notification(contact_name, phone, notification_text)
-        except Exception as e:
-            logger.warning(f"Не удалось отправить Telegram уведомление: {e}")
-        
+        notify_safari_application("partner", {
+            "company_name": company_name,
+            "contact_name": contact_name,
+            "phone": normalize_phone(phone),
+            "email": email,
+            "package_interest": package_interest or "Не указан",
+            "comment": comment or "",
+        })
+
         return jsonify({
             "success": True,
             "message": "Заявка успешно отправлена! Мы свяжемся с вами для обсуждения условий партнёрства."
@@ -321,26 +307,20 @@ def register_media():
             except Exception as e:
                 logger.error(f"Ошибка сохранения медиа в Sheets: {e}")
         
-        # Уведомление
-        try:
-            notification_text = (
-                f"📸 Новая заявка медиа-партнёра Wake Surf Safari 2026!\n\n"
-                f"📺 Медиа: {media_name}\n"
-                f"👤 Контакт: {contact_name}\n"
-                f"📱 Телефон: {phone}\n"
-                f"📧 Email: {email}\n"
-                f"🎯 Тип: {media_type or 'Не указан'}\n"
-                f"👥 Аудитория: {audience_size or 'Не указано'}"
-            )
-            send_telegram_notification(contact_name, phone, notification_text)
-        except Exception as e:
-            logger.warning(f"Не удалось отправить Telegram уведомление: {e}")
-        
+        notify_safari_application("media", {
+            "media_name": media_name,
+            "contact_name": contact_name,
+            "phone": normalize_phone(phone),
+            "email": email,
+            "media_type": media_type or "Не указан",
+            "audience_size": audience_size or "Не указано",
+        })
+
         return jsonify({
             "success": True,
             "message": "Заявка успешно отправлена! Мы свяжемся с вами для обсуждения условий сотрудничества."
         }), 200
-        
+
     except Exception as e:
         logger.error(f"Ошибка при регистрации медиа Safari: {e}", exc_info=True)
         return jsonify({
@@ -404,19 +384,13 @@ def submit_feedback():
             except Exception as e:
                 logger.error(f"Ошибка сохранения фидбека в Sheets: {e}")
         
-        # Уведомление
-        try:
-            notification_text = (
-                f"💬 Новый фидбек по Wake Surf Safari 2026!\n\n"
-                f"👤 Имя: {name}\n"
-                f"📧 Email: {email}\n"
-                f"📋 Тип: {feedback_type or 'Общий'}\n"
-                f"💬 Сообщение: {message[:200]}..."
-            )
-            send_telegram_notification(name, email, notification_text)
-        except Exception as e:
-            logger.warning(f"Не удалось отправить Telegram уведомление: {e}")
-        
+        notify_safari_application("feedback", {
+            "name": name,
+            "email": email,
+            "feedback_type": feedback_type or "Общий",
+            "message": message[:500],
+        })
+
         return jsonify({
             "success": True,
             "message": "Спасибо за ваш фидбек! Мы обязательно его учтём."

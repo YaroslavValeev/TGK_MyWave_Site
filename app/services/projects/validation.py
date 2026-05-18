@@ -140,7 +140,10 @@ def check_duplicate_email(email: str, sheet_name: str) -> bool:
     """
     try:
         from app.services.google_sheets_service import read_records
-        spreadsheet_id = current_app.config.get('WSC2025_SPREADSHEET_ID')
+        spreadsheet_id = (
+            current_app.config.get('WSC2025_SPREADSHEET_ID')
+            or current_app.config.get('SPREADSHEET_ID')
+        )
         if not spreadsheet_id:
             return False
         
@@ -148,12 +151,15 @@ def check_duplicate_email(email: str, sheet_name: str) -> bool:
         if not records:
             return False
         
-        # Проверяем email в записях (предполагаем, что email в колонке 3 или 4)
+        target = email.lower().strip()
         for record in records:
-            if len(record) >= 4:
-                record_email = str(record[3]).strip().lower()
-                if record_email == email.lower():
-                    return True
+            if not isinstance(record, dict):
+                continue
+            record_email = str(
+                record.get('email') or record.get('Email') or ''
+            ).strip().lower()
+            if record_email and record_email == target:
+                return True
         
         return False
     except Exception as e:
@@ -174,9 +180,11 @@ def check_duplicate_phone(phone: str, sheet_name: str) -> bool:
     """
     try:
         from app.services.google_sheets_service import read_records
-        spreadsheet_id = current_app.config.get('WSC2025_SPREADSHEET_ID')
+        spreadsheet_id = (
+            current_app.config.get('WSC2025_SPREADSHEET_ID')
+            or current_app.config.get('SPREADSHEET_ID')
+        )
         if not spreadsheet_id:
-            # Если не настроен, пропускаем проверку (не блокируем регистрацию)
             return False
         
         records = read_records(spreadsheet_id, sheet_name)
@@ -185,12 +193,14 @@ def check_duplicate_phone(phone: str, sheet_name: str) -> bool:
         
         normalized_phone = normalize_phone(phone)
         
-        # Проверяем телефон в записях (предполагаем, что телефон в колонке 2 или 3)
         for record in records:
-            if len(record) >= 3:
-                record_phone = str(record[2]).strip()
-                if normalize_phone(record_phone) == normalized_phone:
-                    return True
+            if not isinstance(record, dict):
+                continue
+            record_phone = str(
+                record.get('phone') or record.get('Телефон') or record.get('Phone') or ''
+            ).strip()
+            if record_phone and normalize_phone(record_phone) == normalized_phone:
+                return True
         
         return False
     except Exception as e:

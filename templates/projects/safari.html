@@ -604,7 +604,20 @@
 .safari-page .mw-section:not(.safari-hero) { padding: clamp(28px, 3.5vw, 44px) 0; }
 .safari-page .mw-section h2 { margin: 0 0 12px 0; }
 .safari-page .mw-card { padding: 18px !important; }
-.safari-page .mw-subnav { margin-bottom: 0; }
+/* Subnav: фиксирован под шапкой, без «прыжков» при скролле */
+.safari-page .mw-subnav {
+  margin-bottom: 0;
+  position: sticky;
+  top: var(--mw-header-h, 64px);
+  z-index: 900;
+  transform: none !important;
+  transition: none;
+}
+.safari-page .mw-subnav.is-hidden {
+  transform: none !important;
+  pointer-events: auto;
+  opacity: 1;
+}
 .safari-about__subtitle { font-size: 1.1em; font-weight: 600; color: var(--mw-brand, #35C0CD); margin: -0.4em 0 0.75em; }
 .safari-about-card p { margin-bottom: 0.75em; }
 .safari-about-card p:last-child { margin-bottom: 0; }
@@ -637,6 +650,5 @@
 {% block scripts %}
   {{ super() }}
   <script defer src="{{ url_for('static', filename='js/scrollspy_progress.js') }}"></script>
-  <script defer src="{{ url_for('static', filename='js/mw-subnav-hide.js') }}"></script>
-  <script defer src="{{ url_for('static', filename='js/safari-forms.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/safari-forms.js') }}?v=safari-fix1"></script>
 {% endblock %}

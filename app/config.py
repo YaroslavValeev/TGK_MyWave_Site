@@ -14,17 +14,21 @@ def find_service_account_file():
         str(Path(__file__).resolve().parent.parent / 'service_account.json')  # In root directory
     ]
     
-    # First check environment variable
-    env_path = os.getenv('GOOGLE_SERVICE_ACCOUNT_FILE') or os.getenv('GOOGLE_SHEETS_CREDENTIALS')
-    if env_path and os.path.isfile(env_path):
-        return env_path
-        
-    # Then try all possible paths
-    for path in possible_paths:
+    candidates = []
+    for env_key in ('GOOGLE_SERVICE_ACCOUNT_FILE', 'GOOGLE_SHEETS_CREDENTIALS', 'GOOGLE_APPLICATION_CREDENTIALS'):
+        env_path = (os.getenv(env_key) or '').strip()
+        if env_path:
+            candidates.append(os.path.abspath(env_path))
+    candidates.extend(possible_paths)
+
+    seen = set()
+    for path in candidates:
+        if path in seen:
+            continue
+        seen.add(path)
         if os.path.isfile(path):
             return path
-            
-    # If not found, return the default path (will be checked later)
+
     return str(CONFIG_DIR / 'service_account.json')
 
 GOOGLE_SERVICE_ACCOUNT_FILE = find_service_account_file()

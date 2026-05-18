@@ -2799,31 +2799,7 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
   --color-white: #fff;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #181a1b;
-    --color-text: #f0f0f0;
-    --color-header: #222;
-    --color-white: #222;
-  }
-  body, html {
-    background: var(--color-bg);
-    color: var(--color-text);
-  }
-  .site-header {
-    background: var(--color-header);
-    color: var(--color-text);
-  }
-  .chat-container, .chat-window, .modal-content {
-    background: #23272b;
-    color: #f0f0f0;
-  }
-  .message {
-    background: #23272b;
-    color: #f0f0f0;
-    border-color: var(--color-primary-dark);
-  }
-}
+/* Тёмная тема по системным настройкам отключена — только светлая (см. meta color-scheme). */
 
 /* Индикатор статуса socket.io */
 #socket-status-indicator {

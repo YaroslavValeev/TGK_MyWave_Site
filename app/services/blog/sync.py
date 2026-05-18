@@ -127,22 +127,16 @@ def _parse_tags(raw_tags: Any, ne: Any) -> List[str]:
     return out
 
 
-def sync_blog_from_parser_tab(db_session, logger=None) -> Dict[str, int]:
+def upsert_publishable_rows_from_raw_feed(
+    records: List[Dict[str, Any]], db_session, logger=None
+) -> Dict[str, int]:
     """
-    Синхронизирует блог из PARSER_TAB в локальную БД.
-    Возвращает статистику: created, updated, skipped, hidden
-    """
-    try:
-        records, headers = fetch_parser_news_rows()
-    except Exception as e:
-        if logger:
-            logger.error(f"[blog-sync] Ошибка чтения Sheets: {e}")
-        return {"created": 0, "updated": 0, "skipped": 0, "hidden": 0, "error": str(e)}
-
+    Записывает publishable-строки raw_feed в BlogPost (SQLite fallback для витрины).
+  """
     created = 0
     updated = 0
     skipped = 0
-    hidden = 0  # непубликуемые
+    hidden = 0
 
     for row in records:
         sheet_id = str(row.get("id") or row.get("news_id") or row.get("raw_id") or "").strip()
@@ -253,6 +247,23 @@ def sync_blog_from_parser_tab(db_session, logger=None) -> Dict[str, int]:
         return {"created": 0, "updated": 0, "skipped": 0, "hidden": 0, "error": str(e)}
 
     if logger:
-        logger.info(f"[blog-sync] created={created}, updated={updated}, skipped={skipped}, hidden={hidden}")
+        logger.info(
+            f"[blog-sync] created={created}, updated={updated}, skipped={skipped}, hidden={hidden}"
+        )
 
     return {"created": created, "updated": updated, "skipped": skipped, "hidden": hidden}
+
+
+def sync_blog_from_parser_tab(db_session, logger=None) -> Dict[str, int]:
+    """
+    Синхронизирует блог из PARSER_TAB в локальную БД.
+    Возвращает статистику: created, updated, skipped, hidden
+    """
+    try:
+        records, _headers = fetch_parser_news_rows()
+    except Exception as e:
+        if logger:
+            logger.error(f"[blog-sync] Ошибка чтения Sheets: {e}")
+        return {"created": 0, "updated": 0, "skipped": 0, "hidden": 0, "error": str(e)}
+
+    return upsert_publishable_rows_from_raw_feed(records, db_session, logger=logger)

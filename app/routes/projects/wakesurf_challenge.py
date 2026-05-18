@@ -8,7 +8,7 @@ from flask import Blueprint, render_template, request, jsonify, flash, redirect,
 from flask_wtf.csrf import validate_csrf, ValidationError as CSRFValidationError
 from app.forms.wsc2025_forms import ParticipantRegistrationForm, CoachRegistrationForm
 from app.services.projects.wsc2025_service import save_participant_registration, save_coach_registration
-from app.services.notifications import send_telegram_notification
+from app.services.notifications import notify_wsc_registration
 from app.extensions import limiter
 from app.modules.logger import get_logger
 from flask_limiter.util import get_remote_address
@@ -256,30 +256,14 @@ def register_participant():
                 "success": False,
                 "error": error_message or "Ошибка при сохранении данных"
             }), 500
-        
-        # Уведомление администратору
-        try:
-            notification_text = (
-                f"📌 Новая регистрация участника WakeSurf Challenge 2025!\n\n"
-                f"👤 Имя: {form_data['full_name']}\n"
-                f"📱 Телефон: {form_data['phone']}\n"
-                f"📧 Email: {form_data['email']}\n"
-                f"🎯 Уровень: {form_data['level']}\n"
-                f"📍 Город: {form_data['city']}"
-            )
-            send_telegram_notification(
-                form_data['full_name'],
-                form_data['phone'],
-                notification_text
-            )
-        except Exception as e:
-            logger.warning(f"Не удалось отправить Telegram уведомление: {e}")
-        
+
+        notify_wsc_registration("participant", form_data)
+
         return jsonify({
             "success": True,
             "message": "Регистрация успешно завершена! Мы свяжемся с вами в ближайшее время."
         }), 200
-        
+
     except Exception as e:
         logger.error(f"Ошибка при регистрации участника: {e}", exc_info=True)
         return jsonify({
@@ -338,30 +322,14 @@ def register_coach():
                 "success": False,
                 "error": error_message or "Ошибка при сохранении данных"
             }), 500
-        
-        # Уведомление администратору
-        try:
-            notification_text = (
-                f"📌 Новая регистрация тренера WakeSurf Challenge 2025!\n\n"
-                f"👤 Имя: {form_data['full_name']}\n"
-                f"📱 Телефон: {form_data['phone']}\n"
-                f"📧 Email: {form_data['email']}\n"
-                f"🏆 Опыт: {form_data['experience_years']} лет\n"
-                f"🏢 Клуб: {form_data['club'] or 'Не указан'}"
-            )
-            send_telegram_notification(
-                form_data['full_name'],
-                form_data['phone'],
-                notification_text
-            )
-        except Exception as e:
-            logger.warning(f"Не удалось отправить Telegram уведомление: {e}")
-        
+
+        notify_wsc_registration("coach", form_data)
+
         return jsonify({
             "success": True,
             "message": "Регистрация успешно завершена! Мы свяжемся с вами в ближайшее время."
         }), 200
-        
+
     except Exception as e:
         logger.error(f"Ошибка при регистрации тренера: {e}", exc_info=True)
         return jsonify({

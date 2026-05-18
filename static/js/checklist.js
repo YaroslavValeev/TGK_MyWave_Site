@@ -137,7 +137,7 @@
     'area-3-3': 'participants/participant_sauna_recovery.webp',
     'area-3-4': 'participants/participant_changing_room.webp',
     'area-3-5': 'participants/participant_drying_wetsuits.webp',
-    'area-3-6': 'media/media_logistics_support.webp',
+    'area-3-6': 'participants/participant_changing_room.webp',
     'area-3-7': 'participants/participant_healthy_food_zone.webp',
     'area-3-8': 'participants/participant_team_coach_area.webp',
     'area-3-9': 'participants/participant_warmup_training_zone.webp',
@@ -347,40 +347,101 @@
     cb.insertAdjacentElement('afterend', chip);
   }
 
-  /** Длинное описание: свёртка + кнопка «Показать полностью» */
-  function setupExpandableBodies(container) {
-    function attachToggle(body, inner) {
-      if (body.querySelector('.wake-checklist__card-expand')) return;
-      inner.classList.add('is-clamped');
-      if (inner.scrollHeight <= inner.clientHeight + 6) {
-        inner.classList.remove('is-clamped');
-        return;
-      }
-      var card = body.closest('.wake-checklist__card');
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'wake-checklist__card-expand';
-      btn.setAttribute('aria-expanded', 'false');
-      btn.innerHTML =
-        '<span class="wake-checklist__card-expand__text">Показать полностью</span>' +
-        '<span class="wake-checklist__card-expand__icon" aria-hidden="true"></span>';
-      body.appendChild(btn);
+  function createMoreButton() {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'wake-checklist__more-btn';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.innerHTML =
+      '<span class="wake-checklist__more-btn__label">Подробнее</span>' +
+      '<span class="wake-checklist__more-btn__chevron" aria-hidden="true"></span>';
+    return btn;
+  }
+
+  function ensureCardMoreFooter(card) {
+    var inner = card.querySelector('.wake-checklist__card-inner');
+    if (!inner) return null;
+    var footer = inner.querySelector('.wake-checklist__card-more');
+    if (!footer) {
+      footer = document.createElement('div');
+      footer.className = 'wake-checklist__card-more';
+      inner.appendChild(footer);
+    }
+    return footer;
+  }
+
+  function setMoreButtonState(btn, expanded) {
+    btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    var label = btn.querySelector('.wake-checklist__more-btn__label');
+    if (label) label.textContent = expanded ? 'Свернуть' : 'Подробнее';
+  }
+
+  /** Карточки 3.1–3.6: компактный вид, «Подробнее» внизу карточки */
+  var PARTICIPANT_COMPACT_CARD_IDS = [
+    'area-3-1', 'area-3-2', 'area-3-3', 'area-3-4', 'area-3-5', 'area-3-6'
+  ];
+
+  function setupCompactParticipantCards(container) {
+    PARTICIPANT_COMPACT_CARD_IDS.forEach(function(id) {
+      var cb = document.getElementById(id);
+      if (!cb) return;
+      var card = getCard(cb);
+      if (!card) return;
+      card.classList.add('wake-checklist__card--participant-compact', 'wake-checklist__card--collapsed');
+
+      var footer = ensureCardMoreFooter(card);
+      if (!footer || footer.querySelector('.wake-checklist__more-btn')) return;
+
+      var btn = createMoreButton();
+      footer.appendChild(btn);
       btn.addEventListener('click', function(ev) {
         ev.preventDefault();
         ev.stopPropagation();
-        if (!card) return;
-        var textEl = btn.querySelector('.wake-checklist__card-expand__text');
-        if (card.classList.contains('wake-checklist__card--expanded')) {
-          card.classList.remove('wake-checklist__card--expanded');
-          inner.classList.add('is-clamped');
-          btn.setAttribute('aria-expanded', 'false');
-          if (textEl) textEl.textContent = 'Показать полностью';
-        } else {
+        var expanded = !card.classList.toggle('wake-checklist__card--collapsed');
+        card.classList.toggle('wake-checklist__card--expanded', expanded);
+        setMoreButtonState(btn, expanded);
+      });
+    });
+  }
+
+  /** Длинное описание: свёртка + «Подробнее» внизу (не обрезается overflow) */
+  function setupExpandableBodies(container) {
+    function needsExpand(inner) {
+      inner.classList.add('is-clamped');
+      var overflow = inner.scrollHeight > inner.clientHeight + 4;
+      var longText = (inner.textContent || '').trim().length > 140;
+      return overflow || longText;
+    }
+
+    function attachToggle(body, inner) {
+      var card = body.closest('.wake-checklist__card');
+      if (!card || card.classList.contains('wake-checklist__card--participant-compact')) return;
+      if (card.querySelector('.wake-checklist__card-more .wake-checklist__more-btn')) return;
+
+      if (!needsExpand(inner)) {
+        inner.classList.remove('is-clamped');
+        return;
+      }
+
+      var footer = ensureCardMoreFooter(card);
+      if (!footer) return;
+
+      var btn = createMoreButton();
+      footer.appendChild(btn);
+      card.classList.add('wake-checklist__card--has-more');
+
+      btn.addEventListener('click', function(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        var expanded = !card.classList.contains('wake-checklist__card--expanded');
+        if (expanded) {
           card.classList.add('wake-checklist__card--expanded');
           inner.classList.remove('is-clamped');
-          btn.setAttribute('aria-expanded', 'true');
-          if (textEl) textEl.textContent = 'Свернуть';
+        } else {
+          card.classList.remove('wake-checklist__card--expanded');
+          inner.classList.add('is-clamped');
         }
+        setMoreButtonState(btn, expanded);
       });
     }
 
@@ -451,12 +512,13 @@
       updateCardCompleted(getCard(cb), saved);
     });
 
+    setupCompactParticipantCards(container);
     setupExpandableBodies(container);
     bindCardParallax(container);
 
-    // Click delegation: карточка целиком кликабельна (кроме кнопки раскрытия)
+    // Click delegation: карточка целиком кликабельна (кроме кнопок раскрытия)
     container.addEventListener('click', function(ev) {
-      if (ev.target.closest && ev.target.closest('.wake-checklist__card-expand')) {
+      if (ev.target.closest && ev.target.closest('.wake-checklist__more-btn')) {
         return;
       }
       var target = ev.target;

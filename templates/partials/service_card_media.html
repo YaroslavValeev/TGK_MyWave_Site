@@ -1,0 +1,19 @@
+{# Медиа в карточке услуги/товара: фото + ролики, перелистывание в card-gallery.js #}
+{% set _videos = service.videos|default([]) %}
+{% set _video_urls = service.video_urls|default([]) %}
+{% set _media_count = (service.images|default([])|length) + (_videos|length) %}
+{% if _media_count > 1 %}
+<div class="card-media-carousel"
+     data-images="{{ service.images|join(',') }}"
+     data-image-urls="{{ (service.image_urls or [])|join(',') }}"
+     data-video-urls="{{ _video_urls|join(',') }}">
+  <button type="button" class="carousel-nav carousel-prev-inner" aria-label="Предыдущее">‹</button>
+  <img class="service-image" src="{{ url_for('static', filename=service.cover) }}" alt="{{ service.name }}" loading="lazy"
+       data-fallback="{{ url_for('static', filename=service.fallback) }}">
+  <video class="service-video" playsinline muted loop controls preload="metadata" aria-hidden="true"></video>
+  <button type="button" class="carousel-nav carousel-next-inner" aria-label="Следующее">›</button>
+</div>
+{% else %}
+<img class="service-image" src="{{ url_for('static', filename=service.cover) }}" alt="{{ service.name }}" loading="lazy"
+     data-fallback="{{ url_for('static', filename=service.fallback) }}">
+{% endif %}

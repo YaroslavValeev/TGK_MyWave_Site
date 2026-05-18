@@ -9,6 +9,69 @@ async function getFreshCsrfToken() {
   return data.csrf_token;
 }
 
+/** С этой даты (включительно) hero «Записаться» → катер (по дате визита, не по «сегодня»). */
+const HERO_BOAT_SEASON_START = '2026-06-01';
+
+function toIsoDateLocal(d) {
+  if (!(d instanceof Date) || Number.isNaN(d.getTime())) return '';
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function isHeroBoatSeasonForDate(isoDate) {
+  if (!isoDate || typeof isoDate !== 'string') return false;
+  return isoDate >= HERO_BOAT_SEASON_START;
+}
+
+/** @param {string|Date|undefined} appointmentDate — дата визита YYYY-MM-DD; без даты — сегодня */
+function resolveHeroBookingService(appointmentDate) {
+  let iso = '';
+  if (typeof appointmentDate === 'string') {
+    iso = appointmentDate.trim().slice(0, 10);
+  } else if (appointmentDate instanceof Date) {
+    iso = toIsoDateLocal(appointmentDate);
+  }
+  if (!iso) iso = toIsoDateLocal(new Date());
+  return isHeroBoatSeasonForDate(iso) ? 'boat' : 'gym';
+}
+
+function getBookingServiceFromButton(btn) {
+  if (!btn) return null;
+  if (btn.id === 'openBookingBtn') {
+    return resolveHeroBookingService();
+  }
+  return btn.getAttribute('data-service') || btn.dataset.service || null;
+}
+
+/** Подпись кнопки слота: для катера — только время, без счётчика мест */
+function formatSlotButtonLabel(slot, service) {
+  if (service === 'boat') {
+    return slot.time;
+  }
+  if (slot.available) {
+    return `${slot.time} (Свободно: ${slot.remaining})`;
+  }
+  return `${slot.time} (Занято)`;
+}
+
+function getSlotsForDisplay(slots, service) {
+  if (!Array.isArray(slots)) return [];
+  if (service === 'boat') {
+    return slots.filter((slot) => slot.available !== false);
+  }
+  return slots;
+}
+
+function applyHeroBookingSeasonToButton() {
+  const heroBtn = document.getElementById('openBookingBtn');
+  if (!heroBtn) return;
+  const svc = resolveHeroBookingService();
+  heroBtn.dataset.service = svc;
+  heroBtn.setAttribute('data-service', svc);
+}
+
 // Function to initialize booking system
 function initializeBooking() {
   window.bookingStatus.initStarted = true;
@@ -45,6 +108,49 @@ function initializeBooking() {
 
   let currentStep = 1;
   let currentService = 'boat'; // По умолчанию используем лодку
+  window.__mwBookingService = currentService;
+  /** Запись с главной (#openBookingBtn): тип услуги по выбранной дате визита */
+  let heroBookingFlow = false;
+
+  function setCurrentService(svc) {
+    currentService = svc || 'boat';
+    window.__mwBookingService = currentService;
+  }
+
+  const BOOKING_SERVICE_LABELS = {
+    gym: 'Запись на тренировку (Зал)',
+    boat: 'Запись на катер',
+    camp: 'Camp',
+    coach_triper: 'CoachTriper',
+    consulting: 'Consulting'
+  };
+  const BOOKING_SERVICE_SHORT = { boat: 'Катер', gym: 'Зал', camp: 'Camp', coach_triper: 'CoachTriper', consulting: 'Consulting' };
+
+  function updateBookingServiceBadge(serviceType) {
+    const badge = document.getElementById('bookingServiceBadge');
+    if (!badge) return;
+    badge.textContent = BOOKING_SERVICE_LABELS[serviceType] || serviceType;
+  }
+
+  function syncHeroServiceForAppointmentDate(isoDate) {
+    if (!heroBookingFlow) return;
+    const svc = resolveHeroBookingService(isoDate);
+    setCurrentService(svc);
+    updateBookingServiceBadge(svc);
+    const heroBtn = document.getElementById('openBookingBtn');
+    if (heroBtn) {
+      heroBtn.dataset.service = svc;
+      heroBtn.setAttribute('data-service', svc);
+    }
+    if (UI.stepIndicator) {
+      UI.stepIndicator.textContent = svc === 'gym'
+        ? 'Шаг 1/4 - Выбор даты тренировки'
+        : 'Шаг 1/4 - Выбор даты катания';
+    }
+    console.log('[booking.js] Hero: услуга по дате визита', isoDate, '→', svc);
+  }
+
+  applyHeroBookingSeasonToButton();
 
   // Логируем инициализацию UI элементов
   console.log('[booking.js] ✅ ПОИСК UI ЭЛЕМЕНТОВ:');
@@ -81,9 +187,9 @@ function initializeBooking() {
       disableMobile: true,
       onChange: function(selectedDates) {
         if (selectedDates.length > 0) {
-          const dateObj = selectedDates[0];
-          const dateStr = dateObj.getFullYear() + '-' + String(dateObj.getMonth()+1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0');
+          const dateStr = toIsoDateLocal(selectedDates[0]);
           console.log("Selected (local):", dateStr);
+          syncHeroServiceForAppointmentDate(dateStr);
           updateSlotOptions(dateStr);
           showModal(UI.slotsModal);
         }
@@ -301,25 +407,26 @@ function initializeBooking() {
         return;
       }
       
+      const displaySlots = getSlotsForDisplay(data, currentService);
       let hasAvailableSlots = false;
-      
-      data.forEach(slot => {
-        if (slot.available && slot.remaining > 0) {
-          hasAvailableSlots = true;
+
+      displaySlots.forEach((slot) => {
+        const isAvailable = currentService === 'boat'
+          ? slot.available !== false
+          : Boolean(slot.available && slot.remaining > 0);
+        if (!isAvailable) {
+          return;
         }
-        
+        hasAvailableSlots = true;
+
         const button = document.createElement('button');
-        button.className = `slot-btn ${slot.available ? 'available' : 'booked'}`;
-        button.textContent = `${slot.time} ${slot.available ? `(Свободно: ${slot.remaining})` : '(Занято)'}`;
-        button.disabled = !slot.available;
-        
-        if (slot.available) {
-          button.addEventListener('click', () => {
-            document.getElementById('selectedSlot').value = slot.time;
-            goToStep(3); // Переходим к шагу 3 после выбора слота
-          });
-        }
-        
+        button.className = 'slot-btn available';
+        button.textContent = formatSlotButtonLabel(slot, currentService);
+        button.addEventListener('click', () => {
+          document.getElementById('selectedSlot').value = slot.time;
+          goToStep(3);
+        });
+
         UI.slotButtonsContainer.appendChild(button);
       });
       
@@ -401,6 +508,10 @@ function initializeBooking() {
     }
     if (!phone) {
         throw new Error('Пожалуйста, введите номер телефона');
+    }
+
+    if (heroBookingFlow && formattedDate) {
+      setCurrentService(resolveHeroBookingService(formattedDate));
     }
 
     const payload = {
@@ -848,7 +959,7 @@ function initializeBooking() {
 
     const btnText = btn.textContent.trim();
     const modalId = btn.getAttribute('data-modal');
-    const serviceType = btn.getAttribute('data-service');
+    const serviceType = getBookingServiceFromButton(btn);
     const href = btn.getAttribute('href');
     const classes = btn.className;
 
@@ -868,6 +979,7 @@ function initializeBooking() {
 
     // Создаем и сохраняем новый обработчик
     const clickHandler = (e) => {
+      const resolvedService = getBookingServiceFromButton(btn);
       console.log('[booking.js] ✅✅✅ КЛИК ЗАРЕГИСТРИРОВАН НА КНОПКЕ:', btnText);
       console.log('[booking.js] Event details:', {
         type: e.type,
@@ -877,7 +989,7 @@ function initializeBooking() {
       });
       
       // If this button is intended to open a modal (has data-modal or data-service), we'll handle it.
-      const shouldHandle = Boolean(modalId) || Boolean(serviceType);
+      const shouldHandle = Boolean(modalId) || Boolean(resolvedService);
 
       // If there's no modal/service but the element is a link, allow normal navigation.
       if (!shouldHandle && href && btn.tagName && btn.tagName.toLowerCase() === 'a') {
@@ -892,7 +1004,7 @@ function initializeBooking() {
       console.log(`[booking.js] ✅ ОБРАБОТКА КЛИКА на кнопке:`, {
         text: btnText,
         modalId: modalId,
-        serviceType: serviceType,
+        serviceType: resolvedService,
         href: href,
         target: e.target,
         currentTarget: e.currentTarget
@@ -903,18 +1015,21 @@ function initializeBooking() {
         return;
       }
 
+      heroBookingFlow = btn.id === 'openBookingBtn';
+
       // Устанавливаем текущий сервис (если есть)
-      if (serviceType) {
-        currentService = serviceType;
+      if (resolvedService) {
+        setCurrentService(resolvedService);
+        if (heroBookingFlow && UI.bookingDateInput && UI.bookingDateInput.value) {
+          syncHeroServiceForAppointmentDate(UI.bookingDateInput.value);
+        }
         console.log(`[booking.js] Установлен тип сервиса: ${currentService}`);
-        const badge = document.getElementById('bookingServiceBadge');
-        const labels = { gym: 'Запись на тренировку (Зал)', boat: 'Запись на катер', camp: 'Camp', coach_triper: 'CoachTriper', consulting: 'Consulting' };
-        const labelText = labels[serviceType] || serviceType;
-        if (badge) badge.textContent = labelText;
+        const labelText = BOOKING_SERVICE_LABELS[currentService] || currentService;
+        updateBookingServiceBadge(currentService);
         // Плавающий чат: только контекст услуги. Сценарий «запиши меня» в чате — server-first через POST /chat/api; модалка брони — отдельные API календаря.
         if (typeof window.syncChatContextFromBooking === 'function') {
           try {
-            window.syncChatContextFromBooking(serviceType, labelText);
+            window.syncChatContextFromBooking(currentService, labelText);
           } catch (e) {
             console.debug('[booking.js] syncChatContextFromBooking:', e);
           }
@@ -922,7 +1037,7 @@ function initializeBooking() {
       }
 
       // Настраиваем календарь в зависимости от типа услуги
-      if (serviceType === 'gym') {
+      if (resolvedService === 'gym') {
         console.log('[booking.js] Настройка календаря для зала');
         if (UI.bookingDateInput?._flatpickr) {
           UI.bookingDateInput._flatpickr.set('disable', []);
@@ -972,6 +1087,7 @@ function initializeBooking() {
         showToast('❌ Выберите дату');
         return;
       }
+      syncHeroServiceForAppointmentDate(date);
       updateSlotOptions(date);
     });
   }
@@ -1132,9 +1248,11 @@ function initializeBooking() {
         break;
       case 4:
         if (UI.confirmDetails) {
-          const serviceLabels = { boat: 'Катер', gym: 'Зал', camp: 'Camp', coach_triper: 'CoachTriper', consulting: 'Consulting' };
-          const svc = serviceLabels[currentService] || currentService;
           const dateVal = UI.bookingDateInput ? UI.bookingDateInput.value : '';
+          if (heroBookingFlow && dateVal) {
+            syncHeroServiceForAppointmentDate(dateVal);
+          }
+          const svc = BOOKING_SERVICE_SHORT[currentService] || currentService;
           const slotInput = document.getElementById('selectedSlot');
           const timeVal = slotInput ? slotInput.value : '';
           const nameVal = UI.bookingName ? UI.bookingName.value : '';
@@ -1219,13 +1337,19 @@ function renderSlots(slots) {
     return;
   }
     
-  slots.forEach(slot => {
+  const service =
+    (typeof window !== 'undefined' && window.__mwBookingService) ||
+    'boat';
+  getSlotsForDisplay(slots, service).forEach((slot) => {
+    const isAvailable = service === 'boat'
+      ? slot.available !== false
+      : Boolean(slot.available && slot.remaining > 0);
+    if (!isAvailable) return;
+
     const button = document.createElement('button');
-    const buttonClass = slot.available ? 'btn-primary-lg' : 'btn-secondary-sm disabled';
-    button.className = `slot-btn ${buttonClass}`;
-    if (!slot.available) button.setAttribute('disabled', 'disabled');
+    button.className = 'slot-btn btn-primary-lg';
     button.dataset.time = slot.time;
-    button.textContent = `${slot.time} ${slot.available ? `(${slot.remaining} мест)` : '(занято)'}`;
+    button.textContent = formatSlotButtonLabel(slot, service);
     container.appendChild(button);
   });
     

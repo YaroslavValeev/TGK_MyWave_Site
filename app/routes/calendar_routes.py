@@ -17,7 +17,8 @@ from app.services.google_sheets_analytics import log_analytics_event
 
 calendar_bp = Blueprint('calendar', __name__)
 
-MAX_PER_SLOT = 2  # Максимальное количество записей на один слот
+MAX_PER_SLOT = 2  # Зал: максимум записей на один слот
+BOAT_MAX_PER_SLOT = 1  # Катер: один ученик на сет (30 мин)
 
 
 def _masked_config_id(key: str) -> str:
@@ -314,9 +315,9 @@ def get_boat_slots(date_str: str):
     Генерация 30-минутных слотов для услуги 'boat' (катер)
     с 06:00 до 21:00 включительно, с учётом записей из Client_Workouts.
 
-    Использует MAX_PER_SLOT как вместимость слота.
-    Формат ответа совместим с get_available_slots:
-    [{ "time": "06:30", "available": True, "remaining": 1 }, ...]
+    Вместимость: BOAT_MAX_PER_SLOT (1 ученик на сет).
+    В ответ попадают только свободные слоты (занятые не возвращаются).
+    Формат: [{ "time": "06:30", "available": True }, ...]
     """
     current_app.logger.info(f"[boat] Генерация слотов для катера на дату {date_str}")
 
@@ -342,9 +343,12 @@ def get_boat_slots(date_str: str):
         # Фоллбек: если колонки нет или нет записей с service_type, считаем все записи
         filtered_bookings = relevant_bookings
 
-    # Считаем количество брони на каждый тайм-слот
+    # Считаем активные брони на каждый тайм-слот
     counts_by_time = {}
     for b in filtered_bookings:
+        st = (b.get('status') or '').strip().lower()
+        if st and st not in ('booked', 'new'):
+            continue
         t = (b.get('time') or '').strip()
         if not t:
             continue
@@ -361,18 +365,17 @@ def get_boat_slots(date_str: str):
     while cur <= end:
         time_str = cur.strftime("%H:%M")
         used = counts_by_time.get(time_str, 0)
-        remaining = max(0, MAX_PER_SLOT - used)
+        if used >= BOAT_MAX_PER_SLOT:
+            cur += td(minutes=30)
+            continue
         slots.append({
             "time": time_str,
-            "available": remaining > 0,
-            "remaining": remaining
+            "available": True,
         })
         cur += td(minutes=30)
 
-    # Логируем краткую статистику
-    available_count = sum(1 for s in slots if s["available"]) 
     current_app.logger.info(
-        f"[boat] Сгенерировано {len(slots)} слотов, доступно: {available_count}"
+        f"[boat] Свободных слотов на {date_str}: {len(slots)}"
     )
 
     return slots
@@ -944,6 +947,14 @@ def _book_slot_internal():
             'error': 'Ошибка валидации данных',
             'details': ve.messages
         }), 400
+
+    except FileNotFoundError as fe:
+        current_app.logger.critical("booking_credentials_missing detail=%s", str(fe))
+        return jsonify({
+            'status': 'error',
+            'error': 'Сервис записи временно недоступен. Обратитесь к администратору.',
+            'code': 'google_credentials_missing',
+        }), 503
 
     except HttpError as he:
         error_msg = str(he)

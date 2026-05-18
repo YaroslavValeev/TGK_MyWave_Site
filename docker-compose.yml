@@ -27,6 +27,9 @@ services:
     volumes:
       - mywave-data:/app/instance
       - mywave-logs:/app/logs
+      # JSON сервисного аккаунта: положите на хост instance/service_account.json
+      # (в образ не попадает из‑за .dockerignore). Либо задайте в .env:
+      # GOOGLE_SERVICE_ACCOUNT_FILE=/app/instance/service_account.json
     depends_on:
       - redis
     healthcheck:

@@ -42,17 +42,7 @@
         {% for service in services %}
         <div class="service-card js-expandable-card{% if service.service_id == 'boat' %} boat-card{% endif %}"{% if service.service_id == 'boat' %} id="boat-card"{% endif %} data-service="{{ service.service_id }}">
           <div class="service-image-container">
-            {% if service.images and service.images|length > 1 %}
-            <div class="card-media-carousel" data-images="{{ service.images|join(',') }}" data-image-urls="{{ (service.image_urls or [])|join(',') }}">
-              <button type="button" class="carousel-nav carousel-prev-inner" aria-label="Предыдущее">‹</button>
-              <img class="service-image" src="{{ url_for('static', filename=service.cover) }}" alt="{{ service.name }}" loading="lazy"
-                   data-fallback="{{ url_for('static', filename=service.fallback) }}">
-              <button type="button" class="carousel-nav carousel-next-inner" aria-label="Следующее">›</button>
-            </div>
-            {% else %}
-            <img class="service-image" src="{{ url_for('static', filename=service.cover) }}" alt="{{ service.name }}" loading="lazy"
-                 data-fallback="{{ url_for('static', filename=service.fallback) }}">
-            {% endif %}
+            {% include 'partials/service_card_media.html' %}
           </div>
           <h4>{{ service.name }}</h4>
           <p class="service-description service-description--short">{{ service.description }}</p>

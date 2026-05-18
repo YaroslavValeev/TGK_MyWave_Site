@@ -8,6 +8,14 @@ from app.services.google_sheets_service import append_record, read_records
 from app.services.projects.validation import normalize_phone, sanitize_text
 
 
+def _wsc_spreadsheet_id() -> str:
+    return (
+        current_app.config.get("WSC2025_SPREADSHEET_ID")
+        or current_app.config.get("SPREADSHEET_ID")
+        or ""
+    )
+
+
 def save_participant_registration(data: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
     """
     Сохранение регистрации участника.
@@ -19,11 +27,11 @@ def save_participant_registration(data: Dict[str, Any]) -> Tuple[bool, Optional[
         (success, error_message)
     """
     try:
-        spreadsheet_id = current_app.config.get('WSC2025_SPREADSHEET_ID')
+        spreadsheet_id = _wsc_spreadsheet_id()
         sheet_name = current_app.config.get('WSC2025_PARTICIPANTS_SHEET', 'WSC2025_Participants')
         
         if not spreadsheet_id:
-            return False, "Не настроен SPREADSHEET_ID для проекта"
+            return False, "Не настроен SPREADSHEET_ID / WSC2025_SPREADSHEET_ID для проекта"
         
         # Подготовка данных для сохранения
         row = [
@@ -62,11 +70,11 @@ def save_coach_registration(data: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
         (success, error_message)
     """
     try:
-        spreadsheet_id = current_app.config.get('WSC2025_SPREADSHEET_ID')
+        spreadsheet_id = _wsc_spreadsheet_id()
         sheet_name = current_app.config.get('WSC2025_COACHES_SHEET', 'WSC2025_Coaches')
         
         if not spreadsheet_id:
-            return False, "Не настроен SPREADSHEET_ID для проекта"
+            return False, "Не настроен SPREADSHEET_ID / WSC2025_SPREADSHEET_ID для проекта"
         
         # Подготовка данных для сохранения
         row = [

@@ -1,29 +1,18 @@
-import os
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-import logging
 from flask import current_app
 from app.modules.logger import logger
 from app.services.google_sheets_service import read_records, append_record, update_record
 
+def get_sheets_service_bundle():
+    """Единый путь к Google API через app.services.google (с fallback путей к SA)."""
+    from app.services.google import get_google_services
+    return get_google_services()
+
 def get_google_client():
-    credentials_file = os.getenv("GOOGLE_SHEETS_CREDENTIALS")
-    credentials = service_account.Credentials.from_service_account_file(credentials_file)
-    return build('sheets', 'v4', credentials=credentials)
+    _, sheets, _ = get_sheets_service_bundle()
+    return sheets
 
 def get_sheets_service():
-    credentials_file = os.getenv("GOOGLE_SHEETS_CREDENTIALS")
-    
-    if not credentials_file:
-        raise ValueError("⚠️ Переменная среды GOOGLE_SHEETS_CREDENTIALS не задана.")
-    
-    credentials = service_account.Credentials.from_service_account_file(
-        credentials_file,
-        scopes=['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
-    )
-    
-    service = build('sheets', 'v4', credentials=credentials)
-    return service
+    return get_sheets_service_bundle()[1]
 
 def get_google_sheet(sheet_name):
     try:

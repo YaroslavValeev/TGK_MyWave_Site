@@ -81,7 +81,6 @@ _converter_args_re = re.compile(
     re.VERBOSE,
 )
 
-
 _PYTHON_CONSTANTS = {"None": None, "True": True, "False": False}
 
 
@@ -118,7 +117,7 @@ def parse_converter_args(argstr: str) -> tuple[tuple[t.Any, ...], dict[str, t.An
     for item in _converter_args_re.finditer(argstr):
         if item.start() != position:
             raise ValueError(
-                f"Cannot parse converter argument '{argstr[position:item.start()]}'"
+                f"Cannot parse converter argument '{argstr[position : item.start()]}'"
             )
 
         value = item.group("stringval")
@@ -722,7 +721,7 @@ class Rule(RuleFactory):
         self._trace.append((False, "|"))
         rule = self.rule
         if self.merge_slashes:
-            rule = re.sub("/{2,}?", "/", self.rule)
+            rule = re.sub("/{2,}", "/", self.rule)
         self._parts.extend(self._parse_rule(rule))
 
         self._build: t.Callable[..., tuple[str, str]]
@@ -776,7 +775,7 @@ class Rule(RuleFactory):
             ret = [parts[0]]
             for p in parts[1:]:
                 if isinstance(p, ast.Constant) and isinstance(ret[-1], ast.Constant):
-                    ret[-1] = ast.Constant(ret[-1].value + p.value)
+                    ret[-1] = ast.Constant(ret[-1].value + p.value)  # type: ignore[operator]
                 else:
                     ret.append(p)
             return ret

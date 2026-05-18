@@ -8,6 +8,8 @@ from app.services.blog.store import (
     get_post_by_slug,
     get_latest_post,
     invalidate_blog_sheets_cache,
+    _load_from_sheets,
+    _load_from_db,
 )
 
 logger = get_logger(__name__)
@@ -180,6 +182,58 @@ def api_blog_posts():
     except Exception as e:
         logger.error("blog: ошибка api posts: %s", e)
         return jsonify({"error": "unavailable"}), 503
+
+
+@blog_bp.get("/api/blog/diagnostics")
+def api_blog_diagnostics():
+    """
+    Read-only: откуда читается блог и сколько постов в Sheets vs SQLite.
+    Не раскрывает полные ID таблиц и содержимое постов.
+    """
+    resolve_error = None
+    parser_spreadsheet_tail = None
+    parser_worksheet = None
+    try:
+        from app.services.parser_news_sheet import resolve_parser_source
+
+        sid, wst = resolve_parser_source()
+        parser_spreadsheet_tail = (sid or "")[-8:] if sid else None
+        parser_worksheet = wst
+    except Exception as e:
+        resolve_error = str(e)
+
+    try:
+        sheets_posts = _load_from_sheets()
+    except Exception as e:
+        sheets_posts = []
+        logger.warning("blog diagnostics: sheets load failed: %s", e)
+
+    try:
+        db_posts = _load_from_db()
+    except Exception as e:
+        db_posts = []
+        logger.warning("blog diagnostics: db load failed: %s", e)
+
+    vitrine_posts, _ = get_posts(page=1, limit=1000, prefer_sheets=True)
+
+    return jsonify(
+        {
+            "parser_source": {
+                "spreadsheet_id_tail": parser_spreadsheet_tail,
+                "worksheet": parser_worksheet,
+                "resolve_error": resolve_error,
+            },
+            "counts": {
+                "sheets_publishable": len(sheets_posts),
+                "db_publishable": len(db_posts),
+                "vitrine_total": len(vitrine_posts) if vitrine_posts else 0,
+            },
+            "hint": (
+                "Блог читает лист raw_feed таблицы Parser News (PARSER_TAB), "
+                "не Admin/Tg Bot. Статус строки: READY_TO_PUBLISH или PUBLISHED + контент."
+            ),
+        }
+    )
 
 
 @blog_bp.post("/api/blog/cache/invalidate")

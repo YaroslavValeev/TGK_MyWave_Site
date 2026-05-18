@@ -1,5 +1,5 @@
 # dialects/oracle/base.py
-# Copyright (C) 2005-2025 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2026 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -2618,7 +2618,7 @@ class OracleDialect(default.DefaultDialect):
             and ObjectKind.TABLE in kind
             and ObjectKind.MATERIALIZED_VIEW not in kind
         ):
-            # cant use EXCEPT ALL / MINUS here because we don't have an
+            # can't use EXCEPT ALL / MINUS here because we don't have an
             # excludable row vs. the query above
             # outerjoin + where null works better on oracle 21 but 11 does
             # not like it at all. this is the next best thing
@@ -2778,6 +2778,7 @@ class OracleDialect(default.DefaultDialect):
                 all_cols.c.column_name,
                 all_cols.c.data_type,
                 all_cols.c.char_length,
+                all_cols.c.data_length,
                 all_cols.c.data_precision,
                 all_cols.c.data_scale,
                 all_cols.c.nullable,
@@ -2896,6 +2897,9 @@ class OracleDialect(default.DefaultDialect):
             elif coltype in ("VARCHAR2", "NVARCHAR2", "CHAR", "NCHAR"):
                 char_length = maybe_int(row_dict["char_length"])
                 coltype = self.ischema_names.get(coltype)(char_length)
+            elif coltype == "RAW":
+                data_length = maybe_int(row_dict["data_length"])
+                coltype = RAW(data_length)
             elif "WITH TIME ZONE" in coltype:
                 coltype = TIMESTAMP(timezone=True)
             elif "WITH LOCAL TIME ZONE" in coltype:

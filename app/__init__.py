@@ -53,6 +53,7 @@ from app.routes.reviews import reviews_bp
 from app.services.responses_api import responses_bp
 from app.routes.safari_cms_api import safari_cms_bp
 from app.routes.safari import safari_bp
+from app.routes.api_safari import api_safari_bp
 from app.routes.shop import shop_bp
 telegram_bp = None
 if os.getenv("DISABLE_TELEGRAM") != "1":
@@ -135,11 +136,7 @@ def create_app(config_name="development"):
     def home():
         months = {'Июнь': [], 'Июль': [], 'Август': [], 'Сентябрь': [], 'Октябрь': []}
         from app.services.showcases import get_project_cards
-        from app.services.images_resolver import (
-            resolve_card_images,
-            rotate_images_to_cover_index,
-            FALLBACK as FALLBACK_IMG,
-        )
+        from app.services.service_cards import build_services_list
         from app.routes.shop import _products_with_resolved_images
 
         try:
@@ -155,24 +152,7 @@ def create_app(config_name="development"):
                 {'service_id': 'consulting', 'name': 'Консалтинг', 'description': '...', 'price': 'по запросу', 'image_folder': 'images/Services/Consalting', 'modal_id': 'modalConsulting', 'button_text': 'Подробнее / Получить консультацию'},
             ]
 
-        services = []
-        _svc_skip = frozenset({'image_folder', 'cover_index'})
-        for s in services_config:
-            folder = s.get('image_folder', '')
-            resolved = resolve_card_images(folder, fallback=FALLBACK_IMG)
-            imgs = resolved.get('images') or [resolved['cover']]
-            try:
-                ci = int(s.get('cover_index') or 0)
-            except (TypeError, ValueError):
-                ci = 0
-            imgs = rotate_images_to_cover_index(imgs, ci)
-            services.append({
-                **{k: v for k, v in s.items() if k not in _svc_skip},
-                'cover': imgs[0],
-                'fallback': resolved['fallback'],
-                'images': imgs,
-                'image_urls': [url_for('static', filename=p) for p in imgs],
-            })
+        services = build_services_list(services_config, url_for)
         products = _products_with_resolved_images()
         try:
             projects = get_project_cards()
@@ -397,6 +377,7 @@ def create_app(config_name="development"):
         app.register_blueprint(safari_cms_bp)
     except Exception:
         app.logger.debug('safari_cms_bp not found or failed to import')
+    app.register_blueprint(api_safari_bp)
     # Recommendations blueprint (optional)
     try:
         from app.routes.recommendations_api import reco_bp
@@ -507,6 +488,7 @@ def create_app(config_name="development"):
             csrf.exempt(_safari_bp)
         except Exception:
             app.logger.debug('Could not exempt safari_bp from CSRF (maybe not registered)')
+        csrf.exempt(api_safari_bp)
     except Exception:
         app.logger.debug('Could not exempt blueprints from CSRF (maybe not needed)')
 

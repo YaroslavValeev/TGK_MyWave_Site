@@ -121,35 +121,11 @@ _SERVICES_RAW = _load_services_config
 def services_list():
     """Страница списка всех услуг. P0-1: images[]/cover/fallback из скана папки."""
     try:
-        from app.services.images_resolver import (
-            resolve_card_images,
-            rotate_images_to_cover_index,
-            FALLBACK as FALLBACK_IMG,
-        )
-        services = []
-        _svc_skip = frozenset({'image_folder', 'cover_index'})
-        for s in _load_services_config():
-            folder = s.get('image_folder', '')
-            resolved = resolve_card_images(folder, fallback=FALLBACK_IMG)
-            imgs = resolved.get('images') or []
-            if not imgs:
-                logger.warning("Пустая папка изображений для услуги %s: %s", s.get('service_id'), folder)
-            try:
-                ci = int(s.get('cover_index') or 0)
-            except (TypeError, ValueError):
-                ci = 0
-            imgs = rotate_images_to_cover_index(imgs, ci)
-            if not imgs:
-                imgs = [resolved['cover']]
-            image_urls = [url_for('static', filename=p) for p in imgs]
-            services.append({
-                **{k: v for k, v in s.items() if k not in _svc_skip},
-                'image_url': imgs[0],
-                'images': imgs,
-                'image_urls': image_urls,
-                'cover': imgs[0],
-                'fallback': resolved['fallback'],
-            })
+        from app.services.service_cards import build_services_list
+
+        services = build_services_list(_load_services_config(), url_for)
+        for s in services:
+            s['image_url'] = s.get('cover')
         return render_template("services.html", services=services)
     except Exception as e:
         logger.error(f"Ошибка в services_list: {e}", exc_info=True)
