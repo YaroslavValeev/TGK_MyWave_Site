@@ -2,8 +2,11 @@
  * Галерея внутри карточки: фото и видео, переключение стрелками.
  */
 (function () {
-  function parseCsv(str) {
-    return str ? str.split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [];
+  /** URL-списки в data-* через «|», чтобы не ломать имена файлов с запятой. */
+  function parseUrlList(str) {
+    if (!str) return [];
+    var delim = str.indexOf('|') >= 0 ? '|' : ',';
+    return str.split(delim).map(function (s) { return s.trim(); }).filter(Boolean);
   }
 
   function isVideoUrl(url) {
@@ -12,9 +15,9 @@
 
   /** Сначала обложка, затем ролики, остальные фото — ролики видны после 1–2 кликов. */
   function buildSlides(carousel) {
-    var imageUrls = parseCsv(carousel.dataset.imageUrls || '');
-    var videoUrls = parseCsv(carousel.dataset.videoUrls || '');
-    var paths = parseCsv(carousel.dataset.images || '');
+    var imageUrls = parseUrlList(carousel.dataset.imageUrls || '');
+    var videoUrls = parseUrlList(carousel.dataset.videoUrls || '');
+    var paths = parseUrlList(carousel.dataset.images || '');
     var baseUrl = window.location.origin + '/static/';
     var slides = [];
 
@@ -82,6 +85,7 @@
       var prevBtn = carousel.querySelector('.carousel-prev-inner');
       var nextBtn = carousel.querySelector('.carousel-next-inner');
       var idx = 0;
+      var posterUrl = imageUrls[0] || '';
 
       function pauseVideo() {
         try {
@@ -117,7 +121,13 @@
         video.removeAttribute('src');
         video.setAttribute('aria-hidden', 'true');
         img.classList.remove('card-media-carousel__img--hidden');
-        img.src = slide.url;
+        img.classList.remove('fade-in');
+        img.classList.add('loaded');
+        img.loading = 'eager';
+        if (img.getAttribute('src') !== slide.url) {
+          img.src = slide.url;
+        }
+        img.style.opacity = '1';
       }
 
       showSlide(0);

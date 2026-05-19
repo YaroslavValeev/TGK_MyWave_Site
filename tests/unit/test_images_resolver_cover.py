@@ -1,7 +1,7 @@
 """Порядок обложки услуг (cover_index)."""
 import pytest
 
-from app.services.images_resolver import rotate_images_to_cover_index
+from app.services.images_resolver import rotate_images_to_cover_index, scan_folder_images
 
 
 def test_rotate_noop() -> None:
@@ -17,3 +17,10 @@ def test_rotate_second_first() -> None:
 
 def test_rotate_third_first() -> None:
     assert rotate_images_to_cover_index(["a", "b", "c", "d"], 2) == ["c", "d", "a", "b"]
+
+
+def test_scan_skips_dotfiles() -> None:
+    imgs = scan_folder_images("images/Services/Gym")
+    assert imgs
+    assert not any(part.startswith(".") for p in imgs for part in p.split("/"))
+    assert not any(".trashed" in p for p in imgs)

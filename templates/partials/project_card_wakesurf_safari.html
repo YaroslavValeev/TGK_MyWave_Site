@@ -5,13 +5,13 @@
 <div class="project-card project-card--wakesurf-safari js-expandable-card" id="{{ p.slug }}" data-project="{{ p.slug }}">
   <div class="service-image-container">
     {% if p.images and p.images|length > 1 %}
-    <div class="card-media-carousel" data-images="{{ p.images|join(',') }}" data-image-urls="{% for img in p.images %}{{ url_for('static', filename=img) }}{% if not loop.last %},{% endif %}{% endfor %}">
+    <div class="card-media-carousel" data-images="{{ p.images|join('|') }}" data-image-urls="{% for img in p.images %}{{ url_for('static', filename=img) }}{% if not loop.last %}|{% endif %}{% endfor %}">
       <button type="button" class="carousel-nav carousel-prev-inner" aria-label="Предыдущее">‹</button>
-      <img class="service-image project-card__cover" src="{{ cover_src }}" alt="{{ p.name }}" loading="lazy" data-fallback="{{ _fallback_img }}">
+      <img class="service-image project-card__cover" src="{{ cover_src }}" alt="{{ p.name }}" loading="{{ project_media_loading|default('lazy') }}" decoding="async" data-fallback="{{ _fallback_img }}">
       <button type="button" class="carousel-nav carousel-next-inner" aria-label="Следующее">›</button>
     </div>
     {% else %}
-    <img class="service-image project-card__cover" src="{{ cover_src }}" alt="{{ p.name }}" loading="lazy" data-fallback="{{ _fallback_img }}">
+    <img class="service-image project-card__cover" src="{{ cover_src }}" alt="{{ p.name }}" loading="{{ project_media_loading|default('lazy') }}" decoding="async" data-fallback="{{ _fallback_img }}">
     {% endif %}
   </div>
 

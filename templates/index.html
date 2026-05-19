@@ -5,8 +5,8 @@
 {% block content %}
   <!-- Герой-блок -->
   <section class="hero-section relative-section">
-    <img src="{{ url_for('static', filename='images_old/hero-wakesurf.webp') }}" alt="Вейксерфинг на волне" class="hero-bg hero-bg-cover hero-bg-light" loading="lazy" />
-    <img src="{{ url_for('static', filename='images_old/hero-wakesurf.webp') }}" alt="Вейксерфинг на волне (тёмная тема)" class="hero-bg hero-bg-cover hero-bg-dark" loading="lazy" />
+    <img src="{{ url_for('static', filename='images_old/hero-wakesurf.webp') }}" alt="Вейксерфинг на волне" class="hero-bg hero-bg-cover hero-bg-light" loading="eager" fetchpriority="high" decoding="async" />
+    <img src="{{ url_for('static', filename='images_old/hero-wakesurf.webp') }}" alt="Вейксерфинг на волне (тёмная тема)" class="hero-bg hero-bg-cover hero-bg-dark" loading="eager" fetchpriority="high" decoding="async" />
     <div class="hero-content center-padding hero-content-relative">
       <h1 class="hero-title">MyWave</h1>
       <p class="hero-subtitle">Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
@@ -42,6 +42,8 @@
         {% for service in services %}
         <div class="service-card js-expandable-card{% if service.service_id == 'boat' %} boat-card{% endif %}"{% if service.service_id == 'boat' %} id="boat-card"{% endif %} data-service="{{ service.service_id }}">
           <div class="service-image-container">
+            {% set media_loading = 'eager' if loop.index0 < 2 else 'lazy' %}
+            {% set media_fetchpriority = 'high' if loop.index0 == 0 else none %}
             {% include 'partials/service_card_media.html' %}
           </div>
           <h4>{{ service.name }}</h4>
@@ -80,13 +82,13 @@
         <div class="product-card product-card--unified js-expandable-card">
           <div class="service-image-container product-card__image-wrap">
             {% if product.images and product.images|length > 1 %}
-            <div class="card-media-carousel" data-images="{{ product.images|join(',') }}" data-image-urls="{{ (product.image_urls or [])|join(',') }}">
+            <div class="card-media-carousel" data-images="{{ product.images|join('|') }}" data-image-urls="{{ (product.image_urls or [])|join('|') }}">
               <button type="button" class="carousel-nav carousel-prev-inner" aria-label="Предыдущее">‹</button>
-              <img class="service-image" src="{{ url_for('static', filename=product.cover) }}" alt="{{ product.title }}" loading="lazy" data-fallback="{{ url_for('static', filename=product.fallback) }}">
+              <img class="service-image" src="{{ url_for('static', filename=product.cover) }}" alt="{{ product.title }}" loading="eager"{% if loop.index0 == 0 %} fetchpriority="high"{% endif %} decoding="async" data-fallback="{{ url_for('static', filename=product.fallback) }}">
               <button type="button" class="carousel-nav carousel-next-inner" aria-label="Следующее">›</button>
             </div>
             {% else %}
-            <img class="service-image" src="{{ url_for('static', filename=product.cover) }}" alt="{{ product.title }}" loading="lazy" data-fallback="{{ url_for('static', filename=product.fallback) }}">
+            <img class="service-image" src="{{ url_for('static', filename=product.cover) }}" alt="{{ product.title }}" loading="{{ 'eager' if loop.index0 < 2 else 'lazy' }}"{% if loop.index0 == 0 %} fetchpriority="high"{% endif %} decoding="async" data-fallback="{{ url_for('static', filename=product.fallback) }}">
             {% endif %}
           </div>
           <h4>{{ product.title }}</h4>
@@ -109,6 +111,7 @@
       <button class="carousel-prev" aria-label="Предыдущие проекты">◀</button>
       <div class="carousel-track">
         {% for p in projects %}
+        {% set project_media_loading = 'eager' if loop.index0 < 2 else 'lazy' %}
         {% if p.id == 'wake_challenge' %}
         {% include 'partials/project_card_wake_challenge.html' %}
         {% elif p.id == 'mywave_ruza_camp' %}

@@ -12,15 +12,24 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => preloader.remove(), 500);
     });
 
-    // Image lazy loading with preloader (обложки проектов не оборачиваем)
-    const images = document.querySelectorAll('img[loading="lazy"]:not(.project-card__cover)');
+    // Lazy preloader: не трогаем карусели карточек (там свой card-gallery.js)
+    const images = document.querySelectorAll(
+        'img[loading="lazy"]:not(.project-card__cover):not(.card-media-carousel img)'
+    );
     
     const imageObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const img = entry.target;
                 const wrapper = img.closest('.img-wrapper');
-                
+
+                function reveal() {
+                    if (wrapper) {
+                        wrapper.classList.remove('loading');
+                    }
+                    img.classList.add('loaded');
+                }
+
                 // Start loading the image only if data-src is provided
                 if (img.dataset && img.dataset.src) {
                     img.src = img.dataset.src;
@@ -28,15 +37,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (img.dataset && img.dataset.srcset) {
                     img.srcset = img.dataset.srcset;
                 }
-                
-                // Remove placeholder and show image when loaded
-                img.onload = () => {
-                    if (wrapper) {
-                        wrapper.classList.remove('loading');
-                    }
-                    img.classList.add('loaded');
-                };
-                
+
+                if (img.complete && img.naturalWidth > 0) {
+                    reveal();
+                } else {
+                    img.onload = reveal;
+                    img.onerror = reveal;
+                }
+
                 observer.unobserve(img);
             }
         });

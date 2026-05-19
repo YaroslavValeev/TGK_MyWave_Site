@@ -29,9 +29,9 @@
            data-mw-product-title="{{ product.title|e }}">
         <div class="service-image-container product-card__image-wrap">
           {% if product.images and product.images|length > 1 %}
-          <div class="card-media-carousel" data-images="{{ product.images|join(',') }}">
+          <div class="card-media-carousel" data-images="{{ product.images|join('|') }}" data-image-urls="{{ (product.image_urls or [])|join('|') }}">
             <button type="button" class="carousel-nav carousel-prev-inner" aria-label="Предыдущее">‹</button>
-            <img class="service-image" src="{{ url_for('static', filename=product.cover) }}" alt="{{ product.title }}" loading="lazy" data-fallback="{{ url_for('static', filename=product.fallback) }}">
+            <img class="service-image" src="{{ url_for('static', filename=product.cover) }}" alt="{{ product.title }}" loading="eager" data-fallback="{{ url_for('static', filename=product.fallback) }}">
             <button type="button" class="carousel-nav carousel-next-inner" aria-label="Следующее">›</button>
           </div>
           {% else %}

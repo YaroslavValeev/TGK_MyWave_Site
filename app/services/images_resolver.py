@@ -38,6 +38,8 @@ def scan_folder_images(rel_folder: str) -> list[str]:
         return []
     out = []
     for name in sorted(full.iterdir()):
+        if name.name.startswith('.'):
+            continue
         if name.suffix.lower() in _IMG_EXT:
             out.append(str(name.relative_to(STATIC_ROOT)).replace('\\', '/'))
     return out
@@ -51,6 +53,8 @@ def scan_folder_videos(rel_folder: str) -> list[str]:
         return []
     out: list[str] = []
     for name in sorted(full.iterdir()):
+        if name.name.startswith('.'):
+            continue
         if name.suffix.lower() in _VID_EXT:
             out.append(str(name.relative_to(STATIC_ROOT)).replace('\\', '/'))
     return out
