@@ -549,10 +549,12 @@ def create_app(config_name="development"):
             return redirect('/projects/checklist-org', code=301)
         if slug == 'checklist-org':
             from app.services.checklist_card_art import checklist_art_url_map_for_js
+            from app.services.rules_downloads import load_rules_downloads
 
             return render_template(
                 'wake_industry/checklist.html',
                 checklist_art_overrides=checklist_art_url_map_for_js(),
+                rules_downloads=load_rules_downloads(url_for),
             )
         if slug == 'mywave-ruza-camp':
             from app.services.showcases import get_showcase

@@ -43,28 +43,38 @@
     padding: 0 0.25rem;
   }
 
-  /* --- Hero --- */
+  /* --- Hero: текст вверху, не в центре картинки --- */
   .hero-section {
-    min-height: clamp(280px, 48vh, 400px);
-    padding-top: 0;
-    align-items: flex-end;
-    justify-content: center;
+    min-height: clamp(300px, 52vh, 420px);
+    padding-top: calc(var(--mw-header-h, 56px) + 8px) !important;
+    align-items: flex-start;
+    justify-content: flex-start;
   }
 
   .hero-section .hero-content,
   .hero-section .hero-content.center-padding,
   .hero-section .hero-content-relative {
     margin-top: 0 !important;
-    padding: 0.85rem var(--mw-section-pad-x) 1.1rem !important;
+    padding: 0.75rem 1rem 1rem !important;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.96) 0%,
+      rgba(255, 255, 255, 0.88) 72%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    border-radius: 0 0 14px 14px;
+    box-shadow: 0 4px 18px rgba(18, 30, 40, 0.08);
   }
 
   .hero-title {
     font-size: clamp(1.65rem, 7.5vw, 2.1rem) !important;
     line-height: 1.08 !important;
     margin-bottom: 0.5rem !important;
+    color: #1a2a32 !important;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
   }
 
   .hero-subtitle {
@@ -72,6 +82,8 @@
     line-height: 1.35 !important;
     max-width: 100% !important;
     margin-bottom: 0.85rem !important;
+    color: #2d3f4a !important;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75);
   }
 
   .hero-section .btn-primary {
@@ -130,10 +142,26 @@
 
   .services-carousel .service-card h4,
   .products-carousel .product-card h4,
-  .projects-carousel .project-card h4 {
+  .projects-carousel .project-card h4,
+  .projects-carousel .project-card .project-card__title {
     font-size: 1.05rem;
     line-height: 1.25;
-    margin: 0.5rem 0 0.35rem;
+    margin: 0.65rem 0 0.35rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .services-carousel .service-image-container,
+  .products-carousel .service-image-container,
+  .projects-carousel .project-card .service-image-container {
+    margin-bottom: 0.35rem;
+  }
+
+  .projects-carousel .project-card > .service-image-container:first-child {
+    margin: 0 0 0.5rem 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 10px;
   }
 
   .services-carousel .service-card p,

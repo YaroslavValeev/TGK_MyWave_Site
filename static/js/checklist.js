@@ -407,10 +407,13 @@
   /** Длинное описание: свёртка + «Подробнее» внизу (не обрезается overflow) */
   function setupExpandableBodies(container) {
     function needsExpand(inner) {
-      inner.classList.add('is-clamped');
-      var overflow = inner.scrollHeight > inner.clientHeight + 4;
       var longText = (inner.textContent || '').trim().length > 140;
-      return overflow || longText;
+      if (!longText) {
+        inner.classList.remove('is-clamped');
+        return false;
+      }
+      inner.classList.add('is-clamped');
+      return true;
     }
 
     function attachToggle(body, inner) {

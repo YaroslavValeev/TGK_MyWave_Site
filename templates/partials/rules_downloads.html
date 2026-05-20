@@ -1,0 +1,74 @@
+{# Блок «Официальные правила и регламенты» — после hero, до «Что это» #}
+{% if rules_downloads %}
+<section class="mw-section rules-downloads" id="official-rules" aria-labelledby="official-rules-title">
+  <div class="mw-container">
+    <div class="rules-downloads__header">
+      <h2 class="rules-downloads__title" id="official-rules-title">Официальные правила и регламенты</h2>
+      <p class="rules-downloads__lead">
+        Оригинальные документы правил на русском языке — для сверки при подготовке соревнований.
+        Не краткие пересказы, а полные переводы регламентов.
+      </p>
+    </div>
+
+    <div class="rules-downloads__grid">
+      {% for rule in rules_downloads %}
+      <article class="rules-card{% if not rule.has_download %} rules-card--pending{% endif %}" data-rule-id="{{ rule.id }}">
+        <div class="rules-card__top">
+          <span class="rules-card__org" title="{{ rule.organization }}">{{ rule.org_short }}</span>
+          {% if rule.has_download %}
+          <span class="rules-card__badge rules-card__badge--ru">Русская версия</span>
+          {% elif rule.status == 'needs_editorial_review' %}
+          <span class="rules-card__badge rules-card__badge--review">На вычитке</span>
+          {% else %}
+          <span class="rules-card__badge rules-card__badge--pending">Готовится</span>
+          {% endif %}
+        </div>
+
+        <h3 class="rules-card__title">{{ rule.title }}</h3>
+        <p class="rules-card__description">{{ rule.description }}</p>
+
+        {% if rule.tags %}
+        <div class="rules-card__tags" aria-label="Дисциплины и теги">
+          {% for tag in rule.tags %}
+          <span class="rules-card__tag">{{ tag }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="rules-card__actions">
+          {% if rule.pdf_url %}
+          <a class="rules-card__btn rules-card__btn--primary"
+             href="{{ rule.pdf_url }}"
+             target="_blank"
+             rel="noopener noreferrer"
+             download>
+            <span class="rules-card__btn-icon" aria-hidden="true">📄</span>
+            Скачать PDF
+          </a>
+          {% endif %}
+          {% if rule.docx_url %}
+          <a class="rules-card__btn rules-card__btn--secondary"
+             href="{{ rule.docx_url }}"
+             download
+             rel="noopener">
+            DOCX
+          </a>
+          {% endif %}
+          {% if not rule.has_download %}
+          <span class="rules-card__soon">
+            {% if rule.status == 'needs_editorial_review' %}
+            Документ на редакторской вычитке
+            {% else %}
+            Файл готовится — ссылка появится после публикации
+            {% endif %}
+          </span>
+          {% elif rule.has_download %}
+          <span class="rules-card__note">Оригинал переведён на русский</span>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}

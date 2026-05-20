@@ -66,10 +66,13 @@
   border-radius: var(--mw-radius-lg, 16px);
   overflow: hidden;
   margin-bottom: 0.75rem;
-  min-height: 180px;
+  min-height: 200px;
   background: linear-gradient(135deg, var(--mw-brand) 0%, var(--mw-brand-dark) 100%);
 }
 .wake-checklist__cover-card img {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -78,23 +81,35 @@
 .wake-checklist__cover-card-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 50%, transparent 100%);
+  z-index: 1;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.82) 0%,
+    rgba(0, 0, 0, 0.45) 42%,
+    rgba(0, 0, 0, 0.12) 100%
+  );
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   padding: 1rem 1.25rem 1.25rem;
 }
-.wake-checklist__cover-card-title {
+/* branding.css: .mw-section h2 { color: var(--mw-text) } — перебиваем для баннера */
+.mw-section .wake-checklist__cover-card .wake-checklist__cover-card-title,
+.mw-section .wake-checklist__cover-card h2.wake-checklist__cover-card-title {
   color: #fff;
-  font-size: 1.35rem;
+  font-size: clamp(1.2rem, 2.5vw, 1.45rem);
   font-weight: 700;
-  margin: 0 0 0.25rem;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  margin: 0 0 0.35rem;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.65);
 }
-.wake-checklist__cover-card-subtitle {
-  color: rgba(255,255,255,0.9);
+.mw-section .wake-checklist__cover-card .wake-checklist__cover-card-subtitle,
+.mw-section .wake-checklist__cover-card p.wake-checklist__cover-card-subtitle {
+  color: rgba(255, 255, 255, 0.95);
   font-size: 1rem;
   margin: 0;
+  line-height: 1.4;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
 }
 
 /* ========== Секции чек-листа ========== */
@@ -306,16 +321,50 @@
   line-height: 1.55;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+.wake-checklist__card:not(.wake-checklist__card--expanded) .wake-checklist__card-body {
+  overflow: hidden;
 }
 .wake-checklist__card-body-inner {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
+  overflow: hidden;
 }
 .wake-checklist__card-body-inner.is-clamped {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   overflow: hidden;
+  max-height: calc(0.88rem * 1.55 * 3);
+}
+.wake-checklist__card-body-inner.is-clamped p,
+.wake-checklist__card-body-inner.is-clamped ul {
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+.wake-checklist__card-body-inner.is-clamped li {
+  display: inline;
+}
+.wake-checklist__card--expanded .wake-checklist__card-body-inner {
+  max-height: none;
+  overflow: visible;
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+}
+.wake-checklist__card--expanded .wake-checklist__card-body-inner p,
+.wake-checklist__card--expanded .wake-checklist__card-body-inner ul {
+  display: block;
+  margin: 0 0 0.5em;
+}
+.wake-checklist__card--expanded .wake-checklist__card-body-inner ul {
+  padding-left: 1.15em;
+}
+.wake-checklist__card--expanded .wake-checklist__card-body-inner li {
+  display: list-item;
 }
 .wake-checklist__card-body p { margin: 0 0 0.5em; }
 .wake-checklist__card-body p:last-child { margin-bottom: 0; }
@@ -563,34 +612,96 @@
   }
 
   .wake-checklist__card {
+    --checklist-card-height: auto;
     min-height: 0;
+    max-height: none;
+    height: auto;
     grid-template-columns: 1fr !important;
+    grid-template-rows: auto 1fr;
+  }
+
+  .wake-checklist__card:not(.wake-checklist__card--expanded) {
+    max-height: none;
   }
 
   .wake-checklist__card-inner {
-    padding: 0.75rem 0.85rem;
+    order: 2;
+    padding: 0.75rem 0.85rem 0.65rem;
+    min-height: 0;
+    overflow: visible;
   }
 
   .wake-checklist__card-art {
-    min-height: 140px;
-    order: -1;
+    order: 1;
+    min-height: clamp(120px, 32vw, 160px);
+    max-height: 160px;
+    width: 100%;
+    min-width: 0;
   }
 
   .wake-checklist__card-art::after {
     width: 100%;
-    height: 38%;
+    height: 28%;
     top: auto;
+    bottom: 0;
+    left: 0;
     background: linear-gradient(
       180deg,
       rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.2) 50%,
-      rgba(255, 255, 255, 0.88) 100%
+      rgba(255, 255, 255, 0.55) 100%
     );
+  }
+
+  .wake-checklist__card-header {
+    margin-bottom: 0.4rem;
   }
 
   .wake-checklist__card-title {
     font-size: 0.95rem;
     line-height: 1.3;
+    flex: 1 1 100%;
+  }
+
+  .wake-checklist__card-body {
+    margin-top: 0.25rem;
+    overflow: hidden;
+  }
+
+  .wake-checklist__card-more {
+    margin-top: 0.5rem;
+    padding-top: 0.45rem;
+    position: relative;
+    z-index: 4;
+  }
+
+  .wake-checklist__more-btn {
+    min-height: 44px;
+    font-size: 0.9rem;
+    padding: 0.4rem 0.5rem;
+    color: #0e5f6a;
+  }
+
+  .wake-checklist__more-btn__chevron {
+    width: 1.65rem;
+    height: 1.65rem;
+    background: rgba(53, 192, 205, 0.28);
+    border: 1px solid rgba(53, 192, 205, 0.45);
+  }
+
+  .wake-checklist__more-btn__chevron::after {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-right-width: 2.5px;
+    border-bottom-width: 2.5px;
+    border-color: #0e5f6a;
+  }
+
+  .wake-checklist__cover-card {
+    min-height: 200px;
+  }
+
+  .mw-section .wake-checklist__cover-card .wake-checklist__cover-card-title {
+    font-size: 1.25rem;
   }
 
   .wake-checklist__progress-bar {

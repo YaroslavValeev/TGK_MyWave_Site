@@ -20,7 +20,8 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}">
 {# v= — сброс кэша браузера при правках чек-листа #}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/checklist.css') }}?v=card-more9">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/checklist.css') }}?v=card-readability2">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/rules-downloads.css') }}?v=1">
 <meta name="description" content="Готовый чек-лист для организаторов соревнований по вейксерфингу. Структурированный контроль: судьи, документы, тайминг, безопасность. Скачайте PDF.">
 <link rel="canonical" href="{{ request.url }}">
 {% endblock %}
@@ -54,6 +55,8 @@
     </div>
   </div>
 </section>
+
+{% include 'partials/rules_downloads.html' %}
 
 {# Что это #}
 <section class="mw-section" id="about">
@@ -1042,6 +1045,6 @@
     });
   });
 </script>
-<script src="{{ url_for('static', filename='js/checklist.js') }}?v=card-more9"></script>
+<script src="{{ url_for('static', filename='js/checklist.js') }}?v=card-readability2"></script>
 {% endblock %}
 
