@@ -125,11 +125,26 @@ html, body{
   padding: clamp(56px, 6vw, 92px) 0;
 }
 
+/* Контейнер секции (блог, чек-лист, проекты) */
+.mw-container {
+  width: min(1120px, calc(100% - 32px));
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 clamp(16px, 3vw, 24px);
+  box-sizing: border-box;
+}
+
 /* Center and constrain each direct child inside the section */
 .mw-section > *{
   width: min(1120px, calc(100% - 32px));
   margin-left: auto;
   margin-right: auto;
+}
+
+.mw-section > .mw-container {
+  width: min(1120px, calc(100% - 32px));
+  padding: 0 clamp(16px, 3vw, 24px);
 }
 
 /* "Surface block" look (centered card behind content) */

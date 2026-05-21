@@ -59,7 +59,12 @@
           {% endfor %}
         </div>
       {% else %}
-        <p style="opacity:.8;">Пока нет опубликованных материалов.</p>
+        <p class="blog-index-empty">Пока нет опубликованных материалов.</p>
+        <p class="blog-index-empty-hint">
+          Публикации появятся после статуса <strong>READY_TO_PUBLISH</strong> или <strong>PUBLISHED</strong> в таблице Parser News.
+          Если записи уже есть в таблице — проверьте доступ Google API на сервере или откройте
+          <a href="{{ url_for('blog.blog_index', db_only=1) }}">архив из базы сайта</a>.
+        </p>
       {% endif %}
 
       {% if total > per_page %}

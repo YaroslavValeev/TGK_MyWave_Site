@@ -13,6 +13,7 @@
   }
 
   function init() {
+    hideAllModals();
     document.addEventListener('click', function (e) {
       if (e.target.classList.contains('close-modal')) {
         e.preventDefault();

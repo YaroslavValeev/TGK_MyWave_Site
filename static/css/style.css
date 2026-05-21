@@ -2612,6 +2612,27 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
   align-items: stretch;
 }
 
+.blog-index-header {
+  padding: 0 0 0.25rem 0;
+}
+
+.blog-index-header h1 {
+  margin: 0 0 1rem 0;
+}
+
+.blog-index-empty {
+  opacity: 0.85;
+  margin: 0 0 0.5rem 0;
+}
+
+.blog-index-empty-hint {
+  opacity: 0.75;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 42rem;
+}
+
 /* Поиск /blog: компактная строка, ширина ≈ одной колонки сетки карточек */
 .blog-search-form {
   display: flex;

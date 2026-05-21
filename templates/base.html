@@ -35,7 +35,8 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=light-only" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/services-carousel.css') }}?v=media-contain1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}?v=1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/services-carousel.css') }}?v=media-cover1" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-home.css') }}?v=4" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/preloader.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/image-effects.css') }}" />
@@ -199,7 +200,8 @@
   {% block scripts %}{% endblock %}
   <script src="{{ url_for('static', filename='js/carousel-arrows.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/services-expand.js') }}" defer></script>
-  <script src="{{ url_for('static', filename='js/card-gallery.js') }}?v=media-fix1" defer></script>
+  <script src="{{ url_for('static', filename='js/card-media-fit.js') }}?v=1" defer></script>
+  <script src="{{ url_for('static', filename='js/card-gallery.js') }}?v=media-cover1" defer></script>
   <script src="{{ url_for('static', filename='js/image-fallback.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/inline.js') }}"></script>
   <script src="{{ url_for('static', filename='js/preloader.js') }}?v=media-fix1"></script>
@@ -210,14 +212,12 @@
 
   <!-- booking.js, modals-close.js (надёжное закрытие Camp/CoachTriper/Consulting) и формы заявок -->
   <script defer src="{{ url_for('static', filename='js/booking.js') }}?v=boat-slots-hide-full"></script>
-  <script defer src="{{ url_for('static', filename='js/modals-close.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/modals-close.js') }}?v=modal-hide1"></script>
   <script defer src="{{ url_for('static', filename='js/modal-lead-forms.js') }}"></script>
   <script defer src="{{ url_for('static', filename='js/ruza-lead-form.js') }}"></script>
 
   <!-- Контейнер для success-view partial (подгружается динамически) -->
-  <div id="success-modal" class="modal success-modal hidden" aria-hidden="true">
-    <div class="modal-overlay"></div>
-  </div>
+  <div id="success-modal" class="hidden" aria-hidden="true" role="dialog"></div>
 
   <div id="toast" class="toast hidden" aria-live="polite" aria-label="Уведомление"></div>
 
