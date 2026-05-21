@@ -43,53 +43,61 @@
     padding: 0 0.25rem;
   }
 
-  /* --- Hero: текст вверху, не в центре картинки --- */
+  /* --- Hero: текст у верхнего края, иллюстрация (лодка) ниже --- */
   .hero-section {
-    min-height: clamp(300px, 52vh, 420px);
-    padding-top: calc(var(--mw-header-h, 56px) + 8px) !important;
-    align-items: flex-start;
-    justify-content: flex-start;
+    min-height: clamp(340px, 62vh, 460px);
+    padding-top: calc(var(--mw-header-h, 56px) + 2px) !important;
+    padding-bottom: 0 !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+  }
+
+  .hero-section .hero-bg-cover {
+    object-position: 50% 78%;
   }
 
   .hero-section .hero-content,
   .hero-section .hero-content.center-padding,
   .hero-section .hero-content-relative {
     margin-top: 0 !important;
-    padding: 0.75rem 1rem 1rem !important;
+    margin-bottom: 0 !important;
+    padding: 0.45rem 1rem 0.55rem !important;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
+    align-self: flex-start !important;
     background: linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.96) 0%,
-      rgba(255, 255, 255, 0.88) 72%,
+      rgba(255, 255, 255, 0.97) 0%,
+      rgba(255, 255, 255, 0.9) 55%,
       rgba(255, 255, 255, 0) 100%
     );
-    border-radius: 0 0 14px 14px;
-    box-shadow: 0 4px 18px rgba(18, 30, 40, 0.08);
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 2px 12px rgba(18, 30, 40, 0.06);
   }
 
   .hero-title {
-    font-size: clamp(1.65rem, 7.5vw, 2.1rem) !important;
-    line-height: 1.08 !important;
-    margin-bottom: 0.5rem !important;
+    font-size: clamp(1.5rem, 7vw, 1.95rem) !important;
+    line-height: 1.06 !important;
+    margin-bottom: 0.35rem !important;
     color: #1a2a32 !important;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
   }
 
   .hero-subtitle {
-    font-size: 0.95rem !important;
-    line-height: 1.35 !important;
+    font-size: 0.88rem !important;
+    line-height: 1.32 !important;
     max-width: 100% !important;
-    margin-bottom: 0.85rem !important;
+    margin-bottom: 0.55rem !important;
     color: #2d3f4a !important;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75);
   }
 
   .hero-section .btn-primary {
     width: 100%;
-    max-width: 20rem;
-    min-height: 44px;
+    max-width: 18rem;
+    min-height: 42px;
+    margin-bottom: 0 !important;
   }
 
   /* --- Карусели: шире карточки, snap, без desktop-стрелок --- */
@@ -378,7 +386,11 @@
   }
 
   .hero-section {
-    min-height: clamp(260px, 44vh, 360px);
+    min-height: clamp(300px, 56vh, 400px);
+  }
+
+  .hero-section .hero-bg-cover {
+    object-position: 50% 82%;
   }
 }
 
