@@ -177,7 +177,7 @@
 }
 .service-card .card-body { min-height: 120px; }
 
-/* Зона медиа: 16/9, весь кадр в окне (contain), без обрезки по краям */
+/* Зона медиа 16:9; альбомные фото — cover, портрет — contain (класс из card-media-fit.js) */
 .service-image-container,
 .product-card__image-wrap,
 .project-card .service-image-container {
@@ -197,7 +197,7 @@
   max-width: 100%;
   max-height: 100%;
   margin: 0;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   display: block;
   border-radius: 0;
@@ -215,6 +215,13 @@
   max-height: 100%;
   margin-bottom: 0;
   border-radius: 0;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Портрет и почти квадрат — показываем целиком */
+.service-image.card-media--contain,
+.card-media-carousel .service-image.card-media--contain {
   object-fit: contain;
   object-position: center;
 }
@@ -246,7 +253,7 @@
   max-width: 100%;
   max-height: 100%;
   margin: 0;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   display: block;
   border-radius: 0;
