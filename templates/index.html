@@ -158,7 +158,9 @@
     <h2>Блог</h2>
     {% set blog_cover_fallback = url_for('static', filename='images/Place1Logo.png') %}
     {% if blog_preview_posts and blog_preview_posts|length > 0 %}
-      <div class="blog-home-grid">
+      <div class="blog-carousel services-carousel">
+        <button class="carousel-prev" aria-label="Предыдущие публикации">◀</button>
+        <div class="carousel-track">
         {% for post in blog_preview_posts %}
         <a href="{{ url_for('blog.blog_post', slug=post.slug) }}" class="service-card blog-home-card">
           <div class="service-image-container">
@@ -179,6 +181,8 @@
           {% endif %}
         </a>
         {% endfor %}
+        </div>
+        <button class="carousel-next" aria-label="Следующие публикации">▶</button>
       </div>
     <p class="projects-cta"><a href="{{ url_for('blog.blog_index') }}" class="btn btn-outline-brand">Все публикации</a></p>
     {% else %}

@@ -4,7 +4,7 @@
  */
 (function () {
   function init() {
-    document.querySelectorAll('.services-carousel, .products-carousel, .projects-carousel').forEach(function (wrapper) {
+    document.querySelectorAll('.services-carousel, .products-carousel, .projects-carousel, .blog-carousel').forEach(function (wrapper) {
       var prev = wrapper.querySelector('.carousel-prev');
       var next = wrapper.querySelector('.carousel-next');
       var track = wrapper.querySelector('.carousel-track') || wrapper.querySelector('.projects-carousel-track');

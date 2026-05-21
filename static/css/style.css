@@ -493,7 +493,7 @@ h1, h2, h3, h4, p {
 }
 @media (max-width: 680px) {
   .blog-home-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

@@ -122,7 +122,8 @@
   /* --- Карусели: шире карточки, snap, без desktop-стрелок --- */
   .services-carousel,
   .products-carousel,
-  .projects-carousel {
+  .projects-carousel,
+  .blog-carousel {
     display: block;
     margin: 0.5rem 0 0;
     padding: 0;
@@ -133,13 +134,16 @@
   .products-carousel > .carousel-prev,
   .products-carousel > .carousel-next,
   .projects-carousel > .carousel-prev,
-  .projects-carousel > .carousel-next {
+  .projects-carousel > .carousel-next,
+  .blog-carousel > .carousel-prev,
+  .blog-carousel > .carousel-next {
     display: none !important;
   }
 
   .services-carousel .carousel-track,
   .products-carousel .carousel-track,
-  .projects-carousel .carousel-track {
+  .projects-carousel .carousel-track,
+  .blog-carousel .carousel-track {
     display: flex;
     width: 100%;
     max-width: 100%;
@@ -155,7 +159,9 @@
 
   .services-carousel .service-card,
   .products-carousel .product-card,
-  .projects-carousel .project-card {
+  .projects-carousel .project-card,
+  .blog-carousel .service-card,
+  .blog-carousel .blog-home-card {
     flex: 0 0 var(--mw-card-width) !important;
     min-width: var(--mw-card-width) !important;
     max-width: var(--mw-card-width) !important;
@@ -170,7 +176,9 @@
   .services-carousel .service-card h4,
   .products-carousel .product-card h4,
   .projects-carousel .project-card h4,
-  .projects-carousel .project-card .project-card__title {
+  .projects-carousel .project-card .project-card__title,
+  .blog-carousel .service-card h4,
+  .blog-carousel .blog-home-card h4 {
     font-size: 1.05rem;
     line-height: 1.25;
     margin: 0.65rem 0 0.35rem;
@@ -180,7 +188,8 @@
 
   .services-carousel .service-image-container,
   .products-carousel .service-image-container,
-  .projects-carousel .project-card .service-image-container {
+  .projects-carousel .project-card .service-image-container,
+  .blog-carousel .service-image-container {
     margin-bottom: 0.35rem;
   }
 
@@ -218,6 +227,38 @@
   .project-card--checklist {
     min-width: var(--mw-card-width) !important;
     max-width: var(--mw-card-width) !important;
+  }
+
+  /* --- Страница /blog: горизонтальная лента карточек --- */
+  .mw-section.mw-surface .mw-card:has(.blog-index-grid) {
+    overflow: visible;
+  }
+
+  .blog-index-grid.cards-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: var(--mw-carousel-gap);
+    padding: 0.25rem calc((100vw - var(--mw-card-width)) / 2) 0.85rem;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: calc((100vw - var(--mw-card-width)) / 2);
+    -webkit-overflow-scrolling: touch;
+    margin-left: calc(-1 * var(--mw-section-pad-x));
+    margin-right: calc(-1 * var(--mw-section-pad-x));
+    width: calc(100% + 2 * var(--mw-section-pad-x));
+    max-width: 100vw;
+    box-sizing: border-box;
+    grid-template-columns: unset;
+  }
+
+  .blog-index-grid .blog-card.blog-card--listing {
+    flex: 0 0 var(--mw-card-width) !important;
+    min-width: var(--mw-card-width) !important;
+    max-width: var(--mw-card-width) !important;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    margin: 0;
   }
 
   /* --- Отзывы --- */

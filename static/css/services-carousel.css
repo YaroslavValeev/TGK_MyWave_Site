@@ -4,7 +4,9 @@
 .products-carousel .carousel-prev,
 .products-carousel .carousel-next,
 .projects-carousel .carousel-prev,
-.projects-carousel .carousel-next {
+.projects-carousel .carousel-next,
+.blog-carousel .carousel-prev,
+.blog-carousel .carousel-next {
   background: #f0f0f0;
   border: 1px solid #e0e0e0;
   color: #333;
@@ -24,7 +26,8 @@
 }
 .services-carousel .carousel-track,
 .products-carousel .carousel-track,
-.projects-carousel .carousel-track {
+.projects-carousel .carousel-track,
+.blog-carousel .carousel-track {
   display: flex;
   gap: 16px;
   overflow-x: auto;
@@ -38,7 +41,8 @@
 .services-carousel .carousel-track::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 8px; }
 .services-carousel,
 .products-carousel,
-.projects-carousel {
+.projects-carousel,
+.blog-carousel {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -46,7 +50,9 @@
 }
 .services-carousel .service-card,
 .products-carousel .product-card,
-.projects-carousel .project-card {
+.projects-carousel .project-card,
+.blog-carousel .service-card,
+.blog-carousel .blog-home-card {
   min-width: 280px;
   max-width: 360px;
   flex: 0 0 auto;
