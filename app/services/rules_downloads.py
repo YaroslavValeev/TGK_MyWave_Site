@@ -44,7 +44,7 @@ def load_rules_downloads(
         return []
 
     items: list[dict[str, Any]] = []
-    for raw in data.get("rules") or []:
+    for idx, raw in enumerate(data.get("rules") or []):
         if not isinstance(raw, dict):
             continue
 
@@ -75,6 +75,8 @@ def load_rules_downloads(
         items.append(
             {
                 "id": raw.get("id", ""),
+                "group": (raw.get("group") or "general").strip(),
+                "sort_index": idx,
                 "organization": raw.get("organization", ""),
                 "org_short": raw.get("org_short") or raw.get("organization", ""),
                 "title": raw.get("title", ""),
@@ -87,4 +89,6 @@ def load_rules_downloads(
             }
         )
 
+    group_rank = {"wakesurf": 0, "general": 1}
+    items.sort(key=lambda item: (group_rank.get(item["group"], 2), item["sort_index"]))
     return items

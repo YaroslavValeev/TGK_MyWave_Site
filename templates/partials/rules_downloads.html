@@ -12,7 +12,7 @@
 
     <div class="rules-downloads__grid">
       {% for rule in rules_downloads %}
-      <article class="rules-card{% if not rule.has_download %} rules-card--pending{% endif %}" data-rule-id="{{ rule.id }}">
+      <article class="rules-card{% if not rule.has_download %} rules-card--pending{% endif %}{% if rule.group == 'wakesurf' %} rules-card--wakesurf{% endif %}" data-rule-id="{{ rule.id }}">
         <div class="rules-card__top">
           <span class="rules-card__org" title="{{ rule.organization }}">{{ rule.org_short }}</span>
           {% if rule.has_download %}

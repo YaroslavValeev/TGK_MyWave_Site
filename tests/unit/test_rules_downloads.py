@@ -9,10 +9,30 @@ def test_load_rules_downloads_resolves_existing_pdfs():
     items = load_rules_downloads(fake_url_for)
     assert items
     ready = [r for r in items if r["has_download"]]
-    assert len(ready) >= 4
+    assert len(ready) >= 6
     for r in ready:
-        assert r["pdf_url"]
-        assert r["pdf_url"].startswith("/static/docs/rules/")
+        assert r["pdf_url"] or r["docx_url"]
+
+
+def test_wakesurf_rules_first():
+    def fake_url_for(endpoint, filename, **kwargs):
+        return f"/static/{filename}"
+
+    items = load_rules_downloads(fake_url_for)
+    wakesurf = [r for r in items if r["group"] == "wakesurf"]
+    general = [r for r in items if r["group"] == "general"]
+    assert wakesurf
+    assert general
+    assert items.index(wakesurf[0]) < items.index(general[0])
+
+
+def test_new_wakesurf_rule_files_exist_on_disk():
+    for name in (
+        "iwwf_wakesurf_rules_2024_ru.pdf",
+        "cwsa_complete_rules_ru.pdf",
+        "surffederation_reglaments_2025_ru.pdf",
+    ):
+        assert (RULES_DIR / name).is_file(), name
 
 
 def test_iwwf_asia_pdf_exists_on_disk():

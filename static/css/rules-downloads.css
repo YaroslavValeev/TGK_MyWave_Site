@@ -28,6 +28,16 @@
   gap: 1rem;
 }
 
+.rules-card--wakesurf {
+  border-color: rgba(53, 192, 205, 0.35);
+  box-shadow: 0 2px 10px rgba(53, 192, 205, 0.08);
+}
+
+.rules-card--wakesurf .rules-card__org {
+  background: rgba(53, 192, 205, 0.14);
+  color: #0d6f7a;
+}
+
 .rules-card {
   display: flex;
   flex-direction: column;

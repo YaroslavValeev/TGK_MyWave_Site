@@ -1,9 +1,41 @@
 # Официальные правила и регламенты — карточки на /projects/checklist-org
 # pdf/docx — имена файлов в static/docs/rules/ (без префикса static/)
+# group: wakesurf — первыми в сетке (вейксерфинг), general — остальные дисциплины
 rules:
-  - id: iwwf_asia_wakesurf
-    organization: "IWWF Asia"
+  - id: iwwf_wakesurf
+    group: wakesurf
+    organization: "IWWF"
     org_short: "IWWF"
+    title: "Официальные правила по вейксерфингу IWWF"
+    description: "Международные правила IWWF по вейксерфингу: дисциплины, категории, судейство, безопасность, scoring."
+    tags: ["Вейксерфинг", "IWWF", "Правила"]
+    pdf: "iwwf_wakesurf_rules_2024_ru.pdf"
+    docx: "iwwf_wakesurf_rules_2024_ru.docx"
+
+  - id: cwsa_complete
+    group: wakesurf
+    organization: "CWSA"
+    org_short: "CWSA"
+    title: "Правила CWSA"
+    description: "Правила и регламент соревнований CWSA по вейксерфингу в России."
+    tags: ["Вейксерфинг", "CWSA", "Россия"]
+    pdf: "cwsa_complete_rules_ru.pdf"
+    docx: "cwsa_complete_rules_ru.docx"
+
+  - id: fsr_surffederation
+    group: wakesurf
+    organization: "Федерация Серфинга России"
+    org_short: "ФСР"
+    title: "Правила ФСР — Федерация Серфинга России"
+    description: "Официальные регламенты и положения Федерации Серфинга России для соревнований."
+    tags: ["Вейксерфинг", "ФСР", "Россия"]
+    pdf: "surffederation_reglaments_2025_ru.pdf"
+    docx: "surffederation_reglaments_2025_ru.docx"
+
+  - id: iwwf_asia_wakesurf
+    group: wakesurf
+    organization: "IWWF Asia"
+    org_short: "IWWF Asia"
     title: "Официальные правила вейксерфинга IWWF Asia"
     description: "Дисциплины, возрастные категории, регистрация, heat system, безопасность, scoring, ranking, protests."
     tags: ["Вейксерфинг", "IWWF Asia", "Правила"]
@@ -11,7 +43,28 @@ rules:
     pdf_fallbacks:
       - "wakesurf_rules_ru_updated.pdf"
 
+  - id: wsws_wakesurf
+    group: wakesurf
+    organization: "WSWS"
+    org_short: "WSWS"
+    title: "Правила World Series of Wake Surfing"
+    description: "Безопасность, оборудование, размеры плавников, concussion policy, competitors, boats & drivers."
+    tags: ["Вейксерфинг", "WSWS", "Серия соревнований"]
+    pdf: "wsws_wakesurf_rules_ru.pdf"
+    docx: "wsws_wakesurf_rules_ru.docx"
+
+  - id: wwa_wakesurf
+    group: wakesurf
+    organization: "WWA"
+    org_short: "WWA"
+    title: "WWA Wakesurf Event Rules"
+    description: "Общая информация для спортсменов, поведение, безопасность, ответственность, экипировка, квалификация."
+    tags: ["Вейксерфинг", "WWA", "Event Rules"]
+    pdf: "wwa_wakesurf_event_rules_ru.pdf"
+    docx: "wwa_wakesurf_event_rules_ru.docx"
+
   - id: iwwf_wakeboard_boat
+    group: general
     organization: "IWWF"
     org_short: "IWWF"
     title: "Правила проведения соревнований по вейкборду (катер)"
@@ -22,6 +75,7 @@ rules:
       - "IWWFWakeboardBoatRules-2022_rusКАТЕР FFinal (1).pdf"
 
   - id: iwwf_cable_wakeboard
+    group: general
     organization: "IWWF CWWC"
     org_short: "CWWC"
     title: "Мировые правила: кабельный вейкборд и вейкскейт"
@@ -32,6 +86,7 @@ rules:
       - "_2024-IWWF-World-Rule-Book-v10-clean_RUS_Final .docx.pdf"
 
   - id: iwwf_waterski
+    group: general
     organization: "IWWF"
     org_short: "IWWF"
     title: "Правила по водным лыжам"
@@ -41,27 +96,8 @@ rules:
     pdf_fallbacks:
       - "waterski_rules_ru.pdf"
 
-  - id: wsws_wakesurf
-    organization: "WSWS"
-    org_short: "WSWS"
-    title: "Правила World Series of Wake Surfing"
-    description: "Безопасность, оборудование, размеры плавников, concussion policy, competitors, boats & drivers."
-    tags: ["Вейксерфинг", "WSWS", "Серия соревнований"]
-    pdf: "wsws_wakesurf_rules_ru.pdf"
-    docx: "wsws_wakesurf_rules_ru.docx"
-    status: "missing_file"
-
-  - id: wwa_wakesurf
-    organization: "WWA"
-    org_short: "WWA"
-    title: "WWA Wakesurf Event Rules"
-    description: "Общая информация для спортсменов, поведение, безопасность, ответственность, экипировка, квалификация."
-    tags: ["Вейксерфинг", "WWA", "Event Rules"]
-    pdf: "wwa_wakesurf_event_rules_ru.pdf"
-    docx: "wwa_wakesurf_event_rules_ru.docx"
-    status: "missing_file"
-
   - id: wwa_general
+    group: general
     organization: "WWA"
     org_short: "WWA"
     title: "Общая информация WWA для спортсменов"
@@ -70,12 +106,3 @@ rules:
     pdf: "wwa_general_athlete_information_ru.pdf"
     docx: "wwa_general_athlete_information_ru.docx"
     status: "needs_editorial_review"
-
-  - id: cwsa_ingrad_wakesurf_cup
-    organization: "CWSA"
-    org_short: "CWSA"
-    title: "Регламент INGRAD Wakesurf Cup 2023"
-    description: "Пример положения о проведении соревнований в России: цели, место, участники, программа, итоги."
-    tags: ["Регламент", "Вейксерфинг", "Россия"]
-    pdf: "cwsa_ingrad_wakesurf_cup_2023_ru.pdf"
-    status: "missing_file"
