@@ -165,6 +165,8 @@ class Config:
     SERVER_NAME = _resolve_server_name()
     HEALTHCHECK_URL = _resolve_healthcheck_url()
     MEDIA_UPLOAD_TOKEN = os.getenv("MEDIA_UPLOAD_TOKEN", "")
+    # Опционально: отдельный токен для invalidate competitions (иначе — MEDIA_UPLOAD_TOKEN)
+    COMPETITIONS_CACHE_INVALIDATE_TOKEN = os.getenv("COMPETITIONS_CACHE_INVALIDATE_TOKEN", "")
     MEDIA_UPLOAD_SUBDIR = os.getenv("MEDIA_UPLOAD_SUBDIR", "uploads/review_media")
     MEDIA_UPLOAD_MAX_BYTES = int(os.getenv("MEDIA_UPLOAD_MAX_BYTES", "10485760"))
     # Optional absolute root for uploaded media (tests/local override).

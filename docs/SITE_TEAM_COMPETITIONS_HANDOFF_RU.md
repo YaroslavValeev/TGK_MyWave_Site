@@ -34,9 +34,16 @@
 
 Значение должно совпадать с **`MEDIA_UPLOAD_TOKEN` в `.env` процесса сайта** на сервере (`/var/www/mywave/.env`).
 
-Отдельный `COMPETITIONS_CACHE_INVALIDATE_TOKEN` на сайте **пока не читается** — достаточно передать в Parser Bot тот же `MEDIA_UPLOAD_TOKEN`, что уже настроен для `POST /api/blog/cache/invalidate` и media upload.
+Опционально в `.env` сайта: `COMPETITIONS_CACHE_INVALIDATE_TOKEN` — если задан, invalidate принимает **его или** `MEDIA_UPLOAD_TOKEN` (достаточно совпадения с одним).
 
-Если нужен отдельный токен только для competitions — напишите, добавим fallback в конфиг (не блокер для приёмки).
+**403 forbidden** на invalidate обычно значит: токен в Parser `.env` **не совпадает** с `MEDIA_UPLOAD_TOKEN` в `/var/www/mywave/.env` (пробелы, кавычки, другой secret). Проверка на сервере:
+
+```bash
+# тот же запрос, что у Parser (подставьте токен с сервера)
+curl -sS -o /dev/null -w "%{http_code}\n" -X POST "https://mywavewake.ru/api/competitions/cache/invalidate" \
+  -H "Authorization: Bearer $(grep '^MEDIA_UPLOAD_TOKEN=' /var/www/mywave/.env | cut -d= -f2-)"
+# ожидается 200
+```
 
 ---
 

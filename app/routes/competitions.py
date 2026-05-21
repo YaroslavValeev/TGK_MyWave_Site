@@ -13,6 +13,17 @@ logger = get_logger(__name__)
 competitions_bp = Blueprint("competitions", __name__)
 
 
+def _accepted_invalidate_tokens() -> set:
+    """Токены для POST /api/competitions/cache/invalidate (без пустых)."""
+    keys = ("MEDIA_UPLOAD_TOKEN", "COMPETITIONS_CACHE_INVALIDATE_TOKEN")
+    out = set()
+    for key in keys:
+        val = (current_app.config.get(key) or "").strip()
+        if val:
+            out.add(val)
+    return out
+
+
 def _cache_invalidate_token_ok() -> bool:
     auth = (request.headers.get("Authorization") or "").strip()
     token = ""
@@ -20,10 +31,10 @@ def _cache_invalidate_token_ok() -> bool:
         token = auth[7:].strip()
     if not token:
         token = (request.headers.get("X-Media-Upload-Token") or "").strip()
-    expected = (current_app.config.get("MEDIA_UPLOAD_TOKEN") or "").strip()
-    if not expected:
+    accepted = _accepted_invalidate_tokens()
+    if not accepted:
         return False
-    return token == expected
+    return token in accepted
 
 
 def _api_item_payload(item: dict) -> dict:
