@@ -37,7 +37,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=light-only" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}?v=1" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/services-carousel.css') }}?v=media-cover1" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-home.css') }}?v=5" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-home.css') }}?v=6" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/preloader.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/image-effects.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/modals.css') }}" />
@@ -127,8 +127,8 @@
     <i class="fas fa-chevron-down"></i>
   </div>
 
-  <div id="progress-bar" class="progress-bar">
-    <div id="progress-fill"></div>
+  <div id="progress-bar" class="progress-bar mw-scroll-progress" aria-hidden="true">
+    <div id="progress-fill" class="mw-scroll-progress__fill"></div>
   </div>
   {% block fixed_indicators %}{% endblock %}
 

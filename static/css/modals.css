@@ -163,8 +163,8 @@
   cursor: not-allowed;
 }
 
-/* Прогресс-бар */
-.progress-bar {
+/* Прогресс-бар — только внутри модалок бронирования (не глобальный #progress-bar в base.html) */
+.modal .progress-bar {
   width: 100%;
   height: 4px;
   background-color: #f0f0f0;
@@ -173,7 +173,7 @@
   overflow: hidden;
 }
 
-#progress-fill {
+.modal .progress-bar #progress-fill {
   width: 25%;
   height: 100%;
   background-color: #4CAF50;
