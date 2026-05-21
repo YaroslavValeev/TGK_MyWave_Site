@@ -524,62 +524,12 @@ button.btn-secondary:focus-visible{
 }
 
 /* =========================================================
-   Sticky Section Progress (Premium)
-   - thin line under header
-   - driven by nav-spy.js (section-based)
+   Sticky Section Progress — отключён (убран из base.html)
 ========================================================= */
 
-.mw-scroll-progress{
-  position: fixed !important;
-  left: 0; right: 0;
-  top: var(--mw-header-h, 60px) !important;
-  height: 3px !important;
-
-  z-index: 999; /* ниже header (1000), но выше контента */
-  pointer-events: none;
-
-  display: block !important;
-  margin: 0 !important;
-
-  background: rgba(18,22,27,0.08) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-
-  /* убираем конфликтующие стили .progress-bar::before из style.css */
-  border: 0 !important;
-  overflow: hidden !important;
-}
-
-.mw-scroll-progress::before{
-  content: none !important;
-}
-
-:root[data-theme="dark"] .mw-scroll-progress{
-  background: rgba(238,242,246,0.12) !important;
-}
-
-/* ВАЖНО: фиксируем ширину на 100%, чтобы никакой другой JS не "сбивал" width */
-#progress-fill.mw-scroll-progress__fill{
-  width: 100% !important;
-  height: 100% !important;
-
-  background: linear-gradient(90deg, var(--mw-brand, #35C0CD), rgba(53,192,205,0.55)) !important;
-
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-  transition: transform 160ms ease;
-  will-change: transform;
-}
-
-/* Если шапка скрывается (site-header.hidden), прячем и линию */
-.site-header.hidden ~ .mw-scroll-progress{
-  opacity: 0;
-  transform: translateY(-6px);
-  transition: opacity 180ms ease, transform 180ms ease;
-}
-.site-header.visible ~ .mw-scroll-progress{
-  opacity: 1;
-  transform: translateY(0);
+#progress-bar,
+.mw-scroll-progress {
+  display: none !important;
 }
 
 /* =========================================================

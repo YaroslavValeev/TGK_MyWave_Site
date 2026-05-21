@@ -2082,22 +2082,6 @@ chatWindow {
   margin-top: 10px;
   overflow: hidden;
 }
-/* Глобальный индикатор прокрутки — fixed под шапкой (см. branding.css .mw-scroll-progress) */
-#progress-bar.progress-bar.mw-scroll-progress {
-  position: fixed;
-  top: var(--mw-header-h, 60px);
-  left: 0;
-  right: 0;
-  height: 3px;
-  margin: 0;
-  z-index: 999;
-  background: rgba(18, 22, 27, 0.06);
-  pointer-events: none;
-}
-#progress-bar.progress-bar:not(.mw-scroll-progress--visible) {
-  opacity: 0;
-  visibility: hidden;
-}
 #progress-fill {
   height: 100%;
   width: 0%;

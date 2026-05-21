@@ -119,25 +119,6 @@
     line-height: 0;
   }
 
-  #progress-bar.progress-bar {
-    position: fixed !important;
-    top: var(--mw-header-h, 56px) !important;
-    left: 0;
-    right: 0;
-    height: 2px !important;
-    margin: 0 !important;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-
-  #progress-bar #progress-fill {
-    width: 100% !important;
-    background: linear-gradient(90deg, #35c0cd, rgba(53, 192, 205, 0.55)) !important;
-    transform: scaleX(0);
-    transform-origin: 0 50%;
-  }
-
   /* --- Карусели: шире карточки, snap, без desktop-стрелок --- */
   .services-carousel,
   .products-carousel,
