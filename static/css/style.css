@@ -300,7 +300,7 @@ h1, h2, h3, h4, p {
   position: relative;
   width: 100%;
   min-height: 80vh;
-  background-image: url('/static/images_old/hero-wakesurf.webp');
+  background-image: url('/static/images/hero-wakesurf.webp');
   background-size: cover;
   background-position: center;
   display: flex;

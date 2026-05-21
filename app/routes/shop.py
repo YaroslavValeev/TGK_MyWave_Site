@@ -47,7 +47,7 @@ PRODUCTS = {
         'title': 'Wave Cards',
         'price': '1 200 ₽',
         'description': 'Колода карточек с заданиями/вызовами и тематикой вейка. Короткие игры и челленджи.',
-        'image_folder': 'images_old/hero-wakesurf.webp',
+        'image_folder': 'images/hero-wakesurf.webp',
     },
 }
 
