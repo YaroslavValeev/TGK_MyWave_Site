@@ -124,6 +124,9 @@ class Config:
     GOOGLE_SHEETS_CREDENTIALS = os.getenv("GOOGLE_SHEETS_CREDENTIALS") or os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE")
     DRIVE_FOLDER_ID = os.getenv("DRIVE_FOLDER_ID")
     SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "")
+    # Блог / Parser News (raw_feed). Отдельно от SPREADSHEET_ID (бронь, Admin/Tg Bot).
+    PARSER_NEWS_SPREADSHEET_ID = os.getenv("PARSER_NEWS_SPREADSHEET_ID", "")
+    PARSER_SHEET_NAME = os.getenv("PARSER_SHEET_NAME", "raw_feed")
     CLIENT_WORKOUTS_SHEET_NAME = os.getenv("CLIENT_WORKOUTS_SHEET_NAME", "Client_Workouts")
     BOAT_BOOKINGS_SHEET_NAME = os.getenv("BOAT_BOOKINGS_SHEET_NAME", "Boat_Bookings")
     BOAT_RUZA_SYNC_ENABLED = os.getenv("BOAT_RUZA_SYNC_ENABLED", "False") in ("1", "true", "True")

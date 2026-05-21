@@ -229,8 +229,9 @@ def api_blog_diagnostics():
                 "vitrine_total": len(vitrine_posts) if vitrine_posts else 0,
             },
             "hint": (
-                "Блог читает лист raw_feed таблицы Parser News (PARSER_TAB), "
-                "не Admin/Tg Bot. Статус строки: READY_TO_PUBLISH или PUBLISHED + контент."
+                "Блог: PARSER_NEWS_SPREADSHEET_ID + PARSER_SHEET_NAME=raw_feed "
+                "(Parser News), не SPREADSHEET_ID Admin/Tg Bot. "
+                "Статус: READY_TO_PUBLISH или PUBLISHED + контент."
             ),
         }
     )

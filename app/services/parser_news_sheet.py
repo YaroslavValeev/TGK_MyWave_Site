@@ -27,24 +27,46 @@ def _looks_like_spreadsheet_id(value: str) -> bool:
     return bool(_SPREADSHEET_ID_RE.match(value))
 
 
+def _parser_sheet_name() -> str:
+    return (
+        (current_app.config.get("PARSER_SHEET_NAME") if current_app else None)
+        or os.getenv("PARSER_SHEET_NAME")
+        or DEFAULT_WORKSHEET_TITLE
+    ).strip()
+
+
+def _parser_news_spreadsheet_id() -> str:
+    return (
+        (current_app.config.get("PARSER_NEWS_SPREADSHEET_ID") if current_app else None)
+        or os.getenv("PARSER_NEWS_SPREADSHEET_ID")
+        or ""
+    ).strip()
+
+
 def resolve_parser_source() -> Tuple[str, str]:
     """
-    Возвращает (spreadsheet_id, worksheet_title) для PARSER_TAB.
+    Возвращает (spreadsheet_id, worksheet_title) для блога / Parser News.
 
-    Логика:
-    - если PARSER_TAB похож на Spreadsheet ID -> используем его как spreadsheet_id,
-      а лист берём по умолчанию DEFAULT_WORKSHEET_TITLE (или из PARSER_SHEET_NAME)
-    - иначе считаем PARSER_TAB названием листа внутри основного SPREADSHEET_ID
+    Приоритет:
+    1. PARSER_NEWS_SPREADSHEET_ID — отдельная таблица Parser News (рекомендуется на prod)
+    2. PARSER_TAB как Spreadsheet ID
+    3. PARSER_TAB / PARSER_SHEET_NAME как лист внутри SPREADSHEET_ID (Admin/Tg Bot)
     """
+    parser_sheet_name = _parser_sheet_name()
+    parser_news_id = _parser_news_spreadsheet_id()
+    if _looks_like_spreadsheet_id(parser_news_id):
+        return parser_news_id, parser_sheet_name
+
     parser_tab = (os.getenv("PARSER_TAB") or "").strip()
-    parser_sheet_name = (os.getenv("PARSER_SHEET_NAME") or DEFAULT_WORKSHEET_TITLE).strip()
     main_spreadsheet_id = current_app.config.get("SPREADSHEET_ID") or os.getenv("SPREADSHEET_ID") or ""
 
     if _looks_like_spreadsheet_id(parser_tab):
         return parser_tab, parser_sheet_name
 
     if not main_spreadsheet_id:
-        raise RuntimeError("SPREADSHEET_ID is empty, cannot resolve PARSER_TAB as worksheet name")
+        raise RuntimeError(
+            "SPREADSHEET_ID is empty and PARSER_NEWS_SPREADSHEET_ID / PARSER_TAB not set"
+        )
 
     worksheet_title = parser_tab or parser_sheet_name
     return main_spreadsheet_id, worksheet_title

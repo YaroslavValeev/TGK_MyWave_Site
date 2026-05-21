@@ -77,7 +77,16 @@ python scripts/blog_xlsx_import_to_db.py --xlsx /path/MyWave_Parser_News.xlsx --
      -H "Authorization: Bearer $MEDIA_UPLOAD_TOKEN"
    ```
 4. **Sync в SQLite не запускался** — витрина читает Sheets first; БД — fallback. Cron sync см. `app/cli/blog_sync.py` / runbook.
-5. **Неверный SPREADSHEET_ID / gid** — backend уже валидирует при старте; сверить `.env` с Parser Bot.
+5. **Неверный SPREADSHEET_ID** — на prod `SPREADSHEET_ID` часто указывает на **Admin/Tg Bot**; блог должен читать **Parser News** через отдельную переменную:
+
+```bash
+# /var/www/mywave/.env
+PARSER_NEWS_SPREADSHEET_ID=1RJpw2mAMej3a-VC6yKAsKkVQvzGStcjUC7LijNNyn50
+PARSER_SHEET_NAME=raw_feed
+# SPREADSHEET_ID=...  # оставить для брони/бота, не подменять на Parser News
+```
+
+После правки: `sudo systemctl restart mywave-site`, затем `GET /api/blog/diagnostics` — `spreadsheet_id_tail` должен заканчиваться на `NNyn50`, не на `OrCgic0` / `M0Rcglc8`.
 
 ## Действия для контент-команды (без deploy)
 
