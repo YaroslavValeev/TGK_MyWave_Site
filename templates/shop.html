@@ -42,9 +42,8 @@
           <h4>{{ product.title }}</h4>
           <p class="service-description service-description--short">{{ product.description }}</p>
           <p class="price">{{ product.price }}</p>
-          <div class="card-details"><p class="card-details__text">{{ product.description }}</p></div>
           {% set buy_href = product.buy_url if product.buy_url else url_for('shop.product', slug=slug) %}
-          <a class="btn btn-primary-lg" href="{{ buy_href }}"{% if product.buy_url %} target="_blank" rel="noopener noreferrer"{% endif %}>Купить</a>
+          <a class="btn btn-primary-lg product-card__buy" href="{{ buy_href }}"{% if product.buy_url %} target="_blank" rel="noopener noreferrer"{% endif %}>Купить</a>
         </div>
       </div>
       {% endfor %}

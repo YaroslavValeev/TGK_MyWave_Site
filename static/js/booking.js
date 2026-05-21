@@ -106,6 +106,11 @@ function initializeBooking() {
     stepIndicator: document.getElementById("step-indicator")
   };
 
+  if (!UI.openBookingButtons || UI.openBookingButtons.length === 0) {
+    window.bookingStatus.initialized = true;
+    return;
+  }
+
   let currentStep = 1;
   let currentService = 'boat'; // По умолчанию используем лодку
   window.__mwBookingService = currentService;
@@ -940,16 +945,6 @@ function initializeBooking() {
   console.log('[booking.js] ✅ ИНИЦИАЛИЗАЦИЯ ОБРАБОТЧИКОВ КНОПОК');
   
   // Инициализация обработчиков для всех кнопок бронирования
-  console.log(`[booking.js] 📊 НАЙДЕНО КНОПОК: ${UI.openBookingButtons.length}`);
-  
-  if (UI.openBookingButtons.length === 0) {
-    console.error('[booking.js] ❌ НЕ НАЙДЕНО КНОПОК БРОНИРОВАНИЯ! Селектор может быть неправильным');
-    console.log('[booking.js] Проверяем наличие элементов в DOM:');
-    console.log('  - #openBookingBtn:', document.getElementById('openBookingBtn'));
-    console.log('  - .book-now:', document.querySelectorAll('.book-now').length);
-    console.log('  - .btn-book:', document.querySelectorAll('.btn-book').length);
-  }
-  
   // Расширенное логирование всех кнопок бронирования
   UI.openBookingButtons.forEach((btn, idx) => {
     if (!btn) {

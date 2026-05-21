@@ -73,8 +73,10 @@
     opacity: 1;
 }
 
-/* Карусели карточек: не скрывать кадр из-за fade-in preloader */
+/* Карусели и обложки блога: не скрывать кадр из-за fade-in preloader */
 .card-media-carousel .service-image.fade-in,
-.card-media-carousel .service-image.fade-in.loaded {
+.card-media-carousel .service-image.fade-in.loaded,
+.blog-card-cover .service-image.fade-in,
+.blog-card-cover .service-image.fade-in.loaded {
     opacity: 1;
 }

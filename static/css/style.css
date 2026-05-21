@@ -1031,8 +1031,25 @@ input:invalid {
 .product-card--unified .product-card__image-wrap img {
   width: 100%; height: 200px; object-fit: cover;
 }
-.product-card--unified .product-card__body { flex: 1; display: flex; flex-direction: column; padding: 16px; min-height: 140px; }
-.product-card--unified .product-card__body .price { white-space: nowrap; font-size: 1.2em; }
+.product-card--unified .product-card__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  min-height: 140px;
+  box-sizing: border-box;
+}
+.product-card--unified .product-card__body .price { white-space: nowrap; font-size: 1.2em; flex-shrink: 0; }
+.product-card--unified .product-card__body .service-description--short {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.product-card--unified .product-card__buy {
+  margin-top: auto;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
 
 .store-list {
   display: grid;

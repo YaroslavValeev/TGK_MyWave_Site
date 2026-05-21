@@ -1,0 +1,19 @@
+{% if competitions_ticker and competitions_ticker|length > 0 %}
+<section class="home-competitions-ticker" aria-label="Мировые соревнования по вейксерфингу и вейкборду">
+  <div class="home-competitions-ticker__label" aria-hidden="true">Соревнования</div>
+  <div class="home-competitions-ticker__viewport">
+    <div class="home-competitions-ticker__track" data-ticker-track>
+      {% for item in competitions_ticker %}
+      <span class="home-competitions-ticker__item">
+        {% if item.href %}
+        <a class="home-competitions-ticker__link" href="{{ item.href }}" target="_blank" rel="noopener noreferrer">{{ item.label }}</a>
+        {% else %}
+        <span class="home-competitions-ticker__text">{{ item.label }}</span>
+        {% endif %}
+      </span>
+      <span class="home-competitions-ticker__sep" aria-hidden="true">•</span>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}

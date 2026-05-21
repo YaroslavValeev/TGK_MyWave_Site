@@ -225,12 +225,28 @@
 
   .services-carousel .service-card .btn-secondary,
   .products-carousel .product-card .btn-secondary,
+  .products-carousel .product-card .product-card__buy,
   .projects-carousel .project-card .btn-secondary,
   .services-carousel .service-card .btn-book {
     width: 100%;
     min-height: 44px;
-    margin-top: 0.5rem;
+    margin-top: auto;
     box-sizing: border-box;
+    flex-shrink: 0;
+  }
+
+  .products-carousel .product-card.product-card--unified {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .products-carousel .product-card--unified .product-card__body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 0.65rem 0.85rem 0.85rem;
   }
 
   .project-card--wake-challenge,

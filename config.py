@@ -88,6 +88,8 @@ class Config:
     RECO_CACHE_TTL = int(os.getenv('RECO_CACHE_TTL', '300'))
     # In-memory кэш строк raw_feed (Sheets) для витрины блога; 0 = всегда перечитывать
     BLOG_SHEETS_CACHE_TTL = int(os.getenv("BLOG_SHEETS_CACHE_TTL", "120"))
+    COMPETITIONS_SHEET_NAME = os.getenv("COMPETITIONS_SHEET_NAME", "competitions_ticker")
+    COMPETITIONS_SHEETS_CACHE_TTL = int(os.getenv("COMPETITIONS_SHEETS_CACHE_TTL", "300"))
     # CSP toggle — allow enabling/disabling strict CSP rules via env
     CSP_ENABLED = os.getenv('CSP_ENABLED', 'True') in ('1', 'true', 'True')
     # GA / Yandex Metrika / GTM: выключены по умолчанию для dev/testing; включаются в ProductionConfig или явным env=1

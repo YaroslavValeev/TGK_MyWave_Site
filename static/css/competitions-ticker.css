@@ -1,0 +1,132 @@
+/* Бегущая строка соревнований между «Проекты» и «Блог» */
+.home-competitions-ticker {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0.75rem auto 1.25rem;
+    padding: 0.65rem 0;
+    border-top: 1px solid rgba(53, 192, 205, 0.35);
+    border-bottom: 1px solid rgba(53, 192, 205, 0.35);
+    background: linear-gradient(
+        90deg,
+        rgba(53, 192, 205, 0.06) 0%,
+        rgba(53, 192, 205, 0.02) 50%,
+        rgba(53, 192, 205, 0.06) 100%
+    );
+    overflow: hidden;
+    position: relative;
+}
+
+.home-competitions-ticker__label {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #35c0cd;
+    background: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.home-competitions-ticker__viewport {
+    overflow: hidden;
+    width: 100%;
+    padding-left: 6.5rem;
+    mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+}
+
+.home-competitions-ticker__track {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0;
+    white-space: nowrap;
+    animation: competitions-ticker-scroll 45s linear infinite;
+    will-change: transform;
+}
+
+.home-competitions-ticker__track.is-paused {
+    animation-play-state: paused;
+}
+
+.home-competitions-ticker__item {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 1.25rem;
+}
+
+.home-competitions-ticker__link,
+.home-competitions-ticker__text {
+    font-size: 0.9rem;
+    color: #1a4a52;
+    text-decoration: none;
+}
+
+.home-competitions-ticker__link:hover,
+.home-competitions-ticker__link:focus-visible {
+    color: #35c0cd;
+    text-decoration: underline;
+}
+
+.home-competitions-ticker__sep {
+    color: rgba(53, 192, 205, 0.55);
+    font-size: 0.75rem;
+    user-select: none;
+}
+
+@keyframes competitions-ticker-scroll {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+@media (max-width: 768px) {
+    .home-competitions-ticker {
+        margin: 0.5rem auto 1rem;
+        padding: 0.5rem 0;
+    }
+
+    .home-competitions-ticker__label {
+        display: none;
+    }
+
+    .home-competitions-ticker__viewport {
+        padding-left: 0;
+    }
+
+    .home-competitions-ticker__link,
+    .home-competitions-ticker__text {
+        font-size: 0.82rem;
+    }
+
+    .home-competitions-ticker__track {
+        animation-duration: 35s;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-competitions-ticker__viewport {
+        overflow-x: auto;
+        mask-image: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .home-competitions-ticker__track {
+        animation: none;
+        flex-wrap: wrap;
+        white-space: normal;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .home-competitions-ticker__item {
+        padding: 0.35rem 0.75rem;
+    }
+}

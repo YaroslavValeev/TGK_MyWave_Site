@@ -33,21 +33,21 @@ PRODUCTS = {
     'sertificate': {
         'title': 'Сертификат (на занятия)',
         'price': '30 000 ₽',
-        'description': 'Подарочный сертификат на 10 занятий: тренировки, катание или услуги MyWave.',
+        'description': 'Подарочный сертификат на 10 занятий MyWave: тренировки в зале, катер или услуги клуба.',
         'image_folder': 'images/Shop/Sertificate',
     },
     'wakesurfpolia': {
         'title': 'WakeSurf Polia',
         'price': '5 000 ₽',
-        'description': 'Комплект для тренировок на воде: страховочные элементы и аксессуары.',
+        'description': 'Настольная игра про вейксерфинг: карточки, сценарии и правила для компании. Для дома, лагеря и вечеринок.',
         'image_folder': 'images/Shop/WakeSurfPolia',
         'buy_url': 'https://joys-brand.com/aksessuary/nastolnaya-igra-wakesurfopolie1',
     },
     'wave-cards': {
         'title': 'Wave Cards',
         'price': '1 200 ₽',
-        'description': 'Колода карточек с заданиями/вызовами и тематикой вейка. Короткие игры и челленджи.',
-        'image_folder': 'images/hero-wakesurf.webp',
+        'description': 'Колода карточек с заданиями и челленджами в тематике вейка — короткие игры на воде и на берегу.',
+        'image_folder': 'images/Place1Logo.png',
     },
 }
 

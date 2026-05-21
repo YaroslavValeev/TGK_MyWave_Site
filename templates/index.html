@@ -2,6 +2,10 @@
 
 {% block title %}MyWave — Тренировки по вейксерфингу{% endblock %}
 
+{% block extra_head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/competitions-ticker.css') }}?v=1" />
+{% endblock %}
+
 {% block content %}
   <!-- Герой-блок -->
   <section class="hero-section relative-section">
@@ -90,12 +94,13 @@
             <img class="service-image" src="{{ url_for('static', filename=product.cover) }}" alt="{{ product.title }}" loading="{{ 'eager' if loop.index0 < 2 else 'lazy' }}"{% if loop.index0 == 0 %} fetchpriority="high"{% endif %} decoding="async" data-fallback="{{ url_for('static', filename=product.fallback) }}">
             {% endif %}
           </div>
-          <h4>{{ product.title }}</h4>
-          <p class="service-description service-description--short">{{ product.description }}</p>
-          <p class="price">{{ product.price }}</p>
-          <div class="card-details"><p class="card-details__text">{{ product.description }}</p></div>
-          {% set buy_href = product.buy_url if product.buy_url else url_for('shop.product', slug=slug) %}
-          <a class="btn btn-secondary" href="{{ buy_href }}"{% if product.buy_url %} target="_blank" rel="noopener noreferrer"{% endif %}>Купить</a>
+          <div class="product-card__body">
+            <h4>{{ product.title }}</h4>
+            <p class="service-description service-description--short">{{ product.description }}</p>
+            <p class="price">{{ product.price }}</p>
+            {% set buy_href = product.buy_url if product.buy_url else url_for('shop.product', slug=slug) %}
+            <a class="btn btn-secondary product-card__buy" href="{{ buy_href }}"{% if product.buy_url %} target="_blank" rel="noopener noreferrer"{% endif %}>Купить</a>
+          </div>
         </div>
         {% endfor %}
       </div>
@@ -128,6 +133,8 @@
     </div>
     <p class="projects-cta"><a href="{{ url_for('projects_page') }}" class="btn btn-outline-brand">Все проекты</a></p>
   </section>
+
+  {% include 'partials/home_competitions_ticker.html' %}
 
   {# Рендерим секцию мероприятий только если есть хотя бы одно событие #}
   {% set total_events = 0 %}
@@ -248,4 +255,8 @@
   </section>
 
   <a href="{{ url_for('chat.chat_page') }}" class="btn-secondary chat-margin">Чат с тренером</a>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/competitions-ticker.js') }}?v=1" defer></script>
 {% endblock %}

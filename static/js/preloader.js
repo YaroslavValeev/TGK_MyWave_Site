@@ -1,22 +1,40 @@
-// Preloader for page load
+// Preloader: не блокируем страницу бесконечным ожиданием window.load
 document.addEventListener('DOMContentLoaded', () => {
-    // Create and append preloader
     const preloader = document.createElement('div');
     preloader.className = 'preloader';
     preloader.innerHTML = '<div class="preloader-spinner"></div>';
     document.body.appendChild(preloader);
 
-    // Remove preloader when page is fully loaded
-    window.addEventListener('load', () => {
+    let removed = false;
+    const MIN_SPIN_MS = 300;
+    const MAX_WAIT_MS = 2500;
+    const shownAt = Date.now();
+
+    function hidePreloader() {
+        if (removed) return;
+        removed = true;
         preloader.classList.add('fade-out');
         setTimeout(() => preloader.remove(), 500);
-    });
+    }
 
-    // Lazy preloader: не трогаем карусели карточек (там свой card-gallery.js)
+    function hideAfterMinDelay() {
+        const elapsed = Date.now() - shownAt;
+        const wait = Math.max(0, MIN_SPIN_MS - elapsed);
+        setTimeout(hidePreloader, wait);
+    }
+
+    if (document.readyState === 'complete') {
+        hideAfterMinDelay();
+    } else {
+        window.addEventListener('load', hideAfterMinDelay, { once: true });
+        setTimeout(hidePreloader, MAX_WAIT_MS);
+    }
+
+    // Lazy preloader: не трогаем карусели и обложки блога (свой fade / card-gallery)
     const images = document.querySelectorAll(
-        'img[loading="lazy"]:not(.project-card__cover):not(.card-media-carousel img)'
+        'img[loading="lazy"]:not(.project-card__cover):not(.card-media-carousel img):not(.blog-card-cover img)'
     );
-    
+
     const imageObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -30,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     img.classList.add('loaded');
                 }
 
-                // Start loading the image only if data-src is provided
                 if (img.dataset && img.dataset.src) {
                     img.src = img.dataset.src;
                 }
@@ -51,15 +68,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     images.forEach(img => {
-        // Create wrapper if it doesn't exist
         if (!img.closest('.img-wrapper')) {
             const wrapper = document.createElement('div');
             wrapper.className = 'img-wrapper loading';
             img.parentNode.insertBefore(wrapper, img);
             wrapper.appendChild(img);
         }
-        
-        // Add fade-in class and setup observation
+
         img.classList.add('fade-in');
         imageObserver.observe(img);
     });

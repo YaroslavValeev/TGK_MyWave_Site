@@ -45,6 +45,7 @@ from app.routes.auth import auth_bp
 from app.routes.chat import chat_bp
 from app.routes.files import files_bp
 from app.routes.blog import blog_bp
+from app.routes.competitions import competitions_bp
 from app.routes.about import about_bp
 from app.routes.contact import contact_bp
 from app.routes.api import api_bp
@@ -169,6 +170,14 @@ def create_app(config_name="development"):
         except Exception as e:
             app.logger.warning("home: не удалось загрузить превью блога: %s", e)
 
+        competitions_ticker = []
+        try:
+            from app.services.competitions.store import get_ticker_items
+
+            competitions_ticker = get_ticker_items() or []
+        except Exception as e:
+            app.logger.warning("home: не удалось загрузить ticker соревнований: %s", e)
+
         return render_template(
             'index.html',
             months=months,
@@ -176,6 +185,7 @@ def create_app(config_name="development"):
             products=products,
             projects=projects,
             blog_preview_posts=blog_preview_posts,
+            competitions_ticker=competitions_ticker,
         )
 
     @app.route('/favicon.ico')
@@ -346,6 +356,7 @@ def create_app(config_name="development"):
     app.register_blueprint(chat_bp)
     app.register_blueprint(files_bp)
     app.register_blueprint(blog_bp)
+    app.register_blueprint(competitions_bp)
     app.register_blueprint(safari_bp)
     try:
         from app.routes.projects_safari import projects_safari_bp
