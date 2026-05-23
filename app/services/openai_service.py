@@ -122,10 +122,15 @@ def _user_friendly_openai_error(exc: Exception, *, cfg: dict | None = None) -> s
     # Типичные классы исключений SDK OpenAI (имена стабильны между версиями)
     if ename == "PermissionDeniedError" or status == 403:
         if _is_region_blocked_error(exc):
+            logger.warning(
+                "openai_region_blocked: настройте OPENAI_HTTP_PROXY в .env на сервере "
+                "(прокси вне РФ); посетителям VPN не нужен"
+            )
             return (
-                "OpenAI недоступен с этого сервера (регион заблокирован). "
-                "Для info-вопросов чат ответит из базы знаний; для полного AI "
-                "настройте OPENAI_HTTP_PROXY в .env или CHAT_BACKEND=completions через прокси."
+                "Сейчас умный ассистент временно недоступен с нашего сервера. "
+                "Задайте вопрос про услуги, проекты, запись или «что взять с собой» — "
+                "я отвечу из базы знаний MyWave. "
+                "Или свяжитесь с менеджером: +7 916 011 71 79."
             )
         return (
             "Доступ к OpenAI запрещён (403). Проверьте ключ, права проекта и регион сервера."
@@ -138,7 +143,9 @@ def _user_friendly_openai_error(exc: Exception, *, cfg: dict | None = None) -> s
         )
     if ename in ("APIConnectionError", "ConnectError", "ConnectionError"):
         return (
-            "Не удалось подключиться к серверам OpenAI. Проверьте интернет, VPN и доступность api.openai.com."
+            "Не удалось связаться с сервисом умного ассистента. "
+            "Попробуйте ещё раз через минуту или задайте вопрос про услуги и проекты — "
+            "ответлю из базы знаний."
         )
     if ename in ("APITimeoutError", "Timeout") or "timeout" in s_lower:
         return "Запрос к OpenAI занял слишком много времени. Попробуйте ещё раз через минуту."
