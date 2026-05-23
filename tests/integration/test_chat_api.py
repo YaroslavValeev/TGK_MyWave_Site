@@ -223,3 +223,18 @@ def test_chat_api_asks_disambiguation_for_general_what_to_bring(client):
     data = response.get_json() or {}
     text = (data.get('response') or '').lower()
     assert 'зал' in text and 'катер' in text
+
+
+def test_chat_info_uses_offline_kb_without_openai(client):
+    """Info-вопрос с KB не зависит от OpenAI (geo-block на prod)."""
+    with patch('app.routes.chat.ask', side_effect=AssertionError("OpenAI should not be called")):
+        response = client.post(
+            '/chat/api',
+            data=json.dumps({'message': 'как попасть в кемп?'}),
+            content_type='application/json',
+        )
+    assert response.status_code == 200
+    data = response.get_json() or {}
+    text = (data.get('response') or '').lower()
+    assert 'кемп' in text or 'ruza' in text or 'заявк' in text
+    assert 'не удалось получить ответ' not in text

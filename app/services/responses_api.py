@@ -49,6 +49,11 @@ def _collect_knowledge_snippets(
         'запис': 'training',
         'проходит': 'training',
         'проходят': 'training',
+        'кемп': 'projects',
+        'camp': 'projects',
+        'лагер': 'projects',
+        'ruza': 'projects',
+        'руза': 'projects',
     }
     relevant_types = set()
     for key, knowledge_type in keywords.items():
@@ -85,6 +90,60 @@ def append_knowledge_to_system_prompt(base_prompt: str, snippets: list[str]) -> 
         "Если фактов недостаточно, честно скажи об этом кратко.\n\n"
         f"{kb_block}"
     )
+
+
+def format_offline_kb_reply(snippets: list[str], *, max_chars: int = 900) -> str:
+    """Собирает читаемый ответ из KB без вызова OpenAI (для RU-серверов / geo-block)."""
+    if not snippets:
+        return ""
+    parts: list[str] = []
+    total = 0
+    for raw in snippets[:5]:
+        chunk = str(raw).strip()
+        if not chunk:
+            continue
+        if total + len(chunk) > max_chars:
+            room = max_chars - total - 3
+            if room <= 40:
+                break
+            chunk = chunk[:room].rstrip() + "..."
+        parts.append(chunk)
+        total += len(chunk)
+        if total >= max_chars:
+            break
+    return "\n\n".join(parts).strip()
+
+
+def try_offline_kb_reply(
+    snippets: list[str],
+    *,
+    add_cta: bool = True,
+) -> str | None:
+    """Готовый ответ для чата только из базы знаний."""
+    body = format_offline_kb_reply(snippets)
+    if not body:
+        return None
+    if add_cta and not body.endswith((".", "!", "?")):
+        body += "."
+    if add_cta:
+        body += " Если захотите, подскажу свободные слоты и помогу записаться."
+    return body
+
+
+def is_openai_failure_reply(text: str | None) -> bool:
+    if not text:
+        return True
+    t = str(text).strip().lower()
+    markers = (
+        "не удалось получить ответ",
+        "ai временно недоступен",
+        "сервис временно недоступен",
+        "не удалось подключиться",
+        "openai недоступен",
+        "регион заблокирован",
+        "unsupported_country",
+    )
+    return any(m in t for m in markers)
 
 
 @responses_bp.route('/', methods=['POST'])

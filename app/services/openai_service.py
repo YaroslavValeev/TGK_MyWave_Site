@@ -16,6 +16,32 @@ from app.services.openai_runtime_config import (
 logger = get_logger(__name__)
 
 client = None  # OpenAI client будет инициализирован при первом вызове
+
+
+def _openai_client_from_config(cfg: dict | None = None) -> OpenAI:
+    """Создаёт OpenAI client; опционально через OPENAI_HTTP_PROXY / HTTPS_PROXY."""
+    cfg = cfg or {}
+    api_key = cfg.get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("OPENAI_API_KEY is not set in Flask config")
+    proxy = (
+        cfg.get("OPENAI_HTTP_PROXY")
+        or os.getenv("OPENAI_HTTP_PROXY")
+        or os.getenv("HTTPS_PROXY")
+        or os.getenv("HTTP_PROXY")
+    )
+    if proxy:
+        try:
+            import httpx
+
+            logger.info("[openai-client] using HTTP proxy for API requests")
+            http_client = httpx.Client(proxy=proxy.strip(), timeout=60.0)
+            return OpenAI(api_key=api_key, http_client=http_client)
+        except Exception as exc:
+            logger.warning("[openai-client] proxy init failed, direct connection: %s", exc)
+    return OpenAI(api_key=api_key)
+
+
 # Default model names used by the code and tests
 DEFAULT_MODEL = "gpt-4.1-nano"
 FALLBACK_MODEL = "gpt-4.1-nano"
@@ -34,6 +60,13 @@ def _chat_backend(cfg: dict) -> str:
     if raw in ("auto", "completions", "assistant_only", "responses"):
         return raw
     return "auto"
+
+def _is_region_blocked_error(exc: Exception) -> bool:
+    s = str(exc).lower()
+    return "unsupported_country_region_territory" in s or (
+        "country" in s and "region" in s and "not supported" in s
+    )
+
 
 def _is_model_not_found_error(exc: Exception) -> bool:
     s = str(exc).lower()
@@ -67,6 +100,7 @@ def _user_friendly_openai_error(exc: Exception, *, cfg: dict | None = None) -> s
     """
     ename = type(exc).__name__
     s_lower = str(exc).lower()
+    status = getattr(exc, "status_code", None)
 
     # Конфиг / ключ (до запроса к API)
     if isinstance(exc, RuntimeError) and "OPENAI_API_KEY" in str(exc):
@@ -76,6 +110,16 @@ def _user_friendly_openai_error(exc: Exception, *, cfg: dict | None = None) -> s
         )
 
     # Типичные классы исключений SDK OpenAI (имена стабильны между версиями)
+    if ename == "PermissionDeniedError" or status == 403:
+        if _is_region_blocked_error(exc):
+            return (
+                "OpenAI недоступен с этого сервера (регион заблокирован). "
+                "Для info-вопросов чат ответит из базы знаний; для полного AI "
+                "настройте OPENAI_HTTP_PROXY в .env или CHAT_BACKEND=completions через прокси."
+            )
+        return (
+            "Доступ к OpenAI запрещён (403). Проверьте ключ, права проекта и регион сервера."
+        )
     if ename == "AuthenticationError" or (
         "invalid" in s_lower and "api" in s_lower and "key" in s_lower
     ):
@@ -89,7 +133,6 @@ def _user_friendly_openai_error(exc: Exception, *, cfg: dict | None = None) -> s
     if ename in ("APITimeoutError", "Timeout") or "timeout" in s_lower:
         return "Запрос к OpenAI занял слишком много времени. Попробуйте ещё раз через минуту."
 
-    status = getattr(exc, "status_code", None)
     if ename == "BadRequestError" or status == 400:
         return (
             "Сейчас не удалось получить ответ: запрос отклонён API (параметры или модель). "
@@ -298,10 +341,7 @@ def ask_with_assistant(prompt, client_id=None, source: str = "web"):
     """
     global client
     if client is None:
-        api_key = current_app.config.get('OPENAI_API_KEY')
-        if not api_key:
-            raise RuntimeError("OPENAI_API_KEY is not set in Flask config")
-        client = OpenAI(api_key=api_key)
+        client = _openai_client_from_config(current_app.config)
 
     assistant_id = current_app.config.get('ASSISTANT_ID')
     if not assistant_id:
@@ -426,10 +466,7 @@ def _chat_completions_reply(
     """Один запрос к Chat Completions с CHAT_SYSTEM_PROMPT и историей (ветка без Assistant API)."""
     global client
     if client is None:
-        api_key = cfg.get("OPENAI_API_KEY") if cfg else None
-        if not api_key:
-            raise RuntimeError("OPENAI_API_KEY is not set in Flask config")
-        client = OpenAI(api_key=api_key)
+        client = _openai_client_from_config(cfg or {})
 
     log_openai_chat_config_first_request(logger, cfg)
 
@@ -523,10 +560,7 @@ def _responses_api_reply(
     """Один запрос к OpenAI Responses API с тем же внешним контрактом, что и completions."""
     global client
     if client is None:
-        api_key = cfg.get("OPENAI_API_KEY") if cfg else None
-        if not api_key:
-            raise RuntimeError("OPENAI_API_KEY is not set in Flask config")
-        client = OpenAI(api_key=api_key)
+        client = _openai_client_from_config(cfg or {})
 
     log_openai_chat_config_first_request(logger, cfg)
 
@@ -734,7 +768,27 @@ def ask(
         use_assistant = bool(assistant_id) and backend in ("auto", "assistant_only")
 
         if use_assistant:
-            reply = ask_with_assistant(prompt, client_id=client_id, source=source)
+            try:
+                reply = ask_with_assistant(prompt, client_id=client_id, source=source)
+            except Exception as exc:
+                if backend == "assistant_only":
+                    raise
+                logger.warning(
+                    "[chat-assistant] path=fallback_completions reason=assistant_exception err=%s",
+                    exc,
+                )
+                return _chat_completions_reply(
+                    cfg,
+                    prompt,
+                    mode,
+                    history,
+                    client_id,
+                    source,
+                    temperature,
+                    max_tokens,
+                    model,
+                    system_prompt_override=sys_prompt,
+                )
             empty = reply == _ASSISTANT_EMPTY_REPLY or not (reply or "").strip()
 
             if empty and backend == "assistant_only":
@@ -766,7 +820,7 @@ def ask(
                 backend,
                 len(reply or ""),
             )
-        return reply
+            return reply
 
         return _chat_completions_reply(
             cfg,
@@ -815,10 +869,7 @@ def create_assistant(name, instructions, model="gpt-4.1-nano"):
     try:
         global client
         if client is None:
-            api_key = current_app.config.get('OPENAI_API_KEY')
-            if not api_key:
-                raise RuntimeError("OPENAI_API_KEY is not set in Flask config")
-            client = OpenAI(api_key=api_key)
+            client = _openai_client_from_config(current_app.config)
         assistant = client.beta.assistants.create(
             name=name,
             instructions=instructions,
@@ -838,10 +889,7 @@ import json
 def _ensure_client():
     global client
     if client is None:
-        api_key = current_app.config.get('OPENAI_API_KEY')
-        if not api_key:
-            raise RuntimeError("OPENAI_API_KEY is not set in Flask config")
-        client = OpenAI(api_key=api_key)
+        client = _openai_client_from_config(current_app.config)
     return client
 
 

@@ -46,6 +46,8 @@ instance/service_account.json
 
 knowledge_base.db
 knowledge_base/
+!knowledge_base/projects/
+!knowledge_base/projects/**
 instance/knowledge_base/
 *.p12
 *.pem
@@ -91,6 +93,7 @@ client_secret.json
 knowledge_base/*
 !knowledge_base/**/
 !knowledge_base/**/*.py
+!knowledge_base/projects/**
 
 # Production deploy hygiene
 .env.*

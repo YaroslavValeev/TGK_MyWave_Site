@@ -37,6 +37,22 @@ def test_get_response_with_knowledge_uses_responses_transport(app):
     assert kwargs["history"] == []
 
 
+def test_try_offline_kb_reply_formats_snippets():
+    from app.services.responses_api import try_offline_kb_reply
+
+    out = try_offline_kb_reply(["Первый абзац про кемп.", "Второй абзац с деталями."])
+    assert out
+    assert "кемп" in out.lower()
+    assert "запис" in out.lower() or "слот" in out.lower()
+
+
+def test_is_openai_failure_reply():
+    from app.services.responses_api import is_openai_failure_reply
+
+    assert is_openai_failure_reply("Сейчас не удалось получить ответ.")
+    assert not is_openai_failure_reply("Тренировка в зале длится 60 минут.")
+
+
 def test_get_response_with_knowledge_returns_none_without_kb_hits(app):
     with app.app_context():
         app.config["OPENAI_API_KEY"] = "test-key-for-unit"
