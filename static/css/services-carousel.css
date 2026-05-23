@@ -37,6 +37,9 @@
   flex: 1;
   min-width: 0;
 }
+.projects-carousel .carousel-track {
+  align-items: stretch;
+}
 .services-carousel .carousel-track::-webkit-scrollbar { height: 8px; }
 .services-carousel .carousel-track::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 8px; }
 .services-carousel,
@@ -122,6 +125,22 @@
   box-sizing: border-box;
   overflow: hidden;
   padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  height: auto;
+}
+.projects-carousel .project-card.is-expanded {
+  align-self: flex-start;
+}
+.projects-carousel .project-card__collapsed {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.projects-carousel .project-card__actions {
+  margin-top: auto;
 }
 .projects-carousel .project-card > .service-image-container:first-child {
   margin: -12px -16px 12px -16px;
@@ -368,38 +387,23 @@
   .projects-carousel .project-card { min-width: 220px; }
 }
 
-/* Project cards — единый диапазон ширины */
+/* Project cards — единый размер в карусели «Проекты» */
 .project-card--wake-challenge,
 .project-card--ruza-camp,
 .project-card--wakesurf-safari,
 .project-card--checklist {
-  min-width: 280px;
+  min-width: 300px;
   max-width: 360px;
-}
-.project-card--checklist:not(.is-expanded) {
-  min-height: 400px;
-  max-height: 400px;
-  overflow: hidden;
-}
-.project-card--checklist.is-expanded {
-  max-height: none;
-  min-height: 400px;
+  width: 100%;
 }
 .project-card--checklist .project-card__summary,
 .project-card--checklist .project-card__checklist-preview {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-  overflow: hidden;
-}
-.project-card--checklist.is-expanded .project-card__summary,
-.project-card--checklist.is-expanded .project-card__checklist-preview {
-  -webkit-line-clamp: unset;
   display: block;
+  overflow: visible;
 }
-.project-card--wake-challenge {
-  min-width: 300px;
-  max-width: 420px;
+.project-card--checklist .project-card-expanded__block--what-is {
+  margin-top: 0.65em;
+  margin-bottom: 0.25em;
 }
 .project-card--wake-challenge .project-card__subtitle,
 .project-card--ruza-camp .project-card__subtitle,
@@ -456,8 +460,11 @@
   padding-top: 1em;
   border-top: 1px solid rgba(0,0,0,0.08);
   font-size: 0.9em;
-  max-height: 60vh;
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
+}
+.projects-carousel .project-card--checklist.is-expanded .project-card-expanded__block--what-is {
+  display: none;
 }
 .project-card--wake-challenge.is-expanded .project-card__expanded,
 .project-card--ruza-camp.is-expanded .project-card__expanded,

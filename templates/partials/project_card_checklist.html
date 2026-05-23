@@ -25,6 +25,10 @@
       {% endfor %}
     </ul>
     {% endif %}
+    <div class="project-card-expanded__block project-card-expanded__block--what-is">
+      <h5>Что это</h5>
+      <p>Структурированный чек-лист для организаторов wake-соревнований: судьи, документы, тайминг, безопасность, протоколы.</p>
+    </div>
     <div class="service-card-actions project-card__actions">
       <a class="btn btn-primary" href="{{ p.url }}">Подробнее</a>
       <a class="btn btn-secondary" href="{{ p.url }}#checklist-content" title="Прокрутка к чек-листу на странице">Смотреть чек-лист</a>
@@ -32,10 +36,6 @@
   </div>
 
   <div class="project-card__expanded">
-    <div class="project-card-expanded__block">
-      <h5>Что это</h5>
-      <p>Структурированный чек-лист для организаторов wake-соревнований: судьи, документы, тайминг, безопасность, протоколы.</p>
-    </div>
     <div class="project-card-expanded__block">
       <h5>Ценность</h5>
       <ul>
