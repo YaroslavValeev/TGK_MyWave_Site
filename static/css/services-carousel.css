@@ -401,9 +401,9 @@
   display: block;
   overflow: visible;
 }
-.project-card--checklist .project-card-expanded__block--what-is {
-  margin-top: 0.65em;
-  margin-bottom: 0.25em;
+/* Свёрнуто: видны заголовок, список и кнопки; «Что это» и ниже — только в .project-card__expanded */
+.project-card--checklist:not(.is-expanded) .project-card__expanded {
+  display: none !important;
 }
 .project-card--wake-challenge .project-card__subtitle,
 .project-card--ruza-camp .project-card__subtitle,
@@ -462,9 +462,6 @@
   font-size: 0.9em;
   max-height: none;
   overflow: visible;
-}
-.projects-carousel .project-card--checklist.is-expanded .project-card-expanded__block--what-is {
-  display: none;
 }
 .project-card--wake-challenge.is-expanded .project-card__expanded,
 .project-card--ruza-camp.is-expanded .project-card__expanded,
