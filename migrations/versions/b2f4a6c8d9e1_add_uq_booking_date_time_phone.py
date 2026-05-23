@@ -8,6 +8,8 @@ Create Date: 2025-10-30 12:00:00.000000
 from alembic import op
 import sqlalchemy as sa
 
+from migrations.migration_utils import has_unique_constraint, table_names
+
 
 # revision identifiers, used by Alembic.
 revision = 'b2f4a6c8d9e1'
@@ -17,7 +19,11 @@ depends_on = None
 
 
 def upgrade():
-    # Create unique constraint to prevent duplicate bookings for same date,time,phone
+    conn = op.get_bind()
+    if 'booking' not in table_names(conn):
+        return
+    if has_unique_constraint(conn, 'booking', 'uq_booking_date_time_phone'):
+        return
     with op.batch_alter_table('booking', schema=None) as batch_op:
         batch_op.create_unique_constraint('uq_booking_date_time_phone', ['date', 'time', 'phone'])
 
