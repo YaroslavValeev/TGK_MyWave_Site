@@ -1,23 +1,3 @@
 #!/usr/bin/env bash
-# Быстрое восстановление чата на prod: таблица chat_message + миграции.
-set -euo pipefail
-cd /var/www/mywave
-source venv/bin/activate
-export FLASK_CONFIG=production
-export PYTHONPATH=/var/www/mywave
-
-echo "=== git pull (последние миграции) ==="
-git pull
-
-echo "=== flask db upgrade ==="
-if ! flask db upgrade; then
-  echo "WARN: upgrade failed — создаём chat_message вручную"
-  python scripts/ensure_chat_message_table.py
-fi
-
-echo "=== проверка chat_message ==="
-python scripts/chat_persistence_check.py --config production
-
-echo "=== restart ==="
-sudo systemctl restart mywave-site
-echo "DONE"
+# Обратная совместимость: полный деплой чата и сайта.
+exec bash "$(dirname "$0")/prod_deploy_site.sh" "$@"
