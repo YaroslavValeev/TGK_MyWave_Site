@@ -61,3 +61,30 @@ def test_get_response_with_knowledge_returns_none_without_kb_hits(app):
 
             out = get_response_with_knowledge("привет без ключевых слов знаний")
     assert out is None
+
+
+def test_collect_snippets_safari_not_challenge(app):
+    with app.app_context():
+        from app.services.responses_api import _collect_knowledge_snippets
+
+        for question in (
+            "как попасть в проект wakesurf safari",
+            "я хочу на сафари",
+        ):
+            snippets = _collect_knowledge_snippets(question)
+            assert snippets, f"ожидали KB для: {question}"
+            joined = " ".join(snippets).lower()
+            assert "safari" in joined or "сафари" in joined
+            assert "wake challenge" not in joined
+            assert "соревновательный проект" not in joined
+
+
+def test_collect_snippets_challenge_when_asked(app):
+    with app.app_context():
+        from app.services.responses_api import _collect_knowledge_snippets
+
+        snippets = _collect_knowledge_snippets("как участвовать в wakesurf challenge")
+        joined = " ".join(snippets).lower()
+        assert "challenge" in joined or "челлендж" in joined
+        assert "wake challenge" in joined or "соревновательный" in joined
+        assert "wake surf safari" not in joined or "флагманский" not in joined
