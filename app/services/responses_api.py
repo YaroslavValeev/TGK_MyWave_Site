@@ -39,8 +39,16 @@ def _collect_knowledge_snippets(
         'соревнован': 'projects',
         'чемпионат': 'projects',
         'safari': 'projects',
+        'сафари': 'projects',
         'sufari': 'projects',
         'challenge': 'projects',
+        'wakesurf': 'projects',
+        'вейк': 'projects',
+        'попасть': 'projects',
+        'участ': 'projects',
+        'запис': 'training',
+        'проходит': 'training',
+        'проходят': 'training',
     }
     relevant_types = set()
     for key, knowledge_type in keywords.items():
@@ -64,6 +72,19 @@ def _collect_knowledge_snippets(
         items = _knowledge_items_from_response(response)
         out.extend(items[:max_per_type])
     return out
+
+
+def append_knowledge_to_system_prompt(base_prompt: str, snippets: list[str]) -> str:
+    """Добавляет выдержки KB в system prompt для fallback ask()."""
+    if not snippets:
+        return base_prompt
+    kb_block = "\n".join(snippets[:15])
+    return (
+        f"{base_prompt}\n\n"
+        "Используй при ответе релевантные факты из базы знаний ниже. "
+        "Если фактов недостаточно, честно скажи об этом кратко.\n\n"
+        f"{kb_block}"
+    )
 
 
 @responses_bp.route('/', methods=['POST'])
@@ -151,4 +172,4 @@ def get_response_with_knowledge(prompt, context=None, *, mw_chat_context=None):
 
     except Exception as e:
         current_app.logger.error("Error generating knowledge response: %s", str(e))
-        return "Извините, произошла ошибка. Попробуйте переформулировать вопрос."
+        return None

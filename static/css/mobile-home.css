@@ -43,59 +43,60 @@
     padding: 0 0.25rem;
   }
 
-  /* --- Hero mobile: текст у шапки, иллюстрация целиком ниже --- */
+  /* --- Hero mobile: текст наезжает на иллюстрацию (один блок, не два поля) --- */
   .hero-section {
-    display: flex;
-    flex-direction: column;
-    min-height: auto !important;
+    position: relative;
+    display: block;
+    min-height: clamp(22rem, 62vh, 28rem) !important;
     height: auto;
     padding: 0 !important;
     margin-top: 0 !important;
-    overflow: visible;
+    overflow: hidden;
     background: #fff !important;
     background-image: none !important;
+  }
+
+  .hero-section .hero-bg,
+  .hero-section .hero-bg-cover {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    height: 58% !important;
+    min-height: 11rem !important;
+    max-height: none;
+    object-fit: contain;
+    object-position: center bottom;
+    display: block;
+    margin: 0 !important;
+    padding: 0 0.35rem 0.35rem;
+    box-sizing: border-box;
+    z-index: 1;
+    pointer-events: none;
   }
 
   .hero-section .hero-content,
   .hero-section .hero-content.center-padding,
   .hero-section .hero-content-relative {
-    order: 1;
-    flex: 0 0 auto;
-    align-self: stretch;
+    position: relative;
+    z-index: 2;
     margin: 0 !important;
-    padding: calc(var(--mw-header-h, 56px) - 4px) 0.85rem 0.25rem !important;
+    margin-bottom: -2.75rem !important;
+    padding: calc(var(--mw-header-h, 56px) - 4px) 0.85rem 2.5rem !important;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
-    z-index: 2;
     background: linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.98) 0%,
-      rgba(255, 255, 255, 0.92) 65%,
+      rgba(255, 255, 255, 0.97) 0%,
+      rgba(255, 255, 255, 0.88) 55%,
+      rgba(255, 255, 255, 0.35) 85%,
       rgba(255, 255, 255, 0) 100%
     );
     border-radius: 0;
     box-shadow: none;
-  }
-
-  .hero-section .hero-bg,
-  .hero-section .hero-bg-cover {
-    order: 2;
-    position: relative !important;
-    inset: auto !important;
-    top: auto !important;
-    left: auto !important;
-    width: 100%;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none;
-    object-fit: contain;
-    object-position: center bottom;
-    display: block;
-    margin: -0.15rem 0 0;
-    padding: 0 0.35rem 0.5rem;
-    box-sizing: border-box;
-    z-index: 1;
   }
 
   .hero-title {

@@ -94,6 +94,14 @@ def _chat_rate_limit_decorator(f):
         return f
     return limiter.limit("40 per minute", key_func=get_remote_address)(f)
 
+def _is_stale_kb_error_reply(text: str | None) -> bool:
+    """Старый текст ошибки knowledge-path — не показываем пользователю."""
+    if not text:
+        return False
+    t = str(text).strip().lower()
+    return "произошла ошибка" in t and "переформулировать" in t
+
+
 def _clean_assistant_text(text: str) -> str:
     try:
         if not text:
@@ -177,7 +185,10 @@ def chat_handler():
             'как ', 'что такое', 'объясни', 'поясни', 'расскажи', 'подскажи',
             'трик', 'трюк', 'олли', '360', 'разворот', 'поворот',
             'соревнован', 'подготов', 'готовить', 'научить', 'обуч',
-            'что нужно', 'какие', 'какой', 'когда будут', 'где пройд'
+            'что нужно', 'какие', 'какой', 'когда будут', 'где пройд',
+            'тренировк', 'проходит', 'проходят', 'зале', 'зал ', 'катер', 'катере',
+            'safari', 'сафари', 'wakesurf', 'вейк', 'попасть', 'участв',
+            'что взять', 'сколько стоит', 'стоимость', 'цена',
         )
         info_intent = any(kw in text_lc for kw in info_keywords)
         
@@ -245,11 +256,19 @@ def chat_handler():
                 reply = "Уточните, пожалуйста: вам нужна запись в зал или на катер? Тогда дам точный список, что взять с собой."
                 _save_chat_turn(client_id, message, reply)
                 return jsonify({'response': reply, 'status': 'success'})
-            from app.services.responses_api import get_response_with_knowledge as _resp
+            from app.services.responses_api import (
+                get_response_with_knowledge as _resp,
+                _collect_knowledge_snippets,
+            )
+            kb_snippets = _collect_knowledge_snippets(text_lc, mw_chat_context=mw_ctx)
             try:
-                reply = _resp(message, mw_chat_context=mw_ctx)
+                reply = _resp(message, mw_chat_context=mw_ctx) if kb_snippets else None
             except Exception as exc:
-                current_app.logger.warning("Knowledge-base response failed, falling back to chat: %s", exc, exc_info=True)
+                current_app.logger.warning(
+                    "Knowledge-base response failed, falling back to chat: %s", exc, exc_info=True
+                )
+                reply = None
+            if _is_stale_kb_error_reply(reply):
                 reply = None
             if reply:
                 reply = reply.strip()
@@ -257,13 +276,13 @@ def chat_handler():
                     reply += '.'
                 reply += ' Если захотите, подскажу свободные слоты и помогу записаться.'
             else:
-                # Fallback to regular chat if knowledge base did not return an answer
                 reply = ask(
                     message,
                     client_id=client_id,
                     source="web",
                     history=history,
                     page_context=mw_ctx,
+                    knowledge_snippets=kb_snippets,
                 )
         else:
             reply = ask(

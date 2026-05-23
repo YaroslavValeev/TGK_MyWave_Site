@@ -659,6 +659,7 @@ def ask(
     max_tokens: int = None,
     model: str | None = None,
     page_context: dict | None = None,
+    knowledge_snippets: list | None = None,
 ) -> str:
     """
     Унифицированный интерфейс для обращения к OpenAI.
@@ -671,6 +672,10 @@ def ask(
         from app.services.chat_page_context import merge_chat_system_prompt
 
         sys_prompt = merge_chat_system_prompt(cfg, page_context)
+        if knowledge_snippets:
+            from app.services.responses_api import append_knowledge_to_system_prompt
+
+            sys_prompt = append_knowledge_to_system_prompt(sys_prompt, knowledge_snippets)
         backend = _chat_backend(cfg)
 
         if backend == "completions":
