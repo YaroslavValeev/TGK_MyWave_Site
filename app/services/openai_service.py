@@ -56,10 +56,20 @@ _USER_ASSISTANT_UNAVAILABLE = (
 
 
 def _chat_backend(cfg: dict) -> str:
-    raw = (cfg.get("CHAT_BACKEND") or os.getenv("CHAT_BACKEND") or "auto").strip().lower()
-    if raw in ("auto", "completions", "assistant_only", "responses"):
+    raw = (cfg.get("CHAT_BACKEND") or os.getenv("CHAT_BACKEND") or "completions").strip().lower()
+    if raw not in ("auto", "completions", "assistant_only", "responses"):
+        raw = "completions"
+    if raw != "auto":
         return raw
-    return "auto"
+    # auto: по умолчанию completions + assistant_prompt.md (стабильно для сайта).
+    # Assistant API — только если явно CHAT_USE_ASSISTANT=1 и задан ASSISTANT_ID.
+    use_assistant = str(
+        cfg.get("CHAT_USE_ASSISTANT") or os.getenv("CHAT_USE_ASSISTANT") or ""
+    ).strip().lower() in ("1", "true", "yes")
+    assistant_id = cfg.get("ASSISTANT_ID") or os.getenv("ASSISTANT_ID")
+    if use_assistant and assistant_id:
+        return "auto"
+    return "completions"
 
 def _is_region_blocked_error(exc: Exception) -> bool:
     s = str(exc).lower()

@@ -108,12 +108,14 @@ class Config:
     FINE_TUNED_MODEL = os.getenv("FINE_TUNED_MODEL", "gpt-4.1-nano")
     FALLBACK_MODEL = os.getenv("FALLBACK_MODEL", "gpt-4.1-nano")
     ASSISTANT_ID = os.getenv("ASSISTANT_ID")
+    OPENAI_HTTP_PROXY = os.getenv("OPENAI_HTTP_PROXY") or os.getenv("HTTPS_PROXY") or os.getenv("HTTP_PROXY")
     # Публичный чат (ask в openai_service): auto | completions | responses | assistant_only
-    # auto — Assistant API при ASSISTANT_ID, иначе completions; при пустом ответе — fallback completions
-    # completions — только Chat Completions + CHAT_SYSTEM_PROMPT (игнор ASSISTANT_ID)
+    # completions (рекомендуется для сайта) — Chat Completions + CHAT_SYSTEM_PROMPT + KB
+    # auto — completions, кроме случая CHAT_USE_ASSISTANT=1 + ASSISTANT_ID (legacy Assistant)
     # responses — OpenAI Responses API для обычного public text chat
     # assistant_only — только Assistant API без fallback на completions (отладка)
-    CHAT_BACKEND = (os.getenv("CHAT_BACKEND") or "auto").strip().lower()
+    CHAT_BACKEND = (os.getenv("CHAT_BACKEND") or "completions").strip().lower()
+    CHAT_USE_ASSISTANT = os.getenv("CHAT_USE_ASSISTANT", "").strip().lower() in ("1", "true", "yes")
     # Flask-Limiter: memory:// (локально), production — redis://host:6379/0
     RATELIMIT_STORAGE_URI = os.getenv("RATELIMIT_STORAGE_URI", "memory://")
 

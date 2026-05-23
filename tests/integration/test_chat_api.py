@@ -225,9 +225,12 @@ def test_chat_api_asks_disambiguation_for_general_what_to_bring(client):
     assert 'зал' in text and 'катер' in text
 
 
-def test_chat_info_uses_offline_kb_without_openai(client):
-    """Info-вопрос с KB не зависит от OpenAI (geo-block на prod)."""
-    with patch('app.routes.chat.ask', side_effect=AssertionError("OpenAI should not be called")):
+def test_chat_info_uses_offline_kb_when_openai_fails(client):
+    """При сбое OpenAI info-вопрос отвечает из KB (geo-block / 403)."""
+    with patch(
+        'app.routes.chat.ask',
+        return_value='Сейчас не удалось получить ответ. Попробуйте ещё раз чуть позже.',
+    ):
         response = client.post(
             '/chat/api',
             data=json.dumps({'message': 'как попасть в кемп?'}),
@@ -238,3 +241,16 @@ def test_chat_info_uses_offline_kb_without_openai(client):
     text = (data.get('response') or '').lower()
     assert 'кемп' in text or 'ruza' in text or 'заявк' in text
     assert 'не удалось получить ответ' not in text
+
+
+def test_chat_info_uses_openai_when_available(client):
+    """При успешном OpenAI — ответ модели, не сырой текст KB."""
+    with patch('app.routes.chat.ask', return_value='Запишитесь через форму на сайте, помогу с датами.'):
+        response = client.post(
+            '/chat/api',
+            data=json.dumps({'message': 'как попасть в кемп?'}),
+            content_type='application/json',
+        )
+    assert response.status_code == 200
+    data = response.get_json() or {}
+    assert 'форму' in (data.get('response') or '').lower()

@@ -275,7 +275,6 @@ def chat_handler():
 
         from app.services.responses_api import (
             _collect_knowledge_snippets,
-            get_response_with_knowledge as _resp,
             is_openai_failure_reply,
             try_offline_kb_reply,
         )
@@ -287,53 +286,40 @@ def chat_handler():
             _save_chat_turn(client_id, message, reply)
             return jsonify({"response": reply, "status": "success"})
 
-        if info_intent:
-            if _needs_location_disambiguation(text_lc, mw_ctx):
-                reply = "Уточните, пожалуйста: вам нужна запись в зал или на катер? Тогда дам точный список, что взять с собой."
-                _save_chat_turn(client_id, message, reply)
-                return jsonify({'response': reply, 'status': 'success'})
-            reply = try_offline_kb_reply(kb_snippets) if kb_snippets else None
-            if not reply:
-                try:
-                    ai_reply = _resp(message, mw_chat_context=mw_ctx) if kb_snippets else None
-                except Exception as exc:
-                    current_app.logger.warning(
-                        "Knowledge-base response failed, falling back to chat: %s", exc, exc_info=True
-                    )
-                    ai_reply = None
-                if _is_stale_kb_error_reply(ai_reply):
-                    ai_reply = None
-                if ai_reply:
-                    reply = ai_reply.strip()
-                    if not reply.endswith(('.', '!', '?')):
-                        reply += '.'
-                    reply += ' Если захотите, подскажу свободные слоты и помогу записаться.'
-            if not reply:
-                reply = ask(
-                    message,
-                    client_id=client_id,
-                    source="web",
-                    history=history,
-                    page_context=mw_ctx,
-                    knowledge_snippets=kb_snippets,
-                )
-        else:
-            reply = ask(
-                message,
-                client_id=client_id,
-                source="web",
-                history=history,
-                page_context=mw_ctx,
-                knowledge_snippets=kb_snippets,
-            )
+        if info_intent and _needs_location_disambiguation(text_lc, mw_ctx):
+            reply = "Уточните, пожалуйста: вам нужна запись в зал или на катер? Тогда дам точный список, что взять с собой."
+            _save_chat_turn(client_id, message, reply)
+            return jsonify({'response': reply, 'status': 'success'})
 
-        if is_openai_failure_reply(reply) and kb_snippets:
-            offline = try_offline_kb_reply(kb_snippets)
-            if offline:
-                current_app.logger.info("chat_offline_kb_fallback", extra={"row_id": client_id})
-                reply = offline
-        elif is_openai_failure_reply(reply) and _is_meta_chat_question(text_lc):
-            reply = _CHAT_OFFLINE_WELCOME
+        # Основной путь: OpenAI (completions/responses) + KB в system prompt
+        reply = ask(
+            message,
+            client_id=client_id,
+            source="web",
+            history=history,
+            page_context=mw_ctx,
+            knowledge_snippets=kb_snippets or None,
+        )
+
+        if not is_openai_failure_reply(reply) and info_intent:
+            reply = reply.strip()
+            if reply and not reply.endswith(('.', '!', '?')):
+                reply += '.'
+            tail = reply.lower()
+            if "запис" not in tail and "слот" not in tail:
+                reply += ' Если захотите, подскажу свободные слоты и помогу записаться.'
+
+        if is_openai_failure_reply(reply):
+            if kb_snippets:
+                offline = try_offline_kb_reply(kb_snippets)
+                if offline:
+                    current_app.logger.info(
+                        "chat_offline_kb_fallback",
+                        extra={"client_id": client_id},
+                    )
+                    reply = offline
+            elif _is_meta_chat_question(text_lc):
+                reply = _CHAT_OFFLINE_WELCOME
         reply = _clean_assistant_text(reply)
         current_app.logger.info(f"Получен ответ от OpenAI: {reply}")
 
