@@ -37,8 +37,8 @@ def upgrade():
                 nullable=False,
                 server_default=sa.text('CURRENT_TIMESTAMP'),
             ),
+            sa.UniqueConstraint('email', name='uq_participant_email'),
         )
-        op.create_unique_constraint('uq_participant_email', 'participant', ['email'])
 
     tables = table_names(conn)
     if 'safari_booking' not in tables:

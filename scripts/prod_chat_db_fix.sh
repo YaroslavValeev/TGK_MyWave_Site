@@ -4,6 +4,7 @@ set -euo pipefail
 cd /var/www/mywave
 source venv/bin/activate
 export FLASK_CONFIG=production
+export PYTHONPATH=/var/www/mywave
 
 echo "=== git pull (последние миграции) ==="
 git pull
