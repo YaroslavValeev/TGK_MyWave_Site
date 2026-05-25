@@ -52,7 +52,8 @@ def normalize_url(value: Any) -> Optional[str]:
 
 
 def resolve_ticker_href(row: Dict[str, Any]) -> Optional[str]:
-    for key in ("event_url", "source_url"):
+    # Для ticker ведём на первоисточник, если он есть; иначе на страницу события.
+    for key in ("source_url", "event_url"):
         url = normalize_url(row.get(key))
         if url:
             return url

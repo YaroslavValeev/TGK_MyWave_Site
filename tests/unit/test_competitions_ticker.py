@@ -59,9 +59,14 @@ def test_hidden_missing_event_name():
     assert is_ticker_visible_row(_row(event_name=""), today=today) is False
 
 
-def test_resolve_href_prefers_event_url():
+def test_resolve_href_prefers_source_url():
     row = _row(event_url="https://event.example", source_url="https://source.example")
-    assert resolve_ticker_href(row) == "https://event.example"
+    assert resolve_ticker_href(row) == "https://source.example"
+
+
+def test_resolve_href_fallback_event_url():
+    row = _row(event_url="example.com/event", source_url="")
+    assert resolve_ticker_href(row) == "https://example.com/event"
 
 
 def test_resolve_href_fallback_source_url():

@@ -30,7 +30,7 @@
 | `country` | string | Страна |
 | `start_date` | date | `YYYY-MM-DD` |
 | `end_date` | date | `YYYY-MM-DD` (однодневное: `end_date = start_date`) |
-| `event_url` | url | Официальная страница (приоритет ссылки в ticker) |
+| `event_url` | url | Страница события (fallback, если `source_url` пуст) |
 | `source_name` | string | Источник (IWWF, WSWS, …) |
 | `source_url` | url | URL источника |
 | `updated_at` | datetime | ISO 8601 |
@@ -54,7 +54,7 @@
 1. `status == ACTIVE` (case-insensitive)
 2. `end_date >= today` (UTC date) — предстоящие и идущие
 3. Непустой `event_name` и валидный `start_date`
-4. Ссылка: `event_url`, иначе `source_url` (нормализованный http/https)
+4. Ссылка: `source_url`, иначе `event_url` (нормализованный http/https)
 
 **Сортировка:** `start_date` ASC, затем `event_name`.
 

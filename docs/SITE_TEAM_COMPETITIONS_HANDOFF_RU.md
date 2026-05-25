@@ -60,7 +60,7 @@ curl -sS -o /dev/null -w "%{http_code}\n" -X POST "https://mywavewake.ru/api/com
 - `status == ACTIVE`
 - `end_date >= today` (UTC date)
 - непустые `event_name`, `start_date`
-- клик: `event_url`, иначе `source_url`
+- клик: `source_url`, иначе `event_url`
 
 **Сортировка:** `start_date` ASC, `event_name`.
 
