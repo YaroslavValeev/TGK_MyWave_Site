@@ -374,6 +374,9 @@ def create_app(config_name="development"):
         app.register_blueprint(wake_industry_bp)
     except Exception:
         app.logger.debug('wake_industry_bp not found or failed to import')
+    from app.routes.public_p0 import public_p0_bp
+
+    app.register_blueprint(public_p0_bp)
     app.register_blueprint(about_bp)
     app.register_blueprint(contact_bp)
     app.register_blueprint(calendar_bp)
@@ -597,7 +600,7 @@ def create_app(config_name="development"):
         except Exception:
             pass
         urls = {
-            'static': ['/', '/projects', '/services', '/book', '/calculator', '/blog'],
+            'static': ['/', '/projects', '/services', '/book', '/calculator', '/blog', '/privacy', '/offer'],
             'project_slugs': project_slugs
         }
         xml = render_template('sitemap.xml', lastmod=lastmod, urls=urls)
