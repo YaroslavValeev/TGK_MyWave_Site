@@ -32,7 +32,12 @@ jobs:
 
       - name: Run code formatter (black)
         run: |
-          python -m black --check $(git ls-files '*.py')
+          mapfile -t PY_FILES < <(git ls-files '*.py' | grep -vE '^(venv|\.venv|env|node_modules)/' || true)
+          if [ "${#PY_FILES[@]}" -eq 0 ]; then
+            echo "No Python files to check"
+            exit 0
+          fi
+          python -m black --check "${PY_FILES[@]}"
 
       - name: Run unit tests
         run: |

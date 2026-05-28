@@ -14,7 +14,10 @@ from app.config.booking_durations import (
     GYM_LOCATION_LABEL,
 )
 from app.config.venue import MYWAVE_VENUE
-from app.services.booking.constants import SERVICE_LOCATION_SUMMARY, BOAT_CALENDAR_LOCATION
+from app.services.booking.constants import (
+    SERVICE_LOCATION_SUMMARY,
+    BOAT_CALENDAR_LOCATION,
+)
 
 logger = logging.getLogger(__name__)
 

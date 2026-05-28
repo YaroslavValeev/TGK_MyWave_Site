@@ -66,18 +66,19 @@ class TestClientResolver:
     def test_reuse_existing_client_by_phone(self, app):
         with app.app_context():
             app.config["SPREADSHEET_ID"] = "test-sheet"
-            with patch(
-                "app.services.booking.client_resolver._read_clients",
-                return_value=[
-                    {
-                        "client_id": "client_existing",
-                        "phone": "+79160117179",
-                        "telegram_user_id": "999",
-                    }
-                ],
-            ), patch(
-                "app.modules.sheets_access.append_dict_to_sheet"
-            ) as mock_append:
+            with (
+                patch(
+                    "app.services.booking.client_resolver._read_clients",
+                    return_value=[
+                        {
+                            "client_id": "client_existing",
+                            "phone": "+79160117179",
+                            "telegram_user_id": "999",
+                        }
+                    ],
+                ),
+                patch("app.modules.sheets_access.append_dict_to_sheet") as mock_append,
+            ):
                 result = resolve_client("89160117179", "Иван")
                 assert result.client_id == "client_existing"
                 assert result.matched_by == "phone"
@@ -93,12 +94,13 @@ class TestClientResolver:
                 "phone": "+79160117179",
                 "telegram_user_id": "888777666",
             }
-            with patch(
-                "app.services.booking.client_resolver._read_clients",
-                return_value=[existing],
-            ), patch(
-                "app.modules.sheets_access.append_dict_to_sheet"
-            ) as mock_append:
+            with (
+                patch(
+                    "app.services.booking.client_resolver._read_clients",
+                    return_value=[existing],
+                ),
+                patch("app.modules.sheets_access.append_dict_to_sheet") as mock_append,
+            ):
                 result = resolve_client("+79160117179", "Web User")
                 assert result.client_id == "client_existing"
                 mock_append.assert_not_called()
@@ -107,12 +109,13 @@ class TestClientResolver:
     def test_create_new_web_client(self, app):
         with app.app_context():
             app.config["SPREADSHEET_ID"] = "test-sheet"
-            with patch(
-                "app.services.booking.client_resolver._read_clients",
-                return_value=[],
-            ), patch(
-                "app.modules.sheets_access.append_dict_to_sheet"
-            ) as mock_append:
+            with (
+                patch(
+                    "app.services.booking.client_resolver._read_clients",
+                    return_value=[],
+                ),
+                patch("app.modules.sheets_access.append_dict_to_sheet") as mock_append,
+            ):
                 result = resolve_client("+79160001122", "Пётр")
                 assert result.created
                 assert result.client_id.startswith("client_")
@@ -142,26 +145,33 @@ class TestPipeline:
         with app.app_context():
             app.config["SPREADSHEET_ID"] = "x"
             app.config["GOOGLE_CALENDAR_ID"] = "cal@group.calendar.google.com"
-            with patch(
-                "app.services.booking.pipeline.is_duplicate_web_booking",
-                return_value=False,
-            ), patch(
-                "app.services.booking.pipeline.generate_booking_id",
-                return_value="bk_test001",
-            ), patch(
-                "app.services.booking.pipeline.resolve_client",
-                return_value=MagicMock(
-                    client_id="client_1", created=True, matched_by="new"
+            with (
+                patch(
+                    "app.services.booking.pipeline.is_duplicate_web_booking",
+                    return_value=False,
                 ),
-            ), patch(
-                "app.services.booking.pipeline.create_calendar_event",
-                return_value="evt_cal_123",
-            ) as mock_cal, patch(
-                "app.services.booking.pipeline.write_workout_row",
-            ) as mock_w, patch(
-                "app.services.booking.pipeline.write_client_workout_row",
-                return_value="cw_1",
-            ) as mock_cw:
+                patch(
+                    "app.services.booking.pipeline.generate_booking_id",
+                    return_value="bk_test001",
+                ),
+                patch(
+                    "app.services.booking.pipeline.resolve_client",
+                    return_value=MagicMock(
+                        client_id="client_1", created=True, matched_by="new"
+                    ),
+                ),
+                patch(
+                    "app.services.booking.pipeline.create_calendar_event",
+                    return_value="evt_cal_123",
+                ) as mock_cal,
+                patch(
+                    "app.services.booking.pipeline.write_workout_row",
+                ) as mock_w,
+                patch(
+                    "app.services.booking.pipeline.write_client_workout_row",
+                    return_value="cw_1",
+                ) as mock_cw,
+            ):
                 result = execute_web_booking(
                     date="2026-06-01",
                     time="12:00",
@@ -192,23 +202,28 @@ class TestPipeline:
 
     def test_calendar_failure_no_sheets(self, app):
         with app.app_context():
-            with patch(
-                "app.services.booking.pipeline.is_duplicate_web_booking",
-                return_value=False,
-            ), patch(
-                "app.services.booking.pipeline.generate_booking_id",
-                return_value="bk_x",
-            ), patch(
-                "app.services.booking.pipeline.resolve_client",
-                return_value=MagicMock(client_id="c1"),
-            ), patch(
-                "app.services.booking.pipeline.create_calendar_event",
-                side_effect=RuntimeError("calendar down"),
-            ), patch(
-                "app.services.booking.pipeline.write_workout_row"
-            ) as mock_w, patch(
-                "app.services.booking.pipeline.write_client_workout_row"
-            ) as mock_cw:
+            with (
+                patch(
+                    "app.services.booking.pipeline.is_duplicate_web_booking",
+                    return_value=False,
+                ),
+                patch(
+                    "app.services.booking.pipeline.generate_booking_id",
+                    return_value="bk_x",
+                ),
+                patch(
+                    "app.services.booking.pipeline.resolve_client",
+                    return_value=MagicMock(client_id="c1"),
+                ),
+                patch(
+                    "app.services.booking.pipeline.create_calendar_event",
+                    side_effect=RuntimeError("calendar down"),
+                ),
+                patch("app.services.booking.pipeline.write_workout_row") as mock_w,
+                patch(
+                    "app.services.booking.pipeline.write_client_workout_row"
+                ) as mock_cw,
+            ):
                 with pytest.raises(CalendarBookingError):
                     execute_web_booking(
                         date="2026-06-01",
@@ -248,25 +263,32 @@ class TestLoggingNoPii:
             app.config["SPREADSHEET_ID"] = "x"
             app.config["GOOGLE_CALENDAR_ID"] = "cal@group.calendar.google.com"
             phone = "+79160117179"
-            with patch(
-                "app.services.booking.pipeline.is_duplicate_web_booking",
-                return_value=False,
-            ), patch(
-                "app.services.booking.pipeline.generate_booking_id",
-                return_value="bk_test001",
-            ), patch(
-                "app.services.booking.pipeline.resolve_client",
-                return_value=MagicMock(
-                    client_id="client_1", created=True, matched_by="new"
+            with (
+                patch(
+                    "app.services.booking.pipeline.is_duplicate_web_booking",
+                    return_value=False,
                 ),
-            ), patch(
-                "app.services.booking.pipeline.create_calendar_event",
-                return_value="evt_cal_123",
-            ), patch(
-                "app.services.booking.pipeline.write_workout_row",
-            ), patch(
-                "app.services.booking.pipeline.write_client_workout_row",
-                return_value="cw_1",
+                patch(
+                    "app.services.booking.pipeline.generate_booking_id",
+                    return_value="bk_test001",
+                ),
+                patch(
+                    "app.services.booking.pipeline.resolve_client",
+                    return_value=MagicMock(
+                        client_id="client_1", created=True, matched_by="new"
+                    ),
+                ),
+                patch(
+                    "app.services.booking.pipeline.create_calendar_event",
+                    return_value="evt_cal_123",
+                ),
+                patch(
+                    "app.services.booking.pipeline.write_workout_row",
+                ),
+                patch(
+                    "app.services.booking.pipeline.write_client_workout_row",
+                    return_value="cw_1",
+                ),
             ):
                 execute_web_booking(
                     date="2026-06-01",

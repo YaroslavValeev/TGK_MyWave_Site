@@ -54,10 +54,13 @@ def is_duplicate_web_booking(
                 row_date, row_time = parts[0], parts[1][:5]
         wid = str(row.get("workout_id") or "")
         row_svc = (
-            (row.get("service_type") or "").strip().lower()
-            or workout_type_by_id.get(wid, "")
-        )
-        if row_date == date and row_time == time[:5] and (not svc or not row_svc or row_svc == svc):
+            row.get("service_type") or ""
+        ).strip().lower() or workout_type_by_id.get(wid, "")
+        if (
+            row_date == date
+            and row_time == time[:5]
+            and (not svc or not row_svc or row_svc == svc)
+        ):
             status = (row.get("status") or "").strip().lower()
             if status in ("", "booked", "подтверждено", "confirmed", "new", "pending"):
                 return True

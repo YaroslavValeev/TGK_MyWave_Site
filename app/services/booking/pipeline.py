@@ -9,9 +9,15 @@ from typing import Optional
 from app.services.booking.calendar_writer import create_calendar_event
 from app.services.booking.client_resolver import resolve_client
 from app.services.booking.constants import INTERNAL_STATUS_BOOKED
-from app.services.booking.idempotency import generate_booking_id, is_duplicate_web_booking
+from app.services.booking.idempotency import (
+    generate_booking_id,
+    is_duplicate_web_booking,
+)
 from app.services.booking.phone import normalize_phone
-from app.services.booking.sheets_writer import write_client_workout_row, write_workout_row
+from app.services.booking.sheets_writer import (
+    write_client_workout_row,
+    write_workout_row,
+)
 
 logger = logging.getLogger(__name__)
 

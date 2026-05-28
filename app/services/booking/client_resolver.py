@@ -85,7 +85,9 @@ def resolve_client(phone: str, name: str) -> ClientResolveResult:
     return ClientResolveResult(client_id=new_id, created=True, matched_by="new")
 
 
-def resolve_client_telegram(telegram_user_id: str, name: str, phone: str = "") -> ClientResolveResult:
+def resolve_client_telegram(
+    telegram_user_id: str, name: str, phone: str = ""
+) -> ClientResolveResult:
     """Telegram path: client_id = str(telegram_user_id)."""
     tid = str(telegram_user_id).strip()
     if not tid:
@@ -95,7 +97,9 @@ def resolve_client_telegram(telegram_user_id: str, name: str, phone: str = "") -
     for client in _read_clients():
         if str(client.get("telegram_user_id") or "").strip() == tid:
             cid = client.get("client_id") or tid
-            return ClientResolveResult(client_id=cid, created=False, matched_by="telegram_user_id")
+            return ClientResolveResult(
+                client_id=cid, created=False, matched_by="telegram_user_id"
+            )
 
     if normalized:
         for client in _read_clients():
@@ -103,7 +107,9 @@ def resolve_client_telegram(telegram_user_id: str, name: str, phone: str = "") -
                 cid = client.get("client_id") or ""
                 if cid and not str(client.get("telegram_user_id") or "").strip():
                     # Reuse web client but do not write telegram here (no update API in Phase 1)
-                    return ClientResolveResult(client_id=cid, created=False, matched_by="phone")
+                    return ClientResolveResult(
+                        client_id=cid, created=False, matched_by="phone"
+                    )
 
     client_data = {
         "client_id": tid,
