@@ -11,6 +11,8 @@ env:
   FLASK_APP: 'app:create_app'
   FLASK_ENV: 'testing'
   DATABASE_URL: 'sqlite:///ci.db'
+  SECRET_KEY: 'ci-test-secret-key-for-github-actions'
+  ENABLE_GOOGLE_SERVICES: '0'
 
 jobs:
   quality-checks:
