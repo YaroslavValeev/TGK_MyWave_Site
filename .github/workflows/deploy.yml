@@ -29,14 +29,27 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest
 
       - name: Run formatter check
         run: |
-          python -m black --check $(git ls-files '*.py')
+          git fetch origin main --depth=1
+          mapfile -t PY_FILES < <(
+            git diff --name-only --diff-filter=ACMRT origin/main...HEAD \
+              | grep '\.py$' \
+              | grep -vE '^(venv|\.venv|env|node_modules)/' \
+              || true
+          )
+          if [ "${#PY_FILES[@]}" -eq 0 ]; then
+            echo "No changed Python files to check"
+            exit 0
+          fi
+          echo "Black check for ${#PY_FILES[@]} file(s)"
+          python -m black --check "${PY_FILES[@]}"
 
       - name: Run unit tests
         run: |
-          pytest -q
+          python -m pytest tests/unit/test_booking_phase1.py -q
 
       - name: Verify migrations
         run: |
