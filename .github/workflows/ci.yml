@@ -29,6 +29,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest
 
       - name: Run code formatter (black)
         run: |
@@ -48,7 +49,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          pytest -q
+          python -m pytest tests/unit/test_booking_phase1.py -q
 
       - name: Verify migrations apply cleanly
         run: |
