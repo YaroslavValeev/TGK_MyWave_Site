@@ -32,11 +32,18 @@ jobs:
 
       - name: Run formatter check
         run: |
-          mapfile -t PY_FILES < <(git ls-files '*.py' | grep -vE '^(venv|\.venv|env|node_modules)/' || true)
+          git fetch origin main --depth=1
+          mapfile -t PY_FILES < <(
+            git diff --name-only --diff-filter=ACMRT origin/main...HEAD \
+              | grep '\.py$' \
+              | grep -vE '^(venv|\.venv|env|node_modules)/' \
+              || true
+          )
           if [ "${#PY_FILES[@]}" -eq 0 ]; then
-            echo "No Python files to check"
+            echo "No changed Python files to check"
             exit 0
           fi
+          echo "Black check for ${#PY_FILES[@]} file(s)"
           python -m black --check "${PY_FILES[@]}"
 
       - name: Run unit tests
