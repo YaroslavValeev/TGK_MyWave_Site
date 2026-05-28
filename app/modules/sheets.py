@@ -469,82 +469,39 @@ def is_valid_time_slot(time_str):
     except Exception:
         return False
 
-def book_slot(date_str, time_str, name, phone):
-    # Валидация времени (оставляем строгой, чтобы не принимать заведомо неверные слоты)
+def book_slot(date_str, time_str, name, phone, service_type="gym"):
+    """Path B: Calendar-first booking via unified pipeline."""
     if not is_valid_time_slot(time_str):
         logger.warning(f"Недопустимый слот времени: {time_str}")
         raise ValueError("Выбранное время недоступно для бронирования")
 
-    # Google может быть временно недоступен (DNS/Firewall), но заявку всё равно можно принять.
+    from app.services.booking import (
+        CalendarBookingError,
+        DuplicateBookingError,
+        execute_web_booking,
+    )
+
     try:
-        client_id = get_or_create_client_id(name, phone)
-        is_ok, msg = is_slot_available(date_str, time_str)
-        if not is_ok:
-            return (False, msg)
-
-        workout = get_workout_by_datetime(date_str, time_str)
-        if not workout:
-            workout_id = create_workout_if_not_exists(date_str, time_str)
-            if not workout_id:
-                return (False, "Не удалось создать тренировку")
-            workout = get_workout_by_datetime(date_str, time_str)
-            if not workout:
-                return (False, "Тренировка была создана, но не найдена при повторном поиске. Проверьте структуру данных.")
-        else:
-            workout_id = workout["workout_id"]
-
-        participants = get_workout_participants(workout_id)
-        if participants >= workout["max_capacity"]:
-            return (False, "Слот переполнен")
-
-        # --- Запись в БД ---
-        booking_record = Booking(name=name, phone=phone, date=date_str, time=time_str)
-        db.session.add(booking_record)
-        db.session.commit()
-        logger.info(f"Бронирование в БД для пользователя {name}: {date_str} {time_str}")
-
-        # --- Двойная запись в Google Sheets (best effort) ---
-        try:
-            save_client_workout_to_sheets(
-                client_id=client_id,
-                workout_id=workout_id,
-                status="pending",
-                created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            )
-            logger.info(f"Синхронизация бронирования в Google Sheets для пользователя {name}")
-        except Exception as e:
-            logger.error(f"Ошибка при синхронизации с Google Sheets: {e}")
-
-        # --- Инкремент ёмкости (best effort) ---
-        try:
-            increment_capacity(workout_id)
-        except Exception as e:
-            logger.error(f"Ошибка инкремента capacity: {e}")
-
-        # --- Добавление в календарь (best effort, не блокирует ответ) ---
-        try:
-            success, link = add_booking_to_calendar(date_str, time_str, name, phone)
-            if success:
-                return (True, link or "Запись подтверждена.")
-        except Exception as e:
-            logger.error(f"Ошибка добавления в календарь: {e}")
-
-        # Успешный ответ даже если внешние сервисы недоступны
-        return (True, "✅ Отлично! Ваша запись успешно подтверждена. Мы уже готовимся к вашей тренировке и свяжемся с вами для уточнения деталей. До встречи на воде! 🌊")
-
+        execute_web_booking(
+            date=date_str,
+            time=time_str,
+            name=name,
+            phone=phone,
+            service_type=service_type or "gym",
+        )
+        return (
+            True,
+            "✅ Отлично! Ваша запись успешно подтверждена. Мы уже готовимся к вашей тренировке "
+            "и свяжемся с вами для уточнения деталей. До встречи на воде! 🌊",
+        )
+    except DuplicateBookingError:
+        return (False, "Вы уже записаны на это время.")
+    except CalendarBookingError as e:
+        logger.error("[booking] Calendar-first path failed: %s", e)
+        return (False, "Не удалось создать запись в календаре. Попробуйте другой слот.")
     except Exception as e:
-        # Fallback: принимаем бронь в локальную БД, но не прерываем UX
-        logger.error(f"[booking] Google-dependent booking path failed, falling back to DB-only: {e}")
-        try:
-            booking_record = Booking(name=name, phone=phone, date=date_str, time=time_str)
-            db.session.add(booking_record)
-            db.session.commit()
-            logger.info(f"[booking] DB-only booking saved for {name}: {date_str} {time_str}")
-            return (True, "✅ Отлично! Ваша запись успешно подтверждена. Мы уже готовимся к вашей тренировке и свяжемся с вами для уточнения деталей. До встречи на воде! 🌊")
-        except Exception as db_e:
-            logger.error(f"[❌] Ошибка бронирования (DB fallback failed): {db_e}")
-            # Даже если fallback сломался, отдаём внятный ответ, чтобы не завис чат
-            return (True, "✅ Ваша запись принята! Мы обработаем её и свяжемся с вами в ближайшее время. До встречи на воде! 🌊")
+        logger.error("[booking] pipeline failed: %s", e, exc_info=True)
+        return (False, "Не удалось создать запись. Попробуйте позже.")
 
 def increment_capacity(workout_id: str):
     """

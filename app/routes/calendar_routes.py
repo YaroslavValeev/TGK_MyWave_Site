@@ -799,7 +799,72 @@ def _book_slot_internal():
                 }), 400
             current_app.logger.info(f"    ✅ Слот доступен")
 
-        # 5. Создание/поиск клиента
+        # 5–9. Calendar-first pipeline (gym / boat / default). Camp — отдельная ветка ниже.
+        if (service_type_from_payload or '').strip().lower() != 'camp':
+            from app.services.booking import (
+                CalendarBookingError,
+                DuplicateBookingError,
+                execute_web_booking,
+            )
+            svc = (service_type_from_payload or 'gym').strip().lower()
+            try:
+                booking_result = execute_web_booking(
+                    date=data['date'],
+                    time=data['time'],
+                    name=data['name'],
+                    phone=data['phone'],
+                    service_type=svc,
+                )
+                workout_id = booking_result.workout_id
+                client_id = booking_result.client_id
+                current_app.logger.info(
+                    "booking_pipeline_ok workout_id_tail=%s client_id_tail=%s",
+                    str(workout_id)[-8:],
+                    str(client_id)[-8:],
+                )
+            except DuplicateBookingError:
+                return jsonify({
+                    'status': 'error',
+                    'error': 'Вы уже записаны на это время. Один слот — одна запись.'
+                }), 400
+            except CalendarBookingError:
+                return jsonify({
+                    'status': 'error',
+                    'error': 'Не удалось создать запись в календаре. Попробуйте позже.'
+                }), 500
+
+            try:
+                analytics_payload = {
+                    "event": "booking_created",
+                    "context": "site_booking",
+                    "user_key": client_id or "",
+                    "type": svc,
+                    "meta": {
+                        "date": data["date"],
+                        "time": data["time"],
+                        "workout_id": workout_id,
+                        "booking_id": booking_result.booking_id,
+                    },
+                    "ip": request.remote_addr or "",
+                    "user_agent": request.headers.get("User-Agent", ""),
+                }
+                log_analytics_event(analytics_payload)
+            except Exception as e:
+                current_app.logger.warning(f"analytics booking_created: {e}")
+
+            try:
+                success_view = url_for('booking.booking_success_view', _external=False)
+            except Exception:
+                success_view = '/booking/success-view'
+
+            return jsonify({
+                'status': 'success',
+                'message': 'Успешно забронировано',
+                'success_view_url': success_view,
+                'workout_id': workout_id,
+            }), 201
+
+        # --- Camp: legacy Sheets flow (без Calendar-first в Phase 1) ---
         current_app.logger.info(f"  5️⃣ Создаю/ищу клиента {data['phone']}...")
         try:
             client_id = find_or_create_client(data['phone'], data['name'])
@@ -880,31 +945,20 @@ def _book_slot_internal():
             current_app.logger.error(f"Ошибка обновления счетчика мест: {str(e)}")
             # Не прерываем процесс, так как бронь уже создана
 
-        # 9. Создание события в Google Calendar (best-effort)
+        # 9. Camp: Calendar best-effort (legacy, не Calendar-first)
         try:
-            current_app.logger.info(
-                f"GOOGLE_CALENDAR_ID config: {current_app.config.get('GOOGLE_CALENDAR_ID')}"
-            )
             service = get_google_services()
-            created = add_event_to_calendar(
+            add_event_to_calendar(
                 service,
                 data['date'],
                 data['time'],
                 data['name'],
-                data['phone']
+                data['phone'],
             )
-            current_app.logger.info(f"Добавление события в календарь вернуло: {created}")
         except Exception as e:
-            current_app.logger.error(
-                "Ошибка создания события в Google Calendar (бронь сохранена в Sheets): "
-                f"service=calendar date={data.get('date')} time={data.get('time')} "
-                f"phone={data.get('phone')} name={data.get('name')} error={e!r}"
-            )
-            # Не прерываем процесс: Sheets — главный результат, Calendar — best-effort
+            current_app.logger.error("Camp calendar best-effort failed: %s", e)
 
-        # 6. Логирование события бронирования в аналитику (best-effort)
         try:
-            # Собираем нормализованный payload для аналитики через log_analytics_event
             analytics_payload = {
                 "event": "booking_created",
                 "context": "site_booking",
