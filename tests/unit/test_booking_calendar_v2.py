@@ -87,6 +87,32 @@ class TestWriterFlags:
             ):
                 assert get_calendar_location("gym") == "Зал MyWave"
 
+    def test_boat_location_v2_canonical(self, app):
+        with app.app_context():
+            with patch(
+                "app.services.booking.calendar_writer.is_phase2_gym_location_v2_enabled",
+                return_value=True,
+            ):
+                assert get_calendar_location("boat") == "Катер"
+
+    def test_boat_event_body_location_v2(self, app):
+        with app.app_context():
+            app.config["TIMEZONE"] = "Europe/Moscow"
+            with patch(
+                "app.services.booking.calendar_writer.is_phase2_gym_location_v2_enabled",
+                return_value=True,
+            ):
+                body = build_calendar_event_body(
+                    date="2026-06-15",
+                    time="18:00",
+                    name="Иван",
+                    phone="+79160001122",
+                    service_type="boat",
+                    booking_id="bk_test",
+                    client_id="client_1",
+                )
+                assert body["location"] == "Катер"
+
 
 class TestEventBody:
     def test_boat_duration_3_sets(self, app):

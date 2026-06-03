@@ -154,11 +154,14 @@ def build_event_description(
 
 def get_calendar_location(service_type: str) -> str:
     svc = (service_type or "").strip().lower()
+    if is_phase2_gym_location_v2_enabled():
+        venue = BOOKING_VENUES.get(svc) or {}
+        v2 = venue.get("calendar_location_v2")
+        if v2:
+            return v2
     if svc == "boat":
         return BOAT_CALENDAR_LOCATION
     if svc == "gym":
-        if is_phase2_gym_location_v2_enabled():
-            return BOOKING_VENUES["gym"]["calendar_location_v2"]
         return GYM_LOCATION_LABEL
     return MYWAVE_VENUE.get("location_label", "")
 
