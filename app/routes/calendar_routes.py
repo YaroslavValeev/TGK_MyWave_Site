@@ -268,6 +268,23 @@ def _get_available_slots_internal(date_str):
         current_app.logger.error(f"Ошибка чтения или валидации расписания: {str(e)}")
         raise
 
+    from app.config.booking_features import is_phase2_availability_enabled
+
+    if is_phase2_availability_enabled():
+        from app.services.booking.availability import build_gym_slots_from_calendar
+
+        slot_rows = [
+            {"time": rec["time"], "max_capacity": rec["max_capacity"]}
+            for rec in schedule
+            if normalize_day_of_week(rec["day_of_week"]) == day_of_week
+        ]
+        current_app.logger.info(
+            "[gym] Phase 2 Calendar availability for %s (%s slots)",
+            date_str,
+            len(slot_rows),
+        )
+        return build_gym_slots_from_calendar(date_str, slot_rows)
+
     # 4) Считываем брони
     try:
         bookings = read_records(current_app.config["SPREADSHEET_ID"], "Client_Workouts")
@@ -376,6 +393,16 @@ def get_boat_slots(date_str: str):
     В ответ попадают только свободные слоты (занятые не возвращаются).
     Формат: [{ "time": "06:30", "available": True }, ...]
     """
+    from app.config.booking_features import is_phase2_availability_enabled
+
+    if is_phase2_availability_enabled():
+        from app.services.booking.availability import build_boat_slots_from_calendar
+
+        current_app.logger.info(
+            "[boat] Phase 2 Calendar availability for %s", date_str
+        )
+        return build_boat_slots_from_calendar(date_str)
+
     current_app.logger.info(f"[boat] Генерация слотов для катера на дату {date_str}")
 
     spreadsheet_id = current_app.config.get("SPREADSHEET_ID")
