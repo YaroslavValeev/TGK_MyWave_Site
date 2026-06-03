@@ -6,8 +6,10 @@ import logging
 import uuid
 from datetime import datetime
 
-from app.config.booking_durations import BOOKING_DURATION_MINUTES
-from app.services.booking.calendar_writer import get_calendar_location
+from app.services.booking.calendar_writer import (
+    booking_duration_minutes,
+    get_calendar_location,
+)
 from app.services.booking.constants import SHEETS_STATUS_CONFIRMED
 
 logger = logging.getLogger(__name__)
@@ -19,8 +21,9 @@ def write_workout_row(
     date: str,
     time: str,
     service_type: str,
+    set_count: int = 1,
 ) -> None:
-    duration = BOOKING_DURATION_MINUTES.get(service_type, 60)
+    duration = booking_duration_minutes(service_type, set_count)
     location = get_calendar_location(service_type)
 
     data = {

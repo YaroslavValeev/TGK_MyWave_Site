@@ -983,38 +983,50 @@ def _book_slot_internal():
                 current_app.logger.warning(f"[camp] capacity check failed: {e!r}")
             current_app.logger.info("    ✅ Camp: capacity OK")
         else:
-            if service_type_from_payload == "boat":
-                slots = get_boat_slots(data["date"])
-            else:
-                slots = get_available_slots(data["date"])
+            from app.config.booking_features import is_phase2_availability_enabled
 
-            available_slot = next(
-                (
-                    slot
-                    for slot in slots
-                    if slot["time"] == data["time"] and slot["available"]
-                ),
-                None,
-            )
-            if not available_slot:
-                current_app.logger.warning(f"    ❌ Слот недоступен")
-                return (
-                    jsonify(
-                        {"status": "error", "error": "Слот недоступен или уже занят"}
+            if not is_phase2_availability_enabled():
+                if service_type_from_payload == "boat":
+                    slots = get_boat_slots(data["date"])
+                else:
+                    slots = get_available_slots(data["date"])
+
+                available_slot = next(
+                    (
+                        slot
+                        for slot in slots
+                        if slot["time"] == data["time"] and slot["available"]
                     ),
-                    400,
+                    None,
                 )
-            current_app.logger.info(f"    ✅ Слот доступен")
+                if not available_slot:
+                    current_app.logger.warning(f"    ❌ Слот недоступен")
+                    return (
+                        jsonify(
+                            {
+                                "status": "error",
+                                "error": "Слот недоступен или уже занят",
+                            }
+                        ),
+                        400,
+                    )
+                current_app.logger.info(f"    ✅ Слот доступен")
+            else:
+                current_app.logger.info(
+                    "    ⏭️ Legacy slot precheck skipped (Phase 2 Calendar recheck on POST)"
+                )
 
         # 5–9. Calendar-first pipeline (gym / boat / default). Camp — отдельная ветка ниже.
         if (service_type_from_payload or "").strip().lower() != "camp":
             from app.services.booking import (
                 CalendarBookingError,
                 DuplicateBookingError,
+                SlotUnavailableError,
                 execute_web_booking,
             )
 
             svc = (service_type_from_payload or "gym").strip().lower()
+            set_count = int(data.get("set_count") or 1)
             try:
                 booking_result = execute_web_booking(
                     date=data["date"],
@@ -1022,6 +1034,7 @@ def _book_slot_internal():
                     name=data["name"],
                     phone=data["phone"],
                     service_type=svc,
+                    set_count=set_count,
                 )
                 workout_id = booking_result.workout_id
                 client_id = booking_result.client_id
@@ -1040,6 +1053,15 @@ def _book_slot_internal():
                     ),
                     400,
                 )
+            except SlotUnavailableError as exc:
+                reason = str(exc)
+                if reason == "gym_capacity_full":
+                    msg = "В этой группе нет свободных мест. Выберите другое время."
+                elif svc == "boat":
+                    msg = "Этот слот на катере уже занят. Обновите расписание и выберите другое время."
+                else:
+                    msg = "Слот недоступен. Выберите другое время."
+                return jsonify({"status": "error", "error": msg}), 409
             except CalendarBookingError:
                 return (
                     jsonify(

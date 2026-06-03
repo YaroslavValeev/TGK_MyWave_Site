@@ -26,6 +26,11 @@ from app.services.booking.calendar_reader import (
 
 logger = logging.getLogger(__name__)
 
+
+class SlotUnavailableError(Exception):
+    """Candidate interval blocked (fresh Calendar read)."""
+
+
 BOAT_GRID_START = time(6, 0)
 BOAT_GRID_END = time(21, 0)
 
@@ -266,3 +271,51 @@ def get_boat_slots_phase2(date_str: str) -> List[dict]:
     if not is_phase2_availability_enabled():
         raise RuntimeError("Phase 2 availability flag is OFF")
     return build_boat_slots_from_calendar(date_str)
+
+
+def assert_booking_available(
+    date: str,
+    time: str,
+    service_type: str,
+    set_count: int = 1,
+) -> None:
+    """
+    Fresh Calendar read before insert. Raises SlotUnavailableError if blocked.
+    No-op when BOOKING_PHASE2_AVAILABILITY is OFF (caller should skip).
+    """
+    svc = (service_type or "gym").strip().lower()
+    n = max(1, int(set_count or 1))
+    intervals = list_busy_intervals_for_date(date)
+
+    if svc == "boat":
+        if not is_boat_range_available(date, time, n, intervals):
+            logger.info(
+                "booking_recheck_blocked",
+                extra={
+                    "service_type": "boat",
+                    "date": date,
+                    "start": time[:5],
+                    "set_count": n,
+                },
+            )
+            raise SlotUnavailableError("boat_slot_occupied")
+        return
+
+    if svc == "gym":
+        available, remaining = is_gym_slot_available(date, time, intervals)
+        if not available:
+            logger.info(
+                "booking_recheck_blocked",
+                extra={
+                    "service_type": "gym",
+                    "date": date,
+                    "start": time[:5],
+                    "remaining": remaining,
+                },
+            )
+            if remaining <= 0:
+                raise SlotUnavailableError("gym_capacity_full")
+            raise SlotUnavailableError("gym_slot_unavailable")
+        return
+
+    raise SlotUnavailableError(f"unsupported_service_type:{svc}")

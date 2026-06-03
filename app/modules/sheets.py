@@ -506,7 +506,7 @@ def is_valid_time_slot(time_str):
         return False
 
 
-def book_slot(date_str, time_str, name, phone, service_type="gym"):
+def book_slot(date_str, time_str, name, phone, service_type="gym", set_count=1):
     """Path B: Calendar-first booking via unified pipeline."""
     if not is_valid_time_slot(time_str):
         logger.warning(f"Недопустимый слот времени: {time_str}")
@@ -515,6 +515,7 @@ def book_slot(date_str, time_str, name, phone, service_type="gym"):
     from app.services.booking import (
         CalendarBookingError,
         DuplicateBookingError,
+        SlotUnavailableError,
         execute_web_booking,
     )
 
@@ -525,6 +526,7 @@ def book_slot(date_str, time_str, name, phone, service_type="gym"):
             name=name,
             phone=phone,
             service_type=service_type or "gym",
+            set_count=set_count,
         )
         return (
             True,
@@ -533,6 +535,8 @@ def book_slot(date_str, time_str, name, phone, service_type="gym"):
         )
     except DuplicateBookingError:
         return (False, "Вы уже записаны на это время.")
+    except SlotUnavailableError:
+        return (False, "Слот занят или недоступен. Выберите другое время.")
     except CalendarBookingError as e:
         logger.error("[booking] Calendar-first path failed: %s", e)
         return (False, "Не удалось создать запись в календаре. Попробуйте другой слот.")
