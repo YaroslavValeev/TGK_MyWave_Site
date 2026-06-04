@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>PR17 — Booking multi-set UI reference (screenshot source)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #f0f4f8; padding: 24px; }
+    h1 { font-size: 1.25rem; }
+    .note { color: #555; max-width: 720px; margin-bottom: 24px; }
+    .panel { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.08); max-width: 420px; }
+    .panel h2 { margin: 0 0 12px; font-size: 1rem; color: #0097A7; }
+    .slot-btn { display: inline-block; margin: 4px; padding: 10px 16px; border: 2px solid #35C0CD; border-radius: 8px; color: #35C0CD; background: #fff; }
+    .slot-btn.selected { background: #0097A7; color: #fff; border-color: #00838F; }
+    .boat-set-picker { margin-top: 12px; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fafafa; }
+    .boat-set-btn { min-width: 36px; padding: 8px 12px; margin: 4px; border: 2px solid #35C0CD; border-radius: 6px; background: #fff; color: #35C0CD; font-weight: 600; }
+    .boat-set-btn.active { background: #35C0CD; color: #fff; }
+    .preview { margin-top: 8px; color: #555; }
+    .confirm { display: block; width: 100%; margin-top: 16px; padding: 14px; background: #35C0CD; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; }
+    .hidden-block { opacity: .45; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>PR #17 — UI reference для скриншотов (local)</h1>
+  <p class="note">
+    Статическая вёрстка, повторяющая PR4 UX в <code>booking.js</code>.
+    Откройте файл в браузере и сделайте скриншоты панелей 1–4.
+    Для боевого evidence используйте staging с <code>BOOKING_PHASE2_MULTI_SET_BOAT=1</code>.
+  </p>
+
+  <div class="panel" id="s1">
+    <h2>1. Катер — 1 сет (flags ON, max_set_count: 1)</h2>
+    <div><span class="slot-btn selected">18:00</span></div>
+    <p class="hidden-block">#boatSetPicker — скрыт</p>
+    <button class="confirm">Подтвердить: 1 сет (18:00–18:30)</button>
+  </div>
+
+  <div class="panel" id="s2">
+    <h2>2. Катер — 2–3 сета + preview</h2>
+    <div><span class="slot-btn selected">15:00</span></div>
+    <div class="boat-set-picker">
+      <strong>Количество сетов</strong>
+      <div>
+        <button class="boat-set-btn">1</button>
+        <button class="boat-set-btn">2</button>
+        <button class="boat-set-btn active">3</button>
+      </div>
+      <p class="preview">15:00–16:30 (3 сета)</p>
+    </div>
+    <button class="confirm">Подтвердить: 3 сета (15:00–16:30)</button>
+  </div>
+
+  <div class="panel" id="s3">
+    <h2>3. Flags OFF regression</h2>
+    <div><span class="slot-btn selected">18:00</span></div>
+    <p class="hidden-block">Нет picker · POST без set_count · Phase 1</p>
+    <button class="confirm" style="background:#6c757d">Подтвердить запись</button>
+  </div>
+
+  <div class="panel" id="s4">
+    <h2>4. Grid — слоты 07:00 … 19:30</h2>
+    <div style="line-height:1.8;font-size:13px">
+      <span class="slot-btn">07:00</span>
+      <span class="slot-btn">07:30</span>
+      <span style="color:#999">…</span>
+      <span class="slot-btn">19:00</span>
+      <span class="slot-btn">19:30</span>
+    </div>
+    <p class="preview">Нет 06:00, 20:00, 21:00</p>
+  </div>
+
+  <div class="panel" id="s5">
+    <h2>5. 409 handling (после submit)</h2>
+    <p class="preview">Toast: «Выбранное время занято. Обновляем слоты…»</p>
+    <p class="preview">→ reload GET /api/calendar/slots/{date}?service=boat → шаг 2</p>
+  </div>
+</body>
+</html>

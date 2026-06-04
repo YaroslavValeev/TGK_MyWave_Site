@@ -1,0 +1,23 @@
+# PR17 — Boat grid evidence (legacy get_boat_slots, flags OFF path)
+# Generated: 2026-06-04
+# Command: python -c "..." (see BOOKING_PHASE2_PR17_REVIEW_PACKAGE.md §4)
+
+count=26
+first=07:00
+last=19:30
+has_0600=False
+has_0700=True
+has_1930=True
+has_2000=False
+has_2100=False
+
+all_times=07:00,07:30,08:00,08:30,09:00,09:30,10:00,10:30,11:00,11:30,12:00,12:30,13:00,13:30,14:00,14:30,15:00,15:30,16:00,16:30,17:00,17:30,18:00,18:30,19:00,19:30
+
+# Unit test assertions (test_boat_slots_grid_boundaries):
+# - assert "06:00" not in times
+# - assert "07:00" in times
+# - assert "19:30" in times
+# - assert "20:00" not in times
+# - assert "21:00" not in times
+# - assert times[0] == "07:00"
+# - assert times[-1] == "19:30"
