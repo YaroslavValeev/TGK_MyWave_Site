@@ -11,6 +11,9 @@ from zoneinfo import ZoneInfo
 
 from flask import current_app
 
+from app.config.booking_durations import TRAINER_TRAVEL_BUFFER_MINUTES
+from app.config.booking_features import is_phase2_availability_enabled
+
 logger = logging.getLogger(__name__)
 
 _SUMMARY_GYM = re.compile(r"(\(Зал\)|—\s*Зал\s*—|—\s*Зал\s*—)", re.IGNORECASE)
@@ -34,6 +37,17 @@ def day_bounds(date_str: str, tz: Optional[ZoneInfo] = None) -> tuple[datetime, 
     day = date.fromisoformat(date_str)
     start = datetime.combine(day, time.min, tzinfo=tz)
     return start, start + timedelta(days=1)
+
+
+def day_bounds_with_buffer(
+    date_str: str,
+    buffer_minutes: int = TRAINER_TRAVEL_BUFFER_MINUTES,
+    tz: Optional[ZoneInfo] = None,
+) -> tuple[datetime, datetime]:
+    """Expand query window for travel-buffer recheck (±buffer around local day)."""
+    time_min, time_max = day_bounds(date_str, tz)
+    buffer = timedelta(minutes=buffer_minutes)
+    return time_min - buffer, time_max + buffer
 
 
 def parse_service_type(event: dict) -> str:
@@ -87,7 +101,12 @@ def list_busy_intervals_for_date(date_str: str) -> List[BusyInterval]:
     from app.services.google import get_google_services
 
     tz = get_timezone()
-    time_min, time_max = day_bounds(date_str, tz)
+    if is_phase2_availability_enabled():
+        time_min, time_max = day_bounds_with_buffer(
+            date_str, TRAINER_TRAVEL_BUFFER_MINUTES, tz
+        )
+    else:
+        time_min, time_max = day_bounds(date_str, tz)
     calendar_id = current_app.config.get("GOOGLE_CALENDAR_ID")
     if not calendar_id:
         raise ValueError("GOOGLE_CALENDAR_ID is not configured")

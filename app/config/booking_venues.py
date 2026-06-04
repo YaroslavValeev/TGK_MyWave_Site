@@ -15,11 +15,12 @@ GYM_VENUE = {
     "yandex_maps_url": "https://yandex.ru/maps/-/CLWQy6-I",
 }
 
-# Катер (boat) — Phase 1 location unchanged in production until SUMMARY/location flags ON
+# Катер (boat) — Phase 1: MyWave Wake URL; Phase 2 location v2: canonical «Катер»
 BOAT_VENUE = {
     "service_type": "boat",
     "location_label": "Катер",
     "calendar_location": BOAT_CALENDAR_LOCATION,
+    "calendar_location_v2": "Катер",
     "yandex_maps_url": MYWAVE_VENUE["yandex_maps_url"],
     "latitude": MYWAVE_VENUE["latitude"],
     "longitude": MYWAVE_VENUE["longitude"],

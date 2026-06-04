@@ -88,8 +88,9 @@ class TestBookingVenues:
         assert GYM_VENUE["longitude"] == pytest.approx(37.502594)
         assert "yandex.ru/maps" in GYM_VENUE["yandex_maps_url"]
 
-    def test_boat_venue_uses_phase1_calendar_location(self):
+    def test_boat_venue_phase1_and_v2_locations(self):
         assert "MyWave Wake" in BOAT_VENUE["calendar_location"]
+        assert BOAT_VENUE["calendar_location_v2"] == "Катер"
         assert "yandex.ru/maps" in BOAT_VENUE["yandex_maps_url"]
 
     def test_booking_venues_registry(self):

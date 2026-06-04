@@ -10,16 +10,45 @@ from typing import Optional
 from flask import current_app
 
 from app.config.booking_durations import (
+    BOAT_SET_MINUTES,
     BOOKING_DURATION_MINUTES,
     GYM_LOCATION_LABEL,
+    GYM_SLOT_MINUTES,
 )
+from app.config.booking_features import (
+    is_phase2_availability_enabled,
+    is_phase2_gym_location_v2_enabled,
+    is_phase2_summary_v2_enabled,
+)
+from app.config.booking_venues import BOOKING_VENUES
 from app.config.venue import MYWAVE_VENUE
 from app.services.booking.constants import (
-    SERVICE_LOCATION_SUMMARY,
     BOAT_CALENDAR_LOCATION,
+    SERVICE_LOCATION_SUMMARY,
 )
 
 logger = logging.getLogger(__name__)
+
+
+def format_boat_sets_label(set_count: int) -> str:
+    n = max(1, int(set_count))
+    if n == 1:
+        return "1 сет"
+    if 2 <= n <= 4:
+        return f"{n} сета"
+    return f"{n} сетов"
+
+
+def booking_duration_minutes(service_type: str, set_count: int = 1) -> int:
+    svc = (service_type or "gym").strip().lower()
+    if svc == "gym":
+        return GYM_SLOT_MINUTES
+    if svc == "boat":
+        n = max(1, int(set_count or 1))
+        if is_phase2_availability_enabled():
+            return BOAT_SET_MINUTES * n
+        return BOOKING_DURATION_MINUTES.get("boat", BOAT_SET_MINUTES)
+    return BOOKING_DURATION_MINUTES.get(svc, 60)
 
 
 def build_event_summary(
@@ -38,6 +67,54 @@ def build_event_summary(
     return f"Тренировка ({location_label}) — {name} {marker}"
 
 
+def build_event_summary_v2(
+    service_type: str,
+    name: str,
+    *,
+    set_count: int = 1,
+    booking_id: Optional[str] = None,
+) -> str:
+    bid = booking_id or "unknown"
+    marker = f"(WEB_ID: {bid})"
+    svc = (service_type or "gym").strip().lower()
+    if svc == "gym":
+        return f"Тренировка — Зал — {name} {marker}"
+    if svc == "boat":
+        sets_part = format_boat_sets_label(set_count)
+        return f"Тренировка — Катер — {sets_part} — {name} {marker}"
+    location_label = SERVICE_LOCATION_SUMMARY.get(svc, svc)
+    return f"Тренировка — {location_label} — {name} {marker}"
+
+
+def resolve_event_summary(
+    service_type: str,
+    name: str,
+    *,
+    set_count: int = 1,
+    telegram_user_id: Optional[str] = None,
+    booking_id: Optional[str] = None,
+) -> str:
+    if telegram_user_id:
+        return build_event_summary(
+            service_type,
+            name,
+            telegram_user_id=telegram_user_id,
+            booking_id=booking_id,
+        )
+    if is_phase2_summary_v2_enabled():
+        return build_event_summary_v2(
+            service_type,
+            name,
+            set_count=set_count,
+            booking_id=booking_id,
+        )
+    return build_event_summary(
+        service_type,
+        name,
+        booking_id=booking_id,
+    )
+
+
 def build_event_description(
     *,
     phone: str,
@@ -46,6 +123,10 @@ def build_event_description(
     service_type: str,
     booking_id: str,
     telegram_user_id: Optional[str] = None,
+    set_count: int = 1,
+    duration_min: Optional[int] = None,
+    start_iso: Optional[str] = None,
+    end_iso: Optional[str] = None,
 ) -> str:
     lines = [
         f"phone: {phone}",
@@ -56,13 +137,31 @@ def build_event_description(
         f"service_type: {service_type}",
         f"booking_id: {booking_id}",
     ]
+    if is_phase2_availability_enabled():
+        dur = duration_min or booking_duration_minutes(service_type, set_count)
+        lines.extend(
+            [
+                f"set_count: {max(1, int(set_count))}",
+                f"duration_min: {dur}",
+            ]
+        )
+        if start_iso:
+            lines.append(f"start_time: {start_iso}")
+        if end_iso:
+            lines.append(f"end_time: {end_iso}")
     return "\n".join(lines)
 
 
 def get_calendar_location(service_type: str) -> str:
-    if service_type == "boat":
+    svc = (service_type or "").strip().lower()
+    if is_phase2_gym_location_v2_enabled():
+        venue = BOOKING_VENUES.get(svc) or {}
+        v2 = venue.get("calendar_location_v2")
+        if v2:
+            return v2
+    if svc == "boat":
         return BOAT_CALENDAR_LOCATION
-    if service_type == "gym":
+    if svc == "gym":
         return GYM_LOCATION_LABEL
     return MYWAVE_VENUE.get("location_label", "")
 
@@ -77,41 +176,52 @@ def build_calendar_event_body(
     booking_id: str,
     client_id: str,
     telegram_user_id: Optional[str] = None,
+    set_count: int = 1,
 ) -> dict:
     start = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
-    duration_min = BOOKING_DURATION_MINUTES.get(service_type, 60)
+    duration_min = booking_duration_minutes(service_type, set_count)
     end = start + timedelta(minutes=duration_min)
     tz = current_app.config.get("TIMEZONE", "Europe/Moscow")
 
     phone_hash = hashlib.sha256(phone.encode("utf-8")).hexdigest()[:16]
+    start_iso = start.isoformat()
+    end_iso = end.isoformat()
+    sc = max(1, int(set_count or 1))
+
+    private_props = {
+        "booking_id": booking_id,
+        "client_id": client_id,
+        "source": "web" if not telegram_user_id else "telegram",
+        "service_type": service_type,
+        "phone_hash": phone_hash,
+    }
+    if is_phase2_availability_enabled() and (service_type or "").strip().lower() == "boat":
+        private_props["set_count"] = str(sc)
 
     return {
-        "summary": build_event_summary(
+        "summary": resolve_event_summary(
             service_type,
             name,
+            set_count=sc,
             telegram_user_id=telegram_user_id,
             booking_id=booking_id,
         ),
         "description": build_event_description(
             phone=phone,
             client_id=client_id,
-            workout_id="",  # filled after insert if needed; event.id known post-insert
+            workout_id="",
             service_type=service_type,
             booking_id=booking_id,
             telegram_user_id=telegram_user_id,
+            set_count=sc,
+            duration_min=duration_min,
+            start_iso=start_iso,
+            end_iso=end_iso,
         ),
         "location": get_calendar_location(service_type),
-        "start": {"dateTime": start.isoformat(), "timeZone": tz},
-        "end": {"dateTime": end.isoformat(), "timeZone": tz},
-        "extendedProperties": {
-            "private": {
-                "booking_id": booking_id,
-                "client_id": client_id,
-                "source": "web" if not telegram_user_id else "telegram",
-                "service_type": service_type,
-                "phone_hash": phone_hash,
-            }
-        },
+        "start": {"dateTime": start_iso, "timeZone": tz},
+        "end": {"dateTime": end_iso, "timeZone": tz},
+        "extendedProperties": {"private": private_props},
     }
 
 
@@ -125,6 +235,7 @@ def create_calendar_event(
     booking_id: str,
     client_id: str,
     telegram_user_id: Optional[str] = None,
+    set_count: int = 1,
 ) -> str:
     """Insert Calendar event; return event.id (workout_id)."""
     from app.services.google import get_google_services
@@ -138,6 +249,7 @@ def create_calendar_event(
         booking_id=booking_id,
         client_id=client_id,
         telegram_user_id=telegram_user_id,
+        set_count=set_count,
     )
 
     _, _, calendar_svc = get_google_services()
@@ -157,6 +269,7 @@ def create_calendar_event(
             "workout_id_tail": str(event_id)[-8:],
             "service_type": service_type,
             "booking_id_tail": str(booking_id)[-8:],
+            "set_count": max(1, int(set_count or 1)),
         },
     )
     return event_id
