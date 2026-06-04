@@ -11,14 +11,13 @@
 | Initial | `116af0d563574ae78267b637c453dcadfb724e2b` | PR3 implementation |
 
 **CI:** green (`quality-checks` pass)
-**Tests:** `75 passed`
+**Tests:** `75 passed` (prod deploy)
 **TGbotAdmin:** round 2 **PASS** — **MERGE ALLOWED WITH FOLLOW-UP**
 **Blockers:** **0**
-**GM status:** **APPROVED FOR MERGE PREPARATION** (await Owner final merge approval)
+**Merge commit (`main`):** `cf318cdcc2b0ca4566ec9dd4801801c843ecf2b9`
+**Production deploy:** **GREEN** (flags OFF, 2026-06-04)
 
-**Policy:** merge/deploy only after Owner final merge approval; **all production flags OFF**.
-
-**Not done yet:** merge PR #16, production deploy, any service restart, prod `.env` changes, prod flags ON.
+**Policy:** Phase 2 runtime **flags OFF** on prod; flags ON — отдельное approval.
 
 ---
 
@@ -203,24 +202,54 @@ sudo journalctl -u mywave-site --since "5 min ago" --no-pager | tail -40
 
 ---
 
-## 7. Post-merge roadmap
+## 7. Post-deploy roadmap
 
-1. Owner final merge approval → merge PR #16
-2. Deploy §4 (flags OFF)
-3. Staging E2E + Risk 1 grid decision
-4. PR4 frontend (`set_count` UI)
-5. Phased prod flags ON (separate approval; Risk 2 follow-up recommended first)
+1. ~~Merge PR #16~~ **DONE** (`cf318cdc`)
+2. ~~Deploy flags OFF~~ **GREEN**
+3. **Next:** staging E2E planning + Owner grid decision (Risk 1)
+4. **Next:** PR4 frontend (`set_count` UI)
+5. Phased prod flags ON — **отдельное approval** (Risk 2 follow-up recommended first)
 
 ---
 
-## 8. Site confirmations (for Owner merge approval)
+## 8. Site confirmations
 
 - [x] TGbotAdmin round 2: **PASS** — MERGE ALLOWED WITH FOLLOW-UP
 - [x] Blockers: **0**
-- [x] Non-blocker risks: **2 accepted** (documented §0.1)
-- [ ] Owner **final merge approval**
-- [ ] Merge PR #16
-- [x] Restart **only** `mywave-site` (on deploy)
-- [x] **Do not** restart `mywave-node.service`
-- [x] **Do not** restart `mywave-telegram-bot.service`
-- [x] Production flags remain **OFF** by default
+- [x] Non-blocker risks: **2 accepted** (§0.1)
+- [x] Owner final merge approval
+- [x] Merge PR #16
+- [x] Production deploy flags OFF — **GREEN**
+- [x] Restart **only** `mywave-site`
+- [x] **Did not** restart `mywave-node.service`
+- [x] **Did not** restart `mywave-telegram-bot.service`
+- [x] Production flags **OFF** / absent in `.env`
+
+---
+
+## 9. Production deploy record (flags OFF) — GREEN
+
+**Date:** 2026-06-04
+**Host:** `mywavewake.ru` / `/var/www/mywave`
+**Git HEAD (expected):** `cf318cdcc2b0ca4566ec9dd4801801c843ecf2b9`
+
+| Check | Result |
+|-------|--------|
+| `mywave-site` | active/running |
+| pytest (booking suite) | **75 passed** |
+| `/health` | HTTP 200 (`degraded` — optional services only) |
+| `/` | 200 |
+| `/robots.txt` | 200 |
+| `/privacy` | 200 |
+| `/offer` | 200 |
+| Fatal log scan after restart | PASS |
+| `mywave-telegram-bot.service` | active, **not restarted** |
+| `mywave-node.service` | active, **not restarted** |
+| `BOOKING_PHASE2_*` in prod `.env` | OFF / absent |
+
+**Runtime booking (flags OFF):** Phase 1 POST/pipeline unchanged; PR3 recheck/writer v2/409 active only when flags ON.
+
+### Follow-up (before staging E2E / prod flags ON)
+
+1. **Boat grid mismatch** — Owner decision: Site 06:00–21:00 vs TGbotAdmin 07:00–19:30
+2. **Partial Sheets / orphan Workouts** — transaction, compensation, repair job, documented cleanup procedure
