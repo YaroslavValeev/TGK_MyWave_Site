@@ -1,7 +1,7 @@
 
 tests/unit/test_booking_grid.py::test_boat_grid_canonical PASSED         [  1%]
 tests/unit/test_booking_grid.py::test_availability_imports_grid_constants PASSED [  3%]
-tests/unit/test_boat_slots.py::test_boat_slots_hide_full[0-True] 
+tests/unit/test_boat_slots.py::test_boat_slots_hide_full[0-True]
 ------------------------------- live log setup --------------------------------
 INFO     app.patches.ssl_patch:ssl_patch.py:22 SSL patch applied successfully
 INFO     app:__init__.py:82 SSL patch applied successfully
@@ -16,22 +16,22 @@ INFO     app:openai_runtime_config.py:96 [openai-chat-config] startup CHAT_BACKE
 INFO     app:calendar_routes.py:406 [boat] ├хэхЁрЎш  ёыюЄют фы  ърЄхЁр эр фрЄє 2026-06-12
 INFO     app:calendar_routes.py:468 [boat] ╤тюсюфэ√ї ёыюЄют эр 2026-06-12: 26
 PASSED                                                                   [  4%]
-tests/unit/test_boat_slots.py::test_boat_slots_hide_full[1-False] 
+tests/unit/test_boat_slots.py::test_boat_slots_hide_full[1-False]
 -------------------------------- live log call --------------------------------
 INFO     app:calendar_routes.py:406 [boat] ├хэхЁрЎш  ёыюЄют фы  ърЄхЁр эр фрЄє 2026-06-12
 INFO     app:calendar_routes.py:468 [boat] ╤тюсюфэ√ї ёыюЄют эр 2026-06-12: 25
 PASSED                                                                   [  6%]
-tests/unit/test_boat_slots.py::test_boat_slots_hide_full[2-False] 
+tests/unit/test_boat_slots.py::test_boat_slots_hide_full[2-False]
 -------------------------------- live log call --------------------------------
 INFO     app:calendar_routes.py:406 [boat] ├хэхЁрЎш  ёыюЄют фы  ърЄхЁр эр фрЄє 2026-06-12
 INFO     app:calendar_routes.py:468 [boat] ╤тюсюфэ√ї ёыюЄют эр 2026-06-12: 25
 PASSED                                                                   [  7%]
-tests/unit/test_boat_slots.py::test_boat_slots_grid_boundaries 
+tests/unit/test_boat_slots.py::test_boat_slots_grid_boundaries
 -------------------------------- live log call --------------------------------
 INFO     app:calendar_routes.py:406 [boat] ├хэхЁрЎш  ёыюЄют фы  ърЄхЁр эр фрЄє 2026-06-12
 INFO     app:calendar_routes.py:468 [boat] ╤тюсюфэ√ї ёыюЄют эр 2026-06-12: 26
 PASSED                                                                   [  9%]
-tests/unit/test_booking_availability_phase2.py::TestFlagOffRegression::test_get_boat_slots_uses_sheets_when_flag_off 
+tests/unit/test_booking_availability_phase2.py::TestFlagOffRegression::test_get_boat_slots_uses_sheets_when_flag_off
 -------------------------------- live log call --------------------------------
 INFO     app:calendar_routes.py:406 [boat] ├хэхЁрЎш  ёыюЄют фы  ърЄхЁр эр фрЄє 2026-06-12
 INFO     app:calendar_routes.py:468 [boat] ╤тюсюфэ√ї ёыюЄют эр 2026-06-12: 25
@@ -45,25 +45,25 @@ tests/unit/test_booking_features.py::TestCapacityCanon::test_duration_constants 
 tests/unit/test_booking_features.py::TestBookingVenues::test_gym_venue_v2_location PASSED [ 21%]
 tests/unit/test_booking_features.py::TestBookingVenues::test_boat_venue_phase1_and_v2_locations PASSED [ 23%]
 tests/unit/test_booking_features.py::TestBookingVenues::test_booking_venues_registry PASSED [ 25%]
-tests/unit/test_booking_pipeline_phase2.py::TestAssertBookingAvailable::test_assert_booking_boat_blocked 
+tests/unit/test_booking_pipeline_phase2.py::TestAssertBookingAvailable::test_assert_booking_boat_blocked
 -------------------------------- live log call --------------------------------
 INFO     app.services.booking.availability:availability.py:289 booking_recheck_blocked
 PASSED                                                                   [ 26%]
-tests/unit/test_booking_pipeline_phase2.py::TestAssertBookingAvailable::test_assert_booking_gym_4_of_4 
+tests/unit/test_booking_pipeline_phase2.py::TestAssertBookingAvailable::test_assert_booking_gym_4_of_4
 -------------------------------- live log call --------------------------------
 INFO     app.services.booking.availability:availability.py:304 booking_recheck_blocked
 PASSED                                                                   [ 28%]
 tests/unit/test_booking_pipeline_phase2.py::TestAssertBookingAvailable::test_assert_booking_gym_3_of_4_allows PASSED [ 29%]
-tests/unit/test_booking_pipeline_phase2.py::TestAssertBookingAvailable::test_assert_booking_travel_buffer_blocks 
+tests/unit/test_booking_pipeline_phase2.py::TestAssertBookingAvailable::test_assert_booking_travel_buffer_blocks
 -------------------------------- live log call --------------------------------
 INFO     app.services.booking.availability:availability.py:107 availability_blocked_travel_buffer
 INFO     app.services.booking.availability:availability.py:289 booking_recheck_blocked
 PASSED                                                                   [ 31%]
-tests/unit/test_booking_pipeline_phase2.py::TestPipelineRecheck::test_recheck_blocks_no_calendar_no_sheets 
+tests/unit/test_booking_pipeline_phase2.py::TestPipelineRecheck::test_recheck_blocks_no_calendar_no_sheets
 -------------------------------- live log call --------------------------------
 INFO     app.services.booking.pipeline:pipeline.py:109 booking_slot_unavailable
 PASSED                                                                   [ 32%]
-tests/unit/test_booking_pipeline_phase2.py::TestPipelineRecheck::test_calendar_failure_no_sheets 
+tests/unit/test_booking_pipeline_phase2.py::TestPipelineRecheck::test_calendar_failure_no_sheets
 -------------------------------- live log call --------------------------------
 ERROR    app.services.booking.pipeline:pipeline.py:140 booking_calendar_event_failed
 PASSED                                                                   [ 34%]
@@ -71,7 +71,7 @@ tests/unit/test_booking_pipeline_phase2.py::TestPipelineFlagsOff::test_flags_off
 tests/unit/test_booking_pipeline_phase2.py::TestPipelineFlagsOff::test_workout_id_equals_event_id PASSED [ 37%]
 tests/unit/test_booking_pipeline_phase2.py::TestIdempotencyRange::test_idempotency_range_same_end_dup PASSED [ 39%]
 tests/unit/test_booking_pipeline_phase2.py::TestIdempotencyRange::test_idempotency_different_set_count_not_dup PASSED [ 40%]
-tests/unit/test_booking_pipeline_phase2.py::TestDuplicateRaises::test_duplicate_raises 
+tests/unit/test_booking_pipeline_phase2.py::TestDuplicateRaises::test_duplicate_raises
 -------------------------------- live log call --------------------------------
 INFO     app.services.booking.pipeline:pipeline.py:97 booking_duplicate_detected
 PASSED                                                                   [ 42%]
@@ -92,16 +92,16 @@ tests/unit/test_booking_calendar_v2.py::TestEventBody::test_boat_duration_3_sets
 tests/unit/test_booking_calendar_v2.py::TestEventBody::test_extended_properties_set_count PASSED [ 65%]
 tests/unit/test_booking_calendar_v2.py::TestEventBody::test_flags_off_boat_duration_30 PASSED [ 67%]
 tests/unit/test_booking_calendar_reader_buffer.py::TestDayBoundsWithBuffer::test_expands_by_120_minutes PASSED [ 68%]
-tests/unit/test_booking_calendar_reader_buffer.py::TestListEventsQueryWindow::test_list_uses_expanded_time_min_max_when_phase2_on 
+tests/unit/test_booking_calendar_reader_buffer.py::TestListEventsQueryWindow::test_list_uses_expanded_time_min_max_when_phase2_on
 -------------------------------- live log call --------------------------------
 INFO     app.services.booking.calendar_reader:calendar_reader.py:133 calendar_day_events_loaded
 PASSED                                                                   [ 70%]
-tests/unit/test_booking_calendar_reader_buffer.py::TestCrossDayTravelBufferRecheck::test_gym_morning_blocked_by_previous_evening_boat 
+tests/unit/test_booking_calendar_reader_buffer.py::TestCrossDayTravelBufferRecheck::test_gym_morning_blocked_by_previous_evening_boat
 -------------------------------- live log call --------------------------------
 INFO     app.services.booking.availability:availability.py:107 availability_blocked_travel_buffer
 INFO     app.services.booking.availability:availability.py:304 booking_recheck_blocked
 PASSED                                                                   [ 71%]
-tests/unit/test_booking_calendar_reader_buffer.py::TestCrossDayTravelBufferRecheck::test_boat_evening_blocked_by_next_morning_gym 
+tests/unit/test_booking_calendar_reader_buffer.py::TestCrossDayTravelBufferRecheck::test_boat_evening_blocked_by_next_morning_gym
 -------------------------------- live log call --------------------------------
 INFO     app.services.booking.availability:availability.py:107 availability_blocked_travel_buffer
 INFO     app.services.booking.availability:availability.py:289 booking_recheck_blocked
@@ -111,24 +111,24 @@ tests/unit/test_booking_phase1.py::TestPhone::test_normalize_plus7 PASSED [ 76%]
 tests/unit/test_booking_phase1.py::TestSummary::test_telegram_summary_uses_id_marker PASSED [ 78%]
 tests/unit/test_booking_phase1.py::TestSummary::test_web_summary_uses_web_id_marker PASSED [ 79%]
 tests/unit/test_booking_phase1.py::TestIdempotency::test_duplicate_detected PASSED [ 81%]
-tests/unit/test_booking_phase1.py::TestClientResolver::test_reuse_existing_client_by_phone 
+tests/unit/test_booking_phase1.py::TestClientResolver::test_reuse_existing_client_by_phone
 -------------------------------- live log call --------------------------------
 INFO     app.services.booking.client_resolver:client_resolver.py:45 client_resolved
 PASSED                                                                   [ 82%]
-tests/unit/test_booking_phase1.py::TestClientResolver::test_web_booking_does_not_overwrite_telegram_user_id 
+tests/unit/test_booking_phase1.py::TestClientResolver::test_web_booking_does_not_overwrite_telegram_user_id
 -------------------------------- live log call --------------------------------
 INFO     app.services.booking.client_resolver:client_resolver.py:45 client_resolved
 PASSED                                                                   [ 84%]
-tests/unit/test_booking_phase1.py::TestClientResolver::test_create_new_web_client 
+tests/unit/test_booking_phase1.py::TestClientResolver::test_create_new_web_client
 -------------------------------- live log call --------------------------------
 INFO     app.services.booking.client_resolver:client_resolver.py:76 client_resolved
 PASSED                                                                   [ 85%]
 tests/unit/test_booking_phase1.py::TestPipeline::test_web_booking_creates_calendar_then_sheets PASSED [ 87%]
-tests/unit/test_booking_phase1.py::TestPipeline::test_duplicate_raises 
+tests/unit/test_booking_phase1.py::TestPipeline::test_duplicate_raises
 -------------------------------- live log call --------------------------------
 INFO     app.services.booking.pipeline:pipeline.py:97 booking_duplicate_detected
 PASSED                                                                   [ 89%]
-tests/unit/test_booking_phase1.py::TestPipeline::test_calendar_failure_no_sheets 
+tests/unit/test_booking_phase1.py::TestPipeline::test_calendar_failure_no_sheets
 -------------------------------- live log call --------------------------------
 ERROR    app.services.booking.pipeline:pipeline.py:140 booking_calendar_event_failed
 PASSED                                                                   [ 90%]

@@ -1,10 +1,10 @@
 # BOOKING_PHASE2_PR17 — Review Package (merge gate)
 
-**Версия:** 1.0  
-**Дата:** 2026-06-04  
-**Статус:** APPROVED FOR CODE REVIEW ONLY — merge после TGbotAdmin + Owner  
-**PR:** https://github.com/YaroslavValeev/TGK_MyWave_Site/pull/17  
-**Branch:** `feature/booking-phase2-pr4-frontend-multiset`  
+**Версия:** 1.0
+**Дата:** 2026-06-04
+**Статус:** APPROVED FOR CODE REVIEW ONLY — merge после TGbotAdmin + Owner
+**PR:** https://github.com/YaroslavValeev/TGK_MyWave_Site/pull/17
+**Branch:** `feature/booking-phase2-pr4-frontend-multiset`
 **Commit:** `8f9a07f0bc6045911c6e264e2342b9248edae8af`
 
 **Связанные документы:**
@@ -253,5 +253,5 @@ Orphan Workouts при partial failure — **не закрыт PR17**. Follow-up
 
 ## 11. Contacts / handoff
 
-PR #17 передан на review **TGbotAdmin**.  
+PR #17 передан на review **TGbotAdmin**.
 Site не мержит до отдельного approval.
