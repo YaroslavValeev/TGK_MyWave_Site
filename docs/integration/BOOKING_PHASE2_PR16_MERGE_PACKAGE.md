@@ -45,12 +45,11 @@
 
 | System | Boat grid |
 |--------|-----------|
-| Site | 06:00–21:00 |
+| Site (was) | 06:00–21:00 |
 | TGbotAdmin | 07:00–19:30 |
+| **Owner decision (2026-06-04)** | **Sync Site → TGbotAdmin: canonical `07:00–19:30`** (PR4) |
 
-**Owner decision required before staging E2E:** sync grids OR accept divergence and document edge cases (06:00–07:00, 19:30–21:00).
-
-**PR #16:** grid unchanged.
+**Implementation:** [`BOOKING_PHASE2_PR4_IMPLEMENTATION_PACKAGE.md`](BOOKING_PHASE2_PR4_IMPLEMENTATION_PACKAGE.md) §0.
 
 ### Risk 2 — Partial Sheets failure (follow-up before production flags ON)
 
@@ -206,9 +205,10 @@ sudo journalctl -u mywave-site --since "5 min ago" --no-pager | tail -40
 
 1. ~~Merge PR #16~~ **DONE** (`cf318cdc`)
 2. ~~Deploy flags OFF~~ **GREEN**
-3. **Next:** staging E2E planning + Owner grid decision (Risk 1)
-4. **Next:** PR4 frontend (`set_count` UI)
-5. Phased prod flags ON — **отдельное approval** (Risk 2 follow-up recommended first)
+3. **Next:** staging E2E planning — [`BOOKING_PHASE2_STAGING_E2E_PACKAGE.md`](BOOKING_PHASE2_STAGING_E2E_PACKAGE.md)
+4. **Next:** PR4 frontend — [`BOOKING_PHASE2_PR4_IMPLEMENTATION_PACKAGE.md`](BOOKING_PHASE2_PR4_IMPLEMENTATION_PACKAGE.md)
+5. Partial Sheets follow-up — [`BOOKING_PARTIAL_SHEETS_FOLLOWUP.md`](BOOKING_PARTIAL_SHEETS_FOLLOWUP.md) (before prod flags ON)
+6. Phased prod flags ON — **отдельное approval**
 
 ---
 
@@ -251,5 +251,5 @@ sudo journalctl -u mywave-site --since "5 min ago" --no-pager | tail -40
 
 ### Follow-up (before staging E2E / prod flags ON)
 
-1. **Boat grid mismatch** — Owner decision: Site 06:00–21:00 vs TGbotAdmin 07:00–19:30
-2. **Partial Sheets / orphan Workouts** — transaction, compensation, repair job, documented cleanup procedure
+1. ~~Boat grid mismatch~~ **Owner decision:** sync Site to **07:00–19:30** (PR4)
+2. **Partial Sheets / orphan Workouts** — [`BOOKING_PARTIAL_SHEETS_FOLLOWUP.md`](BOOKING_PARTIAL_SHEETS_FOLLOWUP.md)
