@@ -1022,6 +1022,7 @@ def _book_slot_internal():
             from app.services.booking import (
                 CalendarBookingError,
                 DuplicateBookingError,
+                SheetsBookingError,
                 SlotUnavailableError,
                 execute_web_booking,
             )
@@ -1069,6 +1070,16 @@ def _book_slot_internal():
                         {
                             "status": "error",
                             "error": "Не удалось создать запись в календаре. Попробуйте позже.",
+                        }
+                    ),
+                    500,
+                )
+            except SheetsBookingError:
+                return (
+                    jsonify(
+                        {
+                            "status": "error",
+                            "error": "Не удалось завершить запись. Попробуйте позже.",
                         }
                     ),
                     500,

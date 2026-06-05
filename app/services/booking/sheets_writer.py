@@ -14,6 +14,65 @@ from app.services.booking.constants import SHEETS_STATUS_CONFIRMED
 
 logger = logging.getLogger(__name__)
 
+WORKOUT_STATUS_CANCELLED = "cancelled"
+
+
+def _column_letter(index: int) -> str:
+    """0-based column index → A, B, … (Workouts has ≤10 cols)."""
+    return chr(65 + index)
+
+
+def compensate_workout_row(workout_id: str) -> bool:
+    """
+    Best-effort rollback: mark Workouts row cancelled after partial journal failure.
+    Uses prod headers: workout_status, current_capacity (see PROD_SHEETS_HEADERS).
+    """
+    wid = (workout_id or "").strip()
+    if not wid:
+        return False
+    try:
+        from flask import current_app
+
+        from app.modules.sheets_access import get_google_sheet
+        from app.services.google_sheets_service import update_record
+
+        sheet = get_google_sheet("Workouts")
+        matches = sheet.find_rows(workout_id=wid)
+        if not matches:
+            logger.warning(
+                "compensate_workout_row_not_found",
+                extra={"workout_id_tail": wid[-8:]},
+            )
+            return False
+
+        row_idx, _row = matches[0]
+        headers = sheet.values[0]
+        sid = current_app.config["SPREADSHEET_ID"]
+
+        if "workout_status" in headers:
+            col = _column_letter(headers.index("workout_status"))
+            update_record(
+                sid,
+                "Workouts",
+                f"{col}{row_idx}",
+                [WORKOUT_STATUS_CANCELLED],
+            )
+        if "current_capacity" in headers:
+            col = _column_letter(headers.index("current_capacity"))
+            update_record(sid, "Workouts", f"{col}{row_idx}", ["0"])
+
+        logger.info(
+            "compensate_workout_row_ok",
+            extra={"workout_id_tail": wid[-8:]},
+        )
+        return True
+    except Exception as exc:
+        logger.error(
+            "compensate_workout_row_failed",
+            extra={"workout_id_tail": wid[-8:], "error": type(exc).__name__},
+        )
+        return False
+
 
 def write_workout_row(
     *,

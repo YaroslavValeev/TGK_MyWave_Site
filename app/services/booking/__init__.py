@@ -5,6 +5,7 @@ from app.services.booking.pipeline import (
     BookingPipelineError,
     CalendarBookingError,
     DuplicateBookingError,
+    SheetsBookingError,
     execute_web_booking,
 )
 
@@ -13,5 +14,6 @@ __all__ = [
     "DuplicateBookingError",
     "BookingPipelineError",
     "CalendarBookingError",
+    "SheetsBookingError",
     "SlotUnavailableError",
 ]

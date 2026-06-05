@@ -11,7 +11,10 @@ from app.services.booking.availability import (
     SlotUnavailableError,
     assert_booking_available,
 )
-from app.services.booking.calendar_writer import create_calendar_event
+from app.services.booking.calendar_writer import (
+    create_calendar_event,
+    delete_calendar_event_best_effort,
+)
 from app.services.booking.client_resolver import resolve_client
 from app.services.booking.constants import INTERNAL_STATUS_BOOKED
 from app.services.booking.idempotency import (
@@ -20,6 +23,7 @@ from app.services.booking.idempotency import (
 )
 from app.services.booking.phone import normalize_phone
 from app.services.booking.sheets_writer import (
+    compensate_workout_row,
     write_client_workout_row,
     write_workout_row,
 )
@@ -39,6 +43,10 @@ class DuplicateBookingError(BookingPipelineError):
 
 class CalendarBookingError(BookingPipelineError):
     """Calendar insert failed — Sheets must not be written."""
+
+
+class SheetsBookingError(BookingPipelineError):
+    """Sheets journal incomplete after Calendar insert — compensated best-effort."""
 
 
 @dataclass
@@ -63,6 +71,71 @@ def _normalize_set_count(service_type: str, set_count: Optional[int]) -> int:
     if not is_phase2_availability_enabled():
         return 1
     return min(n, MAX_BOAT_SET_COUNT)
+
+
+def _compensate_partial_sheets_failure(
+    *,
+    event_id: str,
+    workouts_written: bool,
+    exc: Exception,
+) -> None:
+    """Option B: mark Workouts cancelled + best-effort Calendar delete."""
+    compensation: list[str] = []
+    if workouts_written:
+        if compensate_workout_row(event_id):
+            compensation.append("workout_row_mark_cancelled")
+        else:
+            compensation.append("workout_row_mark_failed")
+    if delete_calendar_event_best_effort(event_id):
+        compensation.append("calendar_delete")
+    else:
+        compensation.append("calendar_delete_failed")
+
+    logger.error(
+        "booking_sheets_partial_failure",
+        extra={
+            "workout_id_tail": str(event_id)[-8:],
+            "workouts_written": workouts_written,
+            "client_workouts_written": False,
+            "compensation": "+".join(compensation) or "none",
+            "error": type(exc).__name__,
+        },
+    )
+
+
+def _write_sheets_journal(
+    *,
+    event_id: str,
+    client_id: str,
+    date: str,
+    time_norm: str,
+    service_type: str,
+    set_count: int,
+) -> str:
+    workouts_written = False
+    try:
+        write_workout_row(
+            workout_id=event_id,
+            date=date,
+            time=time_norm,
+            service_type=service_type,
+            set_count=set_count,
+        )
+        workouts_written = True
+        return write_client_workout_row(
+            client_id=client_id,
+            workout_id=event_id,
+            date=date,
+            time=time_norm,
+            service_type=service_type,
+        )
+    except Exception as exc:
+        _compensate_partial_sheets_failure(
+            event_id=event_id,
+            workouts_written=workouts_written,
+            exc=exc,
+        )
+        raise SheetsBookingError("sheets journal incomplete") from exc
 
 
 def execute_web_booking(
@@ -143,19 +216,13 @@ def execute_web_booking(
         )
         raise CalendarBookingError(str(exc)) from exc
 
-    write_workout_row(
-        workout_id=event_id,
+    cw_id = _write_sheets_journal(
+        event_id=event_id,
+        client_id=client.client_id,
         date=date,
-        time=time_norm,
+        time_norm=time_norm,
         service_type=svc,
         set_count=sc,
-    )
-    cw_id = write_client_workout_row(
-        client_id=client.client_id,
-        workout_id=event_id,
-        date=date,
-        time=time_norm,
-        service_type=svc,
     )
 
     return BookingResult(
