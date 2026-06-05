@@ -150,6 +150,91 @@ class TestPartialSheetsCompensation:
                 mock_comp.assert_not_called()
                 mock_del.assert_not_called()
 
+    def test_compensation_mark_fail_still_raises_sheets_error(self, app, caplog):
+        """GM #2: compensate_workout_row fails → log + SheetsBookingError, no success."""
+        with app.app_context():
+            app.config["SPREADSHEET_ID"] = "test-sheet"
+            with ExitStack() as stack:
+                _enter_pipeline_patches(stack)
+                stack.enter_context(
+                    patch("app.services.booking.pipeline.write_workout_row")
+                )
+                stack.enter_context(
+                    patch(
+                        "app.services.booking.pipeline.write_client_workout_row",
+                        side_effect=RuntimeError("client workout append failed"),
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "app.services.booking.pipeline.compensate_workout_row",
+                        return_value=False,
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "app.services.booking.pipeline.delete_calendar_event_best_effort",
+                        return_value=True,
+                    )
+                )
+                with caplog.at_level("ERROR"):
+                    with pytest.raises(SheetsBookingError, match="sheets journal incomplete"):
+                        execute_web_booking(
+                            date="2026-06-01",
+                            time="12:00",
+                            name="Иван",
+                            phone="+79160117179",
+                        )
+                assert any(
+                    "booking_sheets_partial_failure" in r.message for r in caplog.records
+                )
+                partial_logs = [
+                    r for r in caplog.records if "booking_sheets_partial_failure" in r.message
+                ]
+                assert partial_logs[0].compensation == "workout_row_mark_failed+calendar_delete"
+
+    def test_calendar_delete_fail_still_raises_sheets_error(self, app, caplog):
+        """GM #3: Calendar delete best-effort fails → log + SheetsBookingError, no success."""
+        with app.app_context():
+            app.config["SPREADSHEET_ID"] = "test-sheet"
+            with ExitStack() as stack:
+                _enter_pipeline_patches(stack)
+                stack.enter_context(
+                    patch("app.services.booking.pipeline.write_workout_row")
+                )
+                stack.enter_context(
+                    patch(
+                        "app.services.booking.pipeline.write_client_workout_row",
+                        side_effect=RuntimeError("sheets append failed"),
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "app.services.booking.pipeline.compensate_workout_row",
+                        return_value=True,
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "app.services.booking.pipeline.delete_calendar_event_best_effort",
+                        return_value=False,
+                    )
+                )
+                with caplog.at_level("ERROR"):
+                    with pytest.raises(SheetsBookingError):
+                        execute_web_booking(
+                            date="2026-06-01",
+                            time="12:00",
+                            name="Иван",
+                            phone="+79160117179",
+                        )
+                partial_logs = [
+                    r for r in caplog.records if "booking_sheets_partial_failure" in r.message
+                ]
+                assert len(partial_logs) == 1
+                assert partial_logs[0].workout_id_tail == "t_cal_99"
+                assert partial_logs[0].compensation == "workout_row_mark_cancelled+calendar_delete_failed"
+
 
 class TestCompensateWorkoutRow:
     def test_marks_workout_status_cancelled(self, app):

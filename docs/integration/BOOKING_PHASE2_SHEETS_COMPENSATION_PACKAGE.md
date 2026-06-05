@@ -1,8 +1,9 @@
 # BOOKING_PHASE2 — Partial Sheets Compensation (B + E)
 
-**Версия:** 1.0 (review)  
+**Версия:** 1.1 (GM review-ready)  
 **Ветка:** `feature/booking-phase2-sheets-compensation`  
-**Статус:** ready for review — **не мержить без GM approval**  
+**PR:** https://github.com/YaroslavValeev/TGK_MyWave_Site/pull/18  
+**Статус:** APPROVED FOR CODE REVIEW ONLY — **не мержить / не деплоить без merge approval**  
 **Базовый документ:** [`BOOKING_PARTIAL_SHEETS_FOLLOWUP.md`](BOOKING_PARTIAL_SHEETS_FOLLOWUP.md)
 
 ---
@@ -27,6 +28,24 @@
 
 **Not compensated:** if Calendar insert fails — Sheets never written (existing behavior).
 
+---
+
+## GM verification matrix
+
+| # | Scenario | Confirmed by | Result |
+|---|----------|--------------|--------|
+| 1 | `write_client_workout_row()` fails → compensation called; Workouts marked cancelled; Calendar delete best-effort | `test_client_workout_fail_compensates_workout_and_calendar`, `test_marks_workout_status_cancelled` | ✅ |
+| 2 | Compensation mark fails → logged (`workout_row_mark_failed`); `SheetsBookingError` raised; no silent success | `test_compensation_mark_fail_still_raises_sheets_error` | ✅ |
+| 3 | Calendar delete fails → logged (`calendar_delete_failed`); user gets error; `workout_id_tail` in log for incident | `test_calendar_delete_fail_still_raises_sheets_error` | ✅ |
+| 4 | Happy path → no compensation; Calendar + both Sheets rows written | `test_success_no_compensation`, `test_web_booking_creates_calendar_then_sheets` | ✅ |
+| 5 | Calendar fail → no Sheets writes; no compensation | `test_calendar_fail_still_no_sheets`, `test_calendar_failure_no_sheets` | ✅ |
+
+**Log correlation fields (no PII):** `workout_id_tail`, `compensation`, `workouts_written`, `client_workouts_written`, `error`.
+
+**Incident recovery:** runbook [`BOOKING_SHEETS_ORPHAN_CLEANUP_RUNBOOK.md`](../operations/BOOKING_SHEETS_ORPHAN_CLEANUP_RUNBOOK.md) — search by `workout_id` / Calendar `event_id`.
+
+---
+
 ## Files changed
 
 | File | Change |
@@ -37,7 +56,10 @@
 | `app/services/booking/__init__.py` | export `SheetsBookingError` |
 | `app/routes/calendar_routes.py` | catch `SheetsBookingError` → 500 user message |
 | `docs/operations/BOOKING_SHEETS_ORPHAN_CLEANUP_RUNBOOK.md` | Runbook E |
-| `tests/unit/test_booking_sheets_compensation.py` | Partial failure + regression tests |
+| `tests/unit/test_booking_sheets_compensation.py` | 6 tests (GM matrix) |
+| `docs/integration/BOOKING_PHASE2_SHEETS_COMPENSATION_PACKAGE.md` | this package |
+
+---
 
 ## Tests
 
@@ -50,41 +72,53 @@ python -m pytest tests/unit/test_booking_grid.py tests/unit/test_booking_pipelin
   tests/unit/test_booking_sheets_compensation.py -q
 ```
 
-**Expected:** 85 passed (81 booking suite + 4 compensation).
+**Expected:** 87 passed (81 booking suite + 6 compensation).
 
-| Test | Asserts |
-|------|---------|
-| `test_client_workout_fail_compensates_workout_and_calendar` | compensation + calendar delete called |
-| `test_calendar_fail_still_no_sheets` | Calendar fail → no Sheets, no compensation |
-| `test_success_no_compensation` | happy path unchanged |
-| `test_marks_workout_status_cancelled` | `compensate_workout_row` updates status + capacity |
+| Test | GM # | Asserts |
+|------|------|---------|
+| `test_client_workout_fail_compensates_workout_and_calendar` | 1 | compensation + calendar delete called; SheetsBookingError |
+| `test_marks_workout_status_cancelled` | 1 | Workouts row → `cancelled`, capacity 0 |
+| `test_compensation_mark_fail_still_raises_sheets_error` | 2 | log `workout_row_mark_failed`; no success |
+| `test_calendar_delete_fail_still_raises_sheets_error` | 3 | log `calendar_delete_failed`; workout_id_tail |
+| `test_success_no_compensation` | 4 | happy path unchanged |
+| `test_calendar_fail_still_no_sheets` | 5 | Calendar fail → no Sheets, no compensation |
+
+---
 
 ## Merge gate
 
-- [x] Unit test: Workouts written, Client_Workouts fails → compensated
+- [x] GM scenarios 1–5 covered by tests
 - [x] Runbook E documented
-- [x] No regression Phase 1 / flags OFF (85 passed locally)
-- [ ] CI green on PR
-- [ ] Owner review runbook
+- [x] No regression Phase 1 / flags OFF
+- [ ] CI green on PR head
+- [ ] Merge approval (separate from code review)
+
+---
 
 ## Rollback plan
 
 1. Revert PR commit on branch / hotfix revert on main after merge.
 2. No DB migration; no `.env` changes.
-3. Compensation is additive — rollback restores pre-B behavior (orphan risk on partial failure returns).
+3. Rollback restores pre-B behavior (orphan risk on partial failure returns).
 4. Production: **no deploy** until separate GM approval after staging E2E.
 
-## Constraints (this PR)
+---
 
-- Production flags OFF — unchanged
-- `.env` — not modified
-- `mywave-node.service` — not touched
-- `mywave-telegram-bot.service` — not touched
-- TGbotAdmin — not touched
-- No production restart / deploy
+## Constraints (confirmed)
+
+| Constraint | Status |
+|------------|--------|
+| Production flags OFF | ✅ unchanged |
+| `.env` not modified | ✅ |
+| TGbotAdmin not touched | ✅ |
+| `mywave-node.service` not touched | ✅ |
+| `mywave-telegram-bot.service` not touched | ✅ |
+| `mywave-site` not restarted | ✅ |
+| Production deploy | ❌ not performed |
+
+---
 
 ## Out of scope
 
-- PR #17 (merged, prod GREEN)
 - Production flags ON
-- Staging E2E package (next track)
+- Staging E2E package (next track after merge approval)
