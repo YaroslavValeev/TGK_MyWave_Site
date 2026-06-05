@@ -1,5 +1,21 @@
 // Логирование загрузки скрипта
 console.log("[booking.js] Script loaded");
+
+function mwGoal(goal, params) {
+  if (typeof window !== 'undefined' && typeof window.mywaveReachGoal === 'function') {
+    window.mywaveReachGoal(goal, params || {});
+  }
+}
+
+function getMyWaveVenueFromBody() {
+  const body = document.body;
+  if (!body) return {};
+  return {
+    mapUrl: body.getAttribute('data-mw-yandex-map') || '',
+    name: body.getAttribute('data-mw-venue-name') || 'MyWave Wake',
+    label: body.getAttribute('data-mw-venue-label') || ''
+  };
+}
 window.bookingStatus = { loaded: true, initialized: false, error: null };
 
 // Получение свежего CSRF-токена с сервера
@@ -56,6 +72,43 @@ function formatSlotButtonLabel(slot, service) {
   return `${slot.time} (Занято)`;
 }
 
+/** Длительность одного сета катера (мин), синхронно с backend BOAT_SET_MINUTES */
+const BOAT_SET_MINUTES = 30;
+
+function parseTimeToMinutes(timeStr) {
+  if (!timeStr || typeof timeStr !== 'string') return 0;
+  const parts = timeStr.trim().split(':');
+  const h = parseInt(parts[0], 10) || 0;
+  const m = parseInt(parts[1], 10) || 0;
+  return h * 60 + m;
+}
+
+function formatMinutesToTime(totalMinutes) {
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+/** Pluralization aligned with calendar_writer.format_boat_sets_label */
+function formatBoatSetsLabel(setCount) {
+  const n = Math.max(1, parseInt(setCount, 10) || 1);
+  if (n === 1) return '1 сет';
+  if (n >= 2 && n <= 4) return `${n} сета`;
+  return `${n} сетов`;
+}
+
+function formatBoatRangePreview(startTime, setCount) {
+  const startMin = parseTimeToMinutes(startTime);
+  const endMin = startMin + BOAT_SET_MINUTES * Math.max(1, parseInt(setCount, 10) || 1);
+  return `${startTime}–${formatMinutesToTime(endMin)}`;
+}
+
+function formatBoatConfirmButtonLabel(startTime, setCount) {
+  const range = formatBoatRangePreview(startTime, setCount);
+  const setsLabel = formatBoatSetsLabel(setCount);
+  return `Подтвердить: ${setsLabel} (${range})`;
+}
+
 function getSlotsForDisplay(slots, service) {
   if (!Array.isArray(slots)) return [];
   if (service === 'boat') {
@@ -103,7 +156,10 @@ function initializeBooking() {
     modalCloseButtons: document.querySelectorAll(".close-modal"),
     openBookingButtons: document.querySelectorAll("#openBookingBtn, .book-now, .btn-book"),
     toast: document.getElementById("toast"),
-    stepIndicator: document.getElementById("step-indicator")
+    stepIndicator: document.getElementById("step-indicator"),
+    boatSetPicker: document.getElementById("boatSetPicker"),
+    boatSetButtons: document.getElementById("boatSetButtons"),
+    boatRangePreview: document.getElementById("boatRangePreview"),
   };
 
   if (!UI.openBookingButtons || UI.openBookingButtons.length === 0) {
@@ -116,6 +172,12 @@ function initializeBooking() {
   window.__mwBookingService = currentService;
   /** Запись с главной (#openBookingBtn): тип услуги по выбранной дате визита */
   let heroBookingFlow = false;
+  /** Phase 2 multi-set boat (only when API returns max_set_count > 1) */
+  let selectedBoatMaxSetCount = 1;
+  let selectedBoatSetCount = 1;
+  let selectedBoatSlotTime = '';
+  /** True when GET slots included max_set_count (Phase 2 multi-set path) */
+  let boatSlotHasMaxSetCount = false;
 
   function setCurrentService(svc) {
     currentService = svc || 'boat';
@@ -330,6 +392,97 @@ function initializeBooking() {
   // ==============================
   // 📅 Получение слотов
   // ==============================
+  function hideBoatSetPicker() {
+    if (UI.boatSetPicker) {
+      UI.boatSetPicker.classList.add('hidden');
+      UI.boatSetPicker.setAttribute('aria-hidden', 'true');
+    }
+    if (UI.boatSetButtons) clearContainer(UI.boatSetButtons);
+    if (UI.boatRangePreview) UI.boatRangePreview.textContent = '';
+  }
+
+  function resetBoatSetSelection() {
+    selectedBoatMaxSetCount = 1;
+    selectedBoatSetCount = 1;
+    selectedBoatSlotTime = '';
+    boatSlotHasMaxSetCount = false;
+    hideBoatSetPicker();
+    updateFinalConfirmButtonLabel();
+  }
+
+  function updateFinalConfirmButtonLabel() {
+    if (!UI.finalConfirmBtn) return;
+    if (currentService === 'boat' && selectedBoatSlotTime && boatSlotHasMaxSetCount) {
+      UI.finalConfirmBtn.textContent = formatBoatConfirmButtonLabel(
+        selectedBoatSlotTime,
+        selectedBoatSetCount
+      );
+    } else {
+      UI.finalConfirmBtn.textContent = 'Подтвердить запись';
+    }
+  }
+
+  function updateBoatRangePreview() {
+    if (!UI.boatRangePreview || !selectedBoatSlotTime) return;
+    const range = formatBoatRangePreview(selectedBoatSlotTime, selectedBoatSetCount);
+    const setsLabel = formatBoatSetsLabel(selectedBoatSetCount);
+    UI.boatRangePreview.textContent = `${range} (${setsLabel})`;
+    updateFinalConfirmButtonLabel();
+  }
+
+  function renderBoatSetPicker(maxSetCount) {
+    if (!UI.boatSetPicker || !UI.boatSetButtons || maxSetCount <= 1) {
+      hideBoatSetPicker();
+      return;
+    }
+    clearContainer(UI.boatSetButtons);
+    UI.boatSetPicker.classList.remove('hidden');
+    UI.boatSetPicker.setAttribute('aria-hidden', 'false');
+
+    for (let n = 1; n <= maxSetCount; n += 1) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'boat-set-btn' + (n === selectedBoatSetCount ? ' active' : '');
+      btn.textContent = String(n);
+      btn.addEventListener('click', () => {
+        selectedBoatSetCount = n;
+        UI.boatSetButtons.querySelectorAll('.boat-set-btn').forEach((el) => {
+          el.classList.toggle('active', parseInt(el.textContent, 10) === n);
+        });
+        updateBoatRangePreview();
+      });
+      UI.boatSetButtons.appendChild(btn);
+    }
+    updateBoatRangePreview();
+  }
+
+  function handleBoatSlotSelected(slot) {
+    selectedBoatSlotTime = slot.time;
+    boatSlotHasMaxSetCount = slot.max_set_count != null && slot.max_set_count !== undefined;
+    selectedBoatMaxSetCount = boatSlotHasMaxSetCount
+      ? Math.max(1, parseInt(slot.max_set_count, 10) || 1)
+      : 1;
+    selectedBoatSetCount = 1;
+
+    const selectedSlotInput = document.getElementById('selectedSlot');
+    if (selectedSlotInput) selectedSlotInput.value = slot.time;
+
+    if (selectedBoatMaxSetCount > 1) {
+      renderBoatSetPicker(selectedBoatMaxSetCount);
+      return false;
+    }
+    hideBoatSetPicker();
+    updateFinalConfirmButtonLabel();
+    return true;
+  }
+
+  function highlightSelectedSlotButton(timeStr) {
+    if (!UI.slotButtonsContainer) return;
+    UI.slotButtonsContainer.querySelectorAll('.slot-btn').forEach((btn) => {
+      btn.classList.toggle('selected', btn.textContent.trim() === timeStr);
+    });
+  }
+
   async function updateSlotOptions(dateStr) {
     if (!dateStr) {
       clearContainer(UI.slotButtonsContainer);
@@ -401,6 +554,7 @@ function initializeBooking() {
       }
       
       clearContainer(UI.slotButtonsContainer);
+      resetBoatSetSelection();
       
       console.log(`[booking.js] 📊 Проверка данных слотов:`);
       console.log(`   - Является массивом: ${Array.isArray(data)}`);
@@ -428,7 +582,18 @@ function initializeBooking() {
         button.className = 'slot-btn available';
         button.textContent = formatSlotButtonLabel(slot, currentService);
         button.addEventListener('click', () => {
-          document.getElementById('selectedSlot').value = slot.time;
+          highlightSelectedSlotButton(slot.time);
+          mwGoal('select_slot', {
+            date: UI.bookingDateInput ? UI.bookingDateInput.value : '',
+            time: slot.time,
+            service: currentService || ''
+          });
+          if (currentService === 'boat') {
+            const advance = handleBoatSlotSelected(slot);
+            if (!advance) return;
+          } else {
+            document.getElementById('selectedSlot').value = slot.time;
+          }
           goToStep(3);
         });
 
@@ -553,6 +718,12 @@ function initializeBooking() {
       return;
     }
 
+    mwGoal('submit_booking', {
+      service_type: payload.service_type,
+      date: payload.date,
+      time: payload.time
+    });
+
     try {
       const csrfToken = await getFreshCsrfToken();
       console.log("CSRF для бронирования:", csrfToken);
@@ -670,6 +841,10 @@ function initializeBooking() {
           service_type: payload.service_type || currentService || 'boat'
       };
 
+      if (finalRequestData.service_type === 'boat' && boatSlotHasMaxSetCount) {
+        finalRequestData.set_count = selectedBoatSetCount || 1;
+      }
+
       console.log("Отправляем данные на сервер (без лишних полей):", finalRequestData);
 
       console.log("📤 Отправляем POST запрос на /api/calendar/book");
@@ -722,6 +897,16 @@ function initializeBooking() {
       }
       
       if (!response.ok) {
+        if (response.status === 409) {
+          const conflictMsg = result.error || result.message || 'Выбранное время занято. Обновляем слоты…';
+          showToast(`❌ ${conflictMsg}`);
+          if (payload.date) {
+            await updateSlotOptions(payload.date);
+          }
+          hideAllModals();
+          goToStep(2);
+          return;
+        }
         // Подробная обработка ошибок от сервера
         if (result.error) {
           throw new Error(result.error);
@@ -737,6 +922,12 @@ function initializeBooking() {
       if (response.ok) {
         console.log("✅ УСПЕШНОЕ БРОНИРОВАНИЕ! Статус 200-299");
         console.log("   Результат:", result);
+
+        mwGoal('booking_success', {
+          service_type: payload.service_type,
+          date: payload.date,
+          time: payload.time
+        });
         
         // Показываем локальный success-модал вместо перехода на внешнюю страницу
         try {
@@ -759,6 +950,15 @@ function initializeBooking() {
               : 'Запись успешно создана!';
 
           const msg = result.message || defaultMsg;
+          const venue = getMyWaveVenueFromBody();
+          const isBoat = payload.service_type === 'boat';
+          const locationBlock = isBoat && venue.label
+            ? `<p class="booking-venue">Место: <strong>${venue.label}</strong>${
+                venue.mapUrl
+                  ? ` — <a href="${venue.mapUrl}" target="_blank" rel="noopener noreferrer">Яндекс.Карты</a>`
+                  : ''
+              }</p>`
+            : '';
           const containerId = 'success-modal';
           let container = document.getElementById(containerId);
           if (!container) {
@@ -777,8 +977,10 @@ function initializeBooking() {
               <p>Дата: <strong>${payload.date}</strong></p>
               <p>Время: <strong>${payload.time}</strong></p>
               <p>Услуга: <strong>${humanService}</strong></p>
+              ${locationBlock}
               <div class="success-ctas">
                 <button class="btn btn-primary" data-action="add-calendar">Добавить в календарь</button>
+                ${isBoat && venue.mapUrl ? `<a class="btn btn-secondary" href="${venue.mapUrl}" target="_blank" rel="noopener noreferrer">Маршрут на карте</a>` : ''}
                 <button class="btn btn-secondary" data-action="close">Закрыть</button>
               </div>
             </div>
@@ -798,7 +1000,9 @@ function initializeBooking() {
             // Duration by service (minutes). Default 60. gym -> 90 minutes
             const durations = {
               gym: 90,
-              boat: 60,
+              boat: payload.service_type === 'boat'
+                ? BOAT_SET_MINUTES * (selectedBoatSetCount || 1)
+                : 30,
               camp: 120
             };
             const durMin = durations[payload.service_type] || 60;
@@ -808,7 +1012,8 @@ function initializeBooking() {
             const dtstart = _formatForICS(start);
             const dtend = _formatForICS(end);
             const title = `Запись в MyWave: ${payload.service_type}`;
-            const calendarLocation = 'https://yandex.ru/profile/77794723487?lang=ru';
+            const venueForCal = getMyWaveVenueFromBody();
+            const calendarLocation = venueForCal.mapUrl || venueForCal.label || '';
             const description = `Запись в MyWave\nУслуга: ${payload.service_type}\nТелефон: ${payload.phone}\nСсылка: ${calendarLocation}`;
             const ics = [
               'BEGIN:VCALENDAR',
@@ -830,7 +1035,7 @@ function initializeBooking() {
           function _openGoogleCalendar(payload) {
               const start = new Date(payload.date + 'T' + payload.time + ':00');
               // duration minutes match ICS logic
-              const durations = { gym: 90, boat: 60, camp: 120 };
+              const durations = { gym: 90, boat: BOAT_SET_MINUTES * (selectedBoatSetCount || 1), camp: 120 };
               const durMin = durations[payload.service_type] || 60;
               const end = new Date(start.getTime() + (durMin * 60 * 1000));
               const fmt = (d)=>{
@@ -840,7 +1045,7 @@ function initializeBooking() {
               const dates = fmt(start)+'/'+fmt(end);
               const title = encodeURIComponent(`Запись в MyWave: ${payload.service_type}`);
               const details = encodeURIComponent(`Телефон: ${payload.phone}`);
-              const location = encodeURIComponent('https://yandex.ru/profile/77794723487?lang=ru');
+              const location = encodeURIComponent(calendarLocation);
               const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`;
               window.open(url, '_blank');
           }
@@ -1053,6 +1258,9 @@ function initializeBooking() {
       });
       if (targetModal) {
         console.log('[booking.js] ✅ Открываем модальное окно:', targetModal.id || 'calendarModal');
+        if (targetModal.id === 'modalCalendar' || targetModal.id === 'modalSlots') {
+          mwGoal('open_booking_modal', { service: currentService || resolvedService || '' });
+        }
         showModal(targetModal);
         // Только для потока записи в календарь (катер/зал и т.д.). Для data-modal=modalRuzaCamp,
         // modalCamp и др. goToStep(1) подменяет окно на modalCalendar и ломает сценарий (ошибка слотов).
@@ -1075,6 +1283,22 @@ function initializeBooking() {
     console.log(`[booking.js]    - Элемент: `, btn);
   });
 
+  if (UI.confirmSlotBtn) {
+    UI.confirmSlotBtn.addEventListener("click", () => {
+      const slotInput = document.getElementById('selectedSlot');
+      const timeVal = slotInput ? slotInput.value.trim() : '';
+      if (!timeVal) {
+        showToast('❌ Выберите время');
+        return;
+      }
+      if (currentService === 'boat' && selectedBoatMaxSetCount > 1 && !selectedBoatSlotTime) {
+        showToast('❌ Выберите время');
+        return;
+      }
+      goToStep(3);
+    });
+  }
+
   if (UI.confirmDateBtn) {
     UI.confirmDateBtn.addEventListener("click", () => {
       const date = UI.bookingDateInput.value;
@@ -1082,6 +1306,7 @@ function initializeBooking() {
         showToast('❌ Выберите дату');
         return;
       }
+      mwGoal('select_date', { date: date, service: currentService || '' });
       syncHeroServiceForAppointmentDate(date);
       updateSlotOptions(date);
     });
@@ -1250,15 +1475,31 @@ function initializeBooking() {
           const svc = BOOKING_SERVICE_SHORT[currentService] || currentService;
           const slotInput = document.getElementById('selectedSlot');
           const timeVal = slotInput ? slotInput.value : '';
+          const boatSetsHtml =
+            currentService === 'boat' && boatSlotHasMaxSetCount && selectedBoatMaxSetCount > 1
+              ? `<p><strong>Сеты:</strong> ${formatBoatSetsLabel(selectedBoatSetCount)} (${formatBoatRangePreview(timeVal, selectedBoatSetCount)})</p>`
+              : '';
           const nameVal = UI.bookingName ? UI.bookingName.value : '';
           const phoneVal = UI.bookingPhone ? UI.bookingPhone.value : '';
+          const venueConfirm = getMyWaveVenueFromBody();
+          const venueConfirmHtml =
+            currentService === 'boat' && venueConfirm.label
+              ? `<p><strong>Место:</strong> ${venueConfirm.label}${
+                  venueConfirm.mapUrl
+                    ? ` — <a href="${venueConfirm.mapUrl}" target="_blank" rel="noopener noreferrer">Яндекс.Карты</a>`
+                    : ''
+                }</p>`
+              : '';
           UI.confirmDetails.innerHTML = `
             <p><strong>Дата:</strong> ${dateVal || '—'}</p>
             <p><strong>Время:</strong> ${timeVal || '—'}</p>
+            ${boatSetsHtml}
             <p><strong>Услуга:</strong> ${svc}</p>
+            ${venueConfirmHtml}
             <p><strong>Имя:</strong> ${nameVal || '—'}</p>
             <p><strong>Телефон:</strong> ${phoneVal || '—'}</p>
           `;
+          updateFinalConfirmButtonLabel();
         }
         showModal(UI.confirmModal);
         if (UI.stepIndicator) UI.stepIndicator.textContent = `Шаг 4/4`;
@@ -1361,6 +1602,12 @@ function renderSlots(slots) {
             const selectedTime = button.dataset.time;
             if (selectedTime) {
                 document.getElementById('selectedSlot').value = selectedTime;
+                const dateInput = document.getElementById('bookingDateInput');
+                mwGoal('select_slot', {
+                  date: dateInput ? dateInput.value : '',
+                  time: selectedTime,
+                  service: service || ''
+                });
                 goToStep(3); // Переходим к шагу 3 после выбора слота
             }
         });
