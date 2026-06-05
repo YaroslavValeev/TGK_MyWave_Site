@@ -273,3 +273,30 @@ def create_calendar_event(
         },
     )
     return event_id
+
+
+def delete_calendar_event_best_effort(event_id: str) -> bool:
+    """Best-effort Calendar rollback after partial Sheets failure."""
+    eid = (event_id or "").strip()
+    if not eid:
+        return False
+    try:
+        from app.services.google import get_google_services
+
+        _, _, calendar_svc = get_google_services()
+        calendar_id = current_app.config["GOOGLE_CALENDAR_ID"]
+        calendar_svc.events().delete(
+            calendarId=calendar_id,
+            eventId=eid,
+        ).execute(num_retries=2)
+        logger.info(
+            "booking_calendar_event_deleted",
+            extra={"workout_id_tail": eid[-8:]},
+        )
+        return True
+    except Exception as exc:
+        logger.error(
+            "booking_calendar_event_delete_failed",
+            extra={"workout_id_tail": eid[-8:], "error": type(exc).__name__},
+        )
+        return False
