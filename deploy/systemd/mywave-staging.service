@@ -1,0 +1,27 @@
+[Unit]
+Description=MyWave Gunicorn STAGING (Flask + Socket.IO)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/mywave-staging
+EnvironmentFile=-/var/www/mywave-staging/.env
+Environment=FLASK_ENV=production
+Environment=FLASK_CONFIG=production
+Environment=PYTHONUNBUFFERED=1
+Environment=GUNICORN_BIND=127.0.0.1:5002
+ExecStart=/var/www/mywave-staging/venv/bin/gunicorn -c gunicorn.conf.py main:app
+Restart=always
+RestartSec=5
+TimeoutStopSec=150
+NoNewPrivileges=true
+PrivateTmp=true
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mywave-staging
+
+[Install]
+WantedBy=multi-user.target
