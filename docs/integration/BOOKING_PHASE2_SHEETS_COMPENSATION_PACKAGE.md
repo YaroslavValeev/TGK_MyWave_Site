@@ -1,9 +1,9 @@
 # BOOKING_PHASE2 — Partial Sheets Compensation (B + E)
 
-**Версия:** 1.1 (GM review-ready)  
-**Ветка:** `feature/booking-phase2-sheets-compensation`  
-**PR:** https://github.com/YaroslavValeev/TGK_MyWave_Site/pull/18  
-**Статус:** APPROVED FOR CODE REVIEW ONLY — **не мержить / не деплоить без merge approval**  
+**Версия:** 1.2 (TGbotAdmin whitespace cleanup)
+**Ветка:** `feature/booking-phase2-sheets-compensation`
+**PR:** https://github.com/YaroslavValeev/TGK_MyWave_Site/pull/18
+**Статус:** APPROVED FOR CODE REVIEW ONLY — **не мержить / не деплоить без merge approval**
 **Базовый документ:** [`BOOKING_PARTIAL_SHEETS_FOLLOWUP.md`](BOOKING_PARTIAL_SHEETS_FOLLOWUP.md)
 
 ---

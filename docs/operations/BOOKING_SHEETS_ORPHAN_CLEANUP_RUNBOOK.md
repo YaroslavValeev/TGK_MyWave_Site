@@ -1,8 +1,8 @@
 # Runbook: orphan Workouts без пары в Client_Workouts
 
-**Версия:** 1.0  
-**Дата:** 2026-06-05  
-**Статус:** Option E (ops) + Option B (code compensation in pipeline)  
+**Версия:** 1.0
+**Дата:** 2026-06-05
+**Статус:** Option E (ops) + Option B (code compensation in pipeline)
 **Связано:** [`BOOKING_PARTIAL_SHEETS_FOLLOWUP.md`](../integration/BOOKING_PARTIAL_SHEETS_FOLLOWUP.md)
 
 ---
@@ -132,11 +132,13 @@ Follow-up: none | staging fault test | code fix
 
 См. `app/services/booking/pipeline.py` → `_compensate_partial_sheets_failure`.
 
+**Regression suite (PR #18):** `87 passed` — booking suite + 6 compensation tests (`test_booking_sheets_compensation.py`).
+
 ---
 
 ## 8. Rollback / disable
 
-Compensation активна **без feature flags** (всегда при partial failure).  
+Compensation активна **без feature flags** (всегда при partial failure).
 Rollback: revert compensation PR на `main` + redeploy `mywave-site` only.
 
 ---
