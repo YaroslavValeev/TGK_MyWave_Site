@@ -387,7 +387,7 @@ def _validate_and_consume_service_token(
 def get_boat_slots(date_str: str):
     """
     Генерация 30-минутных слотов для услуги 'boat' (катер)
-    с 06:00 до 21:00 включительно, с учётом записей из Client_Workouts.
+    с 07:00 до 19:30 включительно, с учётом записей из Client_Workouts.
 
     Вместимость: BOAT_MAX_PER_SLOT (1 ученик на сет).
     В ответ попадают только свободные слоты (занятые не возвращаются).
@@ -442,11 +442,12 @@ def get_boat_slots(date_str: str):
             continue
         counts_by_time[t] = counts_by_time.get(t, 0) + 1
 
-    # Генерируем слоты с 06:00 до 21:00, шаг 30 минут
+    # Генерируем слоты 07:00–19:30 (canonical, см. app.config.booking_grid)
+    from app.config.booking_grid import BOAT_GRID_END, BOAT_GRID_START
     from datetime import datetime as dt, timedelta as td
 
-    start = dt.strptime("06:00", "%H:%M")
-    end = dt.strptime("21:00", "%H:%M")
+    start = dt.combine(dt.today(), BOAT_GRID_START)
+    end = dt.combine(dt.today(), BOAT_GRID_END)
 
     slots = []
     cur = start

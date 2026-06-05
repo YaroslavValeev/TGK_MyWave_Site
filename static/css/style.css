@@ -2392,6 +2392,54 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
     color: #ffffff;
 }
 
+.boat-set-picker {
+    margin-top: 16px;
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.boat-set-picker.hidden {
+    display: none;
+}
+
+.boat-set-picker-title {
+    margin: 0 0 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.boat-set-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.boat-set-btn {
+    min-width: 40px;
+    padding: 8px 12px;
+    border: 2px solid #35C0CD;
+    border-radius: 6px;
+    background: #fff;
+    color: #35C0CD;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.boat-set-btn.active,
+.boat-set-btn:hover {
+    background: #35C0CD;
+    color: #fff;
+}
+
+.boat-range-preview {
+    margin: 0;
+    font-size: 15px;
+    color: #555;
+}
+
 /* Сообщение об отсутствии слотов */
 .no-slots-message {
     text-align: center;

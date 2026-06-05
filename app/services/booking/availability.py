@@ -8,6 +8,7 @@ from typing import Iterable, List, Optional
 from zoneinfo import ZoneInfo
 
 from app.config.booking_capacity import GYM_MAX_CLIENTS_PER_SLOT
+from app.config.booking_grid import BOAT_GRID_END, BOAT_GRID_START
 from app.config.booking_durations import (
     BOAT_SET_MINUTES,
     GYM_SLOT_MINUTES,
@@ -29,10 +30,6 @@ logger = logging.getLogger(__name__)
 
 class SlotUnavailableError(Exception):
     """Candidate interval blocked (fresh Calendar read)."""
-
-
-BOAT_GRID_START = time(6, 0)
-BOAT_GRID_END = time(21, 0)
 
 
 def intervals_overlap(
