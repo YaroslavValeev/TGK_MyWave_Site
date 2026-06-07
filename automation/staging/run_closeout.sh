@@ -12,7 +12,7 @@ export STAGING_SPREADSHEET_ID="${STAGING_SPREADSHEET_ID:-16Ewm8Npv3bkNH37X-KAm3P
 export SECRET_KEY="$(grep -E '^SECRET_KEY=' .env | tail -1 | cut -d= -f2-)"
 export S8_DATE="${S8_DATE:-2026-06-12}"
 export S5_DATE_GYM_BOAT="${S5_DATE_GYM_BOAT:-2026-06-13}"
-export S5_DATE_BOAT_GYM="${S5_DATE_BOAT_GYM:-2026-06-20}"
+export S5_DATE_BOAT_GYM="${S5_DATE_BOAT_GYM:-2026-06-27}"
 export STAGING_API_SLEEP="${STAGING_API_SLEEP:-2.5}"
 
 OUT="/tmp/staging_closeout_$(date +%Y%m%d_%H%M%S)"

@@ -84,7 +84,7 @@ python3 automation/staging/s8_calendar_dump.py | tee /tmp/s8_calendar.json
 | Часть | Дата | Действие |
 |-------|------|----------|
 | B gym→boat | `2026-06-13` (сб) | gym 10:00 → boat 12:00 blocked, 13:30 OK |
-| A boat→gym | `2026-06-20` (сб) | boat 12:00 → gym 14:00 blocked, 14:30 OK |
+| A boat→gym | `2026-06-27` (сб) | boat 12:00 → gym 14:00 blocked, 14:30 OK |
 
 Скрипт при необходимости добавит в Schedule строки `14:00` / `14:30` для субботы.
 

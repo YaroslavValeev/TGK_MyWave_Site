@@ -17,7 +17,7 @@ for p in (ROOT, STAGING_DIR):
 from _staging_env import assert_staging_spreadsheet, load_staging_dotenv
 
 DATE_B = os.environ.get("S5_DATE_GYM_BOAT", "2026-06-13")
-DATE_A = os.environ.get("S5_DATE_BOAT_GYM", "2026-06-20")
+DATE_A = os.environ.get("S5_DATE_BOAT_GYM", "2026-06-27")
 S5_SCHEDULE_TIMES = ("14:00", "14:30")
 
 
@@ -180,9 +180,16 @@ def main() -> int:
     )
     _log_book("book_boat_12", code, body)
     part_a_failures: list[str] = []
-    if code not in (200, 201):
-        part_a_failures.append(f"boat_12_book_http_{code}")
-    else:
+    anchor_ok = code in (200, 201)
+    if not anchor_ok:
+        err = str(body.get("error") or "")
+        if code == 409 and "катере" in err.lower():
+            print("book_boat_12 anchor_exists skip_rebook")
+            anchor_ok = True
+        else:
+            part_a_failures.append(f"boat_12_book_http_{code}")
+
+    if anchor_ok:
         gym = _slots(client, DATE_A, "gym")
         g14_blocked = _gym_slot_blocked(gym, "14:00")
         g1430_ok = _gym_slot_available(gym, "14:30")

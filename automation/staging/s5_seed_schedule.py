@@ -15,7 +15,7 @@ for p in (ROOT, STAGING_DIR):
 
 from _staging_env import assert_staging_spreadsheet, load_staging_dotenv
 
-DATE = os.environ.get("S5_DATE_BOAT_GYM", "2026-06-20")
+DATE = os.environ.get("S5_DATE_BOAT_GYM", "2026-06-27")
 S5_SCHEDULE_TIMES = ("14:00", "14:30")
 
 
