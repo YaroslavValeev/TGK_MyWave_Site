@@ -1,12 +1,12 @@
 # BOOKING Phase 2 — Staging E2E Report
 
-**Date:** 2026-06-07  
+**Date:** 2026-06-07 (initial) · **Close-out revision:** 2026-06-08  
 **Author:** Site MyWave  
 **Audience:** GM / Owner / TGbotAdmin  
-**GM decision (2026-06-07):** **NO / BLOCKED FOR PROD FLAGS ON**  
-**Status:** **STAGING CONTOUR READY / CORE SMOKE PARTIAL GREEN** (not full Staging GREEN)
+**GM decision (2026-06-08):** **NO / BLOCKED FOR PROD FLAGS ON** (unchanged until S7 PASS)  
+**Status:** **SITE STAGING CLOSE-OUT: PASS (S5 / S8 / S9)** — Phase 2 staging gate **open pending S7**
 
-**Report revision:** 2026-06-07 — Owner Sheets screenshots accepted (GM ack); Calendar screenshots **partial** (S8 not full PASS).
+**Report revision:** 2026-06-08 — S5/S8/S9 close-out PASS on HEAD `1ecbd161`; S7 pending TGbotAdmin.
 
 ---
 
@@ -15,8 +15,8 @@
 | Field | Value |
 |-------|--------|
 | **Staging root** | `/var/www/mywave-staging` |
-| **Git HEAD** | `8a3febb6d826199e366f607c1ec8d536228d21ab` |
-| **Commit message** | `docs(booking): final staging E2E package (PR18 post-deploy)` |
+| **Git HEAD** | `1ecbd161` |
+| **Commit message** | `fix(staging): S5 Part A idempotent re-run on clean date` |
 | **Base URL** | `http://127.0.0.1:5002` |
 | **systemd unit** | `mywave-staging.service` |
 | **Health** | `degraded` — **database OK**, **google OK**; optional ai_gateway/sentry off |
@@ -61,11 +61,11 @@ BOOKING_PHASE2_GYM_LOCATION_V2=1
 | **S2** | Boat `set_count=3`; 90 min continuous; summary «3 сета»; blocks adjacent range | POST **201** at `07:00`, `set_count=3` | `S2_ok`; workout_id tail `…050p9qc` | **PASS** |
 | **S3** | Boat grid first `07:00`, last `19:30`, count **26** | `count 26 first 07:00 last 19:30 grid_ok` | `/api/calendar/slots/2026-06-12?service=boat` | **PASS** |
 | **S4** | Gym `remaining` 4→0; 4× **201**; 5th → **409** | 4× **201** at `16:00`; 5th **409** after `sleep 3` («нет свободных мест») | `S4_ok`; 5th burst got **502** (rate limit) — retried PASS | **PASS** |
-| **S5** | Boat 12:00–12:30 → gym before 14:30 blocked; gym 10:00–11:30 → boat before 13:30 blocked | **Partial only:** after boat `13:00`, gym `10:00`/`15:00` `available=false` (buffer); `S5_partial_ok` on `15:00`/`16:00` only | Not executed per canonical S5 times (`12:00` boat / `10:00` gym anchor) | **FAIL / PARTIAL** |
+| **S5** | Boat 12:00 → gym before 14:30 blocked, 14:30 OK; gym 10:00 → boat before 13:30 blocked, 13:30 OK | Part B `2026-06-13`: `book_gym_10 201`, `boat_12_blocked True`, `boat_1330_available True`. Part A `2026-06-27`: `book_boat_12 201`, `gym_14_blocked True`, `gym_1430_available True`. `S5_ok` | `/tmp/s5_final.log` — run **2026-06-08 ~01:59 MSK** @ `1ecbd161` | **PASS** |
 | **S6** | Race: one **201**, one **409**; no orphan | `10:30`: A **201**, B **409** | `S6_ok 10:30` | **PASS** |
 | **S7** | WEB `(WEB_ID: bk_…)` vs TG `(ID: …)`; no false duplicate; TGbotAdmin parser OK | **Not executed** | Awaiting TGbotAdmin joint smoke on staging calendar | **FAIL / PENDING** |
-| **S8** | Calendar: boat `07:00` 90 min / «Катер» / 3 sets; gym `16:00` 90 min / «Зал» / summary v2 | **Partial:** StagingMyWave connected; month view shows `07:00` on `2026-06-12`; **details not shown** | Owner Calendar screenshots (§6.1) — **API dump or event popup still required** | **PARTIAL / NOT FULL PASS** |
-| **S9** | `orphan_count 0` after S1–S6 | `orphan_count 0` / `S9_ok` (post S2, S4, S6) | Script §6 + **Owner Sheets screenshots** (§4) | **PASS** |
+| **S8** | Calendar: boat `07:00` 90 min / «Катер» / 3 sets; gym `16:00` 90 min / «Зал» / summary v2 | `"s8_pass": true`, `S8_ok`; boat `07:00` duration 90, location `Катер`, `set_count=3`; gym `16:00` duration 90, location `Зал` | `/tmp/s8_calendar.json` (script `s8_calendar_dump.py`, date `2026-06-12`) | **PASS** |
+| **S9** | `orphan_count 0` after smokes | `orphan_count 0` / `S9_ok` on staging Sheet `16Ewm8Npv3bkNH37X-KAm3PWmRedQ1a8xoiO6LPggyBI` | `/tmp/s9_final.log` — run **2026-06-08 ~01:59 MSK** | **PASS** |
 
 ### 2.1 Optional / out of scope
 
@@ -169,13 +169,13 @@ Mapping to smoke:
 | False duplicate check | **Pending** |
 | TGbotAdmin Calendar parsing compatibility | **Pending** |
 
-**TGbotAdmin verdict:** _Awaiting — not ready for sign-off._
+**TGbotAdmin verdict:** _Pending S7 joint/read-only audit — Site staging artifacts ready (§14)._
 
 ---
 
 ## 6. Calendar evidence & S8 sign-off
 
-**GM status (2026-06-07):** **S8 PARTIAL / NOT FULL PASS YET**
+**GM status (2026-06-08):** **S8 PASS** (Calendar API dump Variant B)
 
 ### 6.1 Owner Calendar screenshots — accepted partially
 
@@ -223,27 +223,40 @@ Runbook: [`BOOKING_PHASE2_STAGING_CLOSEOUT_COMMANDS.md`](BOOKING_PHASE2_STAGING_
 
 **S8 PASS when:** JSON `"s8_pass": true` + stdout `S8_ok`.
 
+**Close-out result (2026-06-08):** PASS — evidence file `/tmp/s8_calendar.json` on staging host.
+
+| Event | Expected | Actual (API dump) |
+|-------|----------|-------------------|
+| Boat `07:00` | 90 min, `Катер`, 3 sets, summary v2 | duration 90, location `Катер`, `set_count=3`, summary contains `WEB_ID:` + «сет» |
+| Gym `16:00` | 90 min, `Зал`, summary v2 | duration 90, location `Зал`, summary contains `WEB_ID:` + `Зал` |
+
 ### 6.4 S8 checklist (staging, 2026-06-12)
 
 | Event | Expected | Sign-off |
 |-------|----------|----------|
-| Boat multi-set `07:00` | 90 min, `Катер`, summary v2 «3 сета», `set_count=3` | **Pending** (partial month view only) |
-| Gym `16:00` | 90 min, `Зал`, summary v2 | **Pending** |
+| Boat multi-set `07:00` | 90 min, `Катер`, summary v2 «3 сета», `set_count=3` | **PASS** (`s8_calendar.json`) |
+| Gym `16:00` | 90 min, `Зал`, summary v2 | **PASS** (`s8_calendar.json`) |
 | Boat single `13:00` | 30 min, `(WEB_ID: bk_…)` | Optional |
 | Race boat `10:30` | 30 min | Optional |
 
 ---
 
-## 7. Orphan audit
+## 7. Orphan audit (S9)
+
+**Close-out run:** 2026-06-08 ~01:59 MSK  
+**Evidence:** `/tmp/s9_final.log`  
+**Staging Spreadsheet ID (mandatory guard):** `16Ewm8Npv3bkNH37X-KAm3PWmRedQ1a8xoiO6LPggyBI`
 
 ```text
+s9_spreadsheet_id 16Ewm8Npv3bkNH37X-KAm3PWmRedQ1a8xoiO6LPggyBI
+s9_expected_spreadsheet_id 16Ewm8Npv3bkNH37X-KAm3PWmRedQ1a8xoiO6LPggyBI
 orphan_count 0
 S9_ok
 ```
 
-Script: `read_records(Workouts)` vs `Client_Workouts` — no active Workouts without matching Client_Workouts row.
+Script: `automation/staging/s9_orphan_check.py` — `read_records(Workouts)` vs `Client_Workouts`; no active Workouts without matching Client_Workouts row.
 
-**Supplemental evidence:** Owner Sheets screenshots (§4.6) — visual confirmation of Client_Workouts linkage and status `подтверждено`.
+**Supplemental evidence:** Owner Sheets screenshots (§4.6).
 
 ---
 
@@ -259,24 +272,24 @@ Script: `read_records(Workouts)` vs `Client_Workouts` — no active Workouts wit
 | 6 | `flask db upgrade` eventlet warnings | Noise only | Ignore; migrate completes |
 | 7 | Redis greenlet on one-shot Python exit | Noise only | Ignore |
 | 8 | `staging.mywavewake.ru` NXDOMAIN | No public HTTPS staging | Use `127.0.0.1:5002` |
-| 9 | S5 not run per canonical anchor times | GM blocker | See §8.1 close-out plan |
-| 10 | S7/S8 Calendar not full PASS | GM blocker | S8: event popup or API dump §6.3; S7: TGbotAdmin |
+| 9 | S5 re-run on polluted dates (409 boat occupied) | False FAIL on repeat close-out | Fixed `1ecbd161`: date `2026-06-27` + idempotent 409 handling |
+| 10 | S7 TGbotAdmin joint audit | GM blocker for prod | Handoff §14; [`BOOKING_PHASE2_TGBOTADMIN_S7_HANDOFF.md`](BOOKING_PHASE2_TGBOTADMIN_S7_HANDOFF.md) |
 
 ---
 
-## 9. Close-out plan (to reach full Staging GREEN)
+## 9. Close-out plan
 
-### 9.1 S5 — full travel buffer PASS
+### 9.1 S5 — full travel buffer PASS ✅ (2026-06-08)
 
-Скрипт: `automation/staging/s5_travel_buffer.py`  
+Скрипт: `automation/staging/s5_api_smoke.py` (via `s5_travel_buffer.py`)  
 Runbook: [`BOOKING_PHASE2_STAGING_CLOSEOUT_COMMANDS.md`](BOOKING_PHASE2_STAGING_CLOSEOUT_COMMANDS.md) §3.
 
-| Part | Date | Check |
-|------|------|-------|
-| B gym→boat | `2026-06-13` | gym 10:00 → boat 12:00 blocked, 13:30 allowed |
-| A boat→gym | `2026-06-20` | boat 12:00 → gym 14:00 blocked, 14:30 allowed |
+| Part | Date | Check | Result |
+|------|------|-------|--------|
+| B gym→boat | `2026-06-13` | gym 10:00 → boat 12:00 blocked, 13:30 allowed | **PASS** |
+| A boat→gym | `2026-06-27` | boat 12:00 → gym 14:00 blocked, 14:30 allowed | **PASS** |
 
-**PASS:** stdout `S5_ok`.
+**Evidence:** `/tmp/s5_final.log` — `S5_part_B_ok`, `S5_part_A_ok`, `S5_ok` @ HEAD `1ecbd161`, **2026-06-08 ~01:59 MSK**.
 
 ### 9.2 S7 — TGbotAdmin joint
 
@@ -285,9 +298,9 @@ Runbook: [`BOOKING_PHASE2_STAGING_CLOSEOUT_COMMANDS.md`](BOOKING_PHASE2_STAGING_
 3. One web booking → verify `(WEB_ID: bk_…)`.
 4. TGbotAdmin confirms parser does not treat WEB_ID as duplicate of ID.
 
-### 9.3 S8 — Calendar full PASS (Variant A or B)
+### 9.3 S8 — Calendar full PASS ✅ (2026-06-08)
 
-See §6.2–§6.3. **Sheets evidence (§4) does not substitute Calendar sign-off.**
+Variant B — Calendar API dump. Evidence: `/tmp/s8_calendar.json`, `"s8_pass": true`, `S8_ok`. See §6.3.
 
 ---
 
@@ -306,19 +319,26 @@ See §6.2–§6.3. **Sheets evidence (§4) does not substitute Calendar sign-off
 
 | Question | Answer |
 |----------|--------|
-| Staging contour operational? | **Yes** — service up, health core OK, staging Calendar/Sheet wired |
-| Core booking smoke (S1–S4, S6, S9)? | **Yes — PASS** |
-| Sheets layer (Schedule, journal, linkage)? | **Yes — Owner screenshots accepted (§4)** |
-| Full Staging GREEN (S1–S9)? | **No** — S5 partial; S7 pending; **S8 partial** |
+| Staging contour operational? | **Yes** — `/var/www/mywave-staging`, `127.0.0.1:5002`, HEAD `1ecbd161` |
+| Site close-out S5 / S8 / S9? | **Yes — PASS** |
+| Core booking smoke (S1–S4, S6)? | **Yes — PASS** (2026-06-12) |
+| S7 TGbotAdmin joint audit? | **PENDING** |
+| Full Phase 2 staging gate (S1–S9)? | **No** — blocked on S7 only |
 | Ready for prod `BOOKING_PHASE2_*` rollout? | **NOT READY** |
 
-**Recommendation:** Maintain **STAGING CONTOUR READY / CORE SMOKE PARTIAL GREEN**. Complete S5 (full), S7 (TGbotAdmin), S8 (Calendar sign-off), then resubmit for prod flag approval.
+**Final recommendation:**
+
+1. **Site staging checks ready for TGbotAdmin S7**
+2. **NOT READY for prod rollout until S7 PASS**
+
+Handoff package: [`BOOKING_PHASE2_TGBOTADMIN_S7_HANDOFF.md`](BOOKING_PHASE2_TGBOTADMIN_S7_HANDOFF.md)
 
 ---
 
 ## 12. References
 
 - Close-out commands: [`BOOKING_PHASE2_STAGING_CLOSEOUT_COMMANDS.md`](BOOKING_PHASE2_STAGING_CLOSEOUT_COMMANDS.md)
+- TGbotAdmin S7 handoff: [`BOOKING_PHASE2_TGBOTADMIN_S7_HANDOFF.md`](BOOKING_PHASE2_TGBOTADMIN_S7_HANDOFF.md)
 - Bootstrap runbook: [`BOOKING_PHASE2_STAGING_BOOTSTRAP_RUNBOOK.md`](BOOKING_PHASE2_STAGING_BOOTSTRAP_RUNBOOK.md)
 - Smoke package: [`BOOKING_PHASE2_STAGING_E2E_PACKAGE.md`](BOOKING_PHASE2_STAGING_E2E_PACKAGE.md)
 - Prod deploy baseline: PR #18 @ prod `67b30510` (compensation B+E, flags OFF)
@@ -328,7 +348,7 @@ See §6.2–§6.3. **Sheets evidence (§4) does not substitute Calendar sign-off
 ## 13. Evidence log (commands run)
 
 ```text
-sudo -u www-data git -C /var/www/mywave-staging rev-parse HEAD  → 8a3febb6
+# Initial smoke (2026-06-07 / 2026-06-12)
 curl -fsS http://127.0.0.1:5002/health                         → degraded, db+google OK
 pytest booking suite                                           → 87 passed
 S3 grid_ok                                                     → count 26, 07:00–19:30
@@ -336,7 +356,28 @@ S1_ok                                                          → 201 + 409 @ 1
 S2_ok                                                          → 201 @ 07:00 set_count=3
 S4_ok                                                          → 4×201 + 409 @ 16:00 gym
 S6_ok                                                          → 201 + 409 @ 10:30 boat
-S9_ok                                                          → orphan_count 0
 Owner Sheets screenshots (2026-06-07)                          → Schedule/Clients/Workouts/Client_Workouts accepted (§4)
-Owner Calendar screenshots (2026-06-07)                        → StagingMyWave partial; S8 not full PASS (§6.1)
+
+# Close-out (2026-06-08, HEAD 1ecbd161)
+sudo -u www-data git -C /var/www/mywave-staging reset --hard origin/main  → 1ecbd161
+python3 automation/staging/s8_calendar_dump.py                 → s8_pass true, S8_ok → /tmp/s8_calendar.json
+python3 automation/staging/s5_api_smoke.py                     → S5_ok → /tmp/s5_final.log (~01:59 MSK)
+python3 automation/staging/s9_orphan_check.py                  → orphan_count 0, S9_ok → /tmp/s9_final.log
 ```
+
+---
+
+## 14. TGbotAdmin S7 handoff (2026-06-08)
+
+**Deliver to TGbotAdmin:**
+
+| # | Item |
+|---|------|
+| 1 | `/tmp/s8_calendar.json` (copy from staging host) |
+| 2 | S5/S8/S9 summary — this report §2, §6.3, §7, §9 + [`BOOKING_PHASE2_TGBOTADMIN_S7_HANDOFF.md`](BOOKING_PHASE2_TGBOTADMIN_S7_HANDOFF.md) |
+| 3 | Staging Calendar ID: `e4ab0adc25a259eebdf83a506073dd5874dee79890b038f924f164703d187dec@group.calendar.google.com` |
+| 4 | Staging Sheet ID: `16Ewm8Npv3bkNH37X-KAm3PWmRedQ1a8xoiO6LPggyBI` |
+
+**S7 status:** PENDING — TGbotAdmin read-only / joint audit on staging resources only.
+
+**Prod guardrails:** production `.env`, prod `BOOKING_PHASE2_*`, `mywave-site`, `mywave-node.service`, `mywave-telegram-bot.service`, TGbotAdmin prod — **do not touch** until S7 PASS + GM approval.
