@@ -9,15 +9,20 @@ import sys
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
+STAGING_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(STAGING_DIR, "..", ".."))
+for p in (ROOT, STAGING_DIR):
+    if p not in sys.path:
+        sys.path.insert(0, p)
+
+from _staging_env import load_staging_dotenv
 
 DATE = os.environ.get("S8_DATE", "2026-06-12")
 TZ = ZoneInfo("Europe/Moscow")
 
 
 def main() -> int:
+    load_staging_dotenv()
     from app import create_app
     from app.services.google import get_google_services
 
@@ -28,6 +33,9 @@ def main() -> int:
     app = create_app()
     with app.app_context():
         cal_id = app.config["GOOGLE_CALENDAR_ID"]
+        sheet_id = app.config.get("SPREADSHEET_ID", "")
+        print("s8_calendar_id", cal_id, file=sys.stderr)
+        print("s8_spreadsheet_id", sheet_id, file=sys.stderr)
         _, _, cal = get_google_services()
         result = cal.events().list(
             calendarId=cal_id,

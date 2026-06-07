@@ -9,13 +9,16 @@
 
 ## 0. Одна команда (рекомендуется)
 
-После `git pull` (скрипты должны быть на сервере):
-
 ```bash
 cd /var/www/mywave-staging && \
 sudo -u www-data git pull --ff-only origin main && \
-sudo -u www-data bash automation/staging/run_closeout.sh
+export STAGING_ROOT=/var/www/mywave-staging && \
+export STAGING_SPREADSHEET_ID=16Ewm8Npv3bkNH37X-KAm3PWmRedQ1a8xoiO6LPggyBI && \
+sudo -u www-data env STAGING_ROOT="$STAGING_ROOT" STAGING_SPREADSHEET_ID="$STAGING_SPREADSHEET_ID" \
+  bash automation/staging/run_closeout.sh
 ```
+
+**Важно:** не запускать S9/S8 в shell с export prod `SPREADSHEET_ID`. Скрипты читают `/var/www/mywave-staging/.env` с `override` (last key wins).
 
 Артефакты: `/tmp/staging_closeout_YYYYMMDD_HHMMSS/`  
 Приложить GM: `s8_calendar.json`, `s5_buffer.log`, `s9_orphan.log`.

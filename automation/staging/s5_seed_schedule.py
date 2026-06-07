@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Seed Schedule rows for S5 part A (separate process — no requests/eventlet clash)."""
+"""Seed Schedule rows for S5 part A (idempotent, staging Sheet only)."""
 
 from __future__ import annotations
 
@@ -7,15 +7,20 @@ import os
 import sys
 from datetime import datetime
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
+STAGING_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(STAGING_DIR, "..", ".."))
+for p in (ROOT, STAGING_DIR):
+    if p not in sys.path:
+        sys.path.insert(0, p)
+
+from _staging_env import assert_staging_spreadsheet, load_staging_dotenv
 
 DATE = os.environ.get("S5_DATE_BOAT_GYM", "2026-06-20")
 S5_SCHEDULE_TIMES = ("14:00", "14:30")
 
 
 def main() -> int:
+    load_staging_dotenv()
     from app import create_app
     from app.services.google_sheets_service import append_record, read_records
 
@@ -23,6 +28,7 @@ def main() -> int:
     app = create_app()
     with app.app_context():
         sid = app.config["SPREADSHEET_ID"]
+        assert_staging_spreadsheet(sid, script="s5_seed")
         rows = read_records(sid, "Schedule")
         existing = {
             (r.get("day_of_week", "").strip().lower(), r.get("time", "").strip()[:5])
