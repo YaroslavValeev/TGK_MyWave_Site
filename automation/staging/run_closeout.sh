@@ -22,7 +22,8 @@ echo "=== S8 calendar dump ==="
 python3 automation/staging/s8_calendar_dump.py | tee "$OUT/s8_calendar.json"
 
 echo "=== S5 travel buffer ==="
-python3 automation/staging/s5_travel_buffer.py | tee "$OUT/s5_buffer.log"
+python3 automation/staging/s5_seed_schedule.py | tee -a "$OUT/s5_buffer.log"
+python3 automation/staging/s5_travel_buffer.py | tee -a "$OUT/s5_buffer.log"
 
 echo "=== S9 orphan check ==="
 python3 automation/staging/s9_orphan_check.py | tee "$OUT/s9_orphan.log"

@@ -55,6 +55,7 @@ class StagingClient:
         set_count: int = 1,
     ) -> tuple[int, dict]:
         self._pause()
+        token = self.csrf_token()
         payload: dict[str, Any] = {
             "date": date,
             "time": time,
@@ -62,11 +63,15 @@ class StagingClient:
             "phone": phone,
             "service_type": service_type,
             "set_count": set_count,
-            "csrf_token": self.csrf_token(),
+            "csrf_token": token,
         }
         r = self.session.post(
             f"{self.base_url}/api/calendar/book",
             json=payload,
+            headers={
+                "Content-Type": "application/json",
+                "X-CSRFToken": token,
+            },
             timeout=120,
         )
         try:
