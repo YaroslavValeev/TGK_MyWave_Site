@@ -21,7 +21,8 @@ mkdir -p "$OUT"
 echo "=== staging context ==="
 echo "STAGING_ROOT=$STAGING_ROOT"
 echo "STAGING_SPREADSHEET_ID=$STAGING_SPREADSHEET_ID"
-sudo -u www-data git -C "$STAGING_ROOT" rev-parse HEAD | tee "$OUT/staging_head.txt"
+echo "RUN_USER=$(id -un)"
+git -C "$STAGING_ROOT" rev-parse HEAD | tee "$OUT/staging_head.txt"
 
 if grep -q 'self.session.get' "$STAGING_ROOT/automation/staging/_client.py" 2>/dev/null; then
   echo "FATAL: stale automation/staging/_client.py (requests). Run:" >&2

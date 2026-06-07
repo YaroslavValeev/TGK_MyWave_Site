@@ -20,14 +20,21 @@ sudo -u www-data git rev-parse HEAD
 grep -q 'def _curl' automation/staging/_client.py && echo "client_ok"
 ```
 
-Затем close-out:
+Затем close-out (**от root или от www-data — без вложенного sudo внутри скрипта**):
 
 ```bash
-cd /var/www/mywave-staging && \
-export STAGING_ROOT=/var/www/mywave-staging && \
-export STAGING_SPREADSHEET_ID=16Ewm8Npv3bkNH37X-KAm3PWmRedQ1a8xoiO6LPggyBI && \
-sudo -u www-data env STAGING_ROOT="$STAGING_ROOT" STAGING_SPREADSHEET_ID="$STAGING_SPREADSHEET_ID" \
-  bash automation/staging/run_closeout.sh
+cd /var/www/mywave-staging
+export STAGING_ROOT=/var/www/mywave-staging
+export STAGING_SPREADSHEET_ID=16Ewm8Npv3bkNH37X-KAm3PWmRedQ1a8xoiO6LPggyBI
+bash automation/staging/run_closeout.sh
+```
+
+Альтернатива от root через www-data (тоже OK после fix):
+
+```bash
+sudo -u www-data env STAGING_ROOT=/var/www/mywave-staging \
+  STAGING_SPREADSHEET_ID=16Ewm8Npv3bkNH37X-KAm3PWmRedQ1a8xoiO6LPggyBI \
+  bash /var/www/mywave-staging/automation/staging/run_closeout.sh
 ```
 
 **Важно:** не запускать S9/S8 в shell с export prod `SPREADSHEET_ID`. Скрипты читают `/var/www/mywave-staging/.env` с `override` (last key wins).
