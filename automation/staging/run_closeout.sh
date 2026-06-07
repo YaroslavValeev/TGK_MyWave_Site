@@ -18,11 +18,25 @@ export STAGING_API_SLEEP="${STAGING_API_SLEEP:-2.5}"
 OUT="/tmp/staging_closeout_$(date +%Y%m%d_%H%M%S)"
 mkdir -p "$OUT"
 
+record_staging_head() {
+  local head=""
+  if head="$(git -C "$STAGING_ROOT" rev-parse HEAD 2>/dev/null)"; then
+    :
+  elif head="$(su -s /bin/sh www-data -c "git -C '$STAGING_ROOT' rev-parse HEAD" 2>/dev/null)"; then
+    :
+  elif [ -f "$STAGING_ROOT/.git/refs/heads/main" ]; then
+    head="$(tr -d ' \n\r' < "$STAGING_ROOT/.git/refs/heads/main")"
+  else
+    head="unknown"
+  fi
+  echo "$head" | tee "$OUT/staging_head.txt"
+}
+
 echo "=== staging context ==="
 echo "STAGING_ROOT=$STAGING_ROOT"
 echo "STAGING_SPREADSHEET_ID=$STAGING_SPREADSHEET_ID"
 echo "RUN_USER=$(id -un)"
-git -C "$STAGING_ROOT" rev-parse HEAD | tee "$OUT/staging_head.txt"
+record_staging_head
 
 if grep -q 'self.session.get' "$STAGING_ROOT/automation/staging/_client.py" 2>/dev/null; then
   echo "FATAL: stale automation/staging/_client.py (requests). Run:" >&2
