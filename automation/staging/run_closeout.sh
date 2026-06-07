@@ -51,6 +51,10 @@ if ! grep -q '_staging_env' "$STAGING_ROOT/automation/staging/s9_orphan_check.py
   echo "FATAL: stale s9_orphan_check.py — git pull required (staging Sheet guard missing)" >&2
   exit 1
 fi
+if ! grep -q 's5_api_smoke' "$STAGING_ROOT/automation/staging/run_closeout.sh" 2>/dev/null; then
+  echo "FATAL: stale run_closeout.sh — git pull required (expected s5_api_smoke.py)" >&2
+  exit 1
+fi
 
 echo "=== health ==="
 curl -fsS "$STAGING_BASE_URL/health" | python3 -m json.tool | tee "$OUT/health.json"
@@ -59,8 +63,7 @@ echo "=== S8 calendar dump ==="
 python3 automation/staging/s8_calendar_dump.py 2>"$OUT/s8_stderr.log" | tee "$OUT/s8_calendar.json"
 
 echo "=== S5 travel buffer ==="
-python3 automation/staging/s5_seed_schedule.py 2>>"$OUT/s5_buffer.log" | tee -a "$OUT/s5_buffer.log"
-python3 automation/staging/s5_travel_buffer.py 2>>"$OUT/s5_buffer.log" | tee -a "$OUT/s5_buffer.log"
+python3 automation/staging/s5_api_smoke.py 2>>"$OUT/s5_buffer.log" | tee -a "$OUT/s5_buffer.log"
 
 echo "=== S9 orphan check ==="
 python3 automation/staging/s9_orphan_check.py 2>>"$OUT/s9_orphan.log" | tee -a "$OUT/s9_orphan.log"
