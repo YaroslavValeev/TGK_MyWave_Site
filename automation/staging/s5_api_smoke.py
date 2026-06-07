@@ -58,6 +58,31 @@ def _slot_available(slots: list[dict], time_str: str) -> bool | None:
     return bool(row.get("available"))
 
 
+def _boat_slot_blocked(slots: list[dict], time_str: str) -> bool:
+    """Phase 2 boat grid omits blocked slots (not listed), not available=false."""
+    row = next((s for s in slots if s.get("time") == time_str), None)
+    if row is None:
+        return True
+    return not bool(row.get("available"))
+
+
+def _boat_slot_available(slots: list[dict], time_str: str) -> bool:
+    row = next((s for s in slots if s.get("time") == time_str), None)
+    return row is not None and bool(row.get("available"))
+
+
+def _gym_slot_blocked(slots: list[dict], time_str: str) -> bool:
+    row = next((s for s in slots if s.get("time") == time_str), None)
+    if row is None:
+        return False  # missing schedule row — fail loud elsewhere
+    return not bool(row.get("available"))
+
+
+def _gym_slot_available(slots: list[dict], time_str: str) -> bool:
+    row = next((s for s in slots if s.get("time") == time_str), None)
+    return row is not None and bool(row.get("available"))
+
+
 def _response_body(resp) -> dict:
     try:
         return resp.get_json(silent=True) or {}
@@ -127,12 +152,12 @@ def main() -> int:
         part_b_failures.append(f"gym_10_book_http_{code}")
     else:
         boat = _slots(client, DATE_B, "boat")
-        b12 = _slot_available(boat, "12:00")
-        b1330 = _slot_available(boat, "13:30")
-        print("boat_12_available", b12, "boat_1330_available", b1330)
-        if b12 is not False:
+        b12_blocked = _boat_slot_blocked(boat, "12:00")
+        b1330_ok = _boat_slot_available(boat, "13:30")
+        print("boat_12_blocked", b12_blocked, "boat_1330_available", b1330_ok)
+        if not b12_blocked:
             part_b_failures.append("boat_12_should_be_blocked")
-        if b1330 is not True:
+        if not b1330_ok:
             part_b_failures.append("boat_1330_should_be_available")
 
     if part_b_failures:
@@ -159,12 +184,12 @@ def main() -> int:
         part_a_failures.append(f"boat_12_book_http_{code}")
     else:
         gym = _slots(client, DATE_A, "gym")
-        g14 = _slot_available(gym, "14:00")
-        g1430 = _slot_available(gym, "14:30")
-        print("gym_14_available", g14, "gym_1430_available", g1430)
-        if g14 is not False:
+        g14_blocked = _gym_slot_blocked(gym, "14:00")
+        g1430_ok = _gym_slot_available(gym, "14:30")
+        print("gym_14_blocked", g14_blocked, "gym_1430_available", g1430_ok)
+        if not g14_blocked:
             part_a_failures.append("gym_14_should_be_blocked")
-        if g1430 is not True:
+        if not g1430_ok:
             part_a_failures.append("gym_1430_should_be_available")
 
     if part_a_failures:
