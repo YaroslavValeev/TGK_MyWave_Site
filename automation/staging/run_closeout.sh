@@ -23,6 +23,20 @@ echo "STAGING_ROOT=$STAGING_ROOT"
 echo "STAGING_SPREADSHEET_ID=$STAGING_SPREADSHEET_ID"
 sudo -u www-data git -C "$STAGING_ROOT" rev-parse HEAD | tee "$OUT/staging_head.txt"
 
+if grep -q 'self.session.get' "$STAGING_ROOT/automation/staging/_client.py" 2>/dev/null; then
+  echo "FATAL: stale automation/staging/_client.py (requests). Run:" >&2
+  echo "  cd $STAGING_ROOT && sudo -u www-data git fetch origin main && sudo -u www-data git reset --hard origin/main" >&2
+  exit 1
+fi
+if ! grep -q 'def _curl' "$STAGING_ROOT/automation/staging/_client.py" 2>/dev/null; then
+  echo "FATAL: missing curl client in automation/staging/_client.py — git pull required" >&2
+  exit 1
+fi
+if ! grep -q '_staging_env' "$STAGING_ROOT/automation/staging/s9_orphan_check.py" 2>/dev/null; then
+  echo "FATAL: stale s9_orphan_check.py — git pull required (staging Sheet guard missing)" >&2
+  exit 1
+fi
+
 echo "=== health ==="
 curl -fsS "$STAGING_BASE_URL/health" | python3 -m json.tool | tee "$OUT/health.json"
 

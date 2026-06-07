@@ -9,9 +9,21 @@
 
 ## 0. Одна команда (рекомендуется)
 
+**Если `git pull` падает на local changes** (staging-only, prod не трогаем):
+
+```bash
+cd /var/www/mywave-staging
+sudo -u www-data git fetch origin main
+sudo -u www-data git reset --hard origin/main
+sudo -u www-data git rev-parse HEAD
+# ожидается: 6d07b9c1 или новее
+grep -q 'def _curl' automation/staging/_client.py && echo "client_ok"
+```
+
+Затем close-out:
+
 ```bash
 cd /var/www/mywave-staging && \
-sudo -u www-data git pull --ff-only origin main && \
 export STAGING_ROOT=/var/www/mywave-staging && \
 export STAGING_SPREADSHEET_ID=16Ewm8Npv3bkNH37X-KAm3PWmRedQ1a8xoiO6LPggyBI && \
 sudo -u www-data env STAGING_ROOT="$STAGING_ROOT" STAGING_SPREADSHEET_ID="$STAGING_SPREADSHEET_ID" \
