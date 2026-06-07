@@ -22,9 +22,10 @@ S5_SCHEDULE_TIMES = ("14:00", "14:30")
 
 
 def _unique_phone(tag: str) -> str:
+    """RU mobile: +7 + 10 digits (e.g. +79991234567)."""
     run = os.environ.get("S5_RUN_ID") or str(int(time.time()))
-    n = (hash(f"{tag}:{run}") % 90000000) + 10000000
-    return f"+7{n}"
+    suffix = abs(hash(f"{tag}:{run}")) % 1_000_000_000
+    return f"+79{suffix:09d}"
 
 
 def _ensure_schedule(app, date_str: str) -> None:
@@ -69,10 +70,10 @@ def _book(client, payload: dict) -> tuple[int, dict]:
     token = (_response_body(csrf_resp).get("csrf_token") or "").strip()
     if not token:
         return csrf_resp.status_code, {"error": "csrf_token_missing"}
-    body = {**payload, "csrf_token": token}
+    # csrf_token only in header — BookingSchema rejects unknown JSON fields
     resp = client.post(
         "/api/calendar/book",
-        json=body,
+        json=payload,
         headers={"X-CSRFToken": token},
     )
     return resp.status_code, _response_body(resp)
@@ -87,8 +88,11 @@ def _slots(client, date: str, service: str) -> list[dict]:
 
 
 def _log_book(label: str, code: int, body: dict) -> None:
-    err = body.get("error") or body.get("message") or body.get("details")
+    err = body.get("error") or body.get("message")
+    details = body.get("details")
     print(label, code, err or json.dumps(body, ensure_ascii=False)[:300])
+    if details:
+        print(f"{label}_details", details)
 
 
 def main() -> int:
