@@ -4,7 +4,8 @@
 set -euo pipefail
 
 PROD_ROOT="${PROD_ROOT:-/var/www/mywave}"
-PROD_URL="${PROD_URL:-https://mywavewake.ru/health}"
+PROD_BASE="${PROD_BASE:-https://mywavewake.ru}"
+PROD_URL="${PROD_URL:-${PROD_BASE}/health}"
 ROLLOUT_BASELINE="${ROLLOUT_BASELINE:-27f2d8869ddb269f09e081aa7d10694fb65ee844}"
 STAGING_SHEET="16Ewm8Npv3bkNH37X-KAm3PWmRedQ1a8xoiO6LPggyBI"
 STAGING_CAL="e4ab0adc25a259eebdf83a506073dd5874dee79890b038f924f164703d187dec"
@@ -26,30 +27,29 @@ if [[ ! -d "${PROD_ROOT}" ]]; then
   exit 1
 fi
 
-# --- 1–3. Git HEAD (www-data + safe.directory) ---
+# --- 1. Git HEAD ---
 echo ""
 echo "=== 1. Production HEAD (git -c safe.directory) ==="
 if [[ -d "${PROD_ROOT}/.git" ]]; then
-  # fetch as root (www-data often cannot write .git/FETCH_HEAD)
   "${GIT[@]}" -C "${PROD_ROOT}" fetch origin main 2>&1 || warn "git fetch failed (network?)"
-  HEAD="$({ sudo -u www-data "${GIT[@]}" -C "${PROD_ROOT}" rev-parse HEAD; } 2>/dev/null || true)"
-  ONELINE="$({ sudo -u www-data "${GIT[@]}" -C "${PROD_ROOT}" log -1 --oneline; } 2>/dev/null || true)"
-  ORIGIN="$({ sudo -u www-data "${GIT[@]}" -C "${PROD_ROOT}" rev-parse origin/main; } 2>/dev/null || true)"
+  HEAD="$("${GIT[@]}" -C "${PROD_ROOT}" rev-parse HEAD 2>/dev/null || true)"
+  ONELINE="$("${GIT[@]}" -C "${PROD_ROOT}" log -1 --oneline 2>/dev/null || true)"
+  ORIGIN="$("${GIT[@]}" -C "${PROD_ROOT}" rev-parse origin/main 2>/dev/null || true)"
   echo "HEAD=${HEAD:-UNKNOWN}"
   echo "log -1: ${ONELINE:-UNKNOWN}"
   echo "origin/main=${ORIGIN:-UNKNOWN}"
-  if [[ -n "${HEAD}" ]] && sudo -u www-data "${GIT[@]}" -C "${PROD_ROOT}" merge-base --is-ancestor "${ROLLOUT_BASELINE}" HEAD 2>/dev/null; then
+  if [[ -n "${HEAD}" ]] && "${GIT[@]}" -C "${PROD_ROOT}" merge-base --is-ancestor "${ROLLOUT_BASELINE}" HEAD 2>/dev/null; then
     pass "HEAD >= rollout baseline ${ROLLOUT_BASELINE:0:8}"
   elif [[ -n "${HEAD}" ]]; then
     fail "HEAD < rollout baseline ${ROLLOUT_BASELINE:0:8} (deploy main before Step 1)"
   else
-    fail "could not read HEAD (check ownership / safe.directory)"
+    fail "could not read HEAD (check safe.directory)"
   fi
 else
   fail "no .git in ${PROD_ROOT}"
 fi
 
-# --- 4. Effective .env keys (last wins) + duplicate report ---
+# --- 2. Effective .env keys (last wins); never execute .env as Python ---
 echo ""
 echo "=== 2. Effective SPREADSHEET_ID / GOOGLE_CALENDAR_ID (last wins) ==="
 ENV_FILE="${PROD_ROOT}/.env"
@@ -58,9 +58,10 @@ if [[ ! -f "${ENV_FILE}" ]]; then
 else
   python3 - "${ENV_FILE}" "${EXPECTED_PROD_SHEET_TAIL}" "${STAGING_SHEET}" "${STAGING_CAL}" <<'PY'
 import sys
+
 path, expected_tail, staging_sheet, staging_cal = sys.argv[1:5]
-values = {}
-dupes = {}
+values: dict[str, str] = {}
+dupes: dict[str, list[tuple[int, str]]] = {}
 with open(path, encoding="utf-8") as fh:
     for i, raw in enumerate(fh, 1):
         line = raw.strip()
@@ -76,10 +77,12 @@ for key in ("SPREADSHEET_ID", "GOOGLE_CALENDAR_ID"):
     if len(rows) > 1:
         print(f"WARN: duplicate {key} lines ({len(rows)}):")
         for ln, val in rows:
-            print(f"  L{ln} tail={val[-12:] if len(val)>=12 else val}")
+            tail = val[-12:] if len(val) >= 12 else val
+            print(f"  L{ln} tail={tail}")
     eff = values.get(key, "")
+    tail = eff[-12:] if len(eff) >= 12 else eff
     print(f"effective_{key}={eff}")
-    print(f"effective_{key}_tail={eff[-12:] if len(eff)>=12 else eff}")
+    print(f"effective_{key}_tail={tail}")
 sid = values.get("SPREADSHEET_ID", "")
 cal = values.get("GOOGLE_CALENDAR_ID", "")
 if staging_sheet in sid or staging_cal in cal:
@@ -93,9 +96,10 @@ print("PASS: no staging Sheet/Calendar in effective .env values")
 PY
   rc=$?
   [[ $rc -eq 2 ]] && failures=$((failures + 1))
+  [[ $rc -ne 0 && $rc -ne 2 ]] && fail "dotenv parse python exit ${rc}"
 fi
 
-# --- 5. BOOKING_PHASE2 flags ---
+# --- 3. BOOKING_PHASE2 flags ---
 echo ""
 echo "=== 3. BOOKING_PHASE2_* flags ==="
 if grep -qE '^BOOKING_PHASE2_' "${ENV_FILE}" 2>/dev/null; then
@@ -109,7 +113,7 @@ else
   pass "no BOOKING_PHASE2_* in .env"
 fi
 
-# --- 6. Backup script ---
+# --- 4. Backup script ---
 echo ""
 echo "=== 4. Backup script ==="
 BACKUP="${PROD_ROOT}/deploy/scripts/backup_mywave.sh"
@@ -120,7 +124,7 @@ else
   fail "missing ${BACKUP}"
 fi
 
-# --- 7. Health ---
+# --- 5. Health ---
 echo ""
 echo "=== 5. Health ==="
 HTTP_CODE="$(curl -fsS --max-time 20 -o /tmp/prod_preflight_health.json -w '%{http_code}' "${PROD_URL}" 2>/dev/null || echo "000")"
@@ -128,26 +132,53 @@ echo "HTTP ${HTTP_CODE}"
 if [[ "${HTTP_CODE}" == "200" ]]; then
   pass "health HTTP 200"
   python3 -m json.tool < /tmp/prod_preflight_health.json 2>/dev/null | head -40 || cat /tmp/prod_preflight_health.json
-  python3 <<'PY' /tmp/prod_preflight_health.json
+  if ! python3 - /tmp/prod_preflight_health.json <<'PY'
 import json, sys
+
 d = json.load(open(sys.argv[1]))
-checks = d.get("checks") or d
-db = (checks.get("database") or {}).get("status") or checks.get("database")
-g = (checks.get("google") or {}).get("status") or checks.get("google")
+checks = d.get("checks") or {}
+
+def node_ok(node):
+    if isinstance(node, dict):
+        if node.get("ok") is True:
+            return True
+        st = node.get("status")
+        return st in ("ok", "healthy")
+    return node in ("ok", "healthy", True)
+
+db_ok = node_ok(checks.get("database"))
+g_ok = node_ok(checks.get("google"))
 st = d.get("status", "")
-print(f"status={st} database={db} google={g}")
-ok = db in ("ok", "healthy", True) and g in ("ok", "healthy", True)
-print("PASS: database+google OK" if ok else "FAIL: database or google not OK")
-sys.exit(0 if ok else 1)
+print(f"status={st} database_ok={db_ok} google_ok={g_ok}")
+if db_ok and g_ok:
+    print("PASS: database+google OK")
+    sys.exit(0)
+print("FAIL: database or google not OK")
+sys.exit(1)
 PY
-  [[ $? -ne 0 ]] && failures=$((failures + 1))
+  then
+    failures=$((failures + 1))
+  fi
 else
   fail "health not HTTP 200"
 fi
 
-# --- 8. Service status (read-only) ---
+# --- 6. Public routes ---
 echo ""
-echo "=== 6. systemd (read-only) ==="
+echo "=== 6. Public routes ==="
+for path in / /robots.txt /privacy /offer; do
+  code="$(curl -fsS --max-time 20 -o /dev/null -w '%{http_code}' "${PROD_BASE}${path}" 2>/dev/null || echo "000")"
+  echo "${path} HTTP ${code}"
+  if [[ "${code}" == "200" ]]; then
+    pass "${path} HTTP 200"
+  else
+    fail "${path} HTTP ${code}"
+  fi
+done
+
+# --- 7. Service status (read-only) ---
+echo ""
+echo "=== 7. systemd (read-only) ==="
 for u in mywave-site mywave-node.service mywave-telegram-bot.service; do
   st="$(systemctl is-active "${u}" 2>/dev/null || echo unknown)"
   echo "${u}: ${st}"
