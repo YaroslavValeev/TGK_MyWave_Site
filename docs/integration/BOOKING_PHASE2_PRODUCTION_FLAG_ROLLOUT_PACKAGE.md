@@ -37,17 +37,33 @@ docs(booking): staging close-out PASS S5/S8/S9, TGbotAdmin S7 handoff
 
 ### 1.2 Verify on production host (read-only)
 
+**Git dubious ownership:** use per-invocation `safe.directory` — **not** `git config --global`.
+
+Script (recommended after `git pull` on prod):
+
 ```bash
-cd /var/www/mywave
-sudo -u www-data git fetch origin main
-sudo -u www-data git rev-parse HEAD
-sudo -u www-data git log -1 --oneline
-sudo -u www-data git merge-base --is-ancestor 27f2d8869ddb269f09e081aa7d10694fb65ee844 HEAD \
-  && echo "OK: HEAD includes Phase 2 rollout baseline" \
-  || echo "WARN: deploy main to 27f2d886+ before flags ON"
+bash /var/www/mywave/automation/production/phase2_preflight_readonly.sh | tee /tmp/prod_phase2_preflight.log
 ```
 
-If behind: deploy code **with flags still OFF**, smoke Phase 1, **then** proceed to flag rollout (separate GM approval).
+**PASS:** stdout ends with `PREFLIGHT_OK`.
+
+Manual (same checks):
+
+```bash
+cd /var/www/mywave
+GIT="git -c safe.directory=/var/www/mywave"
+sudo -u www-data $GIT -C /var/www/mywave fetch origin main
+sudo -u www-data $GIT -C /var/www/mywave rev-parse HEAD
+sudo -u www-data $GIT -C /var/www/mywave log -1 --oneline
+sudo -u www-data $GIT -C /var/www/mywave rev-parse origin/main
+sudo -u www-data $GIT -C /var/www/mywave merge-base --is-ancestor 27f2d8869ddb269f09e081aa7d10694fb65ee844 HEAD \
+  && echo "PASS: HEAD >= rollout baseline 27f2d886" \
+  || echo "FAIL: deploy main to 27f2d886+ before Step 1"
+```
+
+**Duplicate `.env` keys:** Flask/load_dotenv typically **last key wins**. Pre-flight prints all `SPREADSHEET_ID` / `GOOGLE_CALENDAR_ID` lines + effective value. Dedupe `.env` is recommended **before Step 1** (separate maintenance; not during read-only pre-flight).
+
+If behind on HEAD: deploy code **with flags still OFF**, smoke Phase 1, **then** proceed to flag rollout (separate GM approval).
 
 ---
 
