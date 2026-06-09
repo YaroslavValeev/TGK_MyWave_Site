@@ -35,6 +35,8 @@ docs(booking): staging close-out PASS S5/S8/S9, TGbotAdmin S7 handoff
 
 **Pre-rollout:** production server should be on this commit **or newer** on `main` (includes full Phase 2 code path; flags default OFF in code).
 
+**If production HEAD is `67b30510`:** execute code-only deploy first — [`BOOKING_PHASE2_PRODUCTION_CODE_ONLY_DEPLOY_PACKAGE.md`](BOOKING_PHASE2_PRODUCTION_CODE_ONLY_DEPLOY_PACKAGE.md) (flags OFF, no `.env` change).
+
 ### 1.2 Verify on production host (read-only)
 
 **Git dubious ownership:** use per-invocation `safe.directory` — **not** `git config --global`.
