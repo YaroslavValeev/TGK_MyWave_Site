@@ -30,7 +30,8 @@ fi
 echo ""
 echo "=== 1. Production HEAD (git -c safe.directory) ==="
 if [[ -d "${PROD_ROOT}/.git" ]]; then
-  sudo -u www-data "${GIT[@]}" -C "${PROD_ROOT}" fetch origin main 2>&1 || warn "git fetch failed (network?)"
+  # fetch as root (www-data often cannot write .git/FETCH_HEAD)
+  "${GIT[@]}" -C "${PROD_ROOT}" fetch origin main 2>&1 || warn "git fetch failed (network?)"
   HEAD="$({ sudo -u www-data "${GIT[@]}" -C "${PROD_ROOT}" rev-parse HEAD; } 2>/dev/null || true)"
   ONELINE="$({ sudo -u www-data "${GIT[@]}" -C "${PROD_ROOT}" log -1 --oneline; } 2>/dev/null || true)"
   ORIGIN="$({ sudo -u www-data "${GIT[@]}" -C "${PROD_ROOT}" rev-parse origin/main; } 2>/dev/null || true)"
@@ -55,7 +56,7 @@ ENV_FILE="${PROD_ROOT}/.env"
 if [[ ! -f "${ENV_FILE}" ]]; then
   fail ".env not found"
 else
-  python3 <<'PY' "${ENV_FILE}" "${EXPECTED_PROD_SHEET_TAIL}" "${STAGING_SHEET}" "${STAGING_CAL}"
+  python3 - "${ENV_FILE}" "${EXPECTED_PROD_SHEET_TAIL}" "${STAGING_SHEET}" "${STAGING_CAL}" <<'PY'
 import sys
 path, expected_tail, staging_sheet, staging_cal = sys.argv[1:5]
 values = {}
