@@ -3,10 +3,10 @@
 **Date:** 2026-06-07 (initial) · **Close-out revision:** 2026-06-08  
 **Author:** Site MyWave  
 **Audience:** GM / Owner / TGbotAdmin  
-**GM decision (2026-06-08):** **NO / BLOCKED FOR PROD FLAGS ON** (unchanged until S7 PASS)  
-**Status:** **SITE STAGING CLOSE-OUT: PASS (S5 / S8 / S9)** — Phase 2 staging gate **open pending S7**
+**GM decision (2026-06-08):** **STAGING E2E: GREEN WITH CAVEAT** — prod flags **NO / BLOCKED** until separate GM rollout approval  
+**Status:** **SITE STAGING CLOSE-OUT: PASS (S5 / S8 / S9 / S7)** — prod rollout package prepared, **not executed**
 
-**Report revision:** 2026-06-08 — S5/S8/S9 close-out PASS on HEAD `1ecbd161`; S7 pending TGbotAdmin.
+**Report revision:** 2026-06-08 (final) — S7 TGbotAdmin read-only PASS; caveat: no live `(ID: tg_id)` in `s8_calendar.json` artifact.
 
 ---
 
@@ -63,7 +63,7 @@ BOOKING_PHASE2_GYM_LOCATION_V2=1
 | **S4** | Gym `remaining` 4→0; 4× **201**; 5th → **409** | 4× **201** at `16:00`; 5th **409** after `sleep 3` («нет свободных мест») | `S4_ok`; 5th burst got **502** (rate limit) — retried PASS | **PASS** |
 | **S5** | Boat 12:00 → gym before 14:30 blocked, 14:30 OK; gym 10:00 → boat before 13:30 blocked, 13:30 OK | Part B `2026-06-13`: `book_gym_10 201`, `boat_12_blocked True`, `boat_1330_available True`. Part A `2026-06-27`: `book_boat_12 201`, `gym_14_blocked True`, `gym_1430_available True`. `S5_ok` | `/tmp/s5_final.log` — run **2026-06-08 ~01:59 MSK** @ `1ecbd161` | **PASS** |
 | **S6** | Race: one **201**, one **409**; no orphan | `10:30`: A **201**, B **409** | `S6_ok 10:30` | **PASS** |
-| **S7** | WEB `(WEB_ID: bk_…)` vs TG `(ID: …)`; no false duplicate; TGbotAdmin parser OK | **Not executed** | Awaiting TGbotAdmin joint smoke on staging calendar | **FAIL / PENDING** |
+| **S7** | WEB `(WEB_ID: bk_…)` vs TG `(ID: …)`; no false duplicate; TGbotAdmin parser OK | Read-only audit PASS: `event_count=9`, WEB_ID `9`, TG marker `0`, no false duplicate | TGbotAdmin S7 audit + `s8_calendar.json` | **PASS** (caveat: no live TG event in artifact) |
 | **S8** | Calendar: boat `07:00` 90 min / «Катер» / 3 sets; gym `16:00` 90 min / «Зал» / summary v2 | `"s8_pass": true`, `S8_ok`; boat `07:00` duration 90, location `Катер`, `set_count=3`; gym `16:00` duration 90, location `Зал` | `/tmp/s8_calendar.json` (script `s8_calendar_dump.py`, date `2026-06-12`) | **PASS** |
 | **S9** | `orphan_count 0` after smokes | `orphan_count 0` / `S9_ok` on staging Sheet `16Ewm8Npv3bkNH37X-KAm3PWmRedQ1a8xoiO6LPggyBI` | `/tmp/s9_final.log` — run **2026-06-08 ~01:59 MSK** | **PASS** |
 
@@ -164,12 +164,16 @@ Mapping to smoke:
 
 | Item | Status |
 |------|--------|
-| Joint smoke on staging calendar | **Not performed** |
-| WEB_ID vs ID markers | **Pending** |
-| False duplicate check | **Pending** |
-| TGbotAdmin Calendar parsing compatibility | **Pending** |
+| Read-only audit on staging calendar | **PASS** |
+| Calendar events in artifact | `event_count=9` |
+| WEB_ID events | `9` |
+| Telegram `(ID: tg_id)` in artifact | `0` |
+| WEB_ID vs ID false duplicate | **Not found** |
+| Staging Sheet ID confirmed | `16Ewm8Npv3bkNH37X-KAm3PWmRedQ1a8xoiO6LPggyBI` |
 
-**TGbotAdmin verdict:** _Pending S7 joint/read-only audit — Site staging artifacts ready (§14)._
+**Caveat (non-blocking):** no separate live Telegram-created event with `(ID: tg_id)` in transferred `s8_calendar.json`; legacy marker covered by TGbotAdmin regression tests. Optional targeted Telegram smoke before prod flags ON.
+
+**TGbotAdmin verdict:** _S7 read-only PASS — staging gate **GREEN WITH CAVEAT**._
 
 ---
 
@@ -322,16 +326,17 @@ Variant B — Calendar API dump. Evidence: `/tmp/s8_calendar.json`, `"s8_pass": 
 | Staging contour operational? | **Yes** — `/var/www/mywave-staging`, `127.0.0.1:5002`, HEAD `1ecbd161` |
 | Site close-out S5 / S8 / S9? | **Yes — PASS** |
 | Core booking smoke (S1–S4, S6)? | **Yes — PASS** (2026-06-12) |
-| S7 TGbotAdmin joint audit? | **PENDING** |
-| Full Phase 2 staging gate (S1–S9)? | **No** — blocked on S7 only |
-| Ready for prod `BOOKING_PHASE2_*` rollout? | **NOT READY** |
+| S7 TGbotAdmin read-only audit? | **PASS** (caveat above) |
+| Full Phase 2 staging gate (S1–S9)? | **GREEN WITH CAVEAT** |
+| Ready to **execute** prod `BOOKING_PHASE2_*`? | **NOT YET** — separate GM approval required |
+| Ready for prod rollout **planning**? | **YES** |
 
 **Final recommendation:**
 
-1. **Site staging checks ready for TGbotAdmin S7**
-2. **NOT READY for prod rollout until S7 PASS**
+1. **Staging E2E: GREEN WITH CAVEAT** — Site + TGbotAdmin S7 complete
+2. **Production flags ON: BLOCKED** until GM approves [`BOOKING_PHASE2_PRODUCTION_FLAG_ROLLOUT_PACKAGE.md`](BOOKING_PHASE2_PRODUCTION_FLAG_ROLLOUT_PACKAGE.md)
 
-Handoff package: [`BOOKING_PHASE2_TGBOTADMIN_S7_HANDOFF.md`](BOOKING_PHASE2_TGBOTADMIN_S7_HANDOFF.md)
+Handoff: [`BOOKING_PHASE2_TGBOTADMIN_S7_HANDOFF.md`](BOOKING_PHASE2_TGBOTADMIN_S7_HANDOFF.md)
 
 ---
 
@@ -339,6 +344,7 @@ Handoff package: [`BOOKING_PHASE2_TGBOTADMIN_S7_HANDOFF.md`](BOOKING_PHASE2_TGBO
 
 - Close-out commands: [`BOOKING_PHASE2_STAGING_CLOSEOUT_COMMANDS.md`](BOOKING_PHASE2_STAGING_CLOSEOUT_COMMANDS.md)
 - TGbotAdmin S7 handoff: [`BOOKING_PHASE2_TGBOTADMIN_S7_HANDOFF.md`](BOOKING_PHASE2_TGBOTADMIN_S7_HANDOFF.md)
+- Prod flag rollout (plan only): [`BOOKING_PHASE2_PRODUCTION_FLAG_ROLLOUT_PACKAGE.md`](BOOKING_PHASE2_PRODUCTION_FLAG_ROLLOUT_PACKAGE.md)
 - Bootstrap runbook: [`BOOKING_PHASE2_STAGING_BOOTSTRAP_RUNBOOK.md`](BOOKING_PHASE2_STAGING_BOOTSTRAP_RUNBOOK.md)
 - Smoke package: [`BOOKING_PHASE2_STAGING_E2E_PACKAGE.md`](BOOKING_PHASE2_STAGING_E2E_PACKAGE.md)
 - Prod deploy baseline: PR #18 @ prod `67b30510` (compensation B+E, flags OFF)
@@ -361,7 +367,8 @@ Owner Sheets screenshots (2026-06-07)                          → Schedule/Clie
 # Close-out (2026-06-08, HEAD 1ecbd161)
 sudo -u www-data git -C /var/www/mywave-staging reset --hard origin/main  → 1ecbd161
 python3 automation/staging/s8_calendar_dump.py                 → s8_pass true, S8_ok → /tmp/s8_calendar.json
-python3 automation/staging/s5_api_smoke.py                     → S5_ok → /tmp/s5_final.log (~01:59 MSK)
+python3 automation/staging/s5_api_smoke.py                     → S5_ok → /tmp/s5_final.log (2026-06-08 ~01:59 MSK, HEAD 1ecbd161)
+# Final lines: S5_part_B_ok, S5_part_A_ok, S5_ok; S9 orphan_count 0
 python3 automation/staging/s9_orphan_check.py                  → orphan_count 0, S9_ok → /tmp/s9_final.log
 ```
 
@@ -378,6 +385,6 @@ python3 automation/staging/s9_orphan_check.py                  → orphan_count 
 | 3 | Staging Calendar ID: `e4ab0adc25a259eebdf83a506073dd5874dee79890b038f924f164703d187dec@group.calendar.google.com` |
 | 4 | Staging Sheet ID: `16Ewm8Npv3bkNH37X-KAm3PWmRedQ1a8xoiO6LPggyBI` |
 
-**S7 status:** PENDING — TGbotAdmin read-only / joint audit on staging resources only.
+**S7 status:** PASS (read-only audit, 2026-06-08) — caveat: no live TG marker event in artifact.
 
 **Prod guardrails:** production `.env`, prod `BOOKING_PHASE2_*`, `mywave-site`, `mywave-node.service`, `mywave-telegram-bot.service`, TGbotAdmin prod — **do not touch** until S7 PASS + GM approval.
