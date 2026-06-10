@@ -10,5 +10,6 @@ SERVICE_LOCATION_SUMMARY = {
 }
 
 BOAT_CALENDAR_LOCATION = (
-    "MyWave Wake — https://yandex.ru/maps/org/mywave_wake/90003306477/"
+    "MyWave Wake — https://yandex.ru/maps/org/mywave_wake/90003306477"
+    "?si=1zaxyu7g67ct9pe6658pvtewag"
 )

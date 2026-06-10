@@ -12,7 +12,7 @@ GYM_VENUE = {
     "calendar_location_v2": "Зал",
     "latitude": 55.777052,
     "longitude": 37.502594,
-    "yandex_maps_url": "https://yandex.ru/maps/-/CLWQy6-I",
+    "yandex_maps_url": "https://yandex.ru/maps/-/CPh6b6jY",
 }
 
 # Катер (boat) — Phase 1: MyWave Wake URL; Phase 2 location v2: canonical «Катер»
