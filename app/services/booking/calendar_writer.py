@@ -20,12 +20,13 @@ from app.config.booking_features import (
     is_phase2_gym_location_v2_enabled,
     is_phase2_summary_v2_enabled,
 )
-from app.config.booking_venues import BOOKING_VENUES
-from app.config.venue import MYWAVE_VENUE
-from app.services.booking.constants import (
+from app.config.booking_location_constants import (
     BOAT_CALENDAR_LOCATION,
-    SERVICE_LOCATION_SUMMARY,
+    BOAT_CALENDAR_LOCATION_V1,
+    GYM_CALENDAR_LOCATION,
 )
+from app.config.venue import MYWAVE_VENUE
+from app.services.booking.constants import SERVICE_LOCATION_SUMMARY
 
 logger = logging.getLogger(__name__)
 
@@ -155,12 +156,12 @@ def build_event_description(
 def get_calendar_location(service_type: str) -> str:
     svc = (service_type or "").strip().lower()
     if is_phase2_gym_location_v2_enabled():
-        venue = BOOKING_VENUES.get(svc) or {}
-        v2 = venue.get("calendar_location_v2")
-        if v2:
-            return v2
+        if svc == "gym":
+            return GYM_CALENDAR_LOCATION
+        if svc == "boat":
+            return BOAT_CALENDAR_LOCATION
     if svc == "boat":
-        return BOAT_CALENDAR_LOCATION
+        return BOAT_CALENDAR_LOCATION_V1
     if svc == "gym":
         return GYM_LOCATION_LABEL
     return MYWAVE_VENUE.get("location_label", "")
