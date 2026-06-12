@@ -17,6 +17,26 @@ if ROOT not in sys.path:
 # All tests: disable Google services by default for reproducibility
 os.environ.setdefault('ENABLE_GOOGLE_SERVICES', '0')
 
+# Staging/prod .env may have BOOKING_PHASE2_*=1; force OFF before load_dotenv()
+# so unit tests use mocks (load_dotenv does not override existing env vars).
+for _phase2_flag in (
+    'BOOKING_PHASE2_AVAILABILITY',
+    'BOOKING_PHASE2_TRAVEL_BUFFER',
+    'BOOKING_PHASE2_MULTI_SET_BOAT',
+    'BOOKING_PHASE2_SUMMARY_V2',
+    'BOOKING_PHASE2_GYM_LOCATION_V2',
+):
+    os.environ[_phase2_flag] = '0'
+
+for _social_flag in (
+    'SOCIAL_MODULE_ENABLED',
+    'SOCIAL_WIDGET_ENABLED',
+    'SOCIAL_APPLICATIONS_ENABLED',
+    'SOCIAL_PUBLIC_STATS_ENABLED',
+    'SOCIAL_ADMIN_NOTIFICATIONS_ENABLED',
+):
+    os.environ[_social_flag] = '0'
+
 from app import create_app
 import unittest.mock as umock
 

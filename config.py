@@ -150,6 +150,13 @@ class Config:
     HOME_BOOKING_SWITCH_DATE = os.getenv("HOME_BOOKING_SWITCH_DATE", "2026-05-15")
     HOME_BOOKING_DEFAULT_SERVICE = os.getenv("HOME_BOOKING_DEFAULT_SERVICE", "gym")
     HOME_BOOKING_SWITCHED_SERVICE = os.getenv("HOME_BOOKING_SWITCHED_SERVICE", "boat")
+
+    # MyWave Social Mission (default OFF — Social-1 data layer only)
+    SOCIAL_SPREADSHEET_ID = os.getenv("SOCIAL_SPREADSHEET_ID", "")
+    SOCIAL_APPLICATIONS_SHEET_NAME = os.getenv("SOCIAL_APPLICATIONS_SHEET_NAME", "Social_Applications")
+    SOCIAL_SESSIONS_SHEET_NAME = os.getenv("SOCIAL_SESSIONS_SHEET_NAME", "Social_Sessions")
+    SOCIAL_IMPACT_SHEET_NAME = os.getenv("SOCIAL_IMPACT_SHEET_NAME", "Social_Impact")
+    SOCIAL_AUDIT_LOG_SHEET_NAME = os.getenv("SOCIAL_AUDIT_LOG_SHEET_NAME", "Social_Audit_Log")
     
     # Проверяем существование директории configs
     CONFIG_DIR = CONFIG_DIR_PATH
