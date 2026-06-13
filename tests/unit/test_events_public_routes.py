@@ -51,6 +51,12 @@ class TestEventsPublicFlagsOff:
         rv = client.get("/competitions")
         assert rv.status_code == 404
 
+    def test_sitemap_renders_without_jinja_error(self, client):
+        rv = client.get("/sitemap.xml")
+        assert rv.status_code == 200
+        assert b"<urlset" in rv.data
+        assert b"</urlset>" in rv.data
+
 
 class TestEventsPublicFlagsOn:
     def test_events_list_from_store(self, client, monkeypatch):

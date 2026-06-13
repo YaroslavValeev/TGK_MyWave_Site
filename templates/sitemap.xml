@@ -19,6 +19,8 @@
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
+  {% endfor %}
+
   {% for slug in urls.event_slugs or [] %}
   <url>
     <loc>{{ base }}/events/{{ slug }}</loc>
