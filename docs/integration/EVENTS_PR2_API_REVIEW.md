@@ -13,7 +13,7 @@
 | Field | Value |
 |-------|-------|
 | Branch | `events-2-api-review-layer` |
-| Commit | _(fill after commit)_ |
+| Commit | `53a1a0c5` |
 | PR title/link | _(fill after PR create)_ |
 | Target branch | `develop` |
 | Flags default OFF | Yes — `EVENTS_API_ENABLED=0`, `EVENTS_REVIEW_API_ENABLED=0` |
