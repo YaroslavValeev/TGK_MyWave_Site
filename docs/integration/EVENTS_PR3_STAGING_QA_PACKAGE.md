@@ -48,7 +48,7 @@ EVENTS_PUBLIC_UI_ENABLED=1  requires  EVENTS_API_ENABLED=1
 
 - `PARSER_NEWS_SPREADSHEET_ID` / sheet access configured (same as blog/competitions ticker)
 - `ENABLE_GOOGLE_SERVICES=1` if staging reads Sheets live (match staging blog setup)
-- Restart `mywave-site` after `.env` change (staging only, GM-approved)
+- Restart `mywave-staging` after `.env` change (staging only, GM-approved)
 
 **Verify flags OFF by default in repo:**
 
