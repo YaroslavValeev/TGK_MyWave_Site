@@ -13,8 +13,8 @@
 | Field | Value |
 |-------|-------|
 | Branch | `events-2-api-review-layer` |
-| Commit | `53a1a0c5` |
-| PR title/link | _(fill after PR create)_ |
+| Commit | `53a1a0c5` (implementation), branch HEAD `80c35f04` |
+| PR title/link | [feat(events): Events-2 read-only API and review layer](https://github.com/YaroslavValeev/TGK_MyWave_Site/pull/22) |
 | Target branch | `develop` |
 | Flags default OFF | Yes — `EVENTS_API_ENABLED=0`, `EVENTS_REVIEW_API_ENABLED=0` |
 | No public UI | Yes |
