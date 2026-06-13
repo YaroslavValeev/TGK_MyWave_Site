@@ -37,6 +37,9 @@ for _social_flag in (
 ):
     os.environ[_social_flag] = '0'
 
+for _events_flag in ('EVENTS_CLASSIFIER_ENABLED',):
+    os.environ[_events_flag] = '0'
+
 from app import create_app
 import unittest.mock as umock
 
