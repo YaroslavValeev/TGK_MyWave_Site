@@ -1,9 +1,10 @@
 # Events PR-3 — Public UI (Implementation Package)
 
-**Status:** Draft — pre-code, GM review required before implementation  
-**Date:** 2026-06-13  
-**Base branch:** `develop` (after Events-2 merge `fae6a49b`, implementation commit `53a1a0c5`)  
-**Depends on:** Events-1 (classifier/schema), Events-2 (loader/store/serializer/API)
+**Status:** GM **APPROVED WITH CORRECTIONS** — package updated; implementation may start after merge to `develop`  
+**Date:** 2026-06-13 (revised per GM review)  
+**Base branch:** `develop` (after Events-2 merge `fae6a49b`)  
+**Depends on:** Events-1 (classifier/schema), Events-2 (loader/store/serializer/API)  
+**Implementation branch (after package merge):** `events-3-public-ui` → PR target `develop`
 
 **Production:** observe mode — no deploy, no merge to `main`, all `EVENTS_*` flags remain **OFF** until a dedicated GM window.
 
@@ -37,16 +38,16 @@ Public pages must **never** expose `needs_review` rows, raw bodies, source URLs,
 
 ---
 
-## 3. Route decisions (proposed for GM sign-off)
+## 3. Route decisions
 
-### 3.1 `/events` — list vitrine (replace static-only behavior when flag ON)
+### 3.1 `/events` — list vitrine
 
-| Aspect | Proposal |
+| Aspect | Behavior |
 |--------|----------|
-| **When flag OFF** | Keep **current** behavior: YAML showcases via `get_event_cards()` / `get_events_schema()` — no regression |
-| **When flag ON** | Server-render list from Events-2 **store layer** (`list_items`), not HTTP self-call |
-| **Default filter** | Upcoming items with `track_status=published` only; exclude `needs_review`, `draft`, `archived` |
-| **Query params** | `type` (alias `content_type`), `city`, `from`, `to` — mirror API filters for shareable URLs |
+| **`EVENTS_PUBLIC_UI_ENABLED=0`** | **Current YAML path unchanged** — `get_event_cards()` / `get_events_schema()`; **no regression** |
+| **`EVENTS_PUBLIC_UI_ENABLED=1`** + API ON | Server-render from Events-2 **store layer** (`get_public_items()`), not HTTP self-call |
+| **Default public filter** | `is_public_eligible(item) == true` (see §5) |
+| **Query params** | `type` (alias `content_type`), `city`, `from`, `to` — shareable URLs |
 | **Layout** | Card grid + filter bar (desktop); collapsible filters (mobile) |
 | **Pagination** | Server-side `limit`/`offset` or “load more” (max 50 per page) |
 
@@ -59,15 +60,25 @@ Public pages must **never** expose `needs_review` rows, raw bodies, source URLs,
 /events?from=2026-06-01&to=2026-12-31
 ```
 
-### 3.2 `/events/<slug>` — detail page (**new**, flag-gated)
+### 3.2 `/events/<slug>` — detail page (flag-gated)
 
-| Option | Recommendation | Rationale |
-|--------|----------------|-----------|
-| A. Slug from Sheet `slug` column | Preferred if column populated | Aligns with blog `/blog/{slug}` |
-| B. Deterministic slug `{title-slug}-{event_id_tail}` | **Fallback MVP** | No parser change required |
-| C. Opaque `/events/id/<event_id>` | Reject for SEO | Poor canonical URLs |
+**MVP slug format (GM accepted):**
 
-**GM proposal:** implement **B** for MVP; upgrade to **A** when Parser News adds `slug` to ticker/raw rows (Events-4).
+```text
+{title-slug}-{event_id_tail}
+```
+
+**Canonical identity rule (required):**
+
+| Concept | Rule |
+|---------|------|
+| **`event_id`** | Canonical identity — lookup primary key |
+| **Slug** | Derived from title + `event_id_tail`; **may change** when title changes |
+| **Lookup** | Resolve by `event_id_tail` (suffix match) **and** validate slug; do not rely on title slug alone |
+| **Title/slug mismatch** | If item found by `event_id_tail` but URL title slug differs → **301 redirect** to canonical `/events/{current_slug}` or emit canonical URL in `<link rel="canonical">` |
+| **Collision** | Impossible by design: `event_id_tail` is unique per row; slug always includes tail |
+
+**404** when: item missing, not public-eligible, or `EVENTS_PUBLIC_UI_ENABLED=0`.
 
 Detail page fields (public-safe, extended vs list):
 
@@ -76,30 +87,28 @@ Detail page fields (public-safe, extended vs list):
 - cover image if `media_status=ok` and URL is not t.me page
 - CTA: registration link only if explicitly `published` + URL validated
 
-**404** when: item missing, `needs_review`, not `published`, or flag OFF (same as list).
+Future upgrade: explicit Sheet `slug` column (Events-4) — still keyed by `event_id`.
 
 ### 3.3 `/competitions` — redirect, not separate catalog
 
-**Recommendation (from EVENTS-0 audit):**
-
 ```text
-GET /competitions  →  301  →  /events?type=competition
+GET /competitions  →  redirect  →  /events?type=competition
 ```
 
-| Alternative | Verdict |
-|-------------|---------|
-| Separate `/competitions` template | Reject — duplicates vitrine |
-| Keep 404 | Reject — breaks user/bookmark expectations |
+| Stage | Status code | When |
+|-------|-------------|------|
+| **Staging / MVP / pre-prod** | **302** (temporary) | Until GM prod launch sign-off |
+| **After GM prod launch approval** | **301** (permanent) | Production SEO window only |
 
-Register redirect **only when** `EVENTS_PUBLIC_UI_ENABLED=1`.
+Register redirect **only when** `EVENTS_PUBLIC_UI_ENABLED=1`.  
+If `/competitions` never existed publicly before — **302 first** avoids locking in a bad SEO redirect before validation.
 
-### 3.4 Legacy routes (no change in Events-3)
+### 3.4 Legacy routes
 
 | Route | Events-3 action |
 |-------|-----------------|
 | `/content/events_list` | No touch; deprecate in Events-4 |
-| Home ticker `#competitions-ticker` | Optional: link cards to `/events/<slug>` when flag ON (separate small PR if scope tight) |
-| Home `#events` empty months | **Optional Events-3b** — wire to store or hide block until data exists |
+| Home `#events` empty months | **Optional Events-3b** — wire to store or hide block |
 
 ---
 
@@ -111,245 +120,312 @@ flowchart LR
     RF[raw_feed]
     CT[competitions_ticker]
   end
-  subgraph events2 [Events-2 layer - merged]
+  subgraph yaml [Manual YAML]
+    Y[configs/showcases]
+  end
+  subgraph events2 [Events-2 layer]
     L[loader.py]
     S[store.py]
-    SER[serializer.py]
     API["GET /api/events"]
   end
-  subgraph events3 [Events-3 - proposed]
-    R[events_public.py routes]
-    T[templates/events*.html]
-    JS[static/js/events-vitrine.js]
+  subgraph events3 [Events-3]
+    PE[is_public_eligible]
+    R[events_public.py]
+    T[templates]
   end
   RF --> L
   CT --> L
   L --> S
   S --> API
-  S --> R
+  S --> PE
+  PE --> R
+  Y -.->|fallback only| R
   R --> T
-  R --> JS
 ```
 
-**Rule:** Public SSR routes call **`store.list_items()` / `get_item_by_slug()`** directly (same read model as API).  
-Do **not** HTTP-fetch `/api/events` from Flask unless needed for client-side hydration tests.
+**Rule:** Public SSR routes call **`store.get_public_items()` / `resolve_item_by_slug()`** directly (same read model as API).  
+Do **not** HTTP-fetch `/api/events` from Flask.
 
-**YAML coexistence (transition):**
+### 4.1 YAML merge policy (GM corrected — no chaotic mixing)
 
-| Phase | Behavior |
-|-------|----------|
-| Flag OFF | YAML only (current) |
-| Flag ON, staging | API/store items **primary**; YAML manual camps merged with `source_hint=manual` if GM approves |
-| Flag ON, prod (future window) | Same; YAML entries migrated to Sheets over time |
+| Flag state | Source |
+|------------|--------|
+| **`EVENTS_PUBLIC_UI_ENABLED=0`** | YAML only — **unchanged current path** |
+| **`EVENTS_PUBLIC_UI_ENABLED=1`** | **Events-2 read-model is primary** |
 
-Events-3 MVP: **store-only list**; YAML merge is **optional** sub-task — default **API/store wins**, YAML shown only when store empty (fallback banner).
+**If YAML items appear in the new vitrine:**
+
+1. YAML rows **must** pass through the same **normalized model + public serializer** (not ad-hoc dict merge).
+2. **Dedup** before render: by `event_id`, `source_id`, `source_url`, or checksum — **never show duplicate** camp/event from YAML and Sheets.
+3. If YAML → normalized model adapter is **not ready in Events-3** → YAML is **fallback only** when store returns zero public-eligible items (with banner “расписание обновляется”).
+4. **Never** interleave unnormalized YAML cards alongside store cards without dedup.
 
 ---
 
-## 5. `needs_review` and publish policy (public)
+## 5. Public eligibility (`needs_review` policy)
 
-| Condition | Public UI |
-|-----------|-----------|
-| `classification.needs_review=true` | **Hidden** — never in list or detail |
-| `track_status=needs_review` | **Hidden** |
-| `track_status=draft` / `parsed` | **Hidden** |
-| `track_status=published` + classifier OK | **Visible** |
-| `track_status=archived` | Hidden (or “past events” section — **defer** to Events-3b) |
+**Hard rule (GM):**
+
+```text
+needs_review never appears on public list or detail
+```
+
+Public UI shows **only** public-eligible items.
+
+### 5.1 `is_public_eligible(item)` — required function
+
+Implement in `app/services/events/public_eligibility.py` (or `store.py`):
+
+```python
+def is_public_eligible(item: NormalizedContentItem) -> bool:
+    """
+    Minimum: track_status != needs_review
+    Full rule: published + classifier OK + required fields present
+    """
+```
+
+| Check | Rule |
+|-------|------|
+| Minimum (required) | `track_status != "needs_review"` |
+| Classifier | `classification.needs_review is False` |
+| Status | `track_status == "published"` |
+| Draft/parsed/archived | **Excluded** from public list |
+| Missing title | **Excluded** |
+| Missing start_date for competition/event | **Excluded** (already `needs_review` in classifier) |
+
+**All public list/detail paths must call `is_public_eligible()` — single gate, unit-tested.**
 
 Operator review remains on **`GET /api/events/review-queue`** (Events-2, internal/staging only).
 
-**No autopublish:** classifier never promotes row to `published` on Site; editorial action stays in Sheets / future admin PR.
+**No autopublish:** classifier never promotes row to `published` on Site.
 
 ---
 
-## 6. Empty and fallback states
-
-Reuse patterns from current `templates/events.html`:
-
-| State | UX |
-|-------|-----|
-| Zero published items | `#no-events-modal` + links to `/blog`, contacts |
-| Filter returns empty | Inline message “Нет мероприятий по фильтру” + reset filters |
-| Sheets load failure | Log warning; show YAML fallback if configured OR friendly error (no stack trace) |
-| Flag OFF | Existing static page / empty YAML cards |
-
-Copy (RU): consistent with home ticker tone — “готовим расписание”, no false dates.
-
----
-
-## 7. Mobile layout
-
-| Element | Mobile behavior |
-|---------|-----------------|
-| Filter bar | Collapse to “Фильтры” drawer / `<details>` |
-| Event cards | Single column, full-width |
-| Dates | `start_date`–`end_date` compact format (locale `ru-RU`) |
-| CTA buttons | Min tap target 44px; stack vertically |
-| Detail page | Hero image optional; sticky “Записаться” if registration URL present |
-
-CSS: extend existing `.events-section` / `.event-card` in `static/css/` (minimal new file `events-vitrine.css` if needed).
-
----
-
-## 8. SEO and schema.org Event plan
-
-**Canonical domain:** `https://mywavetreaning.ru` (per site-publisher-context).
-
-| Page | SEO |
-|------|-----|
-| `/events` | `<title>Мероприятия и соревнования — MyWave</title>`, meta description, canonical `/events` |
-| `/events?type=competition` | canonical to `/events?type=competition` (no duplicate `/competitions` index) |
-| `/events/<slug>` | per-event title, canonical `{base}/events/{slug}` |
-
-**JSON-LD:**
-
-- List page: `ItemList` of `Event` references (or single graph `@graph`)
-- Detail page: full `Event` with `startDate`, `endDate`, `location` (`Place`), `eventStatus`, `eventAttendanceMode`
-- Omit events without `start_date` from JSON-LD (already excluded from public list)
-
-**Sitemap:** add `/events` and published detail slugs to `sitemap.xml` generator **when flag ON** (fix E-10 from audit).
-
-**Robots:** no index for review-queue or diagnostic URLs (API-only).
-
----
-
-## 9. Feature flags (default OFF)
+## 6. Feature flags (default OFF)
 
 ```text
 EVENTS_CLASSIFIER_ENABLED=0      # Events-1 — unchanged
 EVENTS_API_ENABLED=0             # Events-2 — unchanged
 EVENTS_REVIEW_API_ENABLED=0      # Events-2 — unchanged
-EVENTS_PUBLIC_UI_ENABLED=0       # NEW — gates /events dynamic vitrine + /events/<slug> + /competitions redirect
+EVENTS_PUBLIC_UI_ENABLED=0       # NEW — gates dynamic vitrine + detail + /competitions redirect
 ```
 
-**Dependency chain:**
+### 6.1 Flag dependency (GM hard rule)
 
 ```text
-EVENTS_PUBLIC_UI_ENABLED=1  →  requires EVENTS_API_ENABLED=1  (store load path shared)
+EVENTS_PUBLIC_UI_ENABLED=1  REQUIRES  EVENTS_API_ENABLED=1
 ```
 
-When `EVENTS_PUBLIC_UI_ENABLED=0`:
+Enforce in `app/config/events_features.py`:
 
-- `/events` behaves as today (YAML);
-- `/events/<slug>` → **404** (or redirect `/events`);
-- `/competitions` → **404** (no redirect).
+```python
+def is_events_public_ui_enabled() -> bool:
+    return is_events_api_enabled() and _env_flag("EVENTS_PUBLIC_UI_ENABLED")
+```
 
-Implementation may register routes always but gate at view level (consistent with Events-2 **503** vs public **404** — use **404** for public routes to avoid leaking feature existence).
+### 6.2 Flag behavior matrix
+
+| `EVENTS_PUBLIC_UI_ENABLED` | `EVENTS_API_ENABLED` | Behavior |
+|----------------------------|----------------------|----------|
+| `0` | any | `/events` = **current YAML**; `/events/<slug>` → 404; `/competitions` → 404; **no regression** |
+| `1` | `0` | **No 500** — graceful fallback: render YAML path **or** 503/404 per route (list → YAML fallback preferred; detail → 404) |
+| `1` | `1` | Dynamic vitrine from store; detail + redirect active |
+
+New detail routes **must not break** existing site when flags OFF.
 
 ---
 
-## 10. Proposed PR split
+## 7. Home ticker links (in scope)
+
+**Do not break** existing home `#competitions-ticker` behavior.
+
+| Condition | Link target |
+|-----------|-------------|
+| `EVENTS_PUBLIC_UI_ENABLED=1` + item is public-eligible + detail URL resolvable | `/events/{slug}` |
+| Detail URL not available | Keep current `event_url` / `source_url` / existing ticker behavior |
+| **Never** | Generate broken `/events/<slug>` links |
+
+Implementation: helper `public_detail_url(item) -> Optional[str]` — returns `None` if not eligible → ticker keeps legacy link.
+
+---
+
+## 8. Empty and fallback states
+
+| State | UX |
+|-------|-----|
+| Zero public-eligible items | `#no-events-modal` + links to `/blog`, contacts |
+| Filter returns empty | “Нет мероприятий по фильтру” + reset filters |
+| Sheets load failure | Log warning; YAML fallback (if flag allows) OR friendly error — **no 500, no stack trace** |
+| `PUBLIC_UI=1`, `API=0` | YAML fallback or 503 — **no 500** |
+| Flag OFF | Existing static page unchanged |
+
+---
+
+## 9. Mobile layout
+
+| Element | Mobile behavior |
+|---------|-----------------|
+| Filter bar | Collapse to “Фильтры” drawer / `<details>` |
+| Event cards | Single column, full-width |
+| Dates | `start_date`–`end_date` compact (`ru-RU`) |
+| CTA buttons | Min tap target 44px |
+| Detail page | Hero optional; sticky CTA if registration URL |
+
+CSS: extend `.events-section` / `.event-card`; optional `events-vitrine.css`.
+
+---
+
+## 10. SEO and schema.org (GM corrected domain)
+
+**Canonical production domain:**
+
+```text
+https://mywavewake.ru
+```
+
+**Do not use** `mywavetreaning.ru` in Events-3 canonical URLs, sitemap, or JSON-LD.
+
+| Page | SEO |
+|------|-----|
+| `/events` | title + meta description; canonical `https://mywavewake.ru/events` |
+| `/events?type=competition` | canonical query URL on same domain |
+| `/events/<slug>` | per-event title; canonical `https://mywavewake.ru/events/{slug}` |
+
+**JSON-LD:** `ItemList` (list) / `Event` (detail) with `startDate`, `endDate`, `location`, `eventStatus`.  
+Omit events without `start_date` from JSON-LD.
+
+**Sitemap:** add `/events` + published detail slugs when flag ON (domain `mywavewake.ru`).
+
+---
+
+## 11. Proposed PR split
 
 | PR | Scope |
 |----|--------|
-| **Events-3a** | Flags, `events_public.py`, store `get_by_slug`, list + detail templates, `/competitions` redirect, tests |
-| **Events-3b** (optional) | Home `#events` block, ticker deep links, sitemap slugs, YAML merge |
+| **Events-3** | Flags, eligibility, slug, public routes, templates, ticker links, `/competitions` 302, tests |
+| **Events-3b** (optional) | Home `#events` block, sitemap slugs bulk, YAML normalized merge, 301 upgrade after prod sign-off |
 
-Single PR **Events-3** acceptable if ≤ ~600 LOC; prefer **3a only** for first GM review.
+Single PR **Events-3** acceptable if ≤ ~700 LOC.
 
 ---
 
-## 11. Affected files (planned)
+## 12. Affected files (planned)
 
 | File | Action |
 |------|--------|
-| `app/config/events_features.py` | Add `EVENTS_PUBLIC_UI_ENABLED`, `is_events_public_ui_enabled()` |
-| `app/routes/events_public.py` | **new** — `/events`, `/events/<slug>`, `/competitions` redirect |
-| `app/services/events/store.py` | Extend — `get_public_items()`, `get_item_by_slug()`, public filter preset |
-| `app/services/events/public_serializer.py` | **new** — SSR-safe fields (+ short_description rules) |
-| `app/services/events/slug.py` | **new** — slug derive / resolve |
-| `app/__init__.py` | Register blueprint; gate or replace inline `events_page()` |
+| `app/config/events_features.py` | `EVENTS_PUBLIC_UI_ENABLED`, strict API dependency |
+| `app/services/events/public_eligibility.py` | **new** — `is_public_eligible()` |
+| `app/services/events/slug.py` | **new** — derive, resolve by `event_id_tail`, canonical redirect |
+| `app/services/events/public_serializer.py` | **new** — SSR-safe fields |
+| `app/services/events/store.py` | `get_public_items()`, `resolve_item_by_slug()` |
+| `app/routes/events_public.py` | **new** — routes + redirect |
+| `app/__init__.py` | Gate `events_page()`; register blueprint |
 | `templates/events.html` | Dynamic list + filters + empty states |
-| `templates/events_detail.html` | **new** — detail + JSON-LD |
-| `static/js/events-vitrine.js` | **new** — filter UX (optional progressive enhancement) |
-| `static/css/events-vitrine.css` | **new** — mobile filters (if needed) |
-| `templates/sitemap.xml` | Conditional `/events` + detail URLs |
-| `env.example` | Document `EVENTS_PUBLIC_UI_ENABLED` |
+| `templates/events_detail.html` | **new** — detail + JSON-LD + canonical |
+| `templates/partials/home_competitions_ticker.html` | Conditional detail links |
+| `static/js/events-vitrine.js` | Optional filter UX |
+| `static/css/events-vitrine.css` | Mobile filters |
+| `templates/sitemap.xml` | Conditional URLs on `mywavewake.ru` |
+| `env.example` | Document flag |
+| `tests/unit/test_events_public_eligibility.py` | **new** |
 | `tests/unit/test_events_public_routes.py` | **new** |
 | `tests/unit/test_events_public_serializer.py` | **new** |
-| `docs/integration/EVENTS_PR3_PUBLIC_UI.md` | Evidence doc (post-implementation) |
+| `tests/unit/test_events_slug.py` | **new** |
+| `docs/integration/EVENTS_PR3_PUBLIC_UI.md` | Evidence (post-implementation) |
 
-**Not touched:** `app/services/blog/store.py`, parser cron, `events_api.py` contract, Telegram, booking.
+**Not touched:** `app/services/blog/store.py`, parser cron, Telegram, booking.
 
 ---
 
-## 12. Test plan
+## 13. Required tests (GM mandatory)
 
 ```bash
-python -m pytest tests/unit/test_events_public_routes.py tests/unit/test_events_public_serializer.py tests/unit/test_events_api.py tests/unit/test_event_classifier.py -q
+python -m pytest \
+  tests/unit/test_events_public_eligibility.py \
+  tests/unit/test_events_slug.py \
+  tests/unit/test_events_public_routes.py \
+  tests/unit/test_events_public_serializer.py \
+  tests/unit/test_events_api.py \
+  tests/unit/test_event_classifier.py \
+  -q
 ```
 
-| Case | Expectation |
-|------|-------------|
-| Flags OFF | `/events` → legacy YAML path; `/events/foo` → 404 |
-| Flag ON | `/events` lists only `published`, not `needs_review` |
-| `/competitions` | 301 → `/events?type=competition` when flag ON |
-| Detail slug | 200 for published; 404 for needs_review |
-| Serializer | No raw body, source_url, PII keys in HTML/JSON-LD |
-| Empty store | Fallback UI renders without 500 |
-| Regression | Events-2 API tests still pass |
+| # | Test case | Expectation |
+|---|-----------|-------------|
+| 1 | Flag OFF | `/events` YAML behavior **unchanged** (same cards/schema path) |
+| 2 | Flag ON + API ON | `/events` lists public-eligible store items only |
+| 3 | `needs_review` | **Not** in public list |
+| 4 | `needs_review` detail | **404** (or redirect away) |
+| 5 | `is_public_eligible()` | Unit tests for min rule + full rule |
+| 6 | Slug generation | Stable for same `event_id` + title |
+| 7 | Slug collision | Protected by unique `event_id_tail` |
+| 8 | Title change | Old slug URL → **301** to new canonical slug |
+| 9 | `/competitions` | **302** → `/events?type=competition` when flag ON |
+| 10 | Empty state | Renders without 500 |
+| 11 | Mobile markup | Smoke: filter `<details>`, card structure present |
+| 12 | Serializer safety | No raw source payload, source_url, PII in HTML/JSON-LD |
+| 13 | `PUBLIC_UI=1`, `API=0` | No 500; graceful fallback |
+| 14 | Ticker links | No broken `/events/<slug>` when item not eligible |
+| 15 | Regression | Events-2 API tests still pass |
 
 ---
 
-## 13. Out of scope (explicit)
+## 14. Out of scope (explicit)
 
 - Blog publishability / `raw_feed` ingest changes
-- Parser Bot / cron / new Sheet columns (Events-4)
-- Autopublish to ticker or blog
-- POST review override
-- Admin UI for review queue
-- Production deploy / `main` merge / `.env` prod changes
+- Parser Bot / cron (Events-4)
+- Autopublish, POST override, admin review UI
+- Production deploy / `main` merge / `.env` prod / flags ON on prod
 - Social-2, Telegram bot, Node restart
-- Full replacement of `/projects/*` camp landings
+- `/competitions` **301** until GM prod launch sign-off (use 302 first)
 
 ---
 
-## 14. Risks
+## 15. Risks and mitigations
 
 | Risk | Mitigation |
 |------|------------|
-| YAML vs Sheets duplicate entries | Default store-primary; document manual dedup |
-| Missing slug column | Deterministic slug helper + tests |
-| SEO duplicate `/competitions` | 301 only, single canonical list |
-| Leak `needs_review` | Hard filter in `get_public_items()` + tests |
-| Scope creep into home/ticker | Defer to Events-3b |
-| Flag ON without API flag | Enforce dependency in `events_features.py` |
+| YAML + Sheets duplicates | Dedup + normalized model; fallback-only if adapter missing |
+| Slug drift on title edit | `event_id` lookup + 301 to canonical |
+| Leak `needs_review` | `is_public_eligible()` single gate + tests |
+| Flag ON without API | Dependency + YAML fallback, no 500 |
+| Broken ticker links | `public_detail_url()` returns None → legacy URL |
+| Wrong canonical domain | Hardcode config constant `PUBLIC_SITE_BASE_URL=https://mywavewake.ru` for Events-3 |
 
 ---
 
-## 15. GM approval checklist (before coding)
+## 16. GM approval checklist
 
-- [ ] Approve route set: `/events`, `/events/<slug>`, `/competitions` → 301
-- [ ] Approve slug strategy (deterministic MVP vs Sheet `slug`)
-- [ ] Approve flag name `EVENTS_PUBLIC_UI_ENABLED` + dependency on `EVENTS_API_ENABLED`
-- [ ] Approve public filter: `published` only, hide `needs_review`
-- [ ] Approve YAML fallback policy when store empty
-- [ ] Approve SEO/sitemap scope for Events-3a vs 3b
-- [ ] Confirm **no production deploy** for Events-3 PR
-- [ ] Confirm PR targets **`develop` only**
+- [x] Route set: `/events`, `/events/<slug>`, `/competitions` redirect
+- [x] Slug MVP: `{title-slug}-{event_id_tail}`; `event_id` canonical
+- [x] Flag dependency: `EVENTS_PUBLIC_UI_ENABLED=1` requires `EVENTS_API_ENABLED=1`
+- [x] Public eligibility: `is_public_eligible()` + tests
+- [x] YAML: store-primary; normalized merge or fallback-only
+- [x] Ticker links: no broken slugs
+- [x] Canonical domain: `https://mywavewake.ru`
+- [x] `/competitions`: 302 staging, 301 after prod sign-off
+- [x] No production deploy; PR target `develop` only
+
+**Implementation may start on branch `events-3-public-ui` after this package merges to `develop`.**
 
 ---
 
-## 16. Evidence template (post-implementation)
+## 17. Evidence template (post-implementation)
 
 ```text
-Branch:
+Branch: events-3-public-ui
 Commit:
 PR title/link:
 Target branch: develop
 Flags default OFF: EVENTS_PUBLIC_UI_ENABLED=0
-Routes added:
-needs_review hidden:
-/competitions redirect:
+Canonical domain: https://mywavewake.ru
+is_public_eligible tested: yes/no
+needs_review hidden: yes/no
+/competitions redirect (302): yes/no
+Flag OFF YAML unchanged: yes/no
+PUBLIC_UI=1 API=0 no 500: yes/no
 Tests command/result:
-No parser/cron:
-No blog wiring:
-No production changes:
-main unchanged:
-```
-
-Expected test command:
-
-```bash
-python -m pytest tests/unit/test_events_public_routes.py tests/unit/test_events_public_serializer.py tests/unit/test_events_api.py tests/unit/test_event_classifier.py -q
+No parser/cron: yes/no
+No production changes: yes/no
+main unchanged: yes/no
 ```
