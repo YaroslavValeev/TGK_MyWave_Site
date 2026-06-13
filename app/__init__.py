@@ -357,6 +357,12 @@ def create_app(config_name="development"):
     app.register_blueprint(files_bp)
     app.register_blueprint(blog_bp)
     app.register_blueprint(competitions_bp)
+    try:
+        from app.routes.events_api import events_api_bp
+
+        app.register_blueprint(events_api_bp)
+    except Exception:
+        app.logger.debug("events_api_bp not found or failed to import")
     app.register_blueprint(safari_bp)
     try:
         from app.routes.projects_safari import projects_safari_bp
