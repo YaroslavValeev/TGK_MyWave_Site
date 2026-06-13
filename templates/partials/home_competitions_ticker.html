@@ -6,7 +6,7 @@
       {% for item in competitions_ticker %}
       <span class="home-competitions-ticker__item">
         {% if item.href %}
-        <a class="home-competitions-ticker__link" href="{{ item.href }}" target="_blank" rel="noopener noreferrer">{{ item.label }}</a>
+        <a class="home-competitions-ticker__link" href="{{ item.href }}"{% if item.href_external %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ item.label }}</a>
         {% else %}
         <span class="home-competitions-ticker__text">{{ item.label }}</span>
         {% endif %}

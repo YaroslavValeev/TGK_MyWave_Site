@@ -2,71 +2,77 @@
 
 {% block content %}
 {% set event_cards = event_cards or [] %}
-{# JSON-LD structured data for events. If the view provides `events` (already shaped), it will be used; otherwise we emit two fallback events. #}
+{% if canonical_url is defined and canonical_url %}
+<link rel="canonical" href="{{ canonical_url }}">
+{% endif %}
 <script type="application/ld+json" nonce="{{ g.csp_nonce }}">
 {%- if events is defined and events %}
 {{ events|tojson(indent=2) }}
 {%- else %}
-[
-    {
-        "@context": "https://schema.org",
-        "@type": "Event",
-        "name": "WakeSurf Safari 2025",
-        "startDate": "2025-07-01",
-        "location": { "@type": "Place", "name": "Волга", "address": "Волга, Россия" },
-        "image": [ "{{ url_for('static', filename='images/wakesurf-safari.webp') }}" ],
-        "description": "Эксклюзивный тур по Волге с обучением",
-        "eventStatus": "https://schema.org/EventScheduled",
-        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-        "url": "{{ url_for('events_page') }}"
-    },
-    {
-        "@context": "https://schema.org",
-        "@type": "Event",
-        "name": "Тренировочный кемп в Сочи",
-        "startDate": "2025-12-01",
-        "location": { "@type": "Place", "name": "Сочи", "address": "Сочи, Россия" },
-        "image": [ "{{ url_for('static', filename='images/sochi-camp.webp') }}" ],
-        "description": "Зимние тренировки в горном регионе",
-        "eventStatus": "https://schema.org/EventScheduled",
-        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-        "url": "{{ url_for('events_page') }}"
-    }
-]
+[]
 {%- endif %}
 </script>
 
-        <section class="events-section" id="events-section">
-                <h2>Ближайшие мероприятия</h2>
+<section class="events-section" id="events-section">
+    <h2>Ближайшие мероприятия</h2>
 
-                <!-- Модалка "мероприятий пока нет" -->
-                <div id="no-events-modal" class="modal" style="display:none;">
-                    <div class="modal-content">
-                        <button class="close-modal" aria-label="Закрыть">&times;</button>
-                        <h2>Мероприятий пока нет</h2>
-                        <p>Мы готовим расписание. Подпишитесь на новости и загляните позже 👋</p>
+    {% if events_dynamic %}
+    <details class="events-filters" id="events-filters">
+        <summary>Фильтры</summary>
+        <form method="get" action="{{ url_for('events_page') }}" class="events-filters__form">
+            <label>Тип
+                <select name="type">
+                    <option value="">Все</option>
+                    {% for t in ['event','competition','camp','workshop'] %}
+                    <option value="{{ t }}" {% if filter_type == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Город
+                <input type="text" name="city" value="{{ filter_city or '' }}" placeholder="Москва">
+            </label>
+            <button type="submit" class="btn-secondary">Применить</button>
+        </form>
+    </details>
+    {% if yaml_fallback %}
+    <p class="events-fallback-note">Показываем резервное расписание — данные обновляются.</p>
+    {% endif %}
+    {% if empty_filter %}
+    <p class="events-empty-filter">Нет мероприятий по фильтру. <a href="{{ url_for('events_page') }}">Сбросить</a></p>
+    {% endif %}
+    {% endif %}
 
-                        <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
-                            <a class="btn-primary" href="/blog">Перейти в блог</a>
-                            <a class="btn-secondary" href="/contacts">Связаться</a>
-                        </div>
-                    </div>
-                </div>
-
-        {% for event in event_cards %}
-        <div class="event-card">
-            {% if event.cover %}
-            <img src="{{ url_for('static', filename=event.cover) }}" alt="{{ event.name }}" width="300" height="200" loading="lazy">
-            {% endif %}
-            <h3>{{ event.name }}</h3>
-            <p>{{ event.summary }}</p>
-            {% if event.date_range %}<p>Дата: {{ event.date_range }}</p>{% endif %}
-            <div class="event-actions">
-                {% if event.cta_url %}<a href="{{ event.cta_url }}" class="btn-primary">Записаться</a>{% endif %}
+    <div id="no-events-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <button class="close-modal" aria-label="Закрыть">&times;</button>
+            <h2>Мероприятий пока нет</h2>
+            <p>Мы готовим расписание. Подпишитесь на новости и загляните позже 👋</p>
+            <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
+                <a class="btn-primary" href="/blog">Перейти в блог</a>
+                <a class="btn-secondary" href="/contacts">Связаться</a>
             </div>
         </div>
-        {% endfor %}
-    </section>
+    </div>
+
+    {% for event in event_cards %}
+    <div class="event-card">
+        {% if event.cover %}
+        <img src="{{ url_for('static', filename=event.cover) }}" alt="{{ event.name }}" width="300" height="200" loading="lazy">
+        {% endif %}
+        <h3>{{ event.name }}</h3>
+        <p>{{ event.summary }}</p>
+        {% if event.date_range %}<p>Дата: {{ event.date_range }}</p>{% endif %}
+        {% if event.city %}<p>{{ event.city }}</p>{% endif %}
+        <div class="event-actions">
+            {% if event.url %}
+            <a href="{{ event.url }}" class="btn-primary">Подробнее</a>
+            {% elif event.cta_url %}
+            <a href="{{ event.cta_url }}" class="btn-primary">Записаться</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</section>
 {% endblock %}
 {% block scripts %}
 <script>

@@ -12,8 +12,10 @@ from app.modules.logger import get_logger
 from app.services.competitions.visibility import parse_iso_date
 from app.services.events.content_types import CONTENT_TYPES, EVENT_TRACK_STATUSES
 from app.services.events.loader import load_classified_items
+from app.services.events.public_eligibility import is_public_eligible
 from app.services.events.review_queue import build_review_queue
 from app.services.events.schema import NormalizedContentItem
+from app.services.events.slug import build_public_slug, resolve_item_by_slug
 
 logger = get_logger(__name__)
 
@@ -210,3 +212,49 @@ def get_diagnostics(
         "sheet_name": sheet_name,
         "source": source,
     }
+
+
+def get_public_items(
+    *,
+    content_type: Optional[str] = None,
+    city: Optional[str] = None,
+    from_date: Optional[str] = None,
+    to_date: Optional[str] = None,
+    source: str = "all",
+    loader: Optional[Callable[..., List[NormalizedContentItem]]] = None,
+) -> List[NormalizedContentItem]:
+    """Published, public-eligible items only (Events-3)."""
+    items = _load_items(source, loader=loader)
+    ct = (content_type or "").strip().lower()
+    fd = parse_iso_date(from_date) if from_date else None
+    td = parse_iso_date(to_date) if to_date else None
+
+    result: List[NormalizedContentItem] = []
+    for item in items:
+        if not is_public_eligible(item):
+            continue
+        if ct and item.content_type != ct:
+            continue
+        if not _city_matches(item, city or ""):
+            continue
+        if not _date_in_range(item, fd, td):
+            continue
+        result.append(item)
+    return result
+
+
+def resolve_public_item_by_slug(
+    slug: str,
+    *,
+    loader: Optional[Callable[..., List[NormalizedContentItem]]] = None,
+):
+    items = _load_items("all", loader=loader)
+    eligible = [it for it in items if is_public_eligible(it)]
+    return resolve_item_by_slug(slug, eligible)
+
+
+def list_public_event_slugs(
+    *,
+    loader: Optional[Callable[..., List[NormalizedContentItem]]] = None,
+) -> List[str]:
+    return [build_public_slug(it) for it in get_public_items(loader=loader)]

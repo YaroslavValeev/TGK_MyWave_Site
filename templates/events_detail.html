@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if canonical_url %}
+<link rel="canonical" href="{{ canonical_url }}">
+{% endif %}
+<script type="application/ld+json" nonce="{{ g.csp_nonce }}">
+{%- if events is defined and events %}
+{{ events|tojson(indent=2) }}
+{%- else %}
+[]
+{%- endif %}
+</script>
+
+<section class="events-section events-detail" id="events-detail">
+    <h1>{{ event.name }}</h1>
+    {% if event.date_range %}<p class="events-detail__dates">Дата: {{ event.date_range }}</p>{% endif %}
+    {% if event.location_name or event.city %}
+    <p class="events-detail__location">{{ event.location_name or event.city }}</p>
+    {% endif %}
+    {% if event.content_type %}<p class="events-detail__type">{{ event.content_type }}</p>{% endif %}
+    {% if event.description %}<div class="events-detail__description">{{ event.description }}</div>{% endif %}
+    <p><a href="{{ url_for('events_page') }}" class="btn-secondary">← Все мероприятия</a></p>
+</section>
+{% endblock %}
