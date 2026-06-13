@@ -41,6 +41,7 @@ for _events_flag in (
     "EVENTS_CLASSIFIER_ENABLED",
     "EVENTS_API_ENABLED",
     "EVENTS_REVIEW_API_ENABLED",
+    "EVENTS_PUBLIC_UI_ENABLED",
 ):
     os.environ[_events_flag] = "0"
 

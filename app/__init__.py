@@ -173,8 +173,9 @@ def create_app(config_name="development"):
         competitions_ticker = []
         try:
             from app.services.competitions.store import get_ticker_items
+            from app.services.events.ticker_links import enrich_competitions_ticker
 
-            competitions_ticker = get_ticker_items() or []
+            competitions_ticker = enrich_competitions_ticker(get_ticker_items() or [])
         except Exception as e:
             app.logger.warning("home: не удалось загрузить ticker соревнований: %s", e)
 
@@ -363,6 +364,12 @@ def create_app(config_name="development"):
         app.register_blueprint(events_api_bp)
     except Exception:
         app.logger.debug("events_api_bp not found or failed to import")
+    try:
+        from app.routes.events_public import events_public_bp
+
+        app.register_blueprint(events_public_bp)
+    except Exception:
+        app.logger.debug("events_public_bp not found or failed to import")
     app.register_blueprint(safari_bp)
     try:
         from app.routes.projects_safari import projects_safari_bp
@@ -585,16 +592,16 @@ def create_app(config_name="development"):
 
     @app.route('/events', methods=['GET'])
     def events_page():
-        from app.services.showcases import get_events_schema, get_event_cards
+        from app.routes.events_public import render_events_list
 
-        events_schema = get_events_schema()
-        cards = get_event_cards()
-        return render_template('events.html', events=events_schema, event_cards=cards)
+        return render_events_list()
 
     @app.route('/sitemap.xml', methods=['GET'])
     def sitemap():
         lastmod = datetime.utcnow().date().isoformat()
         project_slugs = []
+        event_slugs = []
+        include_events = False
         try:
             from app.services.showcases import get_project_cards
             for p in get_project_cards():
@@ -605,9 +612,22 @@ def create_app(config_name="development"):
                         project_slugs.append(slug)
         except Exception:
             pass
+        try:
+            from app.config.events_features import is_events_public_ui_enabled
+            from app.services.events.store import list_public_event_slugs
+
+            if is_events_public_ui_enabled():
+                include_events = True
+                event_slugs = list_public_event_slugs()
+        except Exception:
+            pass
+        static_urls = ['/', '/projects', '/services', '/book', '/calculator', '/blog', '/privacy', '/offer']
+        if include_events:
+            static_urls.append('/events')
         urls = {
-            'static': ['/', '/projects', '/services', '/book', '/calculator', '/blog', '/privacy', '/offer'],
-            'project_slugs': project_slugs
+            'static': static_urls,
+            'project_slugs': project_slugs,
+            'event_slugs': event_slugs,
         }
         xml = render_template('sitemap.xml', lastmod=lastmod, urls=urls)
         resp = make_response(xml)
