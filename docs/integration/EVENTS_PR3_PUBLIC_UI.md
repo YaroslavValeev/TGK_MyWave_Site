@@ -3,7 +3,8 @@
 **GM approval:** Events-3 implementation  
 **Base:** `develop` (`16ef046c`)  
 **Branch:** `events-3-public-ui`  
-**Target PR:** `develop` (NOT `main`)
+**Target PR:** `develop` (NOT `main`)  
+**Merged:** yes — merge commit `27868d10` (PR #24, 2026-06-13)
 
 ---
 
@@ -12,8 +13,8 @@
 | Field | Value |
 |-------|-------|
 | Branch | `events-3-public-ui` |
-| Commit | _(after push)_ |
-| PR title/link | _(after PR create)_ |
+| Commit | `09d46901` |
+| PR title/link | [PR #24](https://github.com/YaroslavValeev/TGK_MyWave_Site/pull/24) — merged `27868d10` |
 | Target branch | `develop` |
 | Flags default OFF | `EVENTS_PUBLIC_UI_ENABLED=0` |
 | Canonical domain | `https://mywavewake.ru` |
