@@ -377,6 +377,9 @@ def create_app(config_name="development"):
     from app.routes.public_p0 import public_p0_bp
 
     app.register_blueprint(public_p0_bp)
+    from app.routes.brand import brand_bp
+
+    app.register_blueprint(brand_bp)
     app.register_blueprint(about_bp)
     app.register_blueprint(contact_bp)
     app.register_blueprint(calendar_bp)
