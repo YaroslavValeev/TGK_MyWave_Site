@@ -1,0 +1,21 @@
+{# MyWave brand logo — SVG из фирменного пакета (turquoise #35C0CD / white / black) #}
+{% macro brand_logo(variant='white', css_class='', link_href=None, link_label='MyWave — на главную') %}
+{% set logo_base = 'images/logotip_MyWave/MyWave_logo_package_brand_turquoise/01_master/' %}
+{% set logo_file = 'MyWave_logo_' ~ variant ~ '.svg' %}
+{% set logo_src = url_for('static', filename=logo_base ~ logo_file) %}
+{% if link_href %}
+<a href="{{ link_href }}" class="brand-logo-link" aria-label="{{ link_label }}">
+{% endif %}
+<img
+  src="{{ logo_src }}"
+  alt="MyWave"
+  class="brand-logo brand-logo--{{ variant }} {{ css_class }}"
+  width="1762"
+  height="561"
+  decoding="async"
+  loading="eager"
+/>
+{% if link_href %}
+</a>
+{% endif %}
+{% endmacro %}

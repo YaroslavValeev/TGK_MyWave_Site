@@ -890,3 +890,94 @@ Wake Surf Safari 2026 Styles
     width: 100%;
   }
 }
+
+/* ---------------------------------------------------------
+   Brand logo (SVG package) + footer download
+--------------------------------------------------------- */
+.brand-logo-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  line-height: 0;
+}
+
+.brand-logo {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(240px, 52vw);
+  max-height: 2.75rem;
+}
+
+.brand-logo--header {
+  max-height: 2.85rem;
+  max-width: min(200px, 46vw);
+}
+
+.brand-logo--hero {
+  max-height: clamp(3.25rem, 14vw, 5.75rem);
+  max-width: min(440px, 92vw);
+  margin: 0 auto;
+  filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.35));
+}
+
+.hero-title--logo {
+  margin: 0 0 0.75rem;
+  line-height: 0;
+}
+
+.brand-logo--footer {
+  max-height: 2.5rem;
+  max-width: min(180px, 70vw);
+  margin: 0 auto 0.75rem;
+}
+
+.site-footer {
+  background: #2a2a2a !important;
+  color: #eef2f6 !important;
+  padding: 1.5rem 1rem 1.75rem !important;
+}
+
+.site-footer__inner {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.site-footer__copy {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.site-footer__meta {
+  margin: 0;
+  font-size: 0.875rem;
+  color: rgba(238, 242, 246, 0.82);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.site-footer__download {
+  color: var(--mw-brand) !important;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.site-footer__download:hover,
+.site-footer__download:focus-visible {
+  color: #5fd4de !important;
+  text-decoration: underline;
+}
+
+.site-footer__sep {
+  opacity: 0.45;
+}
+
+.site-header .logo a,
+.site-header .logo .brand-logo-link {
+  font-size: 0;
+}
+

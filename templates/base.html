@@ -35,7 +35,7 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=hero-fix1" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}?v=hero-fix1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}?v=logo1" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/services-carousel.css') }}?v=project-cards-uniform2" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-home.css') }}?v=hero-overlap1" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/preloader.css') }}" />
@@ -103,11 +103,12 @@
 </head>
 
 <body{% block body_attrs %}{% endblock %}>
+  {% from 'partials/brand_logo.html' import brand_logo %}
   <!-- Шапка -->
   <header class="site-header" id="site-header">
     <div class="header-inner">
       <div class="logo">
-        <a href="{{ url_for('index') }}">MyWave</a>
+        {{ brand_logo('white', 'brand-logo--header', url_for('index')) }}
       </div>
       <nav class="site-nav" id="site-nav">
         <ul>
@@ -219,8 +220,19 @@
   <div id="toast" class="toast hidden" aria-live="polite" aria-label="Уведомление"></div>
 
   <footer class="site-footer">
-    <p>© 2025 MyWave. Все права защищены.</p>
-    <p>Разработка: MyWave Team</p>
+    <div class="site-footer__inner">
+      <div class="site-footer__brand">
+        {{ brand_logo('white', 'brand-logo--footer', url_for('index')) }}
+      </div>
+      <p class="site-footer__copy">© 2026 MyWave. Все права защищены.</p>
+      <p class="site-footer__meta">
+        <a href="{{ url_for('brand.logo_package_download') }}" class="site-footer__download">
+          Скачать логотип (ZIP)
+        </a>
+        <span class="site-footer__sep" aria-hidden="true">·</span>
+        <span class="site-footer__credit">Разработка: MyWave Team</span>
+      </p>
+    </div>
   </footer>
 
 </body>
