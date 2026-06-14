@@ -40,10 +40,12 @@ def _normalize_row(raw: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _row_to_ticker_item(row: Dict[str, Any]) -> Dict[str, Any]:
+    href = resolve_ticker_href(row)
     return {
         "id": str(row.get("id") or "").strip(),
         "label": build_ticker_text(row),
-        "href": resolve_ticker_href(row),
+        "href": href,
+        "href_external": bool(href),
         "discipline": str(row.get("discipline") or "").strip().lower(),
         "event_name": str(row.get("event_name") or "").strip(),
         "start_date": str(row.get("start_date") or "").strip()[:10],

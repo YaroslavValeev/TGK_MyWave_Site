@@ -182,7 +182,7 @@ class TestEventsPublicFlagsOn:
 
 
 class TestTickerLinks:
-    def test_enrich_internal_link_for_public_item(self, monkeypatch):
+    def test_enrich_keeps_source_href_for_public_item(self, monkeypatch):
         monkeypatch.setenv("EVENTS_API_ENABLED", "1")
         monkeypatch.setenv("EVENTS_PUBLIC_UI_ENABLED", "1")
         invalidate_events_cache()
@@ -192,6 +192,20 @@ class TestTickerLinks:
         )
         items = enrich_competitions_ticker(
             [{"id": "comp-published-001", "label": "IWWF", "href": "https://ext.example"}]
+        )
+        assert items[0]["href"] == "https://ext.example"
+        assert items[0]["href_external"] is True
+
+    def test_enrich_internal_link_when_no_source(self, monkeypatch):
+        monkeypatch.setenv("EVENTS_API_ENABLED", "1")
+        monkeypatch.setenv("EVENTS_PUBLIC_UI_ENABLED", "1")
+        invalidate_events_cache()
+        monkeypatch.setattr(
+            "app.services.events.store.load_classified_items",
+            _published_loader,
+        )
+        items = enrich_competitions_ticker(
+            [{"id": "comp-published-001", "label": "IWWF", "href": None}]
         )
         assert items[0]["href"].startswith("/events/")
         assert items[0]["href_external"] is False

@@ -12,8 +12,8 @@ from app.services.events.slug import find_public_item_by_event_id
 
 def enrich_competitions_ticker(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    When public UI is active, link ticker rows to /events/<slug> if detail exists.
-    Otherwise preserve existing href (external URL) or plain text.
+    When public UI is active, keep external source href when present.
+    Fall back to /events/<slug> only when no source URL exists.
     """
     if not is_events_public_ui_flag_set() or not is_events_api_enabled():
         return items
@@ -28,13 +28,21 @@ def enrich_competitions_ticker(items: List[Dict[str, Any]]) -> List[Dict[str, An
     enriched: List[Dict[str, Any]] = []
     for row in items:
         copy = dict(row)
-        copy.setdefault("href_external", True)
+        existing_href = (copy.get("href") or "").strip()
         event_id = str(copy.get("id") or "").strip()
         matched = find_public_item_by_event_id(event_id, public_items) if event_id else None
-        if matched:
+
+        if existing_href:
+            # Источник из Sheets (source_url / event_url) — приоритет для ticker.
+            copy["href"] = existing_href
+            copy["href_external"] = existing_href.startswith(("http://", "https://", "//"))
+        elif matched:
             path = public_detail_path(matched)
             if path:
                 copy["href"] = path
                 copy["href_external"] = False
+        else:
+            copy.setdefault("href_external", bool(copy.get("href")))
+
         enriched.append(copy)
     return enriched
