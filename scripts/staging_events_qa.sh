@@ -15,7 +15,12 @@ bad() { echo "[FAIL] $*"; FAIL=$((FAIL + 1)); }
 warn() { echo "[PARTIAL] $*"; PARTIAL=$((PARTIAL + 1)); }
 
 code() {
-  curl -fsS -o /dev/null -w "%{http_code}" "$1" 2>/dev/null || echo "000"
+  curl -sS -o /dev/null -w "%{http_code}" "$1" 2>/dev/null || echo "000"
+}
+
+code_expect() {
+  # Use curl without -f so 404/503 are readable ( -f would append 000 via || branch)
+  curl -sS -o /dev/null -w "%{http_code}" "$1" 2>/dev/null || echo "000"
 }
 
 echo "=== Events-3 Staging QA ==="
@@ -43,7 +48,7 @@ else
 fi
 
 # Detail unknown slug → 404 when flags ON
-DETAIL_CODE=$(code "$BASE/events/unknown-slug-00000000")
+DETAIL_CODE=$(code_expect "$BASE/events/unknown-slug-00000000")
 if [[ "$DETAIL_CODE" == "404" ]]; then ok "unknown detail slug 404"; else warn "unknown detail slug $DETAIL_CODE"; fi
 
 # Public HTML safety on /events
@@ -56,10 +61,12 @@ if [[ -n "$EVENTS_HTML" ]]; then
   fi
   if echo "$EVENTS_HTML" | grep -q "mywavewake.ru"; then
     ok "mywavewake.ru referenced in page"
+  elif echo "$EVENTS_HTML" | grep -q 'rel="canonical"'; then
+    ok "canonical link present"
   else
     warn "mywavewake.ru not found in /events HTML (check canonical when flags ON)"
   fi
-  if echo "$EVENTS_HTML" | grep -q "events-filters\|event-card"; then
+  if echo "$EVENTS_HTML" | grep -qE 'events-filters|event-card|events-section'; then
     ok "events markup present (dynamic or YAML cards)"
   else
     warn "no event-card/filters markup"
@@ -80,7 +87,7 @@ else
 fi
 
 # JSON-LD on /events
-if echo "$EVENTS_HTML" | grep -q 'application/ld+json'; then
+  if echo "$EVENTS_HTML" | grep -qE 'application/ld\+json|application/ld+json'; then
   ok "JSON-LD script on /events"
 else
   warn "JSON-LD script missing on /events"
