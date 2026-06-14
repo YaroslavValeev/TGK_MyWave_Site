@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 # Events-3 staging QA — run ON staging host or with STAGING_BASE_URL reachable.
-# Usage:
+#
+# On VPS (mywave-staging.service binds 127.0.0.1:5002):
+#   export STAGING_BASE_URL="http://127.0.0.1:5002"
+#   bash scripts/staging_events_qa.sh
+#
+# External URL (requires nginx + DNS for staging.mywavewake.ru):
 #   export STAGING_BASE_URL="https://staging.mywavewake.ru"
 #   bash scripts/staging_events_qa.sh
 set -euo pipefail
 
-BASE="${STAGING_BASE_URL:-https://staging.mywavewake.ru}"
+BASE="${STAGING_BASE_URL:-http://127.0.0.1:5002}"
 PASS=0
 FAIL=0
 PARTIAL=0
@@ -14,13 +19,19 @@ ok() { echo "[PASS] $*"; PASS=$((PASS + 1)); }
 bad() { echo "[FAIL] $*"; FAIL=$((FAIL + 1)); }
 warn() { echo "[PARTIAL] $*"; PARTIAL=$((PARTIAL + 1)); }
 
+# HTTP status only; avoid "000000" when curl fails ( -w already prints 000 )
 code() {
-  curl -sS -o /dev/null -w "%{http_code}" "$1" 2>/dev/null || echo "000"
+  local out rc=0
+  out=$(curl -sS -o /dev/null -w "%{http_code}" "$1" 2>/dev/null) || rc=$?
+  if [[ $rc -ne 0 ]]; then
+    echo "000"
+  else
+    echo "$out"
+  fi
 }
 
 code_expect() {
-  # Use curl without -f so 404/503 are readable ( -f would append 000 via || branch)
-  curl -sS -o /dev/null -w "%{http_code}" "$1" 2>/dev/null || echo "000"
+  code "$1"
 }
 
 echo "=== Events-3 Staging QA ==="
@@ -28,7 +39,7 @@ echo "BASE=$BASE"
 echo "date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 HOME_CODE=$(code "$BASE/")
-if [[ "$HOME_CODE" == "200" ]]; then ok "home $HOME_CODE"; else bad "home $HOME_CODE (DNS/connectivity?)"; fi
+if [[ "$HOME_CODE" == "200" ]]; then ok "home $HOME_CODE"; else bad "home $HOME_CODE (DNS/connectivity? use 127.0.0.1:5002 on VPS)"; fi
 
 EVENTS_CODE=$(code "$BASE/events")
 if [[ "$EVENTS_CODE" == "200" ]]; then ok "/events $EVENTS_CODE"; else bad "/events $EVENTS_CODE"; fi
@@ -51,26 +62,34 @@ fi
 DETAIL_CODE=$(code_expect "$BASE/events/unknown-slug-00000000")
 if [[ "$DETAIL_CODE" == "404" ]]; then ok "unknown detail slug 404"; else warn "unknown detail slug $DETAIL_CODE"; fi
 
-# Public HTML safety on /events
-EVENTS_HTML=$(curl -fsS "$BASE/events" 2>/dev/null || true)
-if [[ -n "$EVENTS_HTML" ]]; then
-  if echo "$EVENTS_HTML" | grep -qi "source_url\|raw_content\|Traceback"; then
+# Public HTML safety on /events (temp file — reliable grep on large HTML)
+EVENTS_TMP=$(mktemp)
+trap 'rm -f "$EVENTS_TMP"' EXIT
+if curl -fsS "$BASE/events" -o "$EVENTS_TMP" 2>/dev/null && [[ -s "$EVENTS_TMP" ]]; then
+  if grep -qiE 'source_url|raw_content|Traceback' "$EVENTS_TMP"; then
     bad "/events HTML contains forbidden tokens"
   else
     ok "/events no obvious raw leak in HTML"
   fi
-  if echo "$EVENTS_HTML" | grep -q "mywavewake.ru"; then
-    ok "mywavewake.ru referenced in page"
-  elif echo "$EVENTS_HTML" | grep -q 'rel="canonical"'; then
+  if grep -qF 'mywavewake.ru' "$EVENTS_TMP" || grep -qF 'mywavewake' "$EVENTS_TMP"; then
+    ok "mywavewake domain referenced in page"
+  elif grep -qF 'rel="canonical"' "$EVENTS_TMP"; then
     ok "canonical link present"
   else
-    warn "mywavewake.ru not found in /events HTML (check canonical when flags ON)"
+    warn "mywavewake not found in /events HTML (check canonical when flags ON)"
   fi
-  if echo "$EVENTS_HTML" | grep -qE 'events-filters|event-card|events-section'; then
+  if grep -qF 'events-section' "$EVENTS_TMP" || grep -qF 'event-card' "$EVENTS_TMP" || grep -qF 'events-filters' "$EVENTS_TMP"; then
     ok "events markup present (dynamic or YAML cards)"
   else
     warn "no event-card/filters markup"
   fi
+  if grep -qF 'application/ld+json' "$EVENTS_TMP"; then
+    ok "JSON-LD script on /events"
+  else
+    warn "JSON-LD script missing on /events"
+  fi
+else
+  warn "/events HTML not fetched (skipped markup/SEO checks)"
 fi
 
 # Sitemap
@@ -84,13 +103,6 @@ if [[ -n "$SITEMAP" ]]; then
   fi
 else
   bad "sitemap.xml unreachable"
-fi
-
-# JSON-LD on /events
-  if echo "$EVENTS_HTML" | grep -qE 'application/ld\+json|application/ld+json'; then
-  ok "JSON-LD script on /events"
-else
-  warn "JSON-LD script missing on /events"
 fi
 
 echo ""

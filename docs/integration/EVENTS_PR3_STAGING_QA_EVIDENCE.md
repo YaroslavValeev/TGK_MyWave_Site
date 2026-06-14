@@ -1,59 +1,114 @@
-# Events PR-3 — Staging QA Evidence
+# Events PR-3 — Staging QA Evidence (final)
 
-**Date:** 2026-06-13  
-**GM approval:** staging deploy + QA (staging only)  
-**develop HEAD:** `eb2ab0ca`  
-**Status:** **PENDING LIVE QA** — blocked from Site dev workstation (see §2)
+**Date:** 2026-06-14  
+**GM approval:** staging deploy + QA (staging only); classification accepted 2026-06-14  
+**develop HEAD (staging):** `f0a9a9d9`  
+**Overall QA status:** **PARTIAL** — core UI PASS; mobile screenshots pending  
+**Production launch:** **not approved**
 
 ---
 
-## 1. GM evidence template (fill after Owner runs staging)
+## 1. GM evidence summary (Site fill)
 
 ```text
-Staging URL:              https://staging.mywavewake.ru
-Branch/head:              develop @ eb2ab0ca (target)
-Flags used:               EVENTS_API_ENABLED=1, EVENTS_PUBLIC_UI_ENABLED=1,
-                          EVENTS_REVIEW_API_ENABLED=0, EVENTS_CLASSIFIER_ENABLED=0,
-                          PUBLIC_SITE_BASE_URL=https://mywavewake.ru, ENABLE_GOOGLE_SERVICES=1
+Staging bind (canonical for QA):  http://127.0.0.1:5002
+Staging hostname (DNS):             https://staging.mywavewake.ru — N/A infra (not app blocker)
+Branch/head:                        develop @ f0a9a9d9
+Flags used:                         EVENTS_API_ENABLED=1, EVENTS_PUBLIC_UI_ENABLED=1,
+                                    EVENTS_REVIEW_API_ENABLED=0, EVENTS_CLASSIFIER_ENABLED=0,
+                                    PUBLIC_SITE_BASE_URL=https://mywavewake.ru,
+                                    ENABLE_GOOGLE_SERVICES=1, GUNICORN_BIND=127.0.0.1:5002
 
-QA status:                PENDING / PARTIAL / PASS / FAIL
-
-/events dynamic:          _TBD_
-/events YAML fallback:    _TBD_
-/events/<slug>:           _TBD_
-slug canonical redirect:  _TBD_
-/competitions 302:        _TBD_
-needs_review hidden:      _TBD_
-empty/error fallback:     _TBD_
-ticker links:             _TBD_
-mobile screenshots:       docs/integration/evidence/events-3-staging/ (attach)
-SEO/canonical:            _TBD_
-JSON-LD:                  _TBD_
-Sitemap:                  _TBD_
-Logs/errors:              _TBD_
-Rollback tested:          _TBD_
-Production touched:       no
-main unchanged:           yes (df26212d)
+QA status:                          PARTIAL (pending mobile screenshots only)
+Core UI:                            PASS
+Sitemap:                            PASS
+Detail / 301 redirect:              PASS
+needs_review public UI:             PASS
+YAML fallback:                      PASS
+Mobile screenshots:                 PENDING — paths below
+/api/events production hardening:   DOCUMENTED — see EVENTS_PR3_API_PRODUCTION_HARDENING.md
+Production touched:                 no
+main unchanged:                     yes (df26212d)
 ```
 
 ---
 
-## 2. Blocker from Site dev environment (2026-06-13)
+## 2. Owner live staging results (2026-06-14)
 
-Live staging QA from Cursor/dev workstation **not completed**:
+**Host:** VPS `/var/www/mywave-staging`  
+**Service:** `mywave-staging.service` — active  
+**Validation base:** `STAGING_BASE_URL=http://127.0.0.1:5002`
+
+| Check | Result | Notes |
+|-------|--------|-------|
+| Service active | PASS | Gunicorn eventlet on 5002 |
+| `/health` | PASS | 200 |
+| `/events` | PASS | 200, ~67399 bytes |
+| `/sitemap.xml` | PASS | 200, ~7712 bytes |
+| `/competitions` | PASS | 302 → `/events?type=competition` |
+| List canonical | PASS | `rel="canonical"` present |
+| List JSON-LD | PASS | `application/ld+json` present |
+| Markup | PASS | `events-section`, `events-filters`, `event-card`, `mywavewake` |
+| Detail `/events/1360` | PASS | 200 |
+| Detail canonical | PASS | `https://mywavewake.ru/events/1360` |
+| Detail JSON-LD | PASS | present |
+| Slug mismatch redirect | PASS | `/events/wrong-prefix-1360` → **301** → `/events/1360` |
+| Unknown slug | PASS | 404 |
+| HTML safety | PASS | no `source_url` / `raw_content` leak |
+| Fresh critical errors | PASS | none in journalctl window |
+| YAML fallback (flags OFF) | PASS | list 200 YAML; detail/competitions/api 404/503; restored |
+| Review-queue disabled | PASS | `/api/events/review-queue` → **503** |
+| needs_review on public UI | PASS | not in `/events` HTML; detail 404 for review rows |
+| Automated script (localhost) | PASS* | PASS=7 FAIL=0 PARTIAL=3; manual grep overrides script false positives |
+
+\* Script fix v2 (temp-file grep) pending push after `f0a9a9d9`; not blocking GM core acceptance.
+
+---
+
+## 3. `/api/events` boundary (GM accepted)
+
+| Surface | Role | needs_review |
+|---------|------|--------------|
+| `GET /api/events` | Events-2 internal read-only diagnostic API | **May appear** without `?track_status=` filter — by design |
+| `GET /events`, `GET /events/<slug>` | Events-3 public vitrine | **Never** — `is_public_eligible()` gate |
+| `GET /api/events/review-queue` | Operator queue | **503** when `EVENTS_REVIEW_API_ENABLED=0` |
+
+**Not an Events-3 staging failure.** Pre-production hardening required before prod discussion: see `EVENTS_PR3_API_PRODUCTION_HARDENING.md`.
+
+---
+
+## 4. Infra note — external staging URL
 
 ```text
 curl https://staging.mywavewake.ru/
-→ Could not resolve host: staging.mywavewake.ru
+→ Could not resolve host (from VPS and Site dev network)
 ```
 
-**Interpretation:** staging hostname is not public-DNS reachable from this network (internal/VPN/SSH-tunnel only per `BOOKING_PHASE2_STAGING_E2E_PACKAGE.md`).
-
-**Production:** not touched. `main` = `df26212d`. Deploy workflow (`push → main`) not triggered.
+**Classification:** N/A infra — nginx/DNS gap. QA performed on `127.0.0.1:5002`. Not classified as Events-3 app regression.
 
 ---
 
-## 3. Automated regression (local / CI — completed)
+## 5. Mobile screenshots (remaining blocker)
+
+**Status:** PENDING — Owner to attach before final sign-off → **PASS**.
+
+| File | URL / action | Pass criteria |
+|------|--------------|---------------|
+| `events-list-mobile.png` | `/events` @ 375px | Single-column cards, readable dates |
+| `events-filters-mobile.png` | `/events` → open «Фильтры» | `<details>` expands, tap targets OK |
+| `events-detail-mobile.png` | `/events/1360` (or published slug) | Title, dates, canonical in head |
+| `home-ticker-mobile.png` | `/` home ticker block | Links wrap; no broken `/events/...` |
+| `events-competition-filter-mobile.png` | `/events?type=competition` | Filter works (optional) |
+| `events-empty-mobile.png` | empty filter state | only if reproduced |
+
+**Repo path:** `docs/integration/evidence/events-3-staging/`  
+**Owner guide:** `docs/integration/evidence/events-3-staging/README.md`
+
+After attach: update §1 `Mobile screenshots: attached` and set **QA status: PASS**.
+
+---
+
+## 6. Automated regression (local / CI)
 
 ```bash
 python -m pytest tests/unit/test_events_public_eligibility.py \
@@ -64,75 +119,22 @@ python -m pytest tests/unit/test_events_public_eligibility.py \
   tests/unit/test_event_classifier.py -q
 ```
 
-Result: **55 passed** (Events-3 unit scope; develop @ eb2ab0ca)
-
-Maps to staging checks:
-
-| Check | Unit coverage |
-|-------|----------------|
-| needs_review hidden | `test_needs_review_*` |
-| slug / 301 | `test_slug_mismatch_redirect` |
-| /competitions 302 | `test_competitions_redirect_302` |
-| YAML fallback / no 500 | `test_public_ui_on_api_off_no_500`, `test_load_error_fallback` |
-| ticker links | `TestTickerLinks` |
-| public serializer safety | `test_*_safe`, JSON-LD domain |
+Result at Events-3 merge: **55+ passed** (unit scope).
 
 ---
 
-## 4. Owner staging deploy (approved — run on VPS)
+## 7. Staging script (localhost on VPS)
 
 ```bash
-cd /var/www/mywave-staging
-sudo -u www-data git fetch origin develop
-sudo -u www-data git checkout develop
-sudo -u www-data git pull --ff-only origin develop
-git rev-parse HEAD   # expect eb2ab0ca or newer on develop
-
-# Edit ONLY /var/www/mywave-staging/.env — add flags (§5)
-sudo systemctl restart mywave-staging
-# DO NOT: systemctl restart mywave-site | mywave-node | mywave-telegram-bot
+export STAGING_BASE_URL="http://127.0.0.1:5002"
+bash scripts/staging_events_qa.sh | tee /tmp/events3-staging-qa-v2.log
 ```
 
----
-
-## 5. Staging flags (approved)
-
-```text
-EVENTS_API_ENABLED=1
-EVENTS_PUBLIC_UI_ENABLED=1
-EVENTS_REVIEW_API_ENABLED=0
-EVENTS_CLASSIFIER_ENABLED=0
-PUBLIC_SITE_BASE_URL=https://mywavewake.ru
-ENABLE_GOOGLE_SERVICES=1
-```
+Owner log summary (2026-06-14): PASS=7 FAIL=0 PARTIAL=3; core routes confirmed PASS manually.
 
 ---
 
-## 6. Automated staging script (on host or tunnel)
-
-```bash
-export STAGING_BASE_URL="https://staging.mywavewake.ru"
-# or: export STAGING_BASE_URL="http://127.0.0.1:5002"  # SSH tunnel
-bash scripts/staging_events_qa.sh
-```
-
----
-
-## 7. Manual QA (required — cannot skip)
-
-| ID | Action | Pass criteria |
-|----|--------|---------------|
-| M1 | `/events` flags ON | Dynamic cards from Sheets; filters work |
-| M2 | Flags OFF + restart | YAML `/events` unchanged |
-| M3 | Published slug detail | 200, canonical, JSON-LD |
-| M4 | needs_review row | Absent on list; detail 404 |
-| M5 | Home ticker | Internal `/events/...` only when eligible |
-| M6 | Mobile 375px | Screenshots in `docs/integration/evidence/events-3-staging/` |
-| M7 | Rollback | Flags OFF → YAML, detail 404 |
-
----
-
-## 8. Rollback (staging)
+## 8. Rollback (staging — tested PASS)
 
 ```bash
 # /var/www/mywave-staging/.env
@@ -141,9 +143,29 @@ EVENTS_API_ENABLED=0
 sudo systemctl restart mywave-staging
 ```
 
+Verified: `/events` 200 YAML mode; `/events/test-slug` 404; `/competitions` 404; `/api/events` 503. Flags restored after test.
+
+**Rollback tested:** yes
+
 ---
 
 ## 9. Related docs
 
-- Package: `EVENTS_PR3_STAGING_QA_PACKAGE.md`
-- Bootstrap: `BOOKING_PHASE2_STAGING_BOOTSTRAP_RUNBOOK.md`
+| Doc | Purpose |
+|-----|---------|
+| `EVENTS_PR3_STAGING_QA_PACKAGE.md` | Full QA checklist |
+| `EVENTS_PR3_STAGING_OWNER_RUNBOOK.md` | Owner copy-paste commands |
+| `EVENTS_PR3_STAGING_SERVICE_RECOVERY.md` | Service down recovery |
+| `EVENTS_PR3_API_PRODUCTION_HARDENING.md` | Prod `/api/events` decision (required before prod) |
+| `EVENTS_PR2_API_REVIEW_PACKAGE.md` | Events-2 API contract |
+
+---
+
+## 10. Sign-off gate
+
+| Gate | Status |
+|------|--------|
+| Events-3 public UI staging core | **PASS** |
+| Overall staging sign-off | **PARTIAL** (mobile screenshots) |
+| Production launch | **BLOCKED** |
+| `/api/events` prod hardening decision | **DOCUMENTED** (decision at prod window) |

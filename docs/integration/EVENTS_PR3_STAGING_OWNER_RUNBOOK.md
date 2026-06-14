@@ -4,7 +4,9 @@
 **Site-only.** TGbotAdmin runtime **not** involved.  
 **Production:** do **not** touch `/var/www/mywave`, `mywave-site`, bot, node.
 
-**Expected develop HEAD after PR #26:** `eb2ab0ca` or newer (includes `scripts/staging_events_qa.sh`).
+**Expected develop HEAD:** `f0a9a9d9` or newer (staging QA script + evidence docs).
+
+**QA status (2026-06-14):** core UI **PASS** on `http://127.0.0.1:5002`; overall **PARTIAL** until mobile screenshots — see `EVENTS_PR3_STAGING_QA_EVIDENCE.md`.
 
 ---
 
@@ -76,9 +78,9 @@ curl -fsS -o /dev/null -w "health %{http_code}\n" http://127.0.0.1:5002/ || true
 
 ```bash
 cd "$STAGING_ROOT"
-export STAGING_BASE_URL="https://staging.mywavewake.ru"
-# If no public DNS: ssh -L 5002:127.0.0.1:5002 user@host
-# export STAGING_BASE_URL="http://127.0.0.1:5002"
+# Prefer localhost bind on VPS (DNS for staging.mywavewake.ru may be N/A):
+export STAGING_BASE_URL="http://127.0.0.1:5002"
+# External (only if DNS/nginx works): export STAGING_BASE_URL="https://staging.mywavewake.ru"
 
 bash scripts/staging_events_qa.sh | tee /tmp/events3-staging-qa.log
 ```
@@ -135,8 +137,11 @@ Document: `Rollback tested: yes` in evidence.
 
 ## 7. Fill evidence for Site/GM
 
-Update: `docs/integration/EVENTS_PR3_STAGING_QA_EVIDENCE.md`  
-Template section §1 — set PASS/FAIL per row, attach screenshots, paste sanitized log summary.
+Primary doc: `docs/integration/EVENTS_PR3_STAGING_QA_EVIDENCE.md` (Site maintains; Owner adds screenshots).
+
+Mobile capture guide: `docs/integration/evidence/events-3-staging/README.md`
+
+Prod API note (not staging blocker): `EVENTS_PR3_API_PRODUCTION_HARDENING.md`
 
 Send Site team:
 
