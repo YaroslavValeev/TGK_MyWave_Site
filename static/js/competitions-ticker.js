@@ -1,13 +1,31 @@
 /**
  * Бегущая строка соревнований:
- * - авто-прокрутка (в 3× медленнее прежней CSS-анимации);
- * - ручной scroll / swipe на viewport;
+ * - desktop auto-scroll (~280s full loop);
+ * - mobile manual swipe/scroll only (no auto-scroll);
  * - pause on hover, focus, touch;
- * - клик по ссылке ведёт на href (источник события).
+ * - prefers-reduced-motion: manual only.
  */
 (function () {
-  var BASE_DURATION_SEC = 135;
-  var MOBILE_DURATION_SEC = 105;
+  var BASE_DURATION_SEC = 280;
+  var MOBILE_AUTO_SCROLL = false;
+  var MOBILE_MAX_WIDTH_PX = 768;
+
+  function isMobileViewport() {
+    return (
+      window.matchMedia &&
+      window.matchMedia("(max-width: " + MOBILE_MAX_WIDTH_PX + "px)").matches
+    );
+  }
+
+  function shouldAutoScroll(prefersReduced) {
+    if (prefersReduced) {
+      return false;
+    }
+    if (!MOBILE_AUTO_SCROLL && isMobileViewport()) {
+      return false;
+    }
+    return true;
+  }
 
   function initTicker(root) {
     var viewport = root.querySelector(".home-competitions-ticker__viewport");
@@ -37,6 +55,11 @@
       return;
     }
 
+    if (!shouldAutoScroll(false)) {
+      viewport.classList.add("is-manual-only");
+      return;
+    }
+
     var paused = false;
     var userInteracting = false;
     var resumeTimer = null;
@@ -44,9 +67,7 @@
     var rafId = null;
 
     function getDurationSec() {
-      return window.matchMedia("(max-width: 768px)").matches
-        ? MOBILE_DURATION_SEC
-        : BASE_DURATION_SEC;
+      return BASE_DURATION_SEC;
     }
 
     function loopWidth() {
@@ -67,7 +88,7 @@
     }
 
     function tick() {
-      if (!paused && !userInteracting) {
+      if (!paused && !userInteracting && shouldAutoScroll(false)) {
         var lw = loopWidth();
         if (lw > 0) {
           var pxPerFrame = lw / (getDurationSec() * 60);
