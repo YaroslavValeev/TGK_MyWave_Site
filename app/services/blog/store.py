@@ -389,12 +389,21 @@ _IMAGE_FIELD_KEYS = (
 )
 
 
+_LOCALHOST_STATIC_MEDIA_RE = re.compile(
+    r"^https?://(?:127\.0\.0\.1|localhost)(?::\d+)?(/static/.+)$",
+    re.IGNORECASE,
+)
+
+
 def _normalize_media_url(value: object) -> str:
     s = "" if value is None else str(value).strip()
     if not s:
         return ""
     if s.startswith("//"):
         return f"https:{s}"
+    m = _LOCALHOST_STATIC_MEDIA_RE.match(s)
+    if m:
+        return m.group(1)
     return s
 
 
@@ -456,6 +465,92 @@ def _extract_media_candidate(item: object) -> str:
                 return candidate
 
     return ""
+
+
+def _parse_media_json_items(raw: object) -> List[object]:
+    """Разбирает media_json / raw_media в список элементов."""
+    if raw is None:
+        return []
+    if isinstance(raw, list):
+        return raw
+    if isinstance(raw, dict):
+        nested = raw.get("items") or raw.get("media") or raw.get("attachments")
+        if isinstance(nested, list):
+            return nested
+        return [raw]
+
+    text = str(raw).strip()
+    if not text:
+        return []
+    if text.startswith("[") or text.startswith("{"):
+        try:
+            data = json.loads(text)
+        except Exception:
+            return []
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            nested = data.get("items") or data.get("media") or data.get("attachments")
+            if isinstance(nested, list):
+                return nested
+            return [data]
+        return []
+
+    return [text]
+
+
+def _embed_media_from_json(raw: object, exclude_url: str = "") -> str:
+    """
+    HTML дополнительных медиа для тела поста из media_json.
+    exclude_url — обложка, чтобы не дублировать hero-картинку.
+    """
+    from markupsafe import escape
+
+    exclude = _normalize_media_url(exclude_url)
+    items = _parse_media_json_items(raw)
+    if not items:
+        return ""
+
+    parts: List[str] = []
+    seen: set[str] = set()
+    if exclude:
+        seen.add(exclude)
+
+    for item in items:
+        media_type = ""
+        url = ""
+        if isinstance(item, dict):
+            media_type = str(item.get("type") or "").lower()
+            url = _extract_media_candidate(item)
+            if not url:
+                url = _normalize_media_url(item.get("url") or item.get("src") or item.get("file_url") or "")
+        else:
+            url = _normalize_media_url(item)
+
+        if not url or url in seen:
+            continue
+        if exclude and url == exclude:
+            continue
+        seen.add(url)
+
+        is_video = media_type == "video" or (
+            not _is_image_like_url(url)
+            and bool(re.search(r"\.(mp4|webm|mov)(\?|$)", url, re.IGNORECASE))
+        )
+        if is_video:
+            parts.append(
+                '<figure class="blog-post-embedded-media">'
+                f'<video controls playsinline preload="metadata" src="{escape(url)}"></video>'
+                "</figure>"
+            )
+        elif _is_image_like_url(url):
+            parts.append(
+                '<figure class="blog-post-embedded-media">'
+                f'<img src="{escape(url)}" alt="" loading="lazy" decoding="async">'
+                "</figure>"
+            )
+
+    return "\n".join(parts)
 
 
 def _extract_cover_image(row: Dict) -> str:

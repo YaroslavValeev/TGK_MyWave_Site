@@ -19,8 +19,14 @@ from flask import current_app
 from app.modules.logger import get_logger
 from app.services.parser_news_sheet import resolve_parser_source, fetch_parser_news_rows
 from app.services.google import read_sheet, get_google_services
+from app.services.blog.store import _extract_cover_image, _embed_media_from_json
 
 logger = get_logger(__name__)
+
+
+def _resolve_publish_cover(row: Dict) -> str:
+    """Обложка для sync в БД — те же правила, что у витрины (_extract_cover_image)."""
+    return _extract_cover_image(row)
 
 
 # === P0 contract (site-side) ===
@@ -1032,25 +1038,9 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
                     post.content = content_html
                     post.teaser = excerpt or ""  # teaser не может быть None из-за ограничения БД
                     
-                    cover = str(row.get("cover_image_url") or row.get("image_url") or "").strip()
-                    if not cover:
-                        raw_media = row.get("raw_media")
-                        if raw_media:
-                            s = str(raw_media).strip()
-                            if s.startswith("[") and s.endswith("]"):
-                                try:
-                                    arr = json.loads(s)
-                                    if isinstance(arr, list) and arr:
-                                        cover = str(arr[0])
-                                except Exception:
-                                    pass
-                            elif s.startswith("http"):
-                                cover = s
+                    cover = _resolve_publish_cover(row)
                     post.cover_image_url = cover or None
-                    
-                    # Встраиваем медиа из media_json в контент (если есть)
-                    # Исключаем cover image, чтобы не дублировать
-                    from app.services.blog.store import _embed_media_from_json
+
                     media_html = _embed_media_from_json(row.get("media_json"), exclude_url=cover)
                     if media_html:
                         # Добавляем медиа после основного контента
