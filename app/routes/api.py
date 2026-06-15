@@ -5,6 +5,7 @@ import os
 import hmac
 import secrets
 import shutil
+from urllib.parse import urlparse
 from app.modules.booking_utils import handle_booking as real_book_slot
 from app.routes.files import upload_file as real_upload_file
 from app.routes.ai_router import route_message as real_handle_message
@@ -118,15 +119,22 @@ def _write_legacy_media_copy(save_path: str, filename: str) -> None:
 
 
 def _build_public_media_url(filename: str) -> str:
-    base_url = (
-        (current_app.config.get("SITE_BASE_URL") or "").strip().rstrip("/")
-        or (current_app.config.get("PUBLIC_BASE_URL") or "").strip().rstrip("/")
-        or (current_app.config.get("BASE_URL") or "").strip().rstrip("/")
-    )
-    if not base_url:
-        base_url = request.host_url.rstrip("/")
     subdir = str(current_app.config.get("MEDIA_UPLOAD_SUBDIR") or "uploads/review_media").strip().strip("/\\")
-    return f"{base_url}/static/{subdir}/{filename}"
+    relative_path = f"/static/{subdir}/{filename}"
+
+    for key in ("SITE_BASE_URL", "PUBLIC_BASE_URL", "BASE_URL"):
+        base_url = (current_app.config.get(key) or "").strip().rstrip("/")
+        if not base_url:
+            continue
+        try:
+            host = (urlparse(base_url).hostname or "").lower()
+        except Exception:
+            host = ""
+        if host in ("127.0.0.1", "localhost"):
+            continue
+        return f"{base_url}{relative_path}"
+
+    return relative_path
 
 
 @api_bp.route("/media/upload", methods=["POST"])
