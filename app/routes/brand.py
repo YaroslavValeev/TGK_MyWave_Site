@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 
 brand_bp = Blueprint("brand", __name__)
 
-LOGO_ZIP_NAME = "MyWave_logo_package.zip"
+LOGO_ZIP_NAME = "MyWave_logo_package_brand_turquoise.zip"
 
 
 @brand_bp.get("/downloads/mywave-logo-package.zip")

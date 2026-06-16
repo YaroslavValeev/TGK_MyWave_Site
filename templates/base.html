@@ -35,7 +35,7 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=hero-fix1" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}?v=logo1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}?v=logo2" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/services-carousel.css') }}?v=project-cards-uniform2" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-home.css') }}?v=hero-overlap1" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/preloader.css') }}" />
@@ -108,7 +108,7 @@
   <header class="site-header" id="site-header">
     <div class="header-inner">
       <div class="logo">
-        {{ brand_logo('white', 'brand-logo--header', url_for('index')) }}
+        {{ brand_logo('turquoise', 'brand-logo--header', url_for('index')) }}
       </div>
       <nav class="site-nav" id="site-nav">
         <ul>
@@ -222,12 +222,13 @@
   <footer class="site-footer">
     <div class="site-footer__inner">
       <div class="site-footer__brand">
-        {{ brand_logo('white', 'brand-logo--footer', url_for('index')) }}
+        {{ brand_logo('turquoise', 'brand-logo--footer', url_for('index')) }}
       </div>
       <p class="site-footer__copy">© 2026 MyWave. Все права защищены.</p>
-      <p class="site-footer__meta">
+      <p class="site-footer__meta site-footer__brand-materials">
+        <span class="site-footer__brand-label">Логотипы и бренд-материалы MyWave</span>
         <a href="{{ url_for('brand.logo_package_download') }}" class="site-footer__download">
-          Скачать логотип (ZIP)
+          Скачать логотипы MyWave
         </a>
         <span class="site-footer__sep" aria-hidden="true">·</span>
         <span class="site-footer__credit">Разработка: MyWave Team</span>
