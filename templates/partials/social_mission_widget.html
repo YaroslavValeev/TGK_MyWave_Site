@@ -1,0 +1,24 @@
+{% if social_widget_enabled %}
+<section class="mw-section social-mission-widget" id="social-mission">
+  <div class="mw-container">
+    <div class="mw-card social-mission-widget__card">
+      <p class="social-mission-widget__eyebrow">Социальная миссия</p>
+      <h2>Каждый сет помогает движению</h2>
+      <p class="social-mission-widget__text">
+        Часть коммерческих тренировок MyWave поддерживает социальную программу:
+        безопасная подготовка на суше и адаптивные сеты для детей при допуске тренера.
+      </p>
+      {% if social_public_stats %}
+      <ul class="social-mission-widget__stats" aria-label="Обезличенная статистика">
+        <li><strong>{{ social_public_stats.sessions_completed }}</strong> {{ social_public_stats.label_sessions }}</li>
+        <li><strong>{{ social_public_stats.applications_received }}</strong> {{ social_public_stats.label_applications }}</li>
+      </ul>
+      {% endif %}
+      <div class="social-mission-widget__actions">
+        <a href="{{ url_for('social.social_page') }}" class="btn-secondary">Узнать о социальной миссии</a>
+        <a href="{{ url_for('social.social_page') }}#social-apply" class="btn-primary">Подать заявку для ребёнка</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
