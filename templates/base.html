@@ -116,6 +116,9 @@
           <li><a href="{{ url_for('shop.shop_index') }}">Товары</a></li>
           <li><a href="{{ url_for('projects_page') }}">Проекты</a></li>
           <li><a href="{{ url_for('blog.blog_index') }}">Блог</a></li>
+          {% if social_module_enabled %}
+          <li><a href="{{ url_for('social.social_page') }}">Социальная миссия</a></li>
+          {% endif %}
           <li><a href="{{ url_for('index') }}#contacts">Контакты</a></li>
         </ul>
       </nav>

@@ -1,0 +1,93 @@
+.social-page .social-hero {
+  margin-bottom: 1.5rem;
+}
+
+.social-hero__eyebrow,
+.social-mission-widget__eyebrow {
+  color: var(--mw-brand, #35c0cd);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  margin: 0 0 0.5rem;
+}
+
+.social-hero__lead,
+.social-mission-widget__text {
+  color: var(--mw-muted);
+  line-height: 1.6;
+  max-width: 68ch;
+}
+
+.social-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.social-card ul,
+.social-steps {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--mw-muted);
+  line-height: 1.55;
+}
+
+.social-apply-card {
+  margin-top: 0.5rem;
+}
+
+.social-form .social-consents {
+  border: 0;
+  margin: 1rem 0;
+  padding: 0;
+}
+
+.social-consent-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.social-apply-disabled {
+  color: var(--mw-muted);
+}
+
+.social-mission-widget__card {
+  text-align: center;
+}
+
+.social-mission-widget__stats {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.social-mission-widget__stats li {
+  background: rgba(53, 192, 205, 0.08);
+  border: 1px solid rgba(53, 192, 205, 0.2);
+  border-radius: 12px;
+  padding: 0.65rem 1rem;
+}
+
+.social-mission-widget__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+@media (max-width: 700px) {
+  .social-mission-widget__actions .btn-primary,
+  .social-mission-widget__actions .btn-secondary {
+    width: 100%;
+  }
+}

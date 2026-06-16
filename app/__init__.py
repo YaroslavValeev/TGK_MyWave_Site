@@ -393,6 +393,12 @@ def create_app(config_name="development"):
     from app.routes.brand import brand_bp
 
     app.register_blueprint(brand_bp)
+    try:
+        from app.routes.social import social_bp
+
+        app.register_blueprint(social_bp)
+    except Exception as e:
+        app.logger.warning("social_bp failed to load: %s", e, exc_info=True)
     app.register_blueprint(about_bp)
     app.register_blueprint(contact_bp)
     app.register_blueprint(calendar_bp)
