@@ -2,42 +2,41 @@
 
 ## Change summary
 
-| Item | Before (`edca399f`) | After (this PR) |
-|------|---------------------|-----------------|
-| Desktop loop duration | 135s | **280s** |
-| Mobile auto-scroll | 105s RAF | **disabled** (manual swipe only) |
+| Item | Before (PR #27 / v3) | After (this PR / v4) |
+|------|----------------------|----------------------|
+| Desktop loop duration | 280s | **840s** (3× slower) |
+| Mobile auto-scroll | disabled | **disabled** (unchanged) |
 | Pause hover/focus | yes | yes (unchanged) |
 | `prefers-reduced-motion` | manual only | manual only (unchanged) |
-| Cache bust | `?v=2` | **`?v=3`** |
+| Cache bust | `?v=3` | **`?v=4`** |
 
 ## Affected files
 
-- `static/js/competitions-ticker.js` — `BASE_DURATION_SEC`, `MOBILE_AUTO_SCROLL`, `shouldAutoScroll()`
-- `templates/index.html` — asset `?v=3`
+- `static/js/competitions-ticker.js` — `BASE_DURATION_SEC = 840`
+- `templates/index.html` — asset `?v=4`
 
 ## Desktop behavior
 
-- RAF scroll moves duplicated track over **280 seconds** per full loop.
-- Target readability: ~**5–8 seconds** per card in a typical 1200px viewport (depends on card count/width).
-- Pause on `mouseenter` / `focusin`; resume after 200–600 ms when pointer/focus leaves.
+- RAF scroll moves duplicated track over **840 seconds** per full loop.
+- Target: card readable **5–8+ seconds** in typical viewport (Owner visual acceptance required).
+- Pause on `mouseenter` / `focusin`; resume after 200–600 ms.
 
 ## Mobile behavior (375×812, 390×844)
 
-- `MOBILE_AUTO_SCROLL = false` → init adds `is-manual-only`, **no RAF auto tick**.
+- `MOBILE_AUTO_SCROLL = false` → `is-manual-only`, no RAF auto tick.
 - User scrolls/swipes viewport horizontally only.
 
 ## Reduced motion
 
-- `matchMedia('(prefers-reduced-motion: reduce)')` → no track clone, `is-manual-only`, no RAF.
+- `prefers-reduced-motion: reduce` → no clone, no RAF.
 
 ## Manual QA checklist (Owner, staging after merge)
 
-- [ ] Desktop: ticker readable ~5–8 s per card
-- [ ] Desktop: hover pauses scroll
-- [ ] Mobile 375×812: no auto-scroll; swipe works
-- [ ] Mobile: focus on link pauses (keyboard)
-- [ ] OS reduced motion: static/manual strip only
-- [ ] Hard refresh / `?v=3` loads new JS
+- [ ] Desktop: ticker readable; item does not fly by in 1–3 s
+- [ ] Desktop: hover/focus pause
+- [ ] Mobile 375×812 / 390×844: no auto-scroll; swipe works
+- [ ] Hard refresh loads `?v=4`
+- [ ] Screenshots desktop + mobile attached
 
 ## Automated tests
 
