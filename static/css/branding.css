@@ -914,11 +914,22 @@ Wake Surf Safari 2026 Styles
   max-width: min(200px, 46vw);
 }
 
+.site-footer__brand-materials {
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.site-footer__brand-label {
+  display: block;
+  font-size: 0.8125rem;
+  color: rgba(238, 242, 246, 0.72);
+}
+
 .brand-logo--hero {
   max-height: clamp(3.25rem, 14vw, 5.75rem);
   max-width: min(440px, 92vw);
   margin: 0 auto;
-  filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.28));
 }
 
 .hero-title--logo {
