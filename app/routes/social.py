@@ -48,6 +48,7 @@ def _inject_social_template_flags():
         "social_widget_enabled": is_social_widget_enabled(),
         "social_applications_enabled": is_social_applications_enabled(),
         "social_public_stats": get_public_social_stats() if is_social_public_stats_enabled() else None,
+        "consent_version": CONSENT_VERSION,
     }
 
 
