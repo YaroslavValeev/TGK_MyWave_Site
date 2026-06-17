@@ -63,6 +63,35 @@ class TestSocialApplyApi:
         body = rv.get_json()
         assert body["ok"] is False
 
+    def test_apply_valid_payload_with_consent_version(self, client, social_flags_on, mocker):
+        from app.services.social_store import SocialWriteResult
+
+        mocker.patch(
+            "app.routes.social.append_social_application",
+            return_value=SocialWriteResult(
+                application_id="soc_app_consent",
+                status="new",
+                sheet_name="Social_Applications",
+            ),
+        )
+        rv = client.post("/api/social/apply", json=_valid_payload(consent_version="2026-06-v1"))
+        assert rv.status_code == 201
+        assert rv.get_json()["ok"] is True
+
+    def test_apply_missing_consent_version_returns_400(self, client, social_flags_on):
+        payload = _valid_payload()
+        del payload["consent_version"]
+        rv = client.post("/api/social/apply", json=payload)
+        assert rv.status_code == 400
+        body = rv.get_json()
+        assert body["ok"] is False
+        assert "required:consent_version" in body["errors"]
+
+    def test_social_form_renders_consent_version_hidden_field(self, client, social_flags_on):
+        html = client.get("/social").get_data(as_text=True)
+        assert 'name="consent_version"' in html
+        assert 'value="2026-06-v1"' in html
+
     def test_apply_success_mock_sheet(self, client, social_flags_on, mocker):
         from app.services.social_store import SocialWriteResult
 
