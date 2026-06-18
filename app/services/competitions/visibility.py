@@ -122,6 +122,17 @@ def is_ticker_visible_row(row: Dict[str, Any], today: Optional[date] = None) -> 
     return True
 
 
+def is_ticker_live_row(row: Dict[str, Any], today: Optional[date] = None) -> bool:
+    """Событие идёт прямо сейчас (start <= today <= end)."""
+    if today is None:
+        today = datetime.now(timezone.utc).date()
+    start = parse_iso_date(row.get("start_date"))
+    if not start:
+        return False
+    end = parse_iso_date(row.get("end_date")) or start
+    return start <= today <= end
+
+
 def sort_key_for_ticker(row: Dict[str, Any]) -> tuple:
     start = parse_iso_date(row.get("start_date")) or date.max
     name = str(row.get("event_name") or "").strip().lower()

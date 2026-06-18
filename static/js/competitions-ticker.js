@@ -1,6 +1,6 @@
 /**
  * Бегущая строка соревнований:
- * - desktop auto-scroll (~840s full loop, 3× slower than v3);
+ * - desktop auto-scroll (~840s full loop);
  * - mobile manual swipe/scroll only (no auto-scroll);
  * - pause on hover, focus, touch;
  * - prefers-reduced-motion: manual only.
@@ -9,6 +9,7 @@
   var BASE_DURATION_SEC = 840;
   var MOBILE_AUTO_SCROLL = false;
   var MOBILE_MAX_WIDTH_PX = 768;
+  var MIN_PX_PER_FRAME = 0.4;
 
   function isMobileViewport() {
     return (
@@ -65,6 +66,7 @@
     var resumeTimer = null;
     var wheelTimer = null;
     var rafId = null;
+    var scrollAccumulator = 0;
 
     function getDurationSec() {
       return BASE_DURATION_SEC;
@@ -91,8 +93,13 @@
       if (!paused && !userInteracting && shouldAutoScroll(false)) {
         var lw = loopWidth();
         if (lw > 0) {
-          var pxPerFrame = lw / (getDurationSec() * 60);
-          viewport.scrollLeft += pxPerFrame;
+          var pxPerFrame = Math.max(lw / (getDurationSec() * 60), MIN_PX_PER_FRAME);
+          scrollAccumulator += pxPerFrame;
+          if (scrollAccumulator >= 1) {
+            var step = Math.floor(scrollAccumulator);
+            viewport.scrollLeft += step;
+            scrollAccumulator -= step;
+          }
           if (viewport.scrollLeft >= lw) {
             viewport.scrollLeft -= lw;
           }
