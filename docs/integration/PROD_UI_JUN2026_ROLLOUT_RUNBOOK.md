@@ -2,7 +2,7 @@
 
 **Status:** PREPARED — **NOT EXECUTED**  
 **Base:** `ae4b6272` (PR45 prod hotfix)  
-**Target:** `2ce34417` (release branch HEAD)  
+**Target:** `bd9f303b` (release branch HEAD)  
 **Date:** 2026-06-18
 
 ## Scope
