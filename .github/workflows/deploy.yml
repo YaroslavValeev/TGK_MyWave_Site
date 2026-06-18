@@ -1,9 +1,14 @@
 name: Deploy to Timeweb/VPS
 
+# Manual deploy only — push:main disabled to prevent accidental prod reset
+# (see PR45 origin/main sync / release/prod-ui-jun2026 rollout plan).
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type DEPLOY to run production SSH deploy"
+        required: true
+        default: ""
 
 env:
   PYTHON_VERSION: '3.11'
@@ -15,6 +20,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: production
+    if: github.event.inputs.confirm == 'DEPLOY'
 
     steps:
       - name: Checkout repository
