@@ -84,7 +84,8 @@
     z-index: 2;
     margin: 0 !important;
     margin-bottom: -2.75rem !important;
-    padding: 1px 0.85rem 1.25rem !important;
+    padding: 0 0.85rem 1rem !important;
+    margin-top: -6px !important;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
@@ -477,7 +478,8 @@
   .hero-section .hero-content,
   .hero-section .hero-content.center-padding,
   .hero-section .hero-content-relative {
-    padding-top: 1px !important;
+    padding-top: 0 !important;
+    margin-top: -6px !important;
   }
 }
 
