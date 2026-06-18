@@ -390,13 +390,13 @@ button.btn-secondary:focus-visible{
 /* Home hero: override .center-padding { padding: 100px } on index */
 .hero-section .hero-content.center-padding.hero-content-relative {
   padding: 0 20px 10px !important;
-  margin-top: -14px !important;
+  margin-top: -18px !important;
 }
 
 /* Home hero logo: keep fully below fixed header (no overlap with navbar) */
 .hero-section .hero-content,
 .hero-section .hero-content.hero-content-relative {
-  margin-top: -14px !important;
+  margin-top: -18px !important;
 }
 
 .hero-title{
@@ -454,7 +454,7 @@ button.btn-secondary:focus-visible{
   .hero-section .hero-content.hero-content-relative,
   .hero-section .hero-content.center-padding.hero-content-relative {
     padding: 0 0.85rem 1rem !important;
-    margin-top: -6px !important;
+    margin-top: -10px !important;
   }
   .hero-content-relative{
     text-align: left;
