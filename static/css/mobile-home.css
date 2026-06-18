@@ -84,7 +84,7 @@
     z-index: 2;
     margin: 0 !important;
     margin-bottom: -2.75rem !important;
-    padding: calc(var(--mw-header-h, 56px) + 6px) 0.85rem 2.5rem !important;
+    padding: var(--mw-header-h, 56px) 0.85rem 2.5rem !important;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
@@ -477,7 +477,7 @@
   .hero-section .hero-content,
   .hero-section .hero-content.center-padding,
   .hero-section .hero-content-relative {
-    padding-top: calc(var(--mw-header-h, 56px) + 6px) !important;
+    padding-top: var(--mw-header-h, 56px) !important;
   }
 }
 
