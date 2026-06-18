@@ -11,11 +11,11 @@
 
 ```text
 Current prod HEAD:        ae4b6272 (PR45 hotfix; server unchanged since rollout)
-Target release HEAD:      <see git rev-parse below — single source>
+Target release HEAD:      797c7f5d (release/prod-ui-jun2026 tip)
 origin/main HEAD:         0274a54e (PR45 + deploy.yml safety only)
 
-Diff stat (ae4b6272..target):  98 files, +124030 / −90 (approx; +2 docs after canon commit)
-Diff name-only count:     98 paths (96 UI + 2 readiness/canon docs; verify with command)
+Diff stat (ae4b6272..797c7f5d):  98 files, +124035 / −95
+Diff name-only count:     98
 Events leakage check:     PASS
 DB migration check:       PASS
 Sheets canon committed:   yes (SHEETS_ID_CANON.md, env.example, config.py, readiness script, oneshot)
@@ -44,10 +44,11 @@ git diff --name-only ae4b6272..origin/release/prod-ui-jun2026 | wc -l
 | `49bfbcc8` | docs: PR48 final evidence package and social readiness script |
 | `bd9f303b` | docs: prod UI jun2026 rollout runbook (not executed) |
 | UI cherry-picks | `2ce34417` … `7a368986` (Social, hero, ticker, brand, services) |
-| **+ canon commit** | Sheets ID canon, env.example tails, oneshot readiness, evidence sync |
+| **+ canon commit** | `1eec2a4d` — Sheets ID canon, oneshot readiness, evidence sync |
+| **+ HEAD pin** | `797c7f5d` — evidence/runbook target HEAD (tip) |
 
-**Evidence docs commit:** tip of `release/prod-ui-jun2026` (includes `PR48_FINAL_EVIDENCE_PACKAGE.md`)  
-**Runbook commit:** `708bf67f` + tip (target HEAD line updated on tip)
+**Evidence docs commit:** `797c7f5d`  
+**Runbook commit:** `708bf67f` + `797c7f5d`
 
 ---
 

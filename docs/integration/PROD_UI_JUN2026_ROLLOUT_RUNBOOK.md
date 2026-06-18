@@ -2,7 +2,7 @@
 
 **Status:** PREPARED — **NOT EXECUTED**  
 **Base:** `ae4b6272` (PR45 prod hotfix)  
-**Target:** tip of `release/prod-ui-jun2026` — verify: `git rev-parse origin/release/prod-ui-jun2026`  
+**Target:** `797c7f5d` (`release/prod-ui-jun2026` tip)  
 **Date:** 2026-06-18
 
 ## Scope
