@@ -148,11 +148,28 @@ curl -sS "$STAGING_BASE_URL/api/blog/posts?limit=20" | jq '.items[] | {slug, cov
 
 ---
 
-## 9. Production rollout gate
+## 9. Troubleshooting upload HTTP 500 / 507
+
+**Symptoms:** `POST /api/blog/media/upload` without file → **400** (auth OK); with file → **500** or **507**.
+
+**Most common cause:** `/var/www/mywave/static/uploads/review_media/` missing or not writable by `www-data`.
+
+```bash
+cd /var/www/mywave
+sudo bash automation/production/prod_media_upload_diagnose.sh
+sudo bash scripts/ensure_media_upload_dirs.sh
+sudo systemctl restart mywave-site
+```
+
+Re-test upload → expect **201** + `public_url`. Backfill (section 4) remains blocked until upload PASS.
+
+---
+
+## 10. Production rollout gate
 
 Production backfill **blocked** until:
 
-- [ ] Staging smoke **PASS**
+- [ ] Upload endpoint **PASS** on prod (`POST /api/blog/media/upload` → 201)
 - [ ] GM written approval for Sheet edit scope
 - [ ] Parser confirms source files for all 13 `review_media` rows
 - [ ] Separate GM approval for prod deploy / file copy
@@ -166,7 +183,7 @@ Production backfill **blocked** until:
 
 ---
 
-## 10. Ownership
+## 11. Ownership
 
 | Task | Owner |
 |------|--------|
@@ -178,7 +195,7 @@ Production backfill **blocked** until:
 
 ---
 
-## 11. Execution status
+## 12. Execution status
 
 ```text
 EXECUTION: NOT STARTED

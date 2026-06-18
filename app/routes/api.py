@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template, current_app
 from app.extensions import csrf
+import io
 import os
 import hmac
 import secrets
@@ -91,6 +92,24 @@ def _resolve_media_upload_dir() -> str:
     return os.path.join(upload_root, subdir)
 
 
+def _media_upload_file_size(media_file) -> int:
+    """Return uploaded file size; tolerate non-seekable WSGI streams."""
+    stream = media_file.stream
+    try:
+        pos = stream.tell()
+        stream.seek(0, os.SEEK_END)
+        size = stream.tell()
+        stream.seek(pos)
+        return size
+    except (OSError, AttributeError, io.UnsupportedOperation):
+        data = stream.read()
+        try:
+            stream.seek(0)
+        except Exception:
+            pass
+        return len(data)
+
+
 def _write_legacy_media_copy(save_path: str, filename: str) -> None:
     """Поддержка старых клиентов, которые читают /static/downloads/..."""
     legacy_dir = os.path.join(_resolve_media_upload_root(), "downloads")
@@ -145,18 +164,31 @@ def media_upload():
     if ext not in {".jpg", ".jpeg", ".png", ".webp", ".gif"}:
         ext = ".jpg"
 
-    media_file.stream.seek(0, os.SEEK_END)
-    size = media_file.stream.tell()
-    media_file.stream.seek(0)
+    size = _media_upload_file_size(media_file)
     max_bytes = int(current_app.config.get("MEDIA_UPLOAD_MAX_BYTES") or 10485760)
     if size > max_bytes:
         return jsonify(error=f"file too large (>{max_bytes} bytes)"), 413
 
     upload_dir = _resolve_media_upload_dir()
-    os.makedirs(upload_dir, exist_ok=True)
+    try:
+        os.makedirs(upload_dir, exist_ok=True)
+    except OSError:
+        current_app.logger.exception(
+            "media_upload_mkdir_failed",
+            extra={"upload_dir": upload_dir},
+        )
+        return jsonify(error="upload storage unavailable"), 507
+
     filename = f"review_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{secrets.token_hex(6)}{ext}"
     save_path = os.path.join(upload_dir, filename)
-    media_file.save(save_path)
+    try:
+        media_file.save(save_path)
+    except OSError:
+        current_app.logger.exception(
+            "media_upload_save_failed",
+            extra={"upload_dir": upload_dir, "saved_name": filename},
+        )
+        return jsonify(error="upload write failed"), 507
     try:
         _write_legacy_media_copy(save_path, filename)
     except Exception:

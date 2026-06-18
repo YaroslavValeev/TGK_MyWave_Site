@@ -51,6 +51,17 @@ python -c "import secrets; print(secrets.token_urlsafe(48))"
 
 Опционально: `MEDIA_UPLOAD_ROOT=...` (абсолютный путь) — только для локальных/тестовых окружений.
 
+### Каталог на сервере (prod / staging)
+
+Директория **не в Git** (см. `.gitignore` → `uploads/`). После деплоя или при **500/507** на upload:
+
+```bash
+sudo bash /var/www/mywave/scripts/ensure_media_upload_dirs.sh
+sudo systemctl restart mywave-site
+```
+
+Диагностика (read-only): `sudo bash automation/production/prod_media_upload_diagnose.sh`
+
 ---
 
 ## 2) `SITE_BASE_URL` и `http://127.0.0.1:5000`
