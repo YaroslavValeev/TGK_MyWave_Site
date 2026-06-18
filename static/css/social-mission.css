@@ -65,6 +65,55 @@
   padding: 1.25rem 0 1.5rem !important;
 }
 
+/* Home widget — минимальный inline-блок без карточки */
+.social-mission-widget--subtle {
+  padding: 0.65rem 0 0.85rem;
+  margin: 0;
+  border-top: 1px solid rgba(53, 192, 205, 0.12);
+  border-bottom: none;
+  background: transparent;
+}
+
+.social-mission-widget--subtle .social-mission-widget__line {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--mw-muted, #56606b);
+  max-width: 72ch;
+}
+
+.social-mission-widget--subtle .social-mission-widget__label {
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: rgba(53, 192, 205, 0.85);
+}
+
+.social-mission-widget--subtle .social-mission-widget__link {
+  color: var(--mw-brand, #35c0cd);
+  text-decoration: none;
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+.social-mission-widget--subtle .social-mission-widget__link:hover,
+.social-mission-widget--subtle .social-mission-widget__link:focus-visible {
+  text-decoration: underline;
+}
+
+.social-mission-widget--subtle .social-mission-widget__sep {
+  margin: 0 0.2rem;
+  color: rgba(53, 192, 205, 0.45);
+}
+
+.social-mission-widget--subtle .social-mission-widget__meta {
+  margin: 0.35rem 0 0;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  color: rgba(86, 96, 107, 0.82);
+}
+
 .social-mission-widget--compact .social-mission-widget__card {
   text-align: left;
   padding: 0.9rem 1rem;
