@@ -369,6 +369,12 @@ button.btn-secondary:focus-visible{
   background: transparent;
 }
 
+/* Home hero: header clearance on section; content block flush + compact */
+.hero-section.relative-section {
+  padding-top: var(--mw-header-h, 64px);
+  box-sizing: border-box;
+}
+
 .hero-content-relative{
   z-index: 2 !important;
   text-align: center !important;
@@ -376,12 +382,13 @@ button.btn-secondary:focus-visible{
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  padding-top: var(--mw-header-h, 64px) !important;
+  gap: 0.35rem !important;
+  padding-top: 1px !important;
 }
 
 /* Home hero: override .center-padding { padding: 100px } on index */
 .hero-section .hero-content.center-padding.hero-content-relative {
-  padding: var(--mw-header-h, 64px) 20px 20px !important;
+  padding: 1px 20px 12px !important;
 }
 
 /* Home hero logo: keep fully below fixed header (no overlap with navbar) */
@@ -393,17 +400,18 @@ button.btn-secondary:focus-visible{
 .hero-title{
   font-size: clamp(34px, 4vw, 58px) !important;
   line-height: 1.02 !important;
-  margin-bottom: 14px !important;
+  margin-bottom: 0 !important;
   color: #333333 !important;
   text-shadow: none;
   letter-spacing: -0.03em;
 }
 
 .hero-subtitle{
-  font-size: clamp(16px, 1.4vw, 20px) !important;
+  font-size: clamp(15px, 1.3vw, 18px) !important;
   max-width: 56ch;
   color: #555555 !important;
-  margin-bottom: 18px !important;
+  margin-bottom: 0 !important;
+  line-height: 1.25 !important;
 }
 
 .hero-badges{
@@ -443,7 +451,7 @@ button.btn-secondary:focus-visible{
 @media (max-width: 700px){
   .hero-section .hero-content.hero-content-relative,
   .hero-section .hero-content.center-padding.hero-content-relative {
-    padding: var(--mw-header-h, 56px) 0.85rem 2.5rem !important;
+    padding: 1px 0.85rem 1.25rem !important;
   }
   .hero-content-relative{
     text-align: left;
@@ -941,16 +949,20 @@ Wake Surf Safari 2026 Styles
 }
 
 .brand-logo--hero {
-  max-height: clamp(3.25rem, 14vw, 5.75rem);
-  max-width: min(440px, 92vw);
+  max-height: clamp(2.75rem, 11vw, 4.75rem);
+  max-width: min(400px, 88vw);
   margin: 0 auto;
   filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.28));
 }
 
 .hero-title--logo {
-  margin: 0 0 0.75rem;
+  margin: 0;
   line-height: 0;
   padding-top: 0;
+}
+
+.hero-section .btn-primary.book-now {
+  margin-top: 0.15rem;
 }
 
 .brand-logo--footer {

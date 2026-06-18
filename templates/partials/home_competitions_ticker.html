@@ -4,11 +4,11 @@
   <div class="home-competitions-ticker__viewport">
     <div class="home-competitions-ticker__track" data-ticker-track>
       {% for item in competitions_ticker %}
-      <span class="home-competitions-ticker__item">
+      <span class="home-competitions-ticker__item{% if item.is_live %} home-competitions-ticker__item--live{% endif %}">
         {% if item.href %}
-        <a class="home-competitions-ticker__link" href="{{ item.href }}"{% if item.href_external %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ item.label }}</a>
+        <a class="home-competitions-ticker__link{% if item.is_live %} home-competitions-ticker__link--live{% endif %}" href="{{ item.href }}"{% if item.href_external %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ item.label }}</a>
         {% else %}
-        <span class="home-competitions-ticker__text">{{ item.label }}</span>
+        <span class="home-competitions-ticker__text{% if item.is_live %} home-competitions-ticker__text--live{% endif %}">{{ item.label }}</span>
         {% endif %}
       </span>
       <span class="home-competitions-ticker__sep" aria-hidden="true">•</span>

@@ -12,6 +12,7 @@ from app.modules.logger import get_logger
 from app.services.competitions.sheet import resolve_competitions_source
 from app.services.competitions.visibility import (
     build_ticker_text,
+    is_ticker_live_row,
     is_ticker_visible_row,
     resolve_ticker_href,
     sort_key_for_ticker,
@@ -46,6 +47,7 @@ def _row_to_ticker_item(row: Dict[str, Any]) -> Dict[str, Any]:
         "label": build_ticker_text(row),
         "href": href,
         "href_external": bool(href),
+        "is_live": is_ticker_live_row(row),
         "discipline": str(row.get("discipline") or "").strip().lower(),
         "event_name": str(row.get("event_name") or "").strip(),
         "start_date": str(row.get("start_date") or "").strip()[:10],
