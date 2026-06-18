@@ -11,10 +11,10 @@
 
 ```text
 Current prod HEAD:        ae4b6272 (PR45 hotfix; server unchanged since rollout)
-Target release HEAD:      797c7f5d (release/prod-ui-jun2026 tip)
+Target release HEAD:      388f59a7 (release/prod-ui-jun2026 tip)
 origin/main HEAD:         0274a54e (PR45 + deploy.yml safety only)
 
-Diff stat (ae4b6272..797c7f5d):  98 files, +124035 / −95
+Diff stat (ae4b6272..388f59a7):  98 files, +124035 / −95
 Diff name-only count:     98
 Events leakage check:     PASS
 DB migration check:       PASS
@@ -45,10 +45,10 @@ git diff --name-only ae4b6272..origin/release/prod-ui-jun2026 | wc -l
 | `bd9f303b` | docs: prod UI jun2026 rollout runbook (not executed) |
 | UI cherry-picks | `2ce34417` … `7a368986` (Social, hero, ticker, brand, services) |
 | **+ canon commit** | `1eec2a4d` — Sheets ID canon, oneshot readiness, evidence sync |
-| **+ HEAD pin** | `797c7f5d` — evidence/runbook target HEAD (tip) |
+| **+ HEAD pin** | `388f59a7` — evidence/runbook target HEAD (tip) |
 
-**Evidence docs commit:** `797c7f5d`  
-**Runbook commit:** `708bf67f` + `797c7f5d`
+**Evidence docs commit:** `388f59a7`  
+**Runbook commit:** `708bf67f` + `388f59a7`
 
 ---
 

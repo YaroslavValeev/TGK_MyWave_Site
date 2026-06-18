@@ -2,7 +2,7 @@
 
 **Status:** PREPARED — **NOT EXECUTED**  
 **Base:** `ae4b6272` (PR45 prod hotfix)  
-**Target:** `797c7f5d` (`release/prod-ui-jun2026` tip)  
+**Target:** `388f59a7` (`release/prod-ui-jun2026` tip)  
 **Date:** 2026-06-18
 
 ## Scope
