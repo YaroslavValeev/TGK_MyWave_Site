@@ -13,6 +13,21 @@ echo "=== Social production readiness ${TS} ==="
 echo "root=${PROD_ROOT} mode=READ_ONLY"
 
 echo ""
+echo "=== SPREADSHEET_ID lines (duplicate check) ==="
+SP_COUNT=$(grep -cE '^SPREADSHEET_ID=' "${PROD_ROOT}/.env" 2>/dev/null || echo 0)
+echo "SPREADSHEET_ID line count: ${SP_COUNT}"
+if [ "${SP_COUNT}" -gt 1 ]; then
+  echo "WARN: multiple SPREADSHEET_ID= — dotenv last-wins; dedupe per docs/integration/SHEETS_ID_CANON.md"
+fi
+grep -nE '^SPREADSHEET_ID=' "${PROD_ROOT}/.env" 2>/dev/null \
+  | sed -E 's/=(.{8}).*/=***\1/' || echo "WARN: no SPREADSHEET_ID"
+
+echo ""
+echo "=== PARSER_NEWS (blog isolation) ==="
+grep -E '^PARSER_NEWS_SPREADSHEET_ID=' "${PROD_ROOT}/.env" 2>/dev/null \
+  | sed -E 's/=(.{8}).*/=***\1/' || echo "WARN: PARSER_NEWS_SPREADSHEET_ID not set"
+
+echo ""
 echo "=== SOCIAL_* in .env (IDs redacted) ==="
 grep -E '^SOCIAL_' "${PROD_ROOT}/.env" 2>/dev/null \
   | sed -E 's/^(SOCIAL_SPREADSHEET_ID=).*/\1<set_or_empty>/' \
@@ -20,10 +35,19 @@ grep -E '^SOCIAL_' "${PROD_ROOT}/.env" 2>/dev/null \
 
 SPREADSHEET_ID=$(grep -E '^SOCIAL_SPREADSHEET_ID=' "${PROD_ROOT}/.env" 2>/dev/null | cut -d= -f2- | tr -d '\r"' || true)
 if [ -z "${SPREADSHEET_ID}" ]; then
-  SPREADSHEET_ID=$(grep -E '^SPREADSHEET_ID=' "${PROD_ROOT}/.env" 2>/dev/null | cut -d= -f2- | tr -d '\r"' || true)
-  echo "SOCIAL_SPREADSHEET_ID: empty → fallback SPREADSHEET_ID used"
+  SPREADSHEET_ID=$(grep -E '^SPREADSHEET_ID=' "${PROD_ROOT}/.env" 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '\r"' || true)
+  echo "SOCIAL_SPREADSHEET_ID: empty → fallback SPREADSHEET_ID (last line if duplicate)"
 else
   echo "SOCIAL_SPREADSHEET_ID: set"
+fi
+if [ -n "${SPREADSHEET_ID}" ]; then
+  TAIL="${SPREADSHEET_ID: -8}"
+  echo "effective_social_spreadsheet_tail: ${TAIL}"
+  if [ "${TAIL}" = "LijNNyn50" ]; then
+    echo "WARN: Social points at Parser News — use Admin (…akVMOrCgic0) per SHEETS_ID_CANON.md"
+  elif [ "${TAIL}" = "akVMOrCgic0" ]; then
+    echo "OK: Admin table tail for Social"
+  fi
 fi
 
 SHEET_NAME=$(grep -E '^SOCIAL_APPLICATIONS_SHEET_NAME=' "${PROD_ROOT}/.env" 2>/dev/null | cut -d= -f2- | tr -d '\r"' || echo "Social_Applications")
@@ -55,6 +79,7 @@ sid = (os.getenv("SOCIAL_SPREADSHEET_ID") or os.getenv("SPREADSHEET_ID") or "").
 tab = (os.getenv("SOCIAL_APPLICATIONS_SHEET_NAME") or "Social_Applications").strip()
 if not sid:
     raise SystemExit("No SPREADSHEET_ID / SOCIAL_SPREADSHEET_ID")
+print("probe_spreadsheet_tail", sid[-8:] if len(sid) >= 8 else sid)
 from app.services.google import get_google_services
 svc = get_google_services()
 meta = svc["sheets"].spreadsheets().get(spreadsheetId=sid).execute()

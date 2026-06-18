@@ -2,7 +2,7 @@
 
 **Status:** PREPARED — **NOT EXECUTED**  
 **Base:** `ae4b6272` (PR45 prod hotfix)  
-**Target:** `bd9f303b` (release branch HEAD)  
+**Target:** tip of `release/prod-ui-jun2026` — verify: `git rev-parse origin/release/prod-ui-jun2026`  
 **Date:** 2026-06-18
 
 ## Scope
@@ -25,7 +25,7 @@ EVENTS_API_ENABLED=0
 EVENTS_PUBLIC_UI_ENABLED=0
 ```
 
-Pre-check: `SOCIAL_SPREADSHEET_ID` set; SA has `Social_Applications` tab access.
+Pre-check: `.env` Sheets tails per `SHEETS_ID_CANON.md`; run `PROD_SOCIAL_READINESS_ONESHOT.md` (Option A) or `prod_social_readiness_check.sh` after merge.
 
 ## Commands (after approval)
 
