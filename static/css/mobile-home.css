@@ -85,7 +85,7 @@
     margin: 0 !important;
     margin-bottom: -2.75rem !important;
     padding: 0 0.85rem 1rem !important;
-    margin-top: -14px !important;
+    margin-top: -18px !important;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
@@ -479,7 +479,7 @@
   .hero-section .hero-content.center-padding,
   .hero-section .hero-content-relative {
     padding-top: 0 !important;
-    margin-top: -14px !important;
+    margin-top: -18px !important;
   }
 }
 
