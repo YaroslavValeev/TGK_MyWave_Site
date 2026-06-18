@@ -20,12 +20,12 @@ if [ "${SP_COUNT}" -gt 1 ]; then
   echo "WARN: multiple SPREADSHEET_ID= — dotenv last-wins; dedupe per docs/integration/SHEETS_ID_CANON.md"
 fi
 grep -nE '^SPREADSHEET_ID=' "${PROD_ROOT}/.env" 2>/dev/null \
-  | sed -E 's/=(.{8}).*/=***\1/' || echo "WARN: no SPREADSHEET_ID"
+  | sed -E 's/=.*(.{8})$/=***\1/' || echo "WARN: no SPREADSHEET_ID"
 
 echo ""
 echo "=== PARSER_NEWS (blog isolation) ==="
 grep -E '^PARSER_NEWS_SPREADSHEET_ID=' "${PROD_ROOT}/.env" 2>/dev/null \
-  | sed -E 's/=(.{8}).*/=***\1/' || echo "WARN: PARSER_NEWS_SPREADSHEET_ID not set"
+  | sed -E 's/=.*(.{8})$/=***\1/' || echo "WARN: PARSER_NEWS_SPREADSHEET_ID not set"
 
 echo ""
 echo "=== SOCIAL_* in .env (IDs redacted) ==="
@@ -69,24 +69,48 @@ PY
 
 echo ""
 echo "=== Google SA + Sheet tab probe (read-only) ==="
-"${PROD_ROOT}/venv/bin/python" - <<PY || echo "FAIL: sheet probe"
-import os, sys
-sys.path.insert(0, "${PROD_ROOT}")
-os.chdir("${PROD_ROOT}")
-from dotenv import load_dotenv
-load_dotenv("${PROD_ROOT}/.env")
-sid = (os.getenv("SOCIAL_SPREADSHEET_ID") or os.getenv("SPREADSHEET_ID") or "").strip()
-tab = (os.getenv("SOCIAL_APPLICATIONS_SHEET_NAME") or "Social_Applications").strip()
+PROD_ROOT="${PROD_ROOT}" "${PROD_ROOT}/venv/bin/python" - <<'PY' || echo "FAIL: sheet probe"
+import os, re, sys
+from pathlib import Path
+
+PROD_ROOT = Path(os.environ.get("PROD_ROOT", "/var/www/mywave"))
+env_path = PROD_ROOT / ".env"
+lines = env_path.read_text(encoding="utf-8", errors="replace").splitlines() if env_path.is_file() else []
+
+def tail(v, n=8):
+    v = (v or "").strip().strip('"')
+    return v[-n:] if len(v) >= n else v
+
+def vals(key):
+    out = []
+    for ln in lines:
+        if ln.strip().startswith("#"):
+            continue
+        m = re.match(rf"^{re.escape(key)}=(.*)$", ln.strip())
+        if m:
+            out.append(m.group(1).strip())
+    return out
+
+social = vals("SOCIAL_SPREADSHEET_ID")
+sp = vals("SPREADSHEET_ID")
+sid = (social[-1] if social and social[-1] else (sp[-1] if sp else "")).strip().strip('"')
+tab = (vals("SOCIAL_APPLICATIONS_SHEET_NAME") or ["Social_Applications"])[-1]
 if not sid:
     raise SystemExit("No SPREADSHEET_ID / SOCIAL_SPREADSHEET_ID")
-print("probe_spreadsheet_tail", sid[-8:] if len(sid) >= 8 else sid)
-from app.services.google import get_google_services
-svc = get_google_services()
-meta = svc["sheets"].spreadsheets().get(spreadsheetId=sid).execute()
-titles = [s["properties"]["title"] for s in meta.get("sheets", [])]
-print("spreadsheet_access=OK")
-print("tabs_count", len(titles))
-print("Social_Applications_tab", "YES" if tab in titles else "NO")
+print("probe_spreadsheet_tail", tail(sid))
+
+sys.path.insert(0, str(PROD_ROOT))
+os.chdir(PROD_ROOT)
+from app import create_app
+app = create_app("production")
+with app.app_context():
+    from app.services.google import get_google_services
+    _, sheets, _ = get_google_services()
+    meta = sheets.spreadsheets().get(spreadsheetId=sid).execute()
+    titles = [s["properties"]["title"] for s in meta.get("sheets", [])]
+    print("spreadsheet_access=OK")
+    print("tabs_count", len(titles))
+    print("Social_Applications_tab", "YES" if tab in titles else "NO")
 PY
 
 echo ""

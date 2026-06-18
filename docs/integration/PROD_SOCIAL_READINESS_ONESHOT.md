@@ -1,79 +1,131 @@
 # Social production readiness — one-shot (read-only)
 
-**GM preference:** Option A — no file writes on prod, no restart, no app code deploy.  
-**Use when:** `prod_social_readiness_check.sh` is not yet on prod HEAD (before PR #48 merge).
+**GM preference:** Option A — no file writes on prod app tree, no restart.  
+**Use when:** readiness script not yet on prod HEAD (before PR #48 merge).
 
 ---
 
-## Option A — paste on prod server
+## Owner run (recommended — paste-safe)
+
+One block: writes script to `/tmp`, runs read-only probe. **Does not modify `/var/www/mywave/.env`.**
 
 ```bash
 PROD_ROOT=/var/www/mywave
-set -euo pipefail
+cat >/tmp/prod_social_readiness_oneshot.py <<'PYEOF'
+#!/usr/bin/env python3
+import os, re, sys
+from pathlib import Path
 
-echo "=== Social readiness one-shot (read-only) ==="
-echo "root=${PROD_ROOT}"
+def tail(v, n=8):
+    v = (v or "").strip().strip('"').strip("'")
+    return v[-n:] if len(v) >= n else v
 
-echo ""
-echo "=== SPREADSHEET_ID duplicate check ==="
-SP_COUNT=$(grep -cE '^SPREADSHEET_ID=' "${PROD_ROOT}/.env" 2>/dev/null || echo 0)
-echo "SPREADSHEET_ID line count: ${SP_COUNT}"
-[ "${SP_COUNT}" -eq 1 ] && echo "OK: single SPREADSHEET_ID" || echo "FAIL/WARN: expected 1 line"
-grep -nE '^SPREADSHEET_ID=' "${PROD_ROOT}/.env" | sed -E 's/=(.{8}).*/=***\1/'
+def lines(p):
+    return p.read_text(encoding="utf-8", errors="replace").splitlines() if p.is_file() else []
 
-echo ""
-echo "=== PARSER_NEWS tail (blog isolation) ==="
-grep -E '^PARSER_NEWS_SPREADSHEET_ID=' "${PROD_ROOT}/.env" | sed -E 's/=(.{8}).*/=***\1/' \
-  | grep -q 'NNyn50' && echo "OK: Parser tail NNyn50" || echo "FAIL/WARN: expected ***NNyn50"
+def vals(lines, key):
+    out = []
+    for ln in lines:
+        if ln.strip().startswith("#"): continue
+        m = re.match(rf"^{re.escape(key)}=(.*)$", ln.strip())
+        if m: out.append(m.group(1).strip())
+    return out
 
-echo ""
-echo "=== SOCIAL effective spreadsheet tail ==="
-SOCIAL_SID=$(grep -E '^SOCIAL_SPREADSHEET_ID=' "${PROD_ROOT}/.env" 2>/dev/null | cut -d= -f2- | tr -d '\r"' || true)
-if [ -z "${SOCIAL_SID}" ]; then
-  SOCIAL_SID=$(grep -E '^SPREADSHEET_ID=' "${PROD_ROOT}/.env" | tail -1 | cut -d= -f2- | tr -d '\r"')
-  echo "SOCIAL_SPREADSHEET_ID: empty → fallback SPREADSHEET_ID (last line)"
-else
-  echo "SOCIAL_SPREADSHEET_ID: set"
-fi
-TAIL="${SOCIAL_SID: -8}"
-echo "effective_social_tail: ***${TAIL}"
-case "${TAIL}" in
-  akVMOrCgic0) echo "OK: Admin table for Social" ;;
-  LijNNyn50)   echo "FAIL: Social must not use Parser sheet" ;;
-  *)           echo "WARN: unexpected tail — verify .env" ;;
-esac
-
-echo ""
-echo "=== Google SA + Social_Applications tab (read-only API) ==="
-"${PROD_ROOT}/venv/bin/python" - <<'PY'
-import os, sys
-PROD_ROOT = os.environ.get("PROD_ROOT", "/var/www/mywave")
-sys.path.insert(0, PROD_ROOT)
-os.chdir(PROD_ROOT)
-from dotenv import load_dotenv
-load_dotenv(f"{PROD_ROOT}/.env")
-sid = (os.getenv("SOCIAL_SPREADSHEET_ID") or os.getenv("SPREADSHEET_ID") or "").strip()
-tab = (os.getenv("SOCIAL_APPLICATIONS_SHEET_NAME") or "Social_Applications").strip()
-if not sid:
-    raise SystemExit("FAIL: no SPREADSHEET_ID / SOCIAL_SPREADSHEET_ID")
-print("probe_tail", sid[-8:])
-from app.services.google import get_google_services
-meta = get_google_services()["sheets"].spreadsheets().get(spreadsheetId=sid).execute()
-titles = [s["properties"]["title"] for s in meta.get("sheets", [])]
-print("spreadsheet_access=OK")
-print("tabs_count", len(titles))
-print("Social_Applications_tab", "YES" if tab in titles else "NO")
-PY
-
-echo ""
-echo "=== Booking/calendar isolation (static) ==="
-echo "social.py not on prod HEAD yet — isolation confirmed in release branch code review (no booking/calendar imports)"
-
-echo ""
-echo "=== DONE — paste output to GM thread (tails only) ==="
+prod = Path(os.environ.get("PROD_ROOT", "/var/www/mywave"))
+env = prod / ".env"
+L = lines(env)
+print("=== Social readiness one-shot (read-only) ===")
+print("root=", prod)
+sp = [(i+1, m.group(1).strip()) for i, ln in enumerate(L) if (m := re.match(r"^SPREADSHEET_ID=(.*)$", ln.strip()))]
+print("\n=== SPREADSHEET_ID duplicate check ===")
+print("SPREADSHEET_ID line count:", len(sp), "(expect 1)")
+for n, v in sp: print(f"{n}:SPREADSHEET_ID=***{tail(v)}")
+if len(sp) == 1 and tail(sp[0][1]) == "akVMOrCgic0": print("OK: single Admin SPREADSHEET_ID")
+elif len(sp) > 1: print("FAIL: dedupe .env — remove Parser line from SPREADSHEET_ID; use PARSER_NEWS_SPREADSHEET_ID")
+pv = vals(L, "PARSER_NEWS_SPREADSHEET_ID")
+print("\n=== PARSER_NEWS tail ===")
+if pv:
+    print(f"PARSER_NEWS_SPREADSHEET_ID=***{tail(pv[-1])}")
+    print("OK: Parser tail" if tail(pv[-1]) == "LijNNyn50" else "FAIL/WARN: expected LijNNyn50")
+else: print("FAIL: PARSER_NEWS_SPREADSHEET_ID not set")
+sv = vals(L, "SOCIAL_SPREADSHEET_ID")
+sid = sv[-1] if sv and sv[-1] else (sp[-1][1] if sp else "")
+print("\n=== SOCIAL effective tail ===")
+print("SOCIAL_SPREADSHEET_ID:", "set" if sv and sv[-1] else "empty → fallback last SPREADSHEET_ID")
+print("effective_social_tail: ***" + tail(sid))
+if tail(sid) == "akVMOrCgic0": print("OK: Admin for Social")
+elif tail(sid) == "LijNNyn50": print("FAIL: Social on Parser sheet")
+tab = (vals(L, "SOCIAL_APPLICATIONS_SHEET_NAME") or ["Social_Applications"])[-1]
+print("\n=== Google SA + tab probe ===")
+sys.path.insert(0, str(prod)); os.chdir(prod)
+from app import create_app
+app = create_app("production")
+with app.app_context():
+    from app.services.google import get_google_services
+    _, sheets, _ = get_google_services()
+    meta = sheets.spreadsheets().get(spreadsheetId=sid.strip().strip('"')).execute()
+    titles = [s["properties"]["title"] for s in meta.get("sheets", [])]
+    print("probe_tail", tail(sid))
+    print("spreadsheet_access=OK")
+    print("tabs_count", len(titles))
+    print("Social_Applications_tab", "YES" if tab in titles else "NO")
+print("\n=== DONE ===")
+PYEOF
+PROD_ROOT=/var/www/mywave "${PROD_ROOT}/venv/bin/python" /tmp/prod_social_readiness_oneshot.py
 ```
 
-**PASS criteria:**
+After PR #48 on prod, same logic lives in `scripts/prod_social_readiness_oneshot.py`.
+
+---
+
+## Interpret Owner output (2026-06-18 partial run)
+
+| Check | Result |
+|-------|--------|
+| `SPREADSHEET_ID` count | **FAIL: 2 lines** (L31 Parser prefix `1RJpw2mA`, L36 Admin `1kyNQVje`) |
+| Social fallback (last line) | **OK** tail `MOrCgic0` (= `akVMOrCgic0`) |
+| `PARSER_NEWS` | **Inconclusive** (paste corrupted) — re-run |
+| SA / `Social_Applications` | **Inconclusive** — Flask app context error in old one-liner; fixed above |
+| `.env` dedupe | **Required before rollout** — see below |
+
+**Runtime note:** `load_dotenv()` last key wins → effective `SPREADSHEET_ID` likely Admin (L36), but duplicate L31 is **FAIL** for readiness and risky.
+
+---
+
+## .env fix (Owner manual — no commit)
+
+Keep **one** Admin line on `SPREADSHEET_ID`; move Parser to dedicated key only:
+
+```env
+# REMOVE duplicate — do not use SPREADSHEET_ID for Parser
+PARSER_NEWS_SPREADSHEET_ID=<full_id tail LijNNyn50>
+SPREADSHEET_ID=<full_id tail akVMOrCgic0>
+# optional before Social flags:
+SOCIAL_SPREADSHEET_ID=<same Admin id>
+```
+
+Verify tails:
+
+```bash
+grep -n '^SPREADSHEET_ID=\|^PARSER_NEWS_SPREADSHEET_ID=' /var/www/mywave/.env | sed -E 's/=.*(.{8})$/=***\1/'
+```
+
+Expect: **one** `SPREADSHEET_ID=***OrCgic0`, `PARSER_NEWS=***NNyn50`.
+
+Restart **not** required for readiness probe; restart **required** after `.env` dedupe before Social flags ON.
+
+---
+
+## Option B — scp from repo
+
+```bash
+scp scripts/prod_social_readiness_oneshot.py user@prod:/tmp/
+ssh user@prod 'PROD_ROOT=/var/www/mywave /var/www/mywave/venv/bin/python /tmp/prod_social_readiness_oneshot.py'
+```
+
+---
+
+## PASS criteria
 
 | Check | Expected |
 |-------|----------|
@@ -85,31 +137,9 @@ echo "=== DONE — paste output to GM thread (tails only) ==="
 
 ---
 
-## Option B — script from release branch (read-only)
-
-```bash
-# From workstation (no prod app change):
-scp automation/production/prod_social_readiness_check.sh user@prod:/tmp/
-ssh user@prod 'sudo bash /tmp/prod_social_readiness_check.sh'
-```
-
-Or after PR #48 merge (before flags ON):
-
-```bash
-sudo bash /var/www/mywave/automation/production/prod_social_readiness_check.sh
-```
-
----
-
-## Option C — after merge, before flags
-
-Less preferred: deploy PR #48 code first, run script from `automation/production/`, then apply `SOCIAL_*` flags and restart.
-
----
-
 ## Does not
 
-- Write `.env`
+- Write prod `.env` (Owner dedupe is separate manual step)
 - Restart `mywave-site`
 - Mutate Sheets
 - Enable Social flags
