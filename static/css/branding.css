@@ -376,7 +376,12 @@ button.btn-secondary:focus-visible{
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  padding-top: calc(var(--mw-header-h, 64px) + clamp(6px, 1vw, 12px)) !important;
+  padding-top: var(--mw-header-h, 64px) !important;
+}
+
+/* Home hero: override .center-padding { padding: 100px } on index */
+.hero-section .hero-content.center-padding.hero-content-relative {
+  padding: var(--mw-header-h, 64px) 20px 20px !important;
 }
 
 /* Home hero logo: keep fully below fixed header (no overlap with navbar) */
@@ -436,8 +441,9 @@ button.btn-secondary:focus-visible{
 
 /* Mobile hero alignment */
 @media (max-width: 700px){
-  .hero-section .hero-content.hero-content-relative {
-    padding-top: calc(var(--mw-header-h, 56px) + 8px) !important;
+  .hero-section .hero-content.hero-content-relative,
+  .hero-section .hero-content.center-padding.hero-content-relative {
+    padding: var(--mw-header-h, 56px) 0.85rem 2.5rem !important;
   }
   .hero-content-relative{
     text-align: left;
