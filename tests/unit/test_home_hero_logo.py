@@ -23,5 +23,5 @@ def test_branding_css_hero_clearance_under_header():
 
     css = Path("static/css/branding.css").read_text(encoding="utf-8")
     assert "margin-top: 0 !important" in css
-    assert "var(--mw-header-h" in css
-    assert "brand-logo--hero" in css
+    assert "padding-top: 1px !important" in css
+    assert ".hero-section.relative-section" in css
