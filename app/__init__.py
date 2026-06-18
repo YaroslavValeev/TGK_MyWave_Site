@@ -146,8 +146,8 @@ def create_app(config_name="development"):
         except ImportError:
             app.logger.warning("Fallback: using inline services config")
             services_config = [
-                {'service_id': 'gym', 'name': 'Запись на тренировку (Зал)', 'description': '...', 'price': '3 500 ₽', 'image_folder': 'images/Services/Gym', 'modal_id': 'modalCalendar', 'button_text': 'Подробнее / Записаться'},
                 {'service_id': 'boat', 'name': 'Запись на катер', 'description': '...', 'price': '10 000 ₽', 'image_folder': 'images/Services/Boat', 'modal_id': 'modalCalendar', 'button_text': 'Подробнее / Записаться'},
+                {'service_id': 'gym', 'name': 'Запись на тренировку (Зал)', 'description': '...', 'price': '3 500 ₽', 'image_folder': 'images/Services/Gym', 'modal_id': 'modalCalendar', 'button_text': 'Подробнее / Записаться'},
                 {'service_id': 'camp', 'name': 'Camp', 'description': '...', 'price': 'от 15 000 ₽', 'image_folder': 'images/Services/Camp', 'modal_id': 'modalCamp', 'button_text': 'Подробнее / Оставить заявку'},
                 {'service_id': 'coach_triper', 'name': 'Тренер на выезде', 'description': '...', 'price': 'по запросу', 'image_folder': 'images/Services/CoachTriper', 'modal_id': 'modalCoachTriper', 'button_text': 'Подробнее / Оставить заявку'},
                 {'service_id': 'consulting', 'name': 'Консалтинг', 'description': '...', 'price': 'по запросу', 'image_folder': 'images/Services/Consalting', 'modal_id': 'modalConsulting', 'button_text': 'Подробнее / Получить консультацию'},
