@@ -369,10 +369,11 @@ button.btn-secondary:focus-visible{
   background: transparent;
 }
 
-/* Home hero: header clearance on section; content block flush + compact */
+/* Home hero: header clearance on section; content block raised + compact */
 .hero-section.relative-section {
   padding-top: var(--mw-header-h, 64px);
   box-sizing: border-box;
+  align-items: flex-start !important;
 }
 
 .hero-content-relative{
@@ -382,19 +383,20 @@ button.btn-secondary:focus-visible{
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  gap: 0.35rem !important;
-  padding-top: 1px !important;
+  gap: 0.3rem !important;
+  padding-top: 0 !important;
 }
 
 /* Home hero: override .center-padding { padding: 100px } on index */
 .hero-section .hero-content.center-padding.hero-content-relative {
-  padding: 1px 20px 12px !important;
+  padding: 0 20px 10px !important;
+  margin-top: -14px !important;
 }
 
 /* Home hero logo: keep fully below fixed header (no overlap with navbar) */
 .hero-section .hero-content,
 .hero-section .hero-content.hero-content-relative {
-  margin-top: 0 !important;
+  margin-top: -14px !important;
 }
 
 .hero-title{
@@ -451,7 +453,8 @@ button.btn-secondary:focus-visible{
 @media (max-width: 700px){
   .hero-section .hero-content.hero-content-relative,
   .hero-section .hero-content.center-padding.hero-content-relative {
-    padding: 1px 0.85rem 1.25rem !important;
+    padding: 0 0.85rem 1rem !important;
+    margin-top: -6px !important;
   }
   .hero-content-relative{
     text-align: left;
@@ -949,8 +952,8 @@ Wake Surf Safari 2026 Styles
 }
 
 .brand-logo--hero {
-  max-height: clamp(2.75rem, 11vw, 4.75rem);
-  max-width: min(400px, 88vw);
+  max-height: clamp(3.15rem, 12.5vw, 5.35rem);
+  max-width: min(430px, 90vw);
   margin: 0 auto;
   filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.28));
 }
