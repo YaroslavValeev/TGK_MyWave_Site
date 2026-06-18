@@ -105,8 +105,8 @@ def _load_services_config():
     except Exception as e:
         logger.warning("Не удалось загрузить configs/services.yaml: %s", e)
     return [
-        {'service_id': 'gym', 'name': 'Запись на тренировку (Зал)', 'description': '...', 'price': '3500 рублей', 'image_folder': 'images/Services/Gym', 'modal_id': 'modalCalendar', 'button_text': 'Подробнее / Записаться'},
         {'service_id': 'boat', 'name': 'Запись на катер', 'description': '...', 'price': '10 000 рублей', 'image_folder': 'images/Services/Boat', 'modal_id': 'modalCalendar', 'button_text': 'Подробнее / Записаться'},
+        {'service_id': 'gym', 'name': 'Запись на тренировку (Зал)', 'description': '...', 'price': '3500 рублей', 'image_folder': 'images/Services/Gym', 'modal_id': 'modalCalendar', 'button_text': 'Подробнее / Записаться'},
         {'service_id': 'camp', 'name': 'Camp', 'description': '...', 'price': 'от 15 000 рублей', 'image_folder': 'images/Services/Camp', 'modal_id': 'modalCamp', 'button_text': 'Подробнее / Записаться'},
         {'service_id': 'coach_triper', 'name': 'Тренер на выезде', 'description': '...', 'price': 'по запросу', 'image_folder': 'images/Services/CoachTriper', 'modal_id': 'modalCoachTriper', 'button_text': 'Подробнее / Оставить заявку'},
         {'service_id': 'consulting', 'name': 'Консалтинг', 'description': '...', 'price': 'по запросу', 'image_folder': 'images/Services/Consalting', 'modal_id': 'modalConsulting', 'button_text': 'Подробнее / Получить консультацию'},

@@ -3,6 +3,16 @@
 # Документация: docs/SERVICES_SECTION_ANALYSIS.md
 
 services:
+  - service_id: boat
+    name: "Запись на катер"
+    description: "1 сет — 25 минут за катером с тренером. Количество сетов подбирается под задачу и уровень ученика."
+    price: "10 000 ₽"
+    image_folder: "images/Services/Boat"
+    # второе изображение в папке — первая обложка
+    cover_index: 1
+    modal_id: modalCalendar
+    button_text: "Подробнее / Записаться"
+
   - service_id: gym
     name: "Запись на тренировку (Зал)"
     description: "Тренировка на авторских тренажёрах по методике вейксерфинга (1.5 часа). Развиваем баланс, координацию и биомеханику для уверенного прогресса на воде."
@@ -17,16 +27,6 @@ services:
       - images/Services/Gym/KsuBatut.mp4
       - images/Services/Gym/KatBatut.mp4
       - images/Services/Gym/BodyBalanceRom.mp4
-    modal_id: modalCalendar
-    button_text: "Подробнее / Записаться"
-
-  - service_id: boat
-    name: "Запись на катер"
-    description: "1 сет — 25 минут за катером с тренером. Количество сетов подбирается под задачу и уровень ученика."
-    price: "10 000 ₽"
-    image_folder: "images/Services/Boat"
-    # второе изображение в папке — первая обложка
-    cover_index: 1
     modal_id: modalCalendar
     button_text: "Подробнее / Записаться"
 

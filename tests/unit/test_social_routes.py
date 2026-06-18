@@ -47,7 +47,9 @@ class TestSocialRoutesGating:
         mocker.patch("app.services.blog.store.get_posts", return_value=([], 0))
         html = client.get("/").get_data(as_text=True)
         assert "social-mission-widget" in html
+        assert "social-mission-widget--compact" in html
         assert "Каждый сет помогает движению" in html
+        assert "Подробнее" in html
 
 
 class TestSocialApplyApi:
