@@ -390,13 +390,13 @@ button.btn-secondary:focus-visible{
 /* Home hero: override .center-padding { padding: 100px } on index */
 .hero-section .hero-content.center-padding.hero-content-relative {
   padding: 0 20px 10px !important;
-  margin-top: -26px !important;
+  margin-top: -28px !important;
 }
 
 /* Home hero logo: keep fully below fixed header (no overlap with navbar) */
 .hero-section .hero-content,
 .hero-section .hero-content.hero-content-relative {
-  margin-top: -26px !important;
+  margin-top: -28px !important;
 }
 
 .hero-title{
@@ -454,7 +454,7 @@ button.btn-secondary:focus-visible{
   .hero-section .hero-content.hero-content-relative,
   .hero-section .hero-content.center-padding.hero-content-relative {
     padding: 0 0.85rem 1rem !important;
-    margin-top: -18px !important;
+    margin-top: -20px !important;
   }
   .hero-content-relative{
     text-align: left;
@@ -952,8 +952,8 @@ Wake Surf Safari 2026 Styles
 }
 
 .brand-logo--hero {
-  max-height: clamp(3.15rem, 12.5vw, 5.35rem);
-  max-width: min(430px, 90vw);
+  max-height: clamp(3.3rem, 13vw, 5.5rem);
+  max-width: min(440px, 91vw);
   margin: 0 auto;
   filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.28));
 }
