@@ -13,6 +13,10 @@ import re
 import sys
 from pathlib import Path
 
+# Last 8 chars of full spreadsheet IDs (matches sed 's/=.*(.{8})$/=***\1/')
+PARSER_TAIL = "ijNNyn50"
+ADMIN_TAIL = "MOrCgic0"
+
 
 def _tail(value: str, n: int = 8) -> str:
     v = (value or "").strip().strip('"').strip("'")
@@ -49,10 +53,10 @@ def main() -> int:
     print(f"SPREADSHEET_ID line count: {len(sp_lines)} (expect 1)")
     for lineno, val in sp_lines:
         print(f"{lineno}:SPREADSHEET_ID=***{_tail(val)}")
-    if len(sp_lines) == 1 and _tail(sp_lines[0][1]) == "akVMOrCgic0":
+    if len(sp_lines) == 1 and _tail(sp_lines[0][1]) == ADMIN_TAIL:
         print("OK: single Admin SPREADSHEET_ID")
     elif len(sp_lines) > 1:
-        print("FAIL: dedupe .env — keep Admin (tail akVMOrCgic0) only on SPREADSHEET_ID")
+        print("FAIL: dedupe .env — keep Admin (tail …OrCgic0) only on SPREADSHEET_ID")
     else:
         print("WARN: missing or unexpected SPREADSHEET_ID tail")
 
@@ -60,7 +64,7 @@ def main() -> int:
     parser_vals = _env_values(lines, "PARSER_NEWS_SPREADSHEET_ID")
     if parser_vals:
         print(f"PARSER_NEWS_SPREADSHEET_ID=***{_tail(parser_vals[-1])}")
-        print("OK: Parser tail" if _tail(parser_vals[-1]) == "LijNNyn50" else "FAIL/WARN: expected LijNNyn50")
+        print("OK: Parser tail" if _tail(parser_vals[-1]) == PARSER_TAIL else f"FAIL/WARN: expected …{PARSER_TAIL}")
     else:
         print("FAIL: PARSER_NEWS_SPREADSHEET_ID not set")
 
@@ -75,9 +79,9 @@ def main() -> int:
     else:
         sid = ""
     print(f"effective_social_tail: ***{_tail(sid)}")
-    if _tail(sid) == "akVMOrCgic0":
+    if _tail(sid) == ADMIN_TAIL:
         print("OK: Admin table for Social")
-    elif _tail(sid) == "LijNNyn50":
+    elif _tail(sid) == PARSER_TAIL:
         print("FAIL: Social must not use Parser sheet")
     else:
         print("WARN: unexpected tail")
