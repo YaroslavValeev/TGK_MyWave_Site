@@ -38,3 +38,11 @@ def test_itinerary_fetch(app):
         data = showcases.get_showcase_itinerary('wakesurf_safari')
         assert data['showcase_id'] == 'wakesurf_safari'
         assert isinstance(data['itinerary'], list)
+
+
+def test_checklist_card_prefers_check1_cover(app):
+    with app.test_request_context():
+        cards = showcases.get_project_cards()
+        checklist = next(c for c in cards if c.get('id') == 'checklist')
+        cover = (checklist.get('cover') or '').rsplit('/', 1)[-1]
+        assert cover.lower() == 'check1.png', checklist.get('cover')

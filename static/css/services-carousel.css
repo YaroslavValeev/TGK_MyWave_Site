@@ -396,6 +396,20 @@
   max-width: 360px;
   width: 100%;
 }
+/* PR49: checklist media fills card like WakeSurf Challenge / Safari */
+.project-card--checklist .service-image-container,
+.project-card--checklist .card-media-carousel {
+  width: 100%;
+  overflow: hidden;
+}
+.project-card--checklist .project-card__cover,
+.project-card--checklist .service-image-container .service-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover !important;
+  object-position: center;
+}
 .project-card--checklist .project-card__summary,
 .project-card--checklist .project-card__checklist-preview {
   display: block;

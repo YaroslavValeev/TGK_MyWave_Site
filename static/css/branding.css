@@ -399,6 +399,21 @@ button.btn-secondary:focus-visible{
   margin-top: -28px !important;
 }
 
+/* PR49: raise hero block — subtitle off busy boat/rail line in background */
+@media (min-width: 769px) {
+  .hero-section .hero-content.hero-content-relative,
+  .hero-section .hero-content.center-padding.hero-content-relative {
+    transform: translateY(-52px);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section .hero-content.hero-content-relative,
+  .hero-section .hero-content.center-padding.hero-content-relative {
+    transform: translateY(-16px);
+  }
+}
+
 .hero-title{
   font-size: clamp(34px, 4vw, 58px) !important;
   line-height: 1.02 !important;

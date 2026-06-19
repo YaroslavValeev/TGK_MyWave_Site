@@ -108,7 +108,7 @@ def get_showcase(showcase_id: str) -> ShowcaseConfig | None:
     return configs.get(showcase_id)
 
 
-from app.services.images_resolver import resolve_card_images, FALLBACK as FALLBACK_IMG
+from app.services.images_resolver import resolve_card_images, FALLBACK as FALLBACK_IMG, rotate_images_to_cover_index
 
 
 def _ensure_images_resolved(cards: list[dict[str, Any]]) -> None:
@@ -126,6 +126,26 @@ def _ensure_images_resolved(cards: list[dict[str, Any]]) -> None:
         card['cover'] = resolved['cover']
         card['images'] = resolved['images']
         card['fallback'] = resolved['fallback']
+
+
+def _normalize_checklist_cover(cards: list[dict[str, Any]]) -> None:
+    """Checklist folder scan sorts ChatGPT PNG before Check1; prefer cropped cover."""
+    for card in cards:
+        if card.get('id') != 'checklist':
+            continue
+        imgs = list(card.get('images') or [])
+        if len(imgs) < 2:
+            continue
+        preferred = next(
+            (p for p in imgs if p.rsplit('/', 1)[-1].lower() == 'check1.png'),
+            None,
+        )
+        if not preferred or imgs[0] == preferred:
+            continue
+        idx = imgs.index(preferred)
+        rotated = rotate_images_to_cover_index(imgs, idx)
+        card['images'] = rotated
+        card['cover'] = rotated[0]
 
 
 # Канонический порядок проектов на витрине
@@ -174,6 +194,7 @@ def get_project_cards() -> list[dict[str, Any]]:
             card['url'] = f"/projects/{sc.slug}"
         cards.append(card)
     _ensure_images_resolved(cards)
+    _normalize_checklist_cover(cards)
     return cards
 
 

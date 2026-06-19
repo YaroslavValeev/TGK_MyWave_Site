@@ -50,6 +50,9 @@ def test_is_openai_failure_reply():
     from app.services.responses_api import is_openai_failure_reply
 
     assert is_openai_failure_reply("Сейчас не удалось получить ответ.")
+    assert is_openai_failure_reply(
+        "Сейчас умный ассистент временно недоступен с нашего сервера."
+    )
     assert not is_openai_failure_reply("Тренировка в зале длится 60 минут.")
 
 
