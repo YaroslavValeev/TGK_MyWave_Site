@@ -21,17 +21,22 @@
 
 ## § Final rollout block (canonical)
 
+**Rule:** target = `git rev-parse origin/release/prod-ui-jun2026` after `git fetch`.  
+**Site frozen verification:** 2026-06-19 (MSK), base `ae4b6272`.
+
 ```text
-PR #48 target HEAD:           e68f46b0 (origin/release/prod-ui-jun2026)
+PR #48 target HEAD:           3d81ddbd (full: 3d81ddbdd78d485921fae55f8999f66cf9d06a7a)
 origin/main current HEAD:     0274a54e (PR45 hotfix + deploy.yml safety)
 production current HEAD:      ae4b6272 (PR45 hotfix; unchanged since hotfix)
-diff stat:                    102 files, +124661 / −95  (ae4b6272..e68f46b0)
+diff stat:                    102 files, +124661 / −95  (ae4b6272..3d81ddbd)
 diff name-only count:         102
 Events leakage check:         PASS
 DB migration check:           PASS (no migrations/)
 Large static/binary paths:    43 under static/images/logotip_MyWave/MyWave_logo_package_brand_turquoise/
 Execution status:             NOT STARTED
 ```
+
+Docs-only commits after `3d81ddbd` may advance branch tip without changing the 102-file rollout payload.
 
 ---
 
@@ -40,7 +45,7 @@ Execution status:             NOT STARTED
 ```bash
 git fetch origin release/prod-ui-jun2026 main
 git rev-parse origin/release/prod-ui-jun2026
-# e68f46b0d806d16cb6a518f96abcc6356d7d11c1
+# 3d81ddbdd78d485921fae55f8999f66cf9d06a7a
 
 git rev-parse origin/main
 # 0274a54e243e32e836cf34800ac4a9c1a47fcbdd

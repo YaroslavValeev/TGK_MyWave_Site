@@ -2,7 +2,7 @@
 
 **Status:** PREPARED — **NOT EXECUTED**  
 **Base:** `ae4b6272` (PR45 prod hotfix)  
-**Target:** `e68f46b0` (`release/prod-ui-jun2026` tip — 102 files vs `ae4b6272`)  
+**Target:** verified payload `3d81ddbd` (102 files vs `ae4b6272`); branch `release/prod-ui-jun2026`  
 **Date:** 2026-06-18
 
 ## Scope
