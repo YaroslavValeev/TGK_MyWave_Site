@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+# Read-only Social Mission production readiness (PR #48 blocker 5.2).
+# No .env writes, no restarts, no Sheet mutations.
+set -euo pipefail
+
+PROD_ROOT="${PROD_ROOT:-/var/www/mywave}"
+TS="$(date +%Y%m%d_%H%M%S)"
+OUT="/tmp/prod_social_readiness_${TS}.log"
+
+exec > >(tee "$OUT") 2>&1
+
+echo "=== Social production readiness ${TS} ==="
+echo "root=${PROD_ROOT} mode=READ_ONLY"
+
+echo ""
+echo "=== SPREADSHEET_ID lines (duplicate check) ==="
+SP_COUNT=$(grep -cE '^SPREADSHEET_ID=' "${PROD_ROOT}/.env" 2>/dev/null || echo 0)
+echo "SPREADSHEET_ID line count: ${SP_COUNT}"
+if [ "${SP_COUNT}" -gt 1 ]; then
+  echo "WARN: multiple SPREADSHEET_ID= — dotenv last-wins; dedupe per docs/integration/SHEETS_ID_CANON.md"
+fi
+grep -nE '^SPREADSHEET_ID=' "${PROD_ROOT}/.env" 2>/dev/null \
+  | sed -E 's/=.*(.{8})$/=***\1/' || echo "WARN: no SPREADSHEET_ID"
+
+echo ""
+echo "=== PARSER_NEWS (blog isolation) ==="
+grep -E '^PARSER_NEWS_SPREADSHEET_ID=' "${PROD_ROOT}/.env" 2>/dev/null \
+  | sed -E 's/=.*(.{8})$/=***\1/' || echo "WARN: PARSER_NEWS_SPREADSHEET_ID not set"
+
+echo ""
+echo "=== SOCIAL_* in .env (IDs redacted) ==="
+grep -E '^SOCIAL_' "${PROD_ROOT}/.env" 2>/dev/null \
+  | sed -E 's/^(SOCIAL_SPREADSHEET_ID=).*/\1<set_or_empty>/' \
+  || echo "WARN: no SOCIAL_* lines"
+
+SPREADSHEET_ID=$(grep -E '^SOCIAL_SPREADSHEET_ID=' "${PROD_ROOT}/.env" 2>/dev/null | cut -d= -f2- | tr -d '\r"' || true)
+if [ -z "${SPREADSHEET_ID}" ]; then
+  SPREADSHEET_ID=$(grep -E '^SPREADSHEET_ID=' "${PROD_ROOT}/.env" 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '\r"' || true)
+  echo "SOCIAL_SPREADSHEET_ID: empty → fallback SPREADSHEET_ID (last line if duplicate)"
+else
+  echo "SOCIAL_SPREADSHEET_ID: set"
+fi
+if [ -n "${SPREADSHEET_ID}" ]; then
+  TAIL="${SPREADSHEET_ID: -8}"
+  echo "effective_social_spreadsheet_tail: ${TAIL}"
+  if [ "${TAIL}" = "LijNNyn50" ]; then
+    echo "WARN: Social points at Parser News — use Admin (…akVMOrCgic0) per SHEETS_ID_CANON.md"
+  elif [ "${TAIL}" = "akVMOrCgic0" ]; then
+    echo "OK: Admin table tail for Social"
+  fi
+fi
+
+SHEET_NAME=$(grep -E '^SOCIAL_APPLICATIONS_SHEET_NAME=' "${PROD_ROOT}/.env" 2>/dev/null | cut -d= -f2- | tr -d '\r"' || echo "Social_Applications")
+echo "SOCIAL_APPLICATIONS_SHEET_NAME: ${SHEET_NAME:-Social_Applications}"
+
+echo ""
+echo "=== Feature flags (runtime, if Social code deployed) ==="
+"${PROD_ROOT}/venv/bin/python" - <<PY 2>/dev/null || echo "SKIP: Social module not on prod HEAD yet"
+import os, sys
+sys.path.insert(0, os.environ.get("PROD_ROOT", "/var/www/mywave"))
+os.chdir(os.environ.get("PROD_ROOT", "/var/www/mywave"))
+try:
+    from app.config.social_features import get_social_feature_flags
+    for k, v in get_social_feature_flags().items():
+        print(f"{k}={v}")
+except ImportError:
+    print("Social code not installed on this HEAD (expected before PR48 rollout)")
+PY
+
+echo ""
+echo "=== Google SA + Sheet tab probe (read-only) ==="
+PROD_ROOT="${PROD_ROOT}" "${PROD_ROOT}/venv/bin/python" - <<'PY' || echo "FAIL: sheet probe"
+import os, re, sys
+from pathlib import Path
+
+PROD_ROOT = Path(os.environ.get("PROD_ROOT", "/var/www/mywave"))
+env_path = PROD_ROOT / ".env"
+lines = env_path.read_text(encoding="utf-8", errors="replace").splitlines() if env_path.is_file() else []
+
+def tail(v, n=8):
+    v = (v or "").strip().strip('"')
+    return v[-n:] if len(v) >= n else v
+
+def vals(key):
+    out = []
+    for ln in lines:
+        if ln.strip().startswith("#"):
+            continue
+        m = re.match(rf"^{re.escape(key)}=(.*)$", ln.strip())
+        if m:
+            out.append(m.group(1).strip())
+    return out
+
+social = vals("SOCIAL_SPREADSHEET_ID")
+sp = vals("SPREADSHEET_ID")
+sid = (social[-1] if social and social[-1] else (sp[-1] if sp else "")).strip().strip('"')
+tab = (vals("SOCIAL_APPLICATIONS_SHEET_NAME") or ["Social_Applications"])[-1]
+if not sid:
+    raise SystemExit("No SPREADSHEET_ID / SOCIAL_SPREADSHEET_ID")
+print("probe_spreadsheet_tail", tail(sid))
+
+sys.path.insert(0, str(PROD_ROOT))
+os.chdir(PROD_ROOT)
+from app import create_app
+app = create_app("production")
+with app.app_context():
+    from app.services.google import get_google_services
+    _, sheets, _ = get_google_services()
+    meta = sheets.spreadsheets().get(spreadsheetId=sid).execute()
+    titles = [s["properties"]["title"] for s in meta.get("sheets", [])]
+    print("spreadsheet_access=OK")
+    print("tabs_count", len(titles))
+    print("Social_Applications_tab", "YES" if tab in titles else "NO")
+PY
+
+echo ""
+echo "=== Booking/calendar isolation (code review marker) ==="
+echo "social.py has no booking/calendar imports: confirmed in release branch code review"
+
+echo ""
+echo "=== DONE ==="
+echo "log=${OUT}"

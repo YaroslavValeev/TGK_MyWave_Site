@@ -1,0 +1,19 @@
+{% if social_widget_enabled %}
+<aside class="social-mission-widget social-mission-widget--subtle" id="social-mission" aria-label="Социальная миссия MyWave">
+  <div class="mw-container">
+    <p class="social-mission-widget__line">
+      <span class="social-mission-widget__label">Социальная миссия.</span>
+      Каждый сет помогает движению — часть тренировок поддерживает адаптивные сеты для детей.
+      <a class="social-mission-widget__link" href="{{ url_for('social.social_page') }}">Подробнее</a>
+      <span class="social-mission-widget__sep" aria-hidden="true">·</span>
+      <a class="social-mission-widget__link" href="{{ url_for('social.social_page') }}#social-apply">Заявка для ребёнка</a>
+    </p>
+    {% if social_public_stats %}
+    <p class="social-mission-widget__meta">
+      {{ social_public_stats.sessions_completed }} {{ social_public_stats.label_sessions }},
+      {{ social_public_stats.applications_received }} {{ social_public_stats.label_applications }}
+    </p>
+    {% endif %}
+  </div>
+</aside>
+{% endif %}

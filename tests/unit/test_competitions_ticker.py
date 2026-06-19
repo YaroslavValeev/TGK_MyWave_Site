@@ -3,6 +3,7 @@ from datetime import date, timedelta
 
 from app.services.competitions.visibility import (
     build_ticker_text,
+    is_ticker_live_row,
     is_ticker_visible_row,
     normalize_url,
     parse_iso_date,
@@ -162,3 +163,38 @@ def test_ongoing_event_visible_if_end_today():
         _row(start_date=start, end_date=end),
         today=today,
     ) is True
+
+
+def test_live_row_when_event_in_progress():
+    today = date(2026, 6, 18)
+    row = _row(start_date="2026-06-17", end_date="2026-06-19")
+    assert is_ticker_live_row(row, today=today) is True
+
+
+def test_live_row_false_before_start():
+    today = date(2026, 6, 10)
+    row = _row(start_date="2026-06-17", end_date="2026-06-19")
+    assert is_ticker_live_row(row, today=today) is False
+
+
+def test_home_ticker_marks_live_item(client, mocker):
+    today = date(2026, 6, 18)
+    fake = [
+        {
+            "id": "e-live",
+            "label": "Live Event Now",
+            "href": "https://example.com",
+            "is_live": True,
+        }
+    ]
+    mocker.patch(
+        "app.services.competitions.store.get_ticker_items",
+        return_value=fake,
+    )
+    mocker.patch(
+        "app.services.blog.store.get_posts",
+        return_value=([], 0),
+    )
+    html = client.get("/").get_data(as_text=True)
+    assert "home-competitions-ticker__item--live" in html
+    assert "Live Event Now" in html

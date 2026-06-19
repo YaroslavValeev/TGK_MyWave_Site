@@ -34,10 +34,32 @@
 }
 
 .home-competitions-ticker__viewport {
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     width: 100%;
     padding-left: 6.5rem;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(53, 192, 205, 0.45) transparent;
     mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+}
+
+.home-competitions-ticker__viewport.is-scrollable {
+    cursor: grab;
+}
+
+.home-competitions-ticker__viewport.is-scrollable.is-dragging {
+    cursor: grabbing;
+}
+
+.home-competitions-ticker__viewport::-webkit-scrollbar {
+    height: 4px;
+}
+
+.home-competitions-ticker__viewport::-webkit-scrollbar-thumb {
+    background: rgba(53, 192, 205, 0.45);
+    border-radius: 4px;
 }
 
 .home-competitions-ticker__track {
@@ -46,18 +68,14 @@
     align-items: center;
     gap: 0;
     white-space: nowrap;
-    animation: competitions-ticker-scroll 45s linear infinite;
     will-change: transform;
-}
-
-.home-competitions-ticker__track.is-paused {
-    animation-play-state: paused;
 }
 
 .home-competitions-ticker__item {
     display: inline-flex;
     align-items: center;
     padding: 0 1.25rem;
+    flex-shrink: 0;
 }
 
 .home-competitions-ticker__link,
@@ -67,25 +85,35 @@
     text-decoration: none;
 }
 
+.home-competitions-ticker__link {
+    cursor: pointer;
+}
+
 .home-competitions-ticker__link:hover,
 .home-competitions-ticker__link:focus-visible {
     color: #35c0cd;
     text-decoration: underline;
 }
 
+.home-competitions-ticker__item--live .home-competitions-ticker__link,
+.home-competitions-ticker__item--live .home-competitions-ticker__text,
+.home-competitions-ticker__link--live,
+.home-competitions-ticker__text--live {
+    color: #8b1a1a;
+    text-shadow: 0 0 6px rgba(220, 38, 38, 0.75), 0 0 14px rgba(239, 68, 68, 0.45);
+    font-weight: 650;
+}
+
+.home-competitions-ticker__item--live .home-competitions-ticker__link:hover,
+.home-competitions-ticker__item--live .home-competitions-ticker__link:focus-visible {
+    color: #b91c1c;
+}
+
 .home-competitions-ticker__sep {
     color: rgba(53, 192, 205, 0.55);
     font-size: 0.75rem;
     user-select: none;
-}
-
-@keyframes competitions-ticker-scroll {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(-50%);
-    }
+    flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
@@ -106,21 +134,14 @@
     .home-competitions-ticker__text {
         font-size: 0.82rem;
     }
-
-    .home-competitions-ticker__track {
-        animation-duration: 35s;
-    }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .home-competitions-ticker__viewport {
-        overflow-x: auto;
         mask-image: none;
-        -webkit-overflow-scrolling: touch;
     }
 
     .home-competitions-ticker__track {
-        animation: none;
         flex-wrap: wrap;
         white-space: normal;
         padding: 0.25rem 0.5rem;

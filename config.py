@@ -128,7 +128,8 @@ class Config:
     GOOGLE_SHEETS_CREDENTIALS = os.getenv("GOOGLE_SHEETS_CREDENTIALS") or os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE")
     DRIVE_FOLDER_ID = os.getenv("DRIVE_FOLDER_ID")
     SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "")
-    # Блог / Parser News (raw_feed). Отдельно от SPREADSHEET_ID (бронь, Admin/Tg Bot).
+    # Блог / Parser News (raw_feed). Отдельно от SPREADSHEET_ID (Admin/Tg Bot, tail …OrCgic0).
+    # Канон: docs/integration/SHEETS_ID_CANON.md
     PARSER_NEWS_SPREADSHEET_ID = os.getenv("PARSER_NEWS_SPREADSHEET_ID", "")
     PARSER_SHEET_NAME = os.getenv("PARSER_SHEET_NAME", "raw_feed")
     CLIENT_WORKOUTS_SHEET_NAME = os.getenv("CLIENT_WORKOUTS_SHEET_NAME", "Client_Workouts")
@@ -150,6 +151,13 @@ class Config:
     HOME_BOOKING_SWITCH_DATE = os.getenv("HOME_BOOKING_SWITCH_DATE", "2026-05-15")
     HOME_BOOKING_DEFAULT_SERVICE = os.getenv("HOME_BOOKING_DEFAULT_SERVICE", "gym")
     HOME_BOOKING_SWITCHED_SERVICE = os.getenv("HOME_BOOKING_SWITCHED_SERVICE", "boat")
+
+    # MyWave Social Mission (default OFF — Social-1 data layer only)
+    SOCIAL_SPREADSHEET_ID = os.getenv("SOCIAL_SPREADSHEET_ID", "")
+    SOCIAL_APPLICATIONS_SHEET_NAME = os.getenv("SOCIAL_APPLICATIONS_SHEET_NAME", "Social_Applications")
+    SOCIAL_SESSIONS_SHEET_NAME = os.getenv("SOCIAL_SESSIONS_SHEET_NAME", "Social_Sessions")
+    SOCIAL_IMPACT_SHEET_NAME = os.getenv("SOCIAL_IMPACT_SHEET_NAME", "Social_Impact")
+    SOCIAL_AUDIT_LOG_SHEET_NAME = os.getenv("SOCIAL_AUDIT_LOG_SHEET_NAME", "Social_Audit_Log")
     
     # Проверяем существование директории configs
     CONFIG_DIR = CONFIG_DIR_PATH

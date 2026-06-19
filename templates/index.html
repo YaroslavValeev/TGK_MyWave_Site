@@ -1,9 +1,11 @@
 {% extends "base.html" %}
+{% from 'partials/brand_logo.html' import brand_logo %}
 
 {% block title %}MyWave — Тренировки по вейксерфингу{% endblock %}
 
 {% block extra_head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/competitions-ticker.css') }}?v=1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/competitions-ticker.css') }}?v=5" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/social-mission.css') }}?v=3" />
 {% endblock %}
 
 {% block content %}
@@ -11,7 +13,9 @@
   <section class="hero-section relative-section">
     <img src="{{ url_for('static', filename='images/hero-wakesurf.webp') }}" alt="" class="hero-bg hero-bg-cover" loading="eager" fetchpriority="high" decoding="async" aria-hidden="true" />
     <div class="hero-content center-padding hero-content-relative">
-      <h1 class="hero-title">MyWave</h1>
+      <h1 class="hero-title hero-title--logo">
+        {{ brand_logo('turquoise', 'brand-logo--hero') }}
+      </h1>
       <p class="hero-subtitle">Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
       <button class="btn-primary book-now" id="openBookingBtn" data-service="gym">Записаться</button>
     </div>
@@ -200,6 +204,8 @@
     {% endif %}
   </section>
 
+  {% include 'partials/social_mission_widget.html' %}
+
   <section class="reviews-section">
     <h2>Отзывы учеников</h2>
     {% set review_photo_fallback = url_for('static', filename='images/Place1Logo.png') %}
@@ -258,5 +264,5 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="{{ url_for('static', filename='js/competitions-ticker.js') }}?v=1" defer></script>
+  <script src="{{ url_for('static', filename='js/competitions-ticker.js') }}?v=5" defer></script>
 {% endblock %}

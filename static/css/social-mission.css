@@ -1,0 +1,200 @@
+.social-page .social-hero {
+  margin-bottom: 1.5rem;
+}
+
+.social-hero__eyebrow,
+.social-mission-widget__eyebrow {
+  color: var(--mw-brand, #35c0cd);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  margin: 0 0 0.5rem;
+}
+
+.social-hero__lead,
+.social-mission-widget__text {
+  color: var(--mw-muted);
+  line-height: 1.6;
+  max-width: 68ch;
+}
+
+.social-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.social-card ul,
+.social-steps {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--mw-muted);
+  line-height: 1.55;
+}
+
+.social-apply-card {
+  margin-top: 0.5rem;
+}
+
+.social-form .social-consents {
+  border: 0;
+  margin: 1rem 0;
+  padding: 0;
+}
+
+.social-consent-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.social-apply-disabled {
+  color: var(--mw-muted);
+}
+
+.social-mission-widget__card {
+  text-align: center;
+}
+
+/* Home widget — скромный компактный блок */
+.social-mission-widget--compact {
+  padding: 1.25rem 0 1.5rem !important;
+}
+
+/* Home widget — минимальный inline-блок без карточки */
+.social-mission-widget--subtle {
+  padding: 0.65rem 0 0.85rem;
+  margin: 0;
+  border-top: 1px solid rgba(53, 192, 205, 0.12);
+  border-bottom: none;
+  background: transparent;
+}
+
+.social-mission-widget--subtle .social-mission-widget__line {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--mw-muted, #56606b);
+  max-width: 72ch;
+}
+
+.social-mission-widget--subtle .social-mission-widget__label {
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: rgba(53, 192, 205, 0.85);
+}
+
+.social-mission-widget--subtle .social-mission-widget__link {
+  color: var(--mw-brand, #35c0cd);
+  text-decoration: none;
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+.social-mission-widget--subtle .social-mission-widget__link:hover,
+.social-mission-widget--subtle .social-mission-widget__link:focus-visible {
+  text-decoration: underline;
+}
+
+.social-mission-widget--subtle .social-mission-widget__sep {
+  margin: 0 0.2rem;
+  color: rgba(53, 192, 205, 0.45);
+}
+
+.social-mission-widget--subtle .social-mission-widget__meta {
+  margin: 0.35rem 0 0;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  color: rgba(86, 96, 107, 0.82);
+}
+
+.social-mission-widget--compact .social-mission-widget__card {
+  text-align: left;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  background: rgba(53, 192, 205, 0.04);
+  border: 1px solid rgba(53, 192, 205, 0.14);
+  box-shadow: none;
+}
+
+.social-mission-widget--compact .social-mission-widget__eyebrow {
+  font-size: 0.68rem;
+  margin-bottom: 0.25rem;
+}
+
+.social-mission-widget--compact .social-mission-widget__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  line-height: 1.25;
+  font-weight: 650;
+  color: var(--mw-text, #1a2a32);
+}
+
+.social-mission-widget--compact .social-mission-widget__text {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  max-width: 62ch;
+}
+
+.social-mission-widget__stats {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.social-mission-widget__stats li {
+  background: rgba(53, 192, 205, 0.08);
+  border: 1px solid rgba(53, 192, 205, 0.2);
+  border-radius: 12px;
+  padding: 0.65rem 1rem;
+}
+
+.social-mission-widget__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.social-mission-widget--compact .social-mission-widget__stats {
+  margin: 0.55rem 0 0;
+  gap: 0.5rem;
+  justify-content: flex-start;
+}
+
+.social-mission-widget--compact .social-mission-widget__stats li {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.82rem;
+  border-radius: 8px;
+}
+
+.social-mission-widget--compact .social-mission-widget__actions {
+  margin-top: 0.65rem;
+  justify-content: flex-start;
+  gap: 0.5rem;
+}
+
+.social-mission-widget--compact .btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+  min-height: auto;
+}
+
+@media (max-width: 700px) {
+  .social-mission-widget__actions .btn-primary,
+  .social-mission-widget__actions .btn-secondary {
+    width: 100%;
+  }
+}

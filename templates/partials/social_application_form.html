@@ -1,0 +1,74 @@
+<form id="social-application-form" class="social-form" novalidate>
+  <input type="hidden" name="consent_version" value="{{ consent_version }}">
+
+  <div class="mw-grid-2">
+    <div class="mw-field">
+      <label for="social-parent-name">ФИО родителя / представителя *</label>
+      <input type="text" id="social-parent-name" name="parent_name" required maxlength="120" autocomplete="name">
+    </div>
+    <div class="mw-field">
+      <label for="social-parent-phone">Телефон *</label>
+      <input type="tel" id="social-parent-phone" name="parent_phone" required autocomplete="tel" placeholder="+7 (916) 000-00-00">
+    </div>
+    <div class="mw-field">
+      <label for="social-parent-email">Email</label>
+      <input type="email" id="social-parent-email" name="parent_email" autocomplete="email" maxlength="120">
+    </div>
+    <div class="mw-field">
+      <label for="social-child-name">Имя ребёнка *</label>
+      <input type="text" id="social-child-name" name="child_first_name" required maxlength="80" autocomplete="off">
+    </div>
+    <div class="mw-field">
+      <label for="social-child-age">Возраст ребёнка *</label>
+      <input type="number" id="social-child-age" name="child_age" required min="6" max="17" inputmode="numeric">
+    </div>
+    <div class="mw-field">
+      <label for="social-city">Город</label>
+      <input type="text" id="social-city" name="city" maxlength="100" autocomplete="address-level2">
+    </div>
+    <div class="mw-field">
+      <label for="social-preferred-contact">Удобный способ связи *</label>
+      <select id="social-preferred-contact" name="preferred_contact" required>
+        <option value="">Выберите</option>
+        <option value="phone">Телефон</option>
+        <option value="telegram">Telegram</option>
+        <option value="email">Email</option>
+      </select>
+    </div>
+    <div class="mw-field js-social-telegram-field" hidden>
+      <label for="social-telegram">Telegram @username</label>
+      <input type="text" id="social-telegram" name="telegram_username" maxlength="80" placeholder="@username">
+    </div>
+  </div>
+
+  <div class="mw-field">
+    <label for="social-health-notes">Заметки по безопасности (аллергии, спасжилет и т.п.)</label>
+    <textarea id="social-health-notes" name="health_notes" rows="3" maxlength="500" placeholder="Кратко, только то, что важно для безопасности на тренировке"></textarea>
+  </div>
+
+  <div class="mw-field">
+    <label for="social-motivation">Почему хотите участвовать</label>
+    <textarea id="social-motivation" name="motivation_text" rows="3" maxlength="500"></textarea>
+  </div>
+
+  <fieldset class="social-consents">
+    <legend>Согласия</legend>
+    <label class="social-consent-item">
+      <input type="checkbox" name="consent_personal_data" value="1" required>
+      Согласен(на) на обработку персональных данных *
+    </label>
+    <label class="social-consent-item">
+      <input type="checkbox" name="consent_training" value="1" required>
+      Согласен(на) с правилами участия в тренировках *
+    </label>
+    <label class="social-consent-item">
+      <input type="checkbox" name="consent_media" value="1">
+      Разрешаю фото/видео для внутреннего архива MyWave (необязательно)
+    </label>
+  </fieldset>
+
+  {% include 'partials/legal_consent.html' %}
+
+  <button type="submit" class="btn-primary">Отправить заявку</button>
+  <p id="social-form-message" class="mw-form-message" role="status" aria-live="polite" hidden></p>
+</form>

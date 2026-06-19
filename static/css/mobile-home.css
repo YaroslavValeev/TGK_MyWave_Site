@@ -49,7 +49,7 @@
     display: block;
     min-height: clamp(22rem, 62vh, 28rem) !important;
     height: auto;
-    padding: 0 !important;
+    padding: var(--mw-header-h, 56px) 0 0 !important;
     margin-top: 0 !important;
     overflow: hidden;
     background: #fff !important;
@@ -84,7 +84,8 @@
     z-index: 2;
     margin: 0 !important;
     margin-bottom: -2.75rem !important;
-    padding: calc(var(--mw-header-h, 56px) - 4px) 0.85rem 2.5rem !important;
+    padding: 0 0.85rem 1rem !important;
+    margin-top: -20px !important;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
@@ -477,7 +478,8 @@
   .hero-section .hero-content,
   .hero-section .hero-content.center-padding,
   .hero-section .hero-content-relative {
-    padding-top: calc(var(--mw-header-h, 56px) - 6px) !important;
+    padding-top: 0 !important;
+    margin-top: -20px !important;
   }
 }
 

@@ -369,6 +369,13 @@ button.btn-secondary:focus-visible{
   background: transparent;
 }
 
+/* Home hero: header clearance on section; content block raised + compact */
+.hero-section.relative-section {
+  padding-top: var(--mw-header-h, 64px);
+  box-sizing: border-box;
+  align-items: flex-start !important;
+}
+
 .hero-content-relative{
   z-index: 2 !important;
   text-align: center !important;
@@ -376,23 +383,37 @@ button.btn-secondary:focus-visible{
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  padding-top: 1px !important;
+  gap: 0.3rem !important;
+  padding-top: 0 !important;
+}
+
+/* Home hero: override .center-padding { padding: 100px } on index */
+.hero-section .hero-content.center-padding.hero-content-relative {
+  padding: 0 20px 10px !important;
+  margin-top: -28px !important;
+}
+
+/* Home hero logo: keep fully below fixed header (no overlap with navbar) */
+.hero-section .hero-content,
+.hero-section .hero-content.hero-content-relative {
+  margin-top: -28px !important;
 }
 
 .hero-title{
   font-size: clamp(34px, 4vw, 58px) !important;
   line-height: 1.02 !important;
-  margin-bottom: 14px !important;
+  margin-bottom: 0 !important;
   color: #333333 !important;
   text-shadow: none;
   letter-spacing: -0.03em;
 }
 
 .hero-subtitle{
-  font-size: clamp(16px, 1.4vw, 20px) !important;
+  font-size: clamp(15px, 1.3vw, 18px) !important;
   max-width: 56ch;
   color: #555555 !important;
-  margin-bottom: 18px !important;
+  margin-bottom: 0 !important;
+  line-height: 1.25 !important;
 }
 
 .hero-badges{
@@ -430,6 +451,11 @@ button.btn-secondary:focus-visible{
 
 /* Mobile hero alignment */
 @media (max-width: 700px){
+  .hero-section .hero-content.hero-content-relative,
+  .hero-section .hero-content.center-padding.hero-content-relative {
+    padding: 0 0.85rem 1rem !important;
+    margin-top: -20px !important;
+  }
   .hero-content-relative{
     text-align: left;
   }
@@ -890,3 +916,110 @@ Wake Surf Safari 2026 Styles
     width: 100%;
   }
 }
+
+/* ---------------------------------------------------------
+   Brand logo (SVG package) + footer download
+--------------------------------------------------------- */
+.brand-logo-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  line-height: 0;
+}
+
+.brand-logo {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(240px, 52vw);
+  max-height: 2.75rem;
+}
+
+.brand-logo--header {
+  max-height: 2.85rem;
+  max-width: min(200px, 46vw);
+}
+
+.site-footer__brand-materials {
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.site-footer__brand-label {
+  display: block;
+  font-size: 0.8125rem;
+  color: rgba(238, 242, 246, 0.72);
+}
+
+.brand-logo--hero {
+  max-height: clamp(3.3rem, 13vw, 5.5rem);
+  max-width: min(440px, 91vw);
+  margin: 0 auto;
+  filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.28));
+}
+
+.hero-title--logo {
+  margin: 0;
+  line-height: 0;
+  padding-top: 0;
+}
+
+.hero-section .btn-primary.book-now {
+  margin-top: 0.15rem;
+}
+
+.brand-logo--footer {
+  max-height: 2.5rem;
+  max-width: min(180px, 70vw);
+  margin: 0 auto 0.75rem;
+}
+
+.site-footer {
+  background: #2a2a2a !important;
+  color: #eef2f6 !important;
+  padding: 1.5rem 1rem 1.75rem !important;
+}
+
+.site-footer__inner {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.site-footer__copy {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.site-footer__meta {
+  margin: 0;
+  font-size: 0.875rem;
+  color: rgba(238, 242, 246, 0.82);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.site-footer__download {
+  color: var(--mw-brand) !important;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.site-footer__download:hover,
+.site-footer__download:focus-visible {
+  color: #5fd4de !important;
+  text-decoration: underline;
+}
+
+.site-footer__sep {
+  opacity: 0.45;
+}
+
+.site-header .logo a,
+.site-header .logo .brand-logo-link {
+  font-size: 0;
+}
+
