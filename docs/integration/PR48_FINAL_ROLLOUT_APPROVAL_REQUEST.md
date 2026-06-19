@@ -22,10 +22,10 @@
 ## § Final rollout block (canonical)
 
 ```text
-PR #48 target HEAD:           e8593da5 (origin/release/prod-ui-jun2026)
+PR #48 target HEAD:           e68f46b0 (origin/release/prod-ui-jun2026)
 origin/main current HEAD:     0274a54e (PR45 hotfix + deploy.yml safety)
 production current HEAD:      ae4b6272 (PR45 hotfix; unchanged since hotfix)
-diff stat:                    102 files, +124661 / −95  (ae4b6272..e8593da5)
+diff stat:                    102 files, +124661 / −95  (ae4b6272..e68f46b0)
 diff name-only count:         102
 Events leakage check:         PASS
 DB migration check:           PASS (no migrations/)
@@ -40,7 +40,7 @@ Execution status:             NOT STARTED
 ```bash
 git fetch origin release/prod-ui-jun2026 main
 git rev-parse origin/release/prod-ui-jun2026
-# e8593da5d806d16cb6a518f96abcc6356d7d11c1
+# e68f46b0d806d16cb6a518f96abcc6356d7d11c1
 
 git rev-parse origin/main
 # 0274a54e243e32e836cf34800ac4a9c1a47fcbdd
@@ -104,7 +104,7 @@ PROD_ROOT=/var/www/mywave /var/www/mywave/venv/bin/python scripts/prod_social_re
 
 ### Phase 0 — GitHub
 
-1. Merge **PR #48** (`release/prod-ui-jun2026` @ `e8593da5` → `main`).
+1. Merge **PR #48** (`release/prod-ui-jun2026` @ `e68f46b0` → `main`).
 2. Confirm `origin/main` matches merged tip.
 3. Deploy workflow: `workflow_dispatch` only, `confirm=DEPLOY` (PR #47).
 

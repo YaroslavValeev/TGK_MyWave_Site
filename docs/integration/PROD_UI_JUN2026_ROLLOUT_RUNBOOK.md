@@ -2,7 +2,7 @@
 
 **Status:** PREPARED — **NOT EXECUTED**  
 **Base:** `ae4b6272` (PR45 prod hotfix)  
-**Target:** `e8593da5` (`release/prod-ui-jun2026` tip — 102 files vs `ae4b6272`)  
+**Target:** `e68f46b0` (`release/prod-ui-jun2026` tip — 102 files vs `ae4b6272`)  
 **Date:** 2026-06-18
 
 ## Scope
