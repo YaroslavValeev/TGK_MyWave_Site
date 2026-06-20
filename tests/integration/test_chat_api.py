@@ -225,6 +225,20 @@ def test_chat_api_asks_disambiguation_for_general_what_to_bring(client):
     assert 'зал' in text and 'катер' in text
 
 
+def test_chat_api_boat_what_to_bring_direct_checklist(client):
+    """«Что взять на катер?» — прямой чек-лист без уточнения зал/катер."""
+    response = client.post(
+        '/chat/api',
+        data=json.dumps({'message': 'Что взять на катер?'}),
+        content_type='application/json',
+    )
+    assert response.status_code == 200
+    data = response.get_json() or {}
+    text = (data.get('response') or '').lower()
+    assert 'катер' in text or 'купальник' in text or 'полотенц' in text
+    assert 'вам нужна запись в зал или на катер' not in text
+
+
 def test_chat_info_uses_offline_kb_when_openai_fails(client):
     """При сбое OpenAI info-вопрос отвечает из KB (geo-block / 403)."""
     with patch(

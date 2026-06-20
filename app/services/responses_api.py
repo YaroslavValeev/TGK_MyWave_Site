@@ -196,6 +196,8 @@ def _collect_knowledge_snippets(
         'трюк': 'tricks',
         'польз': 'training',
         'зал': 'training',
+        'катер': 'training',
+        'катере': 'training',
         'техник': 'tricks',
         'проект': 'projects',
         'мероприят': 'projects',
@@ -249,6 +251,60 @@ def _collect_knowledge_snippets(
         items = _knowledge_items_from_response(response)
         out.extend(items[:max_per_type])
     return out
+
+
+_WHAT_TO_BRING_TRIGGERS = (
+    "что взять",
+    "что нужно с собой",
+    "что брать с собой",
+    "нужно брать",
+)
+
+_BOAT_BRING_MARKERS = ("катер", "катере", "на катере", "на воде", "boat")
+_GYM_BRING_MARKERS = ("зал", "зале", "в зал", "помещен", "gym")
+
+
+def what_to_bring_location(text_lc: str, mw_chat_context: dict | None = None) -> str | None:
+    """'boat' | 'gym' | None — явная локация в вопросе или контексте страницы."""
+    if mw_chat_context and isinstance(mw_chat_context, dict):
+        sid = str(mw_chat_context.get("id") or "").lower().strip()
+        if sid == "boat":
+            return "boat"
+        if sid == "gym":
+            return "gym"
+        title_lc = str(mw_chat_context.get("title") or "").lower()
+        if "катер" in title_lc:
+            return "boat"
+        if "зал" in title_lc:
+            return "gym"
+    if any(m in text_lc for m in _BOAT_BRING_MARKERS):
+        return "boat"
+    if any(m in text_lc for m in _GYM_BRING_MARKERS):
+        return "gym"
+    return None
+
+
+def try_direct_what_to_bring_reply(
+    text_lc: str,
+    mw_chat_context: dict | None = None,
+) -> str | None:
+    """Прямой чек-лист «что взять», если локация уже ясна (катер или зал)."""
+    if not any(t in text_lc for t in _WHAT_TO_BRING_TRIGGERS):
+        return None
+    loc = what_to_bring_location(text_lc, mw_chat_context)
+    if loc == "boat":
+        return (
+            "На катер возьмите: купальник/бордшорты, полотенце, сменную одежду, воду, "
+            "солнцезащиту, кепку/очки, телефон в защитном чехле. Если прохладно — уточните гидрокостюм. "
+            "Жилет и инвентарь обычно согласуются перед сетом. Приезжайте чуть заранее, чтобы спокойно подготовиться."
+        )
+    if loc == "gym":
+        return (
+            "В зал возьмите удобную спортивную одежду, полотенце и воду. "
+            "При необходимости — сменную обувь по правилам площадки. "
+            "Купальник и солнцезащита для зала обычно не нужны."
+        )
+    return None
 
 
 def append_knowledge_to_system_prompt(base_prompt: str, snippets: list[str]) -> str:
