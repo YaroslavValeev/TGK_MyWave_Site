@@ -91,3 +91,18 @@ def test_collect_snippets_challenge_when_asked(app):
         assert "challenge" in joined or "челлендж" in joined
         assert "wake challenge" in joined or "соревновательный" in joined
         assert "wake surf safari" not in joined or "флагманский" not in joined
+
+
+def test_try_direct_what_to_bring_reply_boat():
+    from app.services.responses_api import try_direct_what_to_bring_reply
+
+    out = try_direct_what_to_bring_reply("что взять на катер?")
+    assert out
+    assert "купальник" in out.lower() or "полотенц" in out.lower()
+    assert "зал или на катер" not in out.lower()
+
+
+def test_try_direct_what_to_bring_reply_ambiguous_none():
+    from app.services.responses_api import try_direct_what_to_bring_reply
+
+    assert try_direct_what_to_bring_reply("что нужно с собой взять?") is None

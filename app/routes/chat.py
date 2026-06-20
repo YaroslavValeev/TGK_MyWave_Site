@@ -58,15 +58,13 @@ def _needs_location_disambiguation(text_lc: str, mw_ctx: dict | None) -> bool:
     Для вопроса «что взять/что нужно с собой» при общем контексте
     задаём короткое уточнение «зал или катер», чтобы не давать нерелевантный чек-лист.
     """
+    from app.services.responses_api import what_to_bring_location
+
+    if what_to_bring_location(text_lc, mw_ctx):
+        return False
     if mw_ctx and isinstance(mw_ctx, dict):
-        sid = str(mw_ctx.get("id") or "").lower().strip()
         entry = str(mw_ctx.get("entry") or "").lower().strip()
-        title_lc = str(mw_ctx.get("title") or "").lower()
-        if sid in ("gym", "boat"):
-            return False
         if entry in ("services", "shop", "projects"):
-            return False
-        if "зал" in title_lc or "катер" in title_lc:
             return False
     ask_what_to_bring = (
         "что взять" in text_lc
@@ -276,6 +274,7 @@ def chat_handler():
         from app.services.responses_api import (
             _collect_knowledge_snippets,
             is_openai_failure_reply,
+            try_direct_what_to_bring_reply,
             try_offline_kb_reply,
         )
 
@@ -285,6 +284,12 @@ def chat_handler():
             reply = _CHAT_OFFLINE_WELCOME
             _save_chat_turn(client_id, message, reply)
             return jsonify({"response": reply, "status": "success"})
+
+        if info_intent:
+            direct_bring = try_direct_what_to_bring_reply(text_lc, mw_ctx)
+            if direct_bring:
+                _save_chat_turn(client_id, message, direct_bring)
+                return jsonify({"response": direct_bring, "status": "success"})
 
         if info_intent and _needs_location_disambiguation(text_lc, mw_ctx):
             reply = "Уточните, пожалуйста: вам нужна запись в зал или на катер? Тогда дам точный список, что взять с собой."
