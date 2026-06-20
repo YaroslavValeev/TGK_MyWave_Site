@@ -620,7 +620,17 @@ def get_knowledge(type):
                         training_info.extend(paragraphs)
                 except Exception as e:
                     current_app.logger.error(f"Error reading {file_path}: {str(e)}")
-        
+
+        try:
+            from app.services.kb_chat.loader import list_by_category
+
+            for cat in ("boat", "gym", "booking", "brand"):
+                for doc in list_by_category(cat):
+                    if doc.short_answer:
+                        training_info.append(doc.short_answer)
+        except Exception as exc:
+            current_app.logger.debug("kb_v2_training_append_skip", extra={"err": str(exc)})
+
         return jsonify(training_info)
         
     elif type == 'tricks':
