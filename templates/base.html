@@ -41,6 +41,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/preloader.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/image-effects.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/modals.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/booking-mobile.css') }}?v=pr53" />
 
   <!-- Flatpickr -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -210,11 +211,13 @@
 
   <!-- Модальные окна бронирования (modalCalendar, modalSlots и т.д.) — нужны для booking.js -->
   {% include 'partials/booking_modals.html' %}
+  {% include 'partials/product_request_modal.html' %}
 
   <!-- booking.js, modals-close.js (надёжное закрытие Camp/CoachTriper/Consulting) и формы заявок -->
   <script defer src="{{ url_for('static', filename='js/booking.js') }}?v=boat-slots-hide-full"></script>
   <script defer src="{{ url_for('static', filename='js/modals-close.js') }}?v=modal-hide1"></script>
   <script defer src="{{ url_for('static', filename='js/modal-lead-forms.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/product-request-form.js') }}?v=pr53"></script>
   <script defer src="{{ url_for('static', filename='js/ruza-lead-form.js') }}"></script>
 
   <!-- Контейнер для success-view partial (подгружается динамически) -->

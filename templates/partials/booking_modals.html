@@ -24,8 +24,10 @@
       <p id="boatRangePreview" class="boat-range-preview"></p>
     </div>
     <input type="hidden" id="selectedSlot" />
-    <button id="confirmSlotBtn" class="btn btn-secondary">Далее</button>
-    <button class="close-modal btn">Назад</button>
+    <div class="modal-actions-row">
+      <button id="confirmSlotBtn" class="btn btn-secondary">Далее</button>
+      <button type="button" class="btn-back-step" data-back-step="1" aria-label="Назад к выбору даты">← Назад</button>
+    </div>
   </div>
 </div>
 <div id="modalContact" class="modal hidden">
@@ -36,8 +38,10 @@
     <input type="text" id="bookingName" placeholder="Имя" required>
     <input type="text" id="bookingPhone" placeholder="Телефон" required>
     <input type="hidden" id="bookingServiceType" name="service_type" value="gym">
-    <button id="confirmContactBtn" class="btn btn-primary">Далее</button>
-    <button class="close-modal btn">Назад</button>
+    <div class="modal-actions-row">
+      <button id="confirmContactBtn" class="btn btn-primary">Далее</button>
+      <button type="button" class="btn-back-step" data-back-step="2" aria-label="Назад к выбору времени">← Назад</button>
+    </div>
   </div>
 </div>
 <div id="modalConfirm" class="modal hidden">
