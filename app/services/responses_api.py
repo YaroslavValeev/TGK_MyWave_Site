@@ -250,6 +250,18 @@ def _collect_knowledge_snippets(
         response = get_knowledge(knowledge_type)
         items = _knowledge_items_from_response(response)
         out.extend(items[:max_per_type])
+    try:
+        from app.services.kb_chat.snippets import collect_chat_kb_snippets
+
+        v2_snippets = collect_chat_kb_snippets(
+            prompt_lower,
+            mw_chat_context=mw_chat_context,
+            max_snippets=max_per_type + 2,
+        )
+        if v2_snippets:
+            out = v2_snippets + out
+    except Exception as exc:
+        current_app.logger.debug("kb_v2_snippets_failed", extra={"err": str(exc)})
     return out
 
 
@@ -289,22 +301,10 @@ def try_direct_what_to_bring_reply(
     mw_chat_context: dict | None = None,
 ) -> str | None:
     """Прямой чек-лист «что взять», если локация уже ясна (катер или зал)."""
-    if not any(t in text_lc for t in _WHAT_TO_BRING_TRIGGERS):
-        return None
-    loc = what_to_bring_location(text_lc, mw_chat_context)
-    if loc == "boat":
-        return (
-            "На катер возьмите: купальник/бордшорты, полотенце, сменную одежду, воду, "
-            "солнцезащиту, кепку/очки, телефон в защитном чехле. Если прохладно — уточните гидрокостюм. "
-            "Жилет и инвентарь обычно согласуются перед сетом. Приезжайте чуть заранее, чтобы спокойно подготовиться."
-        )
-    if loc == "gym":
-        return (
-            "В зал возьмите удобную спортивную одежду, полотенце и воду. "
-            "При необходимости — сменную обувь по правилам площадки. "
-            "Купальник и солнцезащита для зала обычно не нужны."
-        )
-    return None
+    from app.services.kb_chat.direct_replies import try_direct_what_to_bring_reply as _kb_what_to_bring
+
+    result = _kb_what_to_bring(text_lc, mw_chat_context)
+    return result.text if result else None
 
 
 def append_knowledge_to_system_prompt(base_prompt: str, snippets: list[str]) -> str:

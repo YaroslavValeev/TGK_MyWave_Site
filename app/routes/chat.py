@@ -209,6 +209,8 @@ def chat_handler():
             'тренировк', 'проходит', 'проходят', 'зале', 'зал ', 'катер', 'катере',
             'safari', 'сафари', 'wakesurf', 'вейк', 'попасть', 'участв',
             'что взять', 'сколько стоит', 'стоимость', 'цена',
+            'что входит', 'что делать', 'сколько длит', 'можно ли', 'можно ',
+            'есть ли', 'контакт', 'телефон', 'telegram',
         )
         info_intent = any(kw in text_lc for kw in info_keywords)
         
@@ -274,9 +276,9 @@ def chat_handler():
         from app.services.responses_api import (
             _collect_knowledge_snippets,
             is_openai_failure_reply,
-            try_direct_what_to_bring_reply,
             try_offline_kb_reply,
         )
+        from app.services.kb_chat import try_direct_kb_reply
 
         kb_snippets = _collect_knowledge_snippets(text_lc, mw_chat_context=mw_ctx)
 
@@ -285,13 +287,17 @@ def chat_handler():
             _save_chat_turn(client_id, message, reply)
             return jsonify({"response": reply, "status": "success"})
 
-        if info_intent:
-            direct_bring = try_direct_what_to_bring_reply(text_lc, mw_ctx)
-            if direct_bring:
-                _save_chat_turn(client_id, message, direct_bring)
-                return jsonify({"response": direct_bring, "status": "success"})
+        direct_kb = try_direct_kb_reply(text_lc, mw_ctx)
+        if direct_kb:
+            payload = {"response": direct_kb.text, "status": "success"}
+            if direct_kb.cta_type:
+                payload["cta_type"] = direct_kb.cta_type
+            if direct_kb.suggestions:
+                payload["suggestions"] = direct_kb.suggestions
+            _save_chat_turn(client_id, message, direct_kb.text)
+            return jsonify(payload)
 
-        if info_intent and _needs_location_disambiguation(text_lc, mw_ctx):
+        if _needs_location_disambiguation(text_lc, mw_ctx):
             reply = "Уточните, пожалуйста: вам нужна запись в зал или на катер? Тогда дам точный список, что взять с собой."
             _save_chat_turn(client_id, message, reply)
             return jsonify({'response': reply, 'status': 'success'})

@@ -45,9 +45,15 @@ configs/service_account.json
 instance/service_account.json
 
 knowledge_base.db
-knowledge_base/
+
+# Legacy/local KB: ignore by default; track only editorial subsets in git
+knowledge_base/*
 !knowledge_base/projects/
 !knowledge_base/projects/**
+!knowledge_base/chat/
+!knowledge_base/chat/**/
+!knowledge_base/chat/**/*.md
+
 instance/knowledge_base/
 *.p12
 *.pem
@@ -90,11 +96,6 @@ token.json
 client_secret.json
 *secret*.json
 *credentials*.json
-knowledge_base/*
-!knowledge_base/**/
-!knowledge_base/**/*.py
-!knowledge_base/projects/**
-
 # Production deploy hygiene
 .env.*
 !.env.example
