@@ -10,12 +10,27 @@ from sqlalchemy import text
 
 health_bp = Blueprint("health", __name__)
 
+_OPTIONAL_KEYS = ("redis", "cache", "sentry", "google", "ai_gateway")
+
 
 def _mask_id(value: str | None) -> str:
     raw = (value or "").strip()
     if len(raw) <= 8:
         return "unset" if not raw else "***"
     return f"{raw[:4]}…{raw[-4:]}"
+
+
+def _skipped_optional(*, error: str, configured: bool | None = None) -> Dict[str, Any]:
+    """Optional dependency not configured or explicitly disabled — not a failure."""
+    out: Dict[str, Any] = {
+        "ok": True,
+        "optional": True,
+        "skipped": True,
+        "error": error,
+    }
+    if configured is not None:
+        out["configured"] = configured
+    return out
 
 
 def _google_credentials_path() -> str | None:
@@ -51,7 +66,7 @@ def _check_redis() -> Dict[str, Any]:
         or os.getenv("REDIS_URL")
     )
     if not redis_url:
-        return {"ok": False, "optional": True, "configured": False, "error": "REDIS_URL not configured"}
+        return _skipped_optional(error="REDIS_URL not configured", configured=False)
     try:
         import redis
 
@@ -80,13 +95,13 @@ def _check_sentry() -> Dict[str, Any]:
     sentry_dsn = os.getenv("SENTRY_DSN") or current_app.config.get("SENTRY_DSN")
     if sentry_dsn:
         return {"ok": True, "optional": True, "configured": True}
-    return {"ok": False, "optional": True, "configured": False, "error": "SENTRY_DSN not configured"}
+    return _skipped_optional(error="SENTRY_DSN not configured", configured=False)
 
 
 def _check_google() -> Dict[str, Any]:
     path = _google_credentials_path()
     if not path:
-        return {"ok": False, "optional": True, "configured": False, "error": "credentials path not set"}
+        return _skipped_optional(error="credentials path not set", configured=False)
     if os.path.isfile(path):
         return {"ok": True, "optional": True, "configured": True}
     return {"ok": False, "optional": True, "configured": True, "error": "service account file missing"}
@@ -95,7 +110,7 @@ def _check_google() -> Dict[str, Any]:
 def _check_ai_gateway() -> Dict[str, Any]:
     enable = os.getenv("ENABLE_AI_HEALTH_CHECK") or current_app.config.get("ENABLE_AI_HEALTH_CHECK")
     if str(enable).lower() not in ("1", "true", "yes"):
-        return {"ok": False, "optional": True, "error": "ai health check disabled"}
+        return _skipped_optional(error="ai health check disabled")
     try:
         from app.ai.core_gateway import create_default_gateway
 
@@ -106,7 +121,7 @@ def _check_ai_gateway() -> Dict[str, Any]:
         return {"ok": False, "optional": True, "error": str(exc)}
 
 
-def _collect_checks() -> Tuple[Dict[str, Any], bool, bool]:
+def _collect_checks() -> Dict[str, Any]:
     checks: Dict[str, Any] = {
         "version": current_app.config.get("VERSION", "unknown"),
         "mode": os.environ.get("MYWAVE_AI_MODE", "mock"),
@@ -118,27 +133,31 @@ def _collect_checks() -> Tuple[Dict[str, Any], bool, bool]:
     checks["sentry"] = _check_sentry()
     checks["google"] = _check_google()
     checks["ai_gateway"] = _check_ai_gateway()
+    return checks
 
-    critical_ok = checks["database"].get("ok", False)
-    optional_keys = ("redis", "cache", "sentry", "google", "ai_gateway")
-    degraded = any(not checks[k].get("ok", False) for k in optional_keys)
-    return checks, critical_ok, degraded
+
+def _optional_causes_degraded(check: Dict[str, Any]) -> bool:
+    if check.get("skipped"):
+        return False
+    return not check.get("ok", False)
 
 
 def _health_payload(*, readiness: bool = False) -> Tuple[dict, int]:
-    checks, critical_ok, degraded = _collect_checks()
+    checks = _collect_checks()
+    critical_ok = checks["database"].get("ok", False)
+
     if not critical_ok:
         status = "unhealthy"
         code = 503
-    elif degraded:
+    elif readiness:
+        status = "ok"
+        code = 200
+    elif any(_optional_causes_degraded(checks[k]) for k in _OPTIONAL_KEYS):
         status = "degraded"
         code = 200
     else:
         status = "ok"
         code = 200
-
-    if readiness and not critical_ok:
-        code = 503
 
     return {"status": status, "checks": checks}, code
 
