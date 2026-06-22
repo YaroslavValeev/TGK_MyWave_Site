@@ -42,7 +42,7 @@ def main() -> int:
         print("telegram_delivery: credentials_present (live send not attempted)")
     else:
         print("telegram_delivery: skipped_missing_credentials")
-        print("  → product/service leads still save; check app logs:")
+        print("  -> product/service leads still save; check app logs:")
         print("     telegram_notify_skipped | application_notify_result | product_lead_saved")
     print()
     print("service_leads_path: POST /analytics/log → analytics sheet + notify_service_lead_from_analytics")
