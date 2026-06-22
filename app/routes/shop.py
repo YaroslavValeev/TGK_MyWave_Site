@@ -9,6 +9,12 @@ from app.services.product_leads import save_product_lead, validate_product_lead
 shop_bp = Blueprint('shop', __name__, url_prefix='/shop')
 logger = get_logger(__name__)
 
+PRODUCT_REQUEST_SUCCESS_MESSAGE = (
+    'Заявка отправлена. Сейчас каждое изделие выполняется индивидуально — склада нет. '
+    'Доставка через ПВЗ Яндекс Маркета (по запросу можем оформить в другие пункты выдачи). '
+    'Срок изготовления — примерно 7 дней. Мы свяжемся с вами для подтверждения заказа.'
+)
+
 # P0-2: Финальный список товаров (6+). Маппинг папок — images/Shop/{folder}
 PRODUCTS = {
     'balance-board': {
@@ -31,19 +37,19 @@ PRODUCTS = {
     },
     'poncho': {
         'title': 'Пончо — Комбез',
-        'price': '4 500 ₽',
+        'price': '14 500 ₽',
         'description': 'Удобное сменное пончо — быстро надеть/снять на пляже, сохраняет тепло.',
         'image_folder': 'images/Shop/poncho',
     },
     'sertificate': {
-        'title': 'Сертификат (на занятия)',
+        'title': 'Сертификат (на занятия в зале)',
         'price': '30 000 ₽',
         'description': 'Подарочный сертификат на 10 занятий MyWave: тренировки в зале, катер или услуги клуба.',
         'image_folder': 'images/Shop/Sertificate',
     },
     'wakesurfpolia': {
         'title': 'WakeSurf Polia',
-        'price': '5 000 ₽',
+        'price': '10 000 ₽',
         'description': 'Настольная игра про вейксерфинг: карточки, сценарии и правила для компании. Для дома, лагеря и вечеринок.',
         'image_folder': 'images/Shop/WakeSurfPolia',
         'buy_url': 'https://joys-brand.com/aksessuary/nastolnaya-igra-wakesurfopolie1',
@@ -145,8 +151,5 @@ def product_request_api():
     return jsonify(
         ok=True,
         lead_id=result.lead_id,
-        message=(
-            'Заявка отправлена. Мы уточним наличие товара и свяжемся с вами '
-            'для подтверждения заказа.'
-        ),
+        message=PRODUCT_REQUEST_SUCCESS_MESSAGE,
     )
