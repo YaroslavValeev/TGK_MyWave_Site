@@ -66,6 +66,49 @@ def format_application_telegram_message(application_type: str, payload: Mapping[
     return "\n".join(lines)
 
 
+SERVICE_LEAD_EVENT_MAP: dict[str, str] = {
+    "camp_lead": "camp",
+    "coach_lead": "coach_on_location",
+    "consulting_lead": "consulting",
+}
+
+
+def notify_service_lead_from_analytics(
+    event: str,
+    meta: Mapping[str, Any],
+    *,
+    phone: str = "",
+) -> bool:
+    """Best-effort Telegram for modal service leads logged via /analytics/log."""
+    application_type = SERVICE_LEAD_EVENT_MAP.get(event)
+    if not application_type:
+        return False
+
+    name = str(meta.get("name") or "").strip()
+    phone_val = str(phone or meta.get("phone") or "").strip()
+    if len(name) < 2 or len(phone_val) < 8:
+        logger.warning(
+            "application_notify_skipped reason=missing_contact",
+            extra={"application_type": application_type, "event": event},
+        )
+        return False
+
+    comment_parts = [
+        str(meta.get(key) or "").strip()
+        for key in ("comment", "goal", "task", "topic", "level", "dates", "location")
+        if str(meta.get(key) or "").strip()
+    ]
+    payload = {
+        "name": name,
+        "phone": phone_val,
+        "comment": "; ".join(comment_parts) if comment_parts else "",
+        "source": str(meta.get("service") or application_type).strip(),
+        "page_url": str(meta.get("page_url") or "").strip(),
+        "status": "new",
+    }
+    return notify_new_application(application_type, payload)
+
+
 def notify_new_application(application_type: str, payload: Mapping[str, Any]) -> bool:
     """
     Send Telegram notification for a new application lead.
@@ -83,11 +126,13 @@ def notify_new_application(application_type: str, payload: Mapping[str, Any]) ->
 
     try:
         ok = send_telegram_notification(name, phone, message)
+        status = "sent" if ok else "failed_or_skipped"
         logger.info(
             "application_notify_result",
             extra={
                 "application_type": application_type,
                 "telegram_ok": bool(ok),
+                "telegram_status": status,
             },
         )
         return bool(ok)

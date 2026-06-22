@@ -18,14 +18,18 @@
     <h3>Выберите время</h3>
     <p class="progress-info">Шаг 2 / 4</p>
     <div id="slotButtonsContainer"></div>
-    <div id="boatSetPicker" class="boat-set-picker hidden" aria-hidden="true">
+    <div id="boatSlotSummary" class="boat-slot-summary hidden" aria-hidden="true">
+      <p id="boatSlotSummaryCount" class="boat-slot-summary-count">Выбрано сетов: 0</p>
+      <p id="boatSlotSummaryTotal" class="boat-slot-summary-total">Итого: 0 ₽</p>
+    </div>
+    <div id="boatSetPicker" class="boat-set-picker hidden" aria-hidden="true" hidden>
       <p class="boat-set-picker-title">Количество сетов</p>
       <div id="boatSetButtons" class="boat-set-buttons"></div>
       <p id="boatRangePreview" class="boat-range-preview"></p>
     </div>
     <input type="hidden" id="selectedSlot" />
     <div class="modal-actions-row">
-      <button id="confirmSlotBtn" class="btn btn-secondary">Далее</button>
+      <button id="confirmSlotBtn" class="btn btn-primary" disabled>Продолжить</button>
       <button type="button" class="btn-back-step" data-back-step="1" aria-label="Назад к выбору даты">← Назад</button>
     </div>
   </div>
