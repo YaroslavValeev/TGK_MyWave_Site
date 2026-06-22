@@ -3,6 +3,7 @@
 import pytest
 from unittest.mock import patch
 
+from app.routes.shop import PRODUCT_REQUEST_SUCCESS_MESSAGE
 from app.services.application_notifications import format_application_telegram_message
 from app.services.product_leads import ProductLeadResult, PRODUCT_LEADS_HEADERS
 
@@ -14,10 +15,7 @@ FORBIDDEN_USER_PHRASES = (
     "доставка оформлена",
 )
 
-EXPECTED_SUCCESS = (
-    "Заявка отправлена. Мы уточним наличие товара и свяжемся с вами "
-    "для подтверждения заказа."
-)
+EXPECTED_SUCCESS = PRODUCT_REQUEST_SUCCESS_MESSAGE
 
 
 def test_product_telegram_message_full_contract():
