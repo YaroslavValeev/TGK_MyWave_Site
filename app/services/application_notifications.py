@@ -38,6 +38,15 @@ def _pick(payload: Mapping[str, Any], *keys: str) -> str:
     return "—"
 
 
+def _normalize_lead_status(val: Any) -> str:
+    """Telegram-safe status string (no Mock/object repr)."""
+    if isinstance(val, str):
+        cleaned = val.strip()
+        if cleaned and "mock" not in cleaned.lower() and not cleaned.startswith("<"):
+            return cleaned[:40]
+    return "new"
+
+
 def format_application_telegram_message(application_type: str, payload: Mapping[str, Any]) -> str:
     """Build admin Telegram text from normalized payload."""
     title = APPLICATION_TYPE_LABELS.get(application_type, application_type)
@@ -54,7 +63,7 @@ def format_application_telegram_message(application_type: str, payload: Mapping[
         f"Страница: {_pick(payload, 'page_url')}",
         f"Время: {_pick(payload, 'created_at') or _format_timestamp()}",
         "",
-        f"Статус: {_pick(payload, 'status') or 'new'}",
+        f"Статус: {_normalize_lead_status(payload.get('status'))}",
     ]
     if application_type == "product":
         qty = payload.get("quantity")
