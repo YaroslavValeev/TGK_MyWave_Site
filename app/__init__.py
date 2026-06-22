@@ -664,6 +664,18 @@ def create_app(config_name="development"):
                         app.logger.info('Analytics logged via log_analytics_event')
                     else:
                         app.logger.warning('Analytics log_analytics_event did not persist (see google_sheets logs)')
+                try:
+                    from app.services.application_notifications import (
+                        notify_service_lead_from_analytics,
+                    )
+
+                    notify_service_lead_from_analytics(event, meta, phone=phone)
+                except Exception as notify_exc:
+                    app.logger.warning(
+                        'service_lead_notify_failed event=%s error=%s',
+                        event,
+                        str(notify_exc)[:200],
+                    )
             except Exception:
                 try:
                     from app.services.google_sheets_service import append_record

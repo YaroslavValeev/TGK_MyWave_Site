@@ -62,6 +62,7 @@ def _telegram_chat_id() -> str:
 def send_telegram_notification(name, phone, slot_or_message):
     """
     Отправляет уведомление в Telegram (ADMIN_CHAT_ID или TELEGRAM_CHAT_ID).
+  Returns True on success, False on skip/failure (never raises to callers).
     """
     if "\n" in str(slot_or_message):
         message = str(slot_or_message)
@@ -77,7 +78,7 @@ def send_telegram_notification(name, phone, slot_or_message):
     chat_id = _telegram_chat_id()
     if not token or not chat_id:
         logger.warning(
-            "telegram_notify_skipped reason=missing_credentials has_token=%s has_chat=%s",
+            "telegram_notify_skipped reason=missing_credentials has_token=%s has_chat_id=%s",
             bool(token),
             bool(chat_id),
         )
@@ -93,9 +94,22 @@ def send_telegram_notification(name, phone, slot_or_message):
     )
 
     if not response.ok:
-        logger.error("Ошибка отправки в Telegram: %s", response.text)
+        safe_body = response.text
+        if token:
+            safe_body = safe_body.replace(token, "***")
+        logger.error(
+            "telegram_notify_failed status=%s has_chat_id=%s body=%s",
+            response.status_code,
+            bool(chat_id),
+            safe_body[:300],
+        )
         return False
 
+    logger.info(
+        "telegram_notify_sent has_chat_id=%s message_len=%s",
+        bool(chat_id),
+        len(message),
+    )
     return True
 
 

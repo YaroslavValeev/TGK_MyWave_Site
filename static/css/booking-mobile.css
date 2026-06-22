@@ -84,6 +84,31 @@
     border-width: 1px;
   }
 
+  .boat-slot-summary {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border: 1px solid #b2ebf2;
+    border-radius: 8px;
+    background: #f0fdff;
+  }
+
+  .boat-slot-summary-count {
+    margin: 0 0 4px;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .boat-slot-summary-total {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #006064;
+  }
+
+  #confirmSlotBtn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
   .btn-back-step {
     display: inline-flex;
     align-items: center;
@@ -156,5 +181,28 @@
 
   .btn-back-step:hover {
     background: #e0f7fa;
+  }
+
+  .boat-slot-summary {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border: 1px solid #b2ebf2;
+    border-radius: 8px;
+    background: #f0fdff;
+  }
+
+  .boat-slot-summary-count {
+    margin: 0 0 6px;
+    font-weight: 600;
+  }
+
+  .boat-slot-summary-total {
+    margin: 0 0 10px;
+    color: #006064;
+  }
+
+  #confirmSlotBtn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
   }
 }

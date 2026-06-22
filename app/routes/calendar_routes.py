@@ -913,10 +913,11 @@ def _book_slot_internal():
         )
         if client_id_for_phone:
             bookings = read_records(spreadsheet_id, "Client_Workouts")
+            slot_times_check = data.get("slot_times") or [data["time"]]
             duplicate = any(
                 b.get("client_id") == client_id_for_phone
                 and b.get("date") == data["date"]
-                and b.get("time") == data["time"]
+                and b.get("time") in slot_times_check
                 for b in bookings
             )
             if duplicate:
@@ -1028,16 +1029,48 @@ def _book_slot_internal():
             )
 
             svc = (service_type_from_payload or "gym").strip().lower()
-            set_count = int(data.get("set_count") or 1)
-            try:
-                booking_result = execute_web_booking(
-                    date=data["date"],
-                    time=data["time"],
-                    name=data["name"],
-                    phone=data["phone"],
-                    service_type=svc,
-                    set_count=set_count,
+            slot_times_raw = data.get("slot_times")
+            booking_runs: list[tuple[str, int]] = []
+
+            if svc == "boat" and slot_times_raw:
+                from app.services.booking.boat_slot_selection import (
+                    normalize_boat_slot_booking,
                 )
+
+                try:
+                    normalized = normalize_boat_slot_booking(list(slot_times_raw))
+                except ValueError:
+                    return (
+                        jsonify(
+                            {
+                                "status": "error",
+                                "error": "Не выбраны слоты для записи на катер",
+                            }
+                        ),
+                        400,
+                    )
+                if isinstance(normalized, tuple):
+                    booking_runs = [normalized]
+                else:
+                    booking_runs = [(t, 1) for t in normalized]
+            else:
+                booking_runs = [
+                    (data["time"], int(data.get("set_count") or 1)),
+                ]
+
+            booking_result = None
+            try:
+                for time_str, set_count in booking_runs:
+                    booking_result = execute_web_booking(
+                        date=data["date"],
+                        time=time_str,
+                        name=data["name"],
+                        phone=data["phone"],
+                        service_type=svc,
+                        set_count=set_count,
+                    )
+                if booking_result is None:
+                    raise CalendarBookingError("booking_result_missing")
                 workout_id = booking_result.workout_id
                 client_id = booking_result.client_id
                 current_app.logger.info(

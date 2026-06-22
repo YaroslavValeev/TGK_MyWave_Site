@@ -74,6 +74,8 @@ function formatSlotButtonLabel(slot, service) {
 
 /** Длительность одного сета катера (мин), синхронно с backend BOAT_SET_MINUTES */
 const BOAT_SET_MINUTES = 30;
+/** Стоимость одного boat-slot (₽), для summary-блока */
+const BOAT_SLOT_PRICE_RUB = 10000;
 
 function parseTimeToMinutes(timeStr) {
   if (!timeStr || typeof timeStr !== 'string') return 0;
@@ -101,6 +103,11 @@ function formatBoatRangePreview(startTime, setCount) {
   const startMin = parseTimeToMinutes(startTime);
   const endMin = startMin + BOAT_SET_MINUTES * Math.max(1, parseInt(setCount, 10) || 1);
   return `${startTime}–${formatMinutesToTime(endMin)}`;
+}
+
+function formatBoatPriceRub(count) {
+  const n = Math.max(0, parseInt(count, 10) || 0);
+  return `${(n * BOAT_SLOT_PRICE_RUB).toLocaleString('ru-RU')} ₽`;
 }
 
 function formatBoatConfirmButtonLabel(startTime, setCount) {
@@ -160,6 +167,9 @@ function initializeBooking() {
     boatSetPicker: document.getElementById("boatSetPicker"),
     boatSetButtons: document.getElementById("boatSetButtons"),
     boatRangePreview: document.getElementById("boatRangePreview"),
+    boatSlotSummary: document.getElementById("boatSlotSummary"),
+    boatSlotSummaryCount: document.getElementById("boatSlotSummaryCount"),
+    boatSlotSummaryTotal: document.getElementById("boatSlotSummaryTotal"),
   };
 
   if (!UI.openBookingButtons || UI.openBookingButtons.length === 0) {
@@ -172,16 +182,22 @@ function initializeBooking() {
   window.__mwBookingService = currentService;
   /** Запись с главной (#openBookingBtn): тип услуги по выбранной дате визита */
   let heroBookingFlow = false;
-  /** Phase 2 multi-set boat (only when API returns max_set_count > 1) */
+  /** PR53.1: boat multi-slot selection (concrete slot times) */
+  const selectedBoatSlots = new Set();
+  /** @deprecated legacy Phase-2 set picker — kept for confirm label fallback */
   let selectedBoatMaxSetCount = 1;
   let selectedBoatSetCount = 1;
   let selectedBoatSlotTime = '';
-  /** True when GET slots included max_set_count (Phase 2 multi-set path) */
   let boatSlotHasMaxSetCount = false;
 
   function setCurrentService(svc) {
     currentService = svc || 'boat';
     window.__mwBookingService = currentService;
+    if (currentService !== 'boat') {
+      resetBoatSlotSelection();
+    } else {
+      updateBoatSlotSummary();
+    }
   }
 
   const BOOKING_SERVICE_LABELS = {
@@ -401,85 +417,114 @@ function initializeBooking() {
     if (UI.boatRangePreview) UI.boatRangePreview.textContent = '';
   }
 
-  function resetBoatSetSelection() {
+  function hideBoatSlotSummary() {
+    if (UI.boatSlotSummary) {
+      UI.boatSlotSummary.classList.add('hidden');
+      UI.boatSlotSummary.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  function showBoatSlotSummary() {
+    if (UI.boatSlotSummary) {
+      UI.boatSlotSummary.classList.remove('hidden');
+      UI.boatSlotSummary.setAttribute('aria-hidden', 'false');
+    }
+  }
+
+  function getSortedBoatSlots() {
+    return Array.from(selectedBoatSlots).sort(
+      (a, b) => parseTimeToMinutes(a) - parseTimeToMinutes(b)
+    );
+  }
+
+  function syncSelectedSlotHiddenInput() {
+    const selectedSlotInput = document.getElementById('selectedSlot');
+    if (!selectedSlotInput) return;
+    const slots = getSortedBoatSlots();
+    selectedSlotInput.value = slots.length ? slots.join(',') : '';
+  }
+
+  function updateBoatSlotSummary() {
+    const count = selectedBoatSlots.size;
+    if (currentService !== 'boat') {
+      hideBoatSlotSummary();
+      if (UI.confirmSlotBtn) {
+        UI.confirmSlotBtn.disabled = false;
+        UI.confirmSlotBtn.textContent = 'Далее';
+      }
+      return;
+    }
+    showBoatSlotSummary();
+    if (UI.boatSlotSummaryCount) {
+      UI.boatSlotSummaryCount.textContent = `Выбрано сетов: ${count}`;
+    }
+    if (UI.boatSlotSummaryTotal) {
+      UI.boatSlotSummaryTotal.textContent = `Итого: ${formatBoatPriceRub(count)}`;
+    }
+    if (UI.confirmSlotBtn) {
+      UI.confirmSlotBtn.disabled = count < 1;
+      UI.confirmSlotBtn.textContent = count > 0 ? 'Продолжить' : 'Продолжить';
+    }
+    syncSelectedSlotHiddenInput();
+    selectedBoatSetCount = count || 1;
+    const slots = getSortedBoatSlots();
+    selectedBoatSlotTime = slots[0] || '';
+    updateFinalConfirmButtonLabel();
+  }
+
+  function resetBoatSlotSelection() {
+    selectedBoatSlots.clear();
     selectedBoatMaxSetCount = 1;
     selectedBoatSetCount = 1;
     selectedBoatSlotTime = '';
     boatSlotHasMaxSetCount = false;
     hideBoatSetPicker();
-    updateFinalConfirmButtonLabel();
+    if (UI.slotButtonsContainer) {
+      UI.slotButtonsContainer.querySelectorAll('.slot-btn').forEach((btn) => {
+        btn.classList.remove('selected', 'active');
+      });
+    }
+    updateBoatSlotSummary();
+  }
+
+  function toggleBoatSlotSelection(slot, buttonEl) {
+    const timeStr = slot.time;
+    if (selectedBoatSlots.has(timeStr)) {
+      selectedBoatSlots.delete(timeStr);
+      buttonEl.classList.remove('selected', 'active');
+    } else {
+      selectedBoatSlots.add(timeStr);
+      buttonEl.classList.add('selected', 'active');
+    }
+    mwGoal('select_slot', {
+      date: UI.bookingDateInput ? UI.bookingDateInput.value : '',
+      time: timeStr,
+      service: 'boat',
+      selected_count: selectedBoatSlots.size,
+    });
+    updateBoatSlotSummary();
   }
 
   function updateFinalConfirmButtonLabel() {
     if (!UI.finalConfirmBtn) return;
-    if (currentService === 'boat' && selectedBoatSlotTime && boatSlotHasMaxSetCount) {
-      UI.finalConfirmBtn.textContent = formatBoatConfirmButtonLabel(
-        selectedBoatSlotTime,
-        selectedBoatSetCount
-      );
+    if (currentService === 'boat' && selectedBoatSlots.size > 0) {
+      const slots = getSortedBoatSlots();
+      const count = slots.length;
+      if (count === 1) {
+        UI.finalConfirmBtn.textContent = formatBoatConfirmButtonLabel(slots[0], 1);
+      } else {
+        UI.finalConfirmBtn.textContent = `Подтвердить: ${formatBoatSetsLabel(count)} (${slots.join(', ')})`;
+      }
     } else {
       UI.finalConfirmBtn.textContent = 'Подтвердить запись';
     }
   }
 
-  function updateBoatRangePreview() {
-    if (!UI.boatRangePreview || !selectedBoatSlotTime) return;
-    const range = formatBoatRangePreview(selectedBoatSlotTime, selectedBoatSetCount);
-    const setsLabel = formatBoatSetsLabel(selectedBoatSetCount);
-    UI.boatRangePreview.textContent = `${range} (${setsLabel})`;
-    updateFinalConfirmButtonLabel();
-  }
-
-  function renderBoatSetPicker(maxSetCount) {
-    if (!UI.boatSetPicker || !UI.boatSetButtons || maxSetCount <= 1) {
-      hideBoatSetPicker();
-      return;
-    }
-    clearContainer(UI.boatSetButtons);
-    UI.boatSetPicker.classList.remove('hidden');
-    UI.boatSetPicker.setAttribute('aria-hidden', 'false');
-
-    for (let n = 1; n <= maxSetCount; n += 1) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'boat-set-btn' + (n === selectedBoatSetCount ? ' active' : '');
-      btn.textContent = String(n);
-      btn.addEventListener('click', () => {
-        selectedBoatSetCount = n;
-        UI.boatSetButtons.querySelectorAll('.boat-set-btn').forEach((el) => {
-          el.classList.toggle('active', parseInt(el.textContent, 10) === n);
-        });
-        updateBoatRangePreview();
-      });
-      UI.boatSetButtons.appendChild(btn);
-    }
-    updateBoatRangePreview();
-  }
-
-  function handleBoatSlotSelected(slot) {
-    selectedBoatSlotTime = slot.time;
-    boatSlotHasMaxSetCount = slot.max_set_count != null && slot.max_set_count !== undefined;
-    selectedBoatMaxSetCount = boatSlotHasMaxSetCount
-      ? Math.max(1, parseInt(slot.max_set_count, 10) || 1)
-      : 1;
-    selectedBoatSetCount = 1;
-
-    const selectedSlotInput = document.getElementById('selectedSlot');
-    if (selectedSlotInput) selectedSlotInput.value = slot.time;
-
-    if (selectedBoatMaxSetCount > 1) {
-      renderBoatSetPicker(selectedBoatMaxSetCount);
-      return false;
-    }
-    hideBoatSetPicker();
-    updateFinalConfirmButtonLabel();
-    return true;
-  }
-
   function highlightSelectedSlotButton(timeStr) {
     if (!UI.slotButtonsContainer) return;
     UI.slotButtonsContainer.querySelectorAll('.slot-btn').forEach((btn) => {
-      btn.classList.toggle('selected', btn.textContent.trim() === timeStr);
+      const btnTime = btn.dataset.time || btn.textContent.trim();
+      btn.classList.toggle('selected', btnTime === timeStr);
     });
   }
 
@@ -554,7 +599,7 @@ function initializeBooking() {
       }
       
       clearContainer(UI.slotButtonsContainer);
-      resetBoatSetSelection();
+      resetBoatSlotSelection();
       
       console.log(`[booking.js] 📊 Проверка данных слотов:`);
       console.log(`   - Является массивом: ${Array.isArray(data)}`);
@@ -579,21 +624,23 @@ function initializeBooking() {
         hasAvailableSlots = true;
 
         const button = document.createElement('button');
+        button.type = 'button';
         button.className = 'slot-btn available';
+        button.dataset.time = slot.time;
         button.textContent = formatSlotButtonLabel(slot, currentService);
         button.addEventListener('click', () => {
+          if (currentService === 'boat') {
+            toggleBoatSlotSelection(slot, button);
+            return;
+          }
           highlightSelectedSlotButton(slot.time);
           mwGoal('select_slot', {
             date: UI.bookingDateInput ? UI.bookingDateInput.value : '',
             time: slot.time,
             service: currentService || ''
           });
-          if (currentService === 'boat') {
-            const advance = handleBoatSlotSelected(slot);
-            if (!advance) return;
-          } else {
-            document.getElementById('selectedSlot').value = slot.time;
-          }
+          document.getElementById('selectedSlot').value = slot.time;
+          if (UI.confirmSlotBtn) UI.confirmSlotBtn.disabled = false;
           goToStep(3);
         });
 
@@ -610,6 +657,9 @@ function initializeBooking() {
       }
       
       // Показываем модальное окно со слотами только если есть доступные слоты
+      if (currentService === 'boat') {
+        updateBoatSlotSummary();
+      }
       showModal(UI.slotsModal);
       setTimeout(() => {
         UI.slotsModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -644,7 +694,11 @@ function initializeBooking() {
     const formattedDate = dateValue ? new Date(dateValue).toISOString().split('T')[0] : '';
     
     // Проверяем и форматируем время
-    const timeValue = selectedSlotInput.value;
+    let timeValue = selectedSlotInput.value;
+    if (currentService === 'boat' && selectedBoatSlots.size > 0) {
+      const boatTimes = getSortedBoatSlots();
+      timeValue = boatTimes[0] || timeValue;
+    }
     // Убеждаемся что время в правильном формате HH:MM
     let formattedTime = '';
     if (timeValue) {
@@ -672,6 +726,9 @@ function initializeBooking() {
     }
     if (!formattedTime) {
         throw new Error('Пожалуйста, выберите время');
+    }
+    if (currentService === 'boat' && selectedBoatSlots.size < 1) {
+        throw new Error('Пожалуйста, выберите хотя бы один слот');
     }
     if (!UI.bookingName.value.trim()) {
         throw new Error('Пожалуйста, введите ваше имя');
@@ -841,7 +898,10 @@ function initializeBooking() {
           service_type: payload.service_type || currentService || 'boat'
       };
 
-      if (finalRequestData.service_type === 'boat' && boatSlotHasMaxSetCount) {
+      if (finalRequestData.service_type === 'boat' && selectedBoatSlots.size > 0) {
+        finalRequestData.slot_times = getSortedBoatSlots();
+        finalRequestData.time = finalRequestData.slot_times[0];
+      } else if (finalRequestData.service_type === 'boat') {
         finalRequestData.set_count = selectedBoatSetCount || 1;
       }
 
@@ -1285,13 +1345,17 @@ function initializeBooking() {
 
   if (UI.confirmSlotBtn) {
     UI.confirmSlotBtn.addEventListener("click", () => {
+      if (currentService === 'boat') {
+        if (selectedBoatSlots.size < 1) {
+          showToast('❌ Выберите хотя бы один слот');
+          return;
+        }
+        goToStep(3);
+        return;
+      }
       const slotInput = document.getElementById('selectedSlot');
       const timeVal = slotInput ? slotInput.value.trim() : '';
       if (!timeVal) {
-        showToast('❌ Выберите время');
-        return;
-      }
-      if (currentService === 'boat' && selectedBoatMaxSetCount > 1 && !selectedBoatSlotTime) {
         showToast('❌ Выберите время');
         return;
       }
@@ -1476,8 +1540,9 @@ function initializeBooking() {
           const slotInput = document.getElementById('selectedSlot');
           const timeVal = slotInput ? slotInput.value : '';
           const boatSetsHtml =
-            currentService === 'boat' && boatSlotHasMaxSetCount && selectedBoatMaxSetCount > 1
-              ? `<p><strong>Сеты:</strong> ${formatBoatSetsLabel(selectedBoatSetCount)} (${formatBoatRangePreview(timeVal, selectedBoatSetCount)})</p>`
+            currentService === 'boat' && selectedBoatSlots.size > 0
+              ? `<p><strong>Сеты:</strong> ${formatBoatSetsLabel(selectedBoatSlots.size)} (${getSortedBoatSlots().join(', ')})</p>
+                 <p><strong>Стоимость:</strong> ${formatBoatPriceRub(selectedBoatSlots.size)}</p>`
               : '';
           const nameVal = UI.bookingName ? UI.bookingName.value : '';
           const phoneVal = UI.bookingPhone ? UI.bookingPhone.value : '';

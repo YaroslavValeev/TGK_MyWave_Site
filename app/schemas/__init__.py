@@ -7,3 +7,4 @@ class BookingSchema(Schema):
     phone = fields.String(required=True)
     service_type = fields.String(required=False, load_default="gym", allow_none=True)
     set_count = fields.Integer(required=False, load_default=1, allow_none=True)
+    slot_times = fields.List(fields.String(), required=False, load_default=None, allow_none=True)
