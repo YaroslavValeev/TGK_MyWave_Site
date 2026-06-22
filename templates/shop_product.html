@@ -14,10 +14,15 @@
       {% if product.buy_url %}
       <a class="btn btn-primary-lg" href="{{ product.buy_url }}" target="_blank" rel="noopener noreferrer">Купить</a>
       {% else %}
-      <a class="btn btn-primary-lg" href="#">Купить</a>
+      <button type="button" class="btn btn-primary-lg" data-product-request
+              data-product-id="{{ slug }}"
+              data-product-title="{{ product.title }}">Купить</button>
       {% endif %}
       <a class="btn btn-outline" href="{{ url_for('shop.shop_index') }}">Вернуться в магазин</a>
     </div>
+    <p class="product-request-hint product-page-hint">
+      Наличие и условия получения товара нужно подтвердить у менеджера. Оставьте заявку — мы свяжемся с вами.
+    </p>
   </div>
 </section>
 {% endblock %}

@@ -1,0 +1,15 @@
+# PR53 — Telegram notification template (product lead)
+# Source: format_application_telegram_message('product', ...) — no tokens/secrets
+
+Новая заявка: Заявка на товар
+
+Имя: Мария
+Телефон: +7 916 123 45 67
+Telegram: @maria
+Email: maria@example.com
+Проект/услуга: Баланс-борд
+Комментарий: Нужен самовывоз
+Источник: product
+Страница: https://mywavewake.ru/shop/product/balance-board
+Время: <UTC ISO8601 at send time>
+Статус: new

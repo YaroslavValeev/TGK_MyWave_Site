@@ -1,0 +1,24 @@
+{# Product purchase request modal — PR53 MVP (lead, not checkout) #}
+<div id="modalProductRequest" class="modal hidden" role="dialog" aria-labelledby="product-request-title">
+  <div class="modal-content modal-content--compact">
+    <button type="button" class="close-modal" aria-label="Закрыть">&times;</button>
+    <h2 id="product-request-title">Заявка на товар</h2>
+    <p class="product-request-hint">
+      Онлайн-оплата для этого товара пока не подключена. Оставьте заявку — менеджер подскажет
+      способ оплаты и получения.
+    </p>
+    <form id="product-request-form" class="product-request-form" novalidate>
+      <input type="hidden" name="product_id" value="">
+      <input type="hidden" name="product_title" value="">
+      <input type="hidden" name="page_url" value="">
+      <input type="text" name="name" placeholder="Имя *" required maxlength="120" autocomplete="name">
+      <input type="tel" name="phone" placeholder="Телефон *" required autocomplete="tel">
+      <input type="text" name="telegram" placeholder="Telegram (@username)" maxlength="80">
+      <input type="email" name="email" placeholder="Email" maxlength="120" autocomplete="email">
+      <input type="number" name="quantity" value="1" min="1" max="99" aria-label="Количество">
+      <textarea name="comment" rows="3" maxlength="500" placeholder="Комментарий (необязательно)"></textarea>
+      <button type="submit" class="btn btn-primary">Отправить заявку</button>
+      <p id="product-request-message" class="mw-form-message" role="status" aria-live="polite" hidden></p>
+    </form>
+  </div>
+</div>

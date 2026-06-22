@@ -1509,6 +1509,17 @@ function initializeBooking() {
     }
   }
 
+  document.addEventListener("click", function (e) {
+    const backBtn = e.target.closest(".btn-back-step");
+    if (!backBtn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const step = parseInt(backBtn.getAttribute("data-back-step"), 10);
+    if (Number.isFinite(step) && step >= 1 && step <= 3) {
+      goToStep(step);
+    }
+  });
+
   // Инициализация при загрузке
   // goToStep(1);
   
