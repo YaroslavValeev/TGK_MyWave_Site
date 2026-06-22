@@ -1,13 +1,12 @@
 /**
  * Бегущая строка соревнований:
- * - desktop auto-scroll (~840s full loop);
- * - mobile manual swipe/scroll only (no auto-scroll);
+ * - desktop + mobile auto-scroll (~840s full loop, same speed);
  * - pause on hover, focus, touch;
  * - prefers-reduced-motion: manual only.
  */
 (function () {
   var BASE_DURATION_SEC = 840;
-  var MOBILE_AUTO_SCROLL = false;
+  var MOBILE_AUTO_SCROLL = true;
   var MOBILE_MAX_WIDTH_PX = 768;
   var MIN_PX_PER_FRAME = 0.4;
 

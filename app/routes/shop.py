@@ -137,7 +137,7 @@ def product_request_api():
 
     notify_payload = {
         **payload,
-        'status': result.status,
+        'status': 'new',
         'created_at': None,
     }
     notify_new_application('product', notify_payload)
