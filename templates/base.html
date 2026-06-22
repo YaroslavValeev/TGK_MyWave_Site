@@ -35,7 +35,7 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=hero-fix1" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}?v=hero-logo10" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/branding.css') }}?v=pr534-footer1" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/services-carousel.css') }}?v=project-cards-uniform2" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-home.css') }}?v=blog-mobile1" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/preloader.css') }}" />
@@ -231,6 +231,11 @@
         {{ brand_logo('turquoise', 'brand-logo--footer', url_for('index')) }}
       </div>
       <p class="site-footer__copy">© 2026 MyWave. Все права защищены.</p>
+      {% if social_module_enabled %}
+      <p class="site-footer__nav">
+        <a href="{{ url_for('social.social_page') }}" class="site-footer__link">Социальная ответственность</a>
+      </p>
+      {% endif %}
       <p class="site-footer__meta site-footer__brand-materials">
         <span class="site-footer__brand-label">Логотипы и бренд-материалы MyWave</span>
         <a href="{{ url_for('brand.logo_package_download') }}" class="site-footer__download">
