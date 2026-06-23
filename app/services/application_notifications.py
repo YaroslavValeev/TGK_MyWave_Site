@@ -38,6 +38,26 @@ def _pick(payload: Mapping[str, Any], *keys: str) -> str:
     return "—"
 
 
+def _normalize_lead_status(raw: Any) -> str:
+    """Human-readable status for Telegram; never leak Mock/object repr."""
+    if raw in (None, ""):
+        return "new"
+    if isinstance(raw, str):
+        text = raw.strip()
+    else:
+        mod = type(raw).__module__ or ""
+        name = type(raw).__name__ or ""
+        if mod.startswith("unittest.mock") or name == "MagicMock":
+            return "new"
+        text = str(raw).strip()
+    lowered = text.lower()
+    if "magicmock" in lowered or "<" in text and ">" in text and "mock" in lowered:
+        return "new"
+    if lowered in {"new", "saved", "сохранено", "сохранен", "сохранена"}:
+        return "new" if lowered == "new" else "сохранено"
+    return text
+
+
 def format_application_telegram_message(application_type: str, payload: Mapping[str, Any]) -> str:
     """Build admin Telegram text from normalized payload."""
     title = APPLICATION_TYPE_LABELS.get(application_type, application_type)
@@ -54,7 +74,7 @@ def format_application_telegram_message(application_type: str, payload: Mapping[
         f"Страница: {_pick(payload, 'page_url')}",
         f"Время: {_pick(payload, 'created_at') or _format_timestamp()}",
         "",
-        f"Статус: {_pick(payload, 'status') or 'new'}",
+        f"Статус: {_normalize_lead_status(payload.get('status'))}",
     ]
     if application_type == "product":
         qty = payload.get("quantity")

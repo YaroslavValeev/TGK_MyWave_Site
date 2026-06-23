@@ -1006,6 +1006,22 @@ Wake Surf Safari 2026 Styles
   font-size: 0.95rem;
 }
 
+.site-footer__nav {
+  margin: 0 0 0.65rem;
+}
+
+.site-footer__link {
+  color: var(--mw-brand) !important;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.site-footer__link:hover,
+.site-footer__link:focus-visible {
+  color: #5fd4de !important;
+  text-decoration: underline;
+}
+
 .site-footer__meta {
   margin: 0;
   font-size: 0.875rem;
@@ -1031,6 +1047,23 @@ Wake Surf Safari 2026 Styles
 
 .site-footer__sep {
   opacity: 0.45;
+}
+
+@media (max-width: 768px) {
+  .site-footer {
+    padding-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .site-footer__nav {
+    margin-bottom: 0.75rem;
+  }
+
+  .site-footer__link {
+    display: inline-block;
+    min-height: 44px;
+    line-height: 44px;
+    padding: 0 0.25rem;
+  }
 }
 
 .site-header .logo a,
