@@ -45,6 +45,29 @@
     mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
 }
 
+.home-competitions-ticker__viewport.is-autoplay {
+    overflow: hidden;
+    touch-action: manipulation;
+}
+
+.home-competitions-ticker__viewport.is-autoplay .home-competitions-ticker__track {
+    animation: competitions-ticker-marquee var(--ticker-duration, 840s) linear infinite;
+    will-change: transform;
+}
+
+.home-competitions-ticker__viewport.is-autoplay.is-paused .home-competitions-ticker__track {
+    animation-play-state: paused;
+}
+
+@keyframes competitions-ticker-marquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
 .home-competitions-ticker__viewport.is-scrollable {
     cursor: grab;
 }
@@ -120,6 +143,8 @@
     .home-competitions-ticker {
         margin: 0.5rem auto 1rem;
         padding: 0.5rem 0;
+        max-width: 100%;
+        box-sizing: border-box;
     }
 
     .home-competitions-ticker__label {
@@ -128,6 +153,10 @@
 
     .home-competitions-ticker__viewport {
         padding-left: 0;
+    }
+
+    .home-competitions-ticker__viewport.is-autoplay {
+        overflow: hidden;
     }
 
     .home-competitions-ticker__link,
@@ -139,6 +168,11 @@
 @media (prefers-reduced-motion: reduce) {
     .home-competitions-ticker__viewport {
         mask-image: none;
+    }
+
+    .home-competitions-ticker__viewport.is-autoplay .home-competitions-ticker__track {
+        animation: none;
+        transform: none;
     }
 
     .home-competitions-ticker__track {
