@@ -1,30 +1,19 @@
 /**
  * Бегущая строка соревнований:
- * - desktop + mobile auto-scroll (~840s full loop);
+ * - autoplay via CSS transform (desktop + mobile, ~840s loop);
  * - pause on hover, focus, touch;
- * - prefers-reduced-motion: manual only.
+ * - prefers-reduced-motion: manual scroll only.
+ *
+ * Note: programmatic scrolling on overflow containers is unreliable on iOS Safari.
  */
 (function () {
   var BASE_DURATION_SEC = 840;
-  var MOBILE_AUTO_SCROLL = true;
-  var MOBILE_MAX_WIDTH_PX = 768;
-  var MIN_PX_PER_FRAME = 0.4;
 
-  function isMobileViewport() {
+  function prefersReducedMotion() {
     return (
       window.matchMedia &&
-      window.matchMedia("(max-width: " + MOBILE_MAX_WIDTH_PX + "px)").matches
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
     );
-  }
-
-  function shouldAutoScroll(prefersReduced) {
-    if (prefersReduced) {
-      return false;
-    }
-    if (!MOBILE_AUTO_SCROLL && isMobileViewport()) {
-      return false;
-    }
-    return true;
   }
 
   function initTicker(root) {
@@ -34,11 +23,9 @@
       return;
     }
 
-    var prefersReduced =
-      window.matchMedia &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var reduced = prefersReducedMotion();
 
-    if (!prefersReduced) {
+    if (!reduced) {
       var children = Array.from(track.children);
       children.forEach(function (node) {
         var dup = node.cloneNode(true);
@@ -48,67 +35,20 @@
     }
 
     track.dataset.tickerReady = "1";
+    root.style.setProperty("--ticker-duration", BASE_DURATION_SEC + "s");
     viewport.classList.add("is-scrollable");
 
-    if (prefersReduced) {
+    if (reduced) {
       viewport.classList.add("is-manual-only");
       return;
     }
 
-    if (!shouldAutoScroll(false)) {
-      viewport.classList.add("is-manual-only");
-      return;
-    }
+    viewport.classList.add("is-autoplay");
 
-    var paused = false;
-    var userInteracting = false;
     var resumeTimer = null;
-    var wheelTimer = null;
-    var rafId = null;
-    var scrollAccumulator = 0;
 
-    function getDurationSec() {
-      return BASE_DURATION_SEC;
-    }
-
-    function loopWidth() {
-      return track.scrollWidth / 2;
-    }
-
-    function normalizeScroll() {
-      var lw = loopWidth();
-      if (lw <= 0) {
-        return;
-      }
-      while (viewport.scrollLeft >= lw) {
-        viewport.scrollLeft -= lw;
-      }
-      while (viewport.scrollLeft < 0) {
-        viewport.scrollLeft += lw;
-      }
-    }
-
-    function tick() {
-      if (!paused && !userInteracting && shouldAutoScroll(false)) {
-        var lw = loopWidth();
-        if (lw > 0) {
-          var pxPerFrame = Math.max(lw / (getDurationSec() * 60), MIN_PX_PER_FRAME);
-          scrollAccumulator += pxPerFrame;
-          if (scrollAccumulator >= 1) {
-            var step = Math.floor(scrollAccumulator);
-            viewport.scrollLeft += step;
-            scrollAccumulator -= step;
-          }
-          if (viewport.scrollLeft >= lw) {
-            viewport.scrollLeft -= lw;
-          }
-        }
-      }
-      rafId = window.requestAnimationFrame(tick);
-    }
-
-    function pause() {
-      paused = true;
+    function pauseAutoplay() {
+      viewport.classList.add("is-paused");
     }
 
     function scheduleResume(delay) {
@@ -116,69 +56,37 @@
         clearTimeout(resumeTimer);
       }
       resumeTimer = setTimeout(function () {
-        if (!userInteracting) {
-          paused = false;
+        if (!viewport.classList.contains("is-user-holding")) {
+          viewport.classList.remove("is-paused");
         }
-      }, delay || 600);
+      }, delay || 500);
     }
 
-    function onInteractStart() {
-      userInteracting = true;
-      pause();
-      viewport.classList.add("is-dragging");
-    }
-
-    function onInteractEnd() {
-      userInteracting = false;
-      viewport.classList.remove("is-dragging");
-      normalizeScroll();
-      scheduleResume(800);
-    }
-
-    root.addEventListener("mouseenter", pause);
+    root.addEventListener("mouseenter", pauseAutoplay);
     root.addEventListener("mouseleave", function () {
-      if (!userInteracting) {
-        scheduleResume(200);
-      }
+      scheduleResume(250);
     });
-    root.addEventListener("focusin", pause);
+    root.addEventListener("focusin", pauseAutoplay);
     root.addEventListener("focusout", function () {
-      if (!userInteracting) {
-        scheduleResume(200);
-      }
+      scheduleResume(250);
     });
 
-    viewport.addEventListener("touchstart", onInteractStart, { passive: true });
-    viewport.addEventListener("touchend", onInteractEnd, { passive: true });
-    viewport.addEventListener("touchcancel", onInteractEnd, { passive: true });
-    viewport.addEventListener("mousedown", function (e) {
-      if (e.button !== 0) {
-        return;
-      }
-      onInteractStart();
-    });
-    viewport.addEventListener("mouseup", onInteractEnd);
-    viewport.addEventListener("mouseleave", onInteractEnd);
-    viewport.addEventListener("scroll", function () {
-      if (userInteracting) {
-        normalizeScroll();
-      }
-    }, { passive: true });
-    viewport.addEventListener("wheel", function () {
-      onInteractStart();
-      if (wheelTimer) {
-        clearTimeout(wheelTimer);
-      }
-      wheelTimer = setTimeout(onInteractEnd, 400);
-    }, { passive: true });
+    viewport.addEventListener(
+      "touchstart",
+      function () {
+        viewport.classList.add("is-user-holding");
+        pauseAutoplay();
+      },
+      { passive: true }
+    );
 
-    rafId = window.requestAnimationFrame(tick);
+    function onTouchEnd() {
+      viewport.classList.remove("is-user-holding");
+      scheduleResume(700);
+    }
 
-    root.addEventListener("destroy", function () {
-      if (rafId) {
-        window.cancelAnimationFrame(rafId);
-      }
-    });
+    viewport.addEventListener("touchend", onTouchEnd, { passive: true });
+    viewport.addEventListener("touchcancel", onTouchEnd, { passive: true });
   }
 
   function initAll() {

@@ -13,15 +13,16 @@ FORBIDDEN_NOTIFY_FRAGMENTS = ("MagicMock", "<MagicMock", "object at 0x")
 
 def test_competitions_ticker_mobile_autoscroll_enabled():
     js = Path("static/js/competitions-ticker.js").read_text(encoding="utf-8")
-    assert "MOBILE_AUTO_SCROLL = true" in js
-    assert "MOBILE_AUTO_SCROLL = false" not in js
-    assert "BASE_DURATION_SEC = 840" in js
+    css = Path("static/css/competitions-ticker.css").read_text(encoding="utf-8")
+    assert "is-autoplay" in js
+    assert "competitions-ticker-marquee" in css
+    assert "--ticker-duration" in js
 
 
-def test_index_loads_competitions_ticker_v7(client):
+def test_index_loads_competitions_ticker_v8(client):
     html = client.get("/").get_data(as_text=True)
-    assert "competitions-ticker.js?v=7" in html
-    assert "competitions-ticker.css?v=7" in html
+    assert "competitions-ticker.js?v=8" in html
+    assert "competitions-ticker.css?v=8" in html
 
 
 def test_footer_shows_social_responsibility_link_when_module_enabled(client, monkeypatch):
