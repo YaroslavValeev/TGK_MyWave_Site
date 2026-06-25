@@ -38,6 +38,26 @@ def _pick(payload: Mapping[str, Any], *keys: str) -> str:
     return "—"
 
 
+def _sanitize_notify_value(raw: Any) -> str:
+    """Strip mock/object repr from Telegram payload fields."""
+    if raw in (None, ""):
+        return ""
+    if isinstance(raw, str):
+        text = raw.strip()
+    else:
+        mod = type(raw).__module__ or ""
+        name = type(raw).__name__ or ""
+        if mod.startswith("unittest.mock") or name == "MagicMock":
+            return ""
+        text = str(raw).strip()
+    lowered = text.lower()
+    if "magicmock" in lowered:
+        return ""
+    if "<" in text and ">" in text and "mock" in lowered:
+        return ""
+    return text
+
+
 def _normalize_lead_status(raw: Any) -> str:
     """Human-readable status for Telegram; never leak Mock/object repr."""
     if raw in (None, ""):
@@ -61,28 +81,53 @@ def _normalize_lead_status(raw: Any) -> str:
 def format_application_telegram_message(application_type: str, payload: Mapping[str, Any]) -> str:
     """Build admin Telegram text from normalized payload."""
     title = APPLICATION_TYPE_LABELS.get(application_type, application_type)
+    name = _sanitize_notify_value(_pick(payload, "name", "parent_name", "full_name")) or "—"
+    phone = _sanitize_notify_value(_pick(payload, "phone", "parent_phone")) or "—"
+    telegram = _sanitize_notify_value(_pick(payload, "telegram", "telegram_username")) or "—"
+    email = _sanitize_notify_value(_pick(payload, "email", "parent_email")) or "—"
+    comment_raw = _sanitize_notify_value(
+        _pick(payload, "comment", "motivation_text")
+    )
+    if not comment_raw:
+        comment_raw = "—"
+    elif len(comment_raw) > 200:
+        comment_raw = comment_raw[:200] + "…"
+    page_url = _sanitize_notify_value(_pick(payload, "page_url")) or "—"
+    source = _sanitize_notify_value(_pick(payload, "source")) or "—"
+    app_id = _sanitize_notify_value(payload.get("application_id"))
+
     lines = [
         f"Новая заявка: {title}",
         "",
-        f"Имя: {_pick(payload, 'name', 'parent_name', 'full_name')}",
-        f"Телефон: {_pick(payload, 'phone', 'parent_phone')}",
-        f"Telegram: {_pick(payload, 'telegram', 'telegram_username')}",
-        f"Email: {_pick(payload, 'email', 'parent_email')}",
-        f"Проект/услуга: {_pick(payload, 'product_title', 'project', 'service', 'desired_format')}",
-        f"Комментарий: {_pick(payload, 'comment', 'motivation_text', 'safety_notes')}",
-        f"Источник: {_pick(payload, 'source')}",
-        f"Страница: {_pick(payload, 'page_url')}",
-        f"Время: {_pick(payload, 'created_at') or _format_timestamp()}",
-        "",
-        f"Статус: {_normalize_lead_status(payload.get('status'))}",
     ]
+    if app_id:
+        lines.append(f"ID: {app_id}")
+    lines.extend([
+        f"Тип: {application_type}",
+        f"Имя: {name}",
+        f"Телефон: {phone}",
+        f"Telegram: {telegram}",
+    ])
+    if email != "—":
+        lines.append(f"Email: {email}")
+    lines.extend([
+        f"Комментарий: {comment_raw}",
+        f"Источник: {source}",
+        f"Страница: {page_url}",
+        f"Статус: {_normalize_lead_status(payload.get('status'))}",
+    ])
     if application_type == "product":
         qty = payload.get("quantity")
         if qty not in (None, ""):
-            lines.insert(6, f"Количество: {qty}")
-        pid = payload.get("product_id")
+            qty_text = _sanitize_notify_value(qty)
+            if qty_text:
+                lines.insert(-1, f"Количество: {qty_text}")
+        pid = _sanitize_notify_value(payload.get("product_id"))
         if pid:
-            lines.insert(6, f"Товар ID: {pid}")
+            lines.insert(-1, f"Товар ID: {pid}")
+        product_title = _sanitize_notify_value(payload.get("product_title"))
+        if product_title:
+            lines.insert(-1, f"Товар: {product_title}")
     return "\n".join(lines)
 
 
@@ -99,34 +144,13 @@ def notify_service_lead_from_analytics(
     *,
     phone: str = "",
 ) -> bool:
-    """Best-effort Telegram for modal service leads logged via /analytics/log."""
-    application_type = SERVICE_LEAD_EVENT_MAP.get(event)
-    if not application_type:
-        return False
+    """Best-effort Project_Applications + Telegram for modal service leads via /analytics/log."""
+    from app.services.project_applications import try_submit_from_analytics_event
 
-    name = str(meta.get("name") or "").strip()
-    phone_val = str(phone or meta.get("phone") or "").strip()
-    if len(name) < 2 or len(phone_val) < 8:
-        logger.warning(
-            "application_notify_skipped reason=missing_contact",
-            extra={"application_type": application_type, "event": event},
-        )
+    result = try_submit_from_analytics_event(event, meta, phone=phone)
+    if result is None:
         return False
-
-    comment_parts = [
-        str(meta.get(key) or "").strip()
-        for key in ("comment", "goal", "task", "topic", "level", "dates", "location")
-        if str(meta.get(key) or "").strip()
-    ]
-    payload = {
-        "name": name,
-        "phone": phone_val,
-        "comment": "; ".join(comment_parts) if comment_parts else "",
-        "source": str(meta.get("service") or application_type).strip(),
-        "page_url": str(meta.get("page_url") or "").strip(),
-        "status": "new",
-    }
-    return notify_new_application(application_type, payload)
+    return result.notification_status == "sent"
 
 
 def notify_new_application(application_type: str, payload: Mapping[str, Any]) -> bool:

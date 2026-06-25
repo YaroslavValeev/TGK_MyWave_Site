@@ -515,6 +515,27 @@
     cursor: pointer;
 }
 
+.wsc2025-consent-block {
+    margin-top: 8px;
+    padding-top: 4px;
+}
+
+.wsc2025-consent-links {
+    margin: 0 0 8px;
+    text-align: right;
+}
+
+.wsc2025-consent-word {
+    font-size: 12px;
+    color: #6c757d;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.wsc2025-consent-word:hover {
+    color: #495057;
+}
+
 .wsc2025-form-submit {
     width: 100%;
     padding: 14px;

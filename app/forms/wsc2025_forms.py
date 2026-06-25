@@ -171,8 +171,13 @@ class CoachRegistrationForm(FlaskForm):
         render_kw={"placeholder": "https://youtube.com/..."}
     )
     
+    consent_personal_data = BooleanField(
+        'Согласие на обработку персональных данных',
+        validators=[DataRequired(message="Необходимо согласие на обработку персональных данных")]
+    )
+
     consent_participation = BooleanField(
-        'Согласен(на) с условиями участия',
+        'Согласен(на) с условиями участия в Wake Challenge',
         validators=[DataRequired(message="Необходимо согласие с условиями участия")]
     )
     

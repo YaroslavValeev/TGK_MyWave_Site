@@ -8,7 +8,7 @@ from flask import Blueprint, render_template, request, jsonify, flash, redirect,
 from flask_wtf.csrf import validate_csrf, ValidationError as CSRFValidationError
 from app.forms.wsc2025_forms import ParticipantRegistrationForm, CoachRegistrationForm
 from app.services.projects.wsc2025_service import save_participant_registration, save_coach_registration
-from app.services.notifications import notify_wsc_registration
+from app.services.project_applications import CONSENT_VERSION, submit_project_application
 from app.extensions import limiter
 from app.modules.logger import get_logger
 from flask_limiter.util import get_remote_address
@@ -257,7 +257,29 @@ def register_participant():
                 "error": error_message or "Ошибка при сохранении данных"
             }), 500
 
-        notify_wsc_registration("participant", form_data)
+        try:
+            submit_project_application(
+                "wake_challenge",
+                {
+                    "name": form.full_name.data,
+                    "phone": form.phone.data,
+                    "email": form.email.data,
+                    "comment": (
+                        f"participant; level={form.level.data}; city={form.city.data}; "
+                        f"goals={(form.goals.data or '')[:200]}"
+                    ),
+                    "page_url": request.headers.get("Referer", ""),
+                    "source": "wsc2025_participant",
+                    "consent_version": CONSENT_VERSION,
+                    "consent_personal_data": form.consent_participation.data,
+                    "consent_media": form.consent_media.data,
+                },
+            )
+        except Exception as notify_exc:
+            logger.warning(
+                "wsc_participant_project_application_failed error=%s",
+                str(notify_exc)[:200],
+            )
 
         return jsonify({
             "success": True,
@@ -312,6 +334,7 @@ def register_coach():
             'experience_years': form.experience_years.data,
             'portfolio_url': form.portfolio_url.data or '',
             'consent_participation': form.consent_participation.data,
+            'consent_personal_data': form.consent_personal_data.data,
             'consent_media': form.consent_media.data,
         }
         
@@ -323,7 +346,37 @@ def register_coach():
                 "error": error_message or "Ошибка при сохранении данных"
             }), 500
 
-        notify_wsc_registration("coach", form_data)
+        try:
+            project_result = submit_project_application(
+                "wake_challenge",
+                {
+                    "name": form.full_name.data,
+                    "phone": form.phone.data,
+                    "email": form.email.data,
+                    "comment": (
+                        f"coach; club={form.club.data or ''}; "
+                        f"experience_years={form.experience_years.data}; "
+                        f"portfolio={(form.portfolio_url.data or '')[:120]}"
+                    ),
+                    "page_url": request.headers.get("Referer", ""),
+                    "source": "wsc2025_coach",
+                    "consent_version": CONSENT_VERSION,
+                    "consent_personal_data": form.consent_personal_data.data,
+                    "consent_media": form.consent_media.data,
+                },
+            )
+            logger.info(
+                "wsc_coach_project_application",
+                extra={
+                    "application_id": project_result.application_id,
+                    "notification_status": project_result.notification_status,
+                },
+            )
+        except Exception as notify_exc:
+            logger.warning(
+                "wsc_coach_project_application_failed error=%s",
+                str(notify_exc)[:200],
+            )
 
         return jsonify({
             "success": True,

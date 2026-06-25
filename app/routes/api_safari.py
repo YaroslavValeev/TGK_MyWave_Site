@@ -9,13 +9,55 @@ from flask_limiter.util import get_remote_address
 from flask_limiter.errors import RateLimitExceeded
 from datetime import datetime
 from app.services.google_sheets_service import append_record
-from app.services.notifications import notify_safari_application
+from app.services.project_applications import CONSENT_VERSION, submit_project_application
 from app.services.projects.validation import normalize_phone, sanitize_text
 from app.services.projects.analytics import get_session_data
 
 logger = get_logger(__name__)
 
 api_safari_bp = Blueprint("api_safari", __name__, url_prefix="/api/safari")
+
+
+def _notify_safari_project_application(
+    *,
+    name: str,
+    phone: str,
+    email: str = "",
+    comment: str = "",
+    source: str,
+    page_url: str = "",
+    telegram: str = "",
+    consent_personal_data: bool = True,
+    consent_media: bool = False,
+    utm_source: str = "",
+    utm_medium: str = "",
+    utm_campaign: str = "",
+) -> None:
+    try:
+        submit_project_application(
+            "wakesurf_safari",
+            {
+                "name": name,
+                "phone": phone,
+                "email": email,
+                "telegram": telegram,
+                "comment": comment[:500],
+                "page_url": page_url,
+                "source": source,
+                "consent_version": CONSENT_VERSION,
+                "consent_personal_data": consent_personal_data,
+                "consent_media": consent_media,
+                "utm_source": utm_source,
+                "utm_medium": utm_medium,
+                "utm_campaign": utm_campaign,
+            },
+        )
+    except Exception as exc:
+        logger.warning(
+            "safari_project_application_failed source=%s error=%s",
+            source,
+            str(exc)[:200],
+        )
 
 
 @api_safari_bp.errorhandler(RateLimitExceeded)
@@ -113,14 +155,23 @@ def register_participant():
             except Exception as e:
                 logger.error(f"Ошибка сохранения в Google Sheets: {e}")
         
-        notify_safari_application("participant", {
-            "full_name": full_name,
-            "phone": phone_normalized,
-            "email": email,
-            "participation_type": participation_type or "Не указан",
-            "skill_level": skill_level or "Не указан",
-            "comment": comment or "",
-        })
+        _notify_safari_project_application(
+            name=full_name,
+            phone=phone_normalized,
+            email=email,
+            telegram=social_telegram,
+            comment=(
+                f"participant; type={participation_type or '—'}; level={skill_level or '—'}; "
+                f"city={city or '—'}; note={(comment or '')[:160]}"
+            ),
+            source="safari_participant",
+            page_url=analytics.get("page_url", ""),
+            consent_personal_data=consent_data,
+            consent_media=consent_media,
+            utm_source=analytics.get("utm_source", ""),
+            utm_medium=analytics.get("utm_medium", ""),
+            utm_campaign=analytics.get("utm_campaign", ""),
+        )
 
         return jsonify({
             "success": True,
@@ -206,14 +257,17 @@ def register_partner():
             except Exception as e:
                 logger.error(f"Ошибка сохранения партнёра в Sheets: {e}")
         
-        notify_safari_application("partner", {
-            "company_name": company_name,
-            "contact_name": contact_name,
-            "phone": normalize_phone(phone),
-            "email": email,
-            "package_interest": package_interest or "Не указан",
-            "comment": comment or "",
-        })
+        _notify_safari_project_application(
+            name=contact_name,
+            phone=normalize_phone(phone),
+            email=email,
+            comment=f"partner; company={company_name}; package={package_interest or '—'}; {(comment or '')[:120]}",
+            source="safari_partner",
+            page_url=analytics.get("page_url", ""),
+            utm_source=analytics.get("utm_source", ""),
+            utm_medium=analytics.get("utm_medium", ""),
+            utm_campaign=analytics.get("utm_campaign", ""),
+        )
 
         return jsonify({
             "success": True,
@@ -307,14 +361,17 @@ def register_media():
             except Exception as e:
                 logger.error(f"Ошибка сохранения медиа в Sheets: {e}")
         
-        notify_safari_application("media", {
-            "media_name": media_name,
-            "contact_name": contact_name,
-            "phone": normalize_phone(phone),
-            "email": email,
-            "media_type": media_type or "Не указан",
-            "audience_size": audience_size or "Не указано",
-        })
+        _notify_safari_project_application(
+            name=contact_name,
+            phone=normalize_phone(phone),
+            email=email,
+            comment=f"media; outlet={media_name}; type={media_type or '—'}; audience={audience_total or '—'}",
+            source="safari_media",
+            page_url=analytics.get("page_url", ""),
+            utm_source=analytics.get("utm_source", ""),
+            utm_medium=analytics.get("utm_medium", ""),
+            utm_campaign=analytics.get("utm_campaign", ""),
+        )
 
         return jsonify({
             "success": True,
@@ -384,12 +441,17 @@ def submit_feedback():
             except Exception as e:
                 logger.error(f"Ошибка сохранения фидбека в Sheets: {e}")
         
-        notify_safari_application("feedback", {
-            "name": name,
-            "email": email,
-            "feedback_type": feedback_type or "Общий",
-            "message": message[:500],
-        })
+        _notify_safari_project_application(
+            name=name,
+            phone="",
+            email=email,
+            comment=f"feedback; type={feedback_type or 'Общий'}; {(message or '')[:180]}",
+            source="safari_feedback",
+            page_url=analytics.get("page_url", ""),
+            utm_source=analytics.get("utm_source", ""),
+            utm_medium=analytics.get("utm_medium", ""),
+            utm_campaign=analytics.get("utm_campaign", ""),
+        )
 
         return jsonify({
             "success": True,
