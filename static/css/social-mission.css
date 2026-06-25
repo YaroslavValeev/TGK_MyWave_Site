@@ -56,6 +56,27 @@
   color: var(--mw-muted);
 }
 
+.social-muted,
+.social-field-hint {
+  color: var(--mw-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.social-field-hint {
+  margin: 0.35rem 0 0;
+}
+
+.social-card--notice {
+  border-left: 3px solid var(--mw-brand, #35c0cd);
+}
+
+.social-apply-intro {
+  color: var(--mw-muted);
+  line-height: 1.55;
+  max-width: 68ch;
+}
+
 .social-mission-widget__card {
   text-align: center;
 }
@@ -195,6 +216,20 @@
 @media (max-width: 700px) {
   .social-mission-widget__actions .btn-primary,
   .social-mission-widget__actions .btn-secondary {
+    width: 100%;
+  }
+
+  .social-page .social-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .social-page .social-hero h1 {
+    font-size: 1.45rem;
+    line-height: 1.25;
+  }
+
+  .social-form .btn-primary {
     width: 100%;
   }
 }

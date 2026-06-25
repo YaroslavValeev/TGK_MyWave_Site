@@ -1,67 +1,89 @@
-{% extends "base.html" %}
-
-{% block title %}Социальная миссия MyWave{% endblock %}
-{% block meta_description %}MyWave помогает детям через безопасные адаптивные тренировки по вейксерфингу.{% endblock %}
-
-{% block extra_head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/social-mission.css') }}?v=3" />
-{% endblock %}
-
-{% block content %}
-<section class="mw-section mw-surface social-page">
-  <div class="mw-container">
-    <header class="social-hero">
-      <p class="social-hero__eyebrow">Социальная миссия MyWave</p>
-      <h1>Безопасные тренировки для детей, которым важна поддержка</h1>
-      <p class="social-hero__lead">
-        MyWave развивает адаптивные программы: подготовка на суше, бережный выход на воду
-        и при допуске — бесплатные социальные сеты. Мы работаем спокойно, уважительно и с фокусом на безопасность.
-      </p>
-    </header>
-
-    <div class="social-grid">
-      <article class="mw-card social-card">
-        <h2>Как это работает</h2>
-        <ol class="social-steps">
-          <li>Родитель или законный представитель отправляет заявку.</li>
-          <li>Команда MyWave связывается для уточнения деталей и безопасности.</li>
-          <li>После одобрения администратор назначает социальную тренировку вручную.</li>
-        </ol>
-      </article>
-
-      <article class="mw-card social-card">
-        <h2>Кому подходит</h2>
-        <ul>
-          <li>Детям 6–17 лет, которым нужна бережная адаптированная программа.</li>
-          <li>Семьям, готовым заранее обсудить ограничения по здоровью и безопасность.</li>
-          <li>Тем, кто хочет попробовать вейксерфинг в поддерживающей среде.</li>
-        </ul>
-      </article>
-
-      <article class="mw-card social-card">
-        <h2>Безопасность</h2>
-        <ul>
-          <li>Инструктаж, спасжилеты, контроль тренера на каждом этапе.</li>
-          <li>Подготовка на суше до выхода на воду.</li>
-          <li>Решение о допуске к сету — только после согласования с родителем.</li>
-        </ul>
-      </article>
-    </div>
-
-    <section id="social-apply" class="mw-card social-apply-card">
-      <h2>Как подать заявку</h2>
-      <p>Заполните форму ниже. Социальная заявка <strong>не бронирует</strong> коммерческий слот на катере автоматически.</p>
-
-      {% if applications_enabled %}
-        {% include 'partials/social_application_form.html' %}
-      {% else %}
-        <p class="social-apply-disabled">Приём заявок временно недоступен. Напишите нам в контактах на главной странице.</p>
-      {% endif %}
-    </section>
-  </div>
-</section>
-{% endblock %}
-
-{% block scripts %}
-  <script src="{{ url_for('static', filename='js/social-application-form.js') }}?v=2" defer></script>
-{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Социальная миссия MyWave{% endblock %}
+{% block meta_description %}MyWave Social — бережные адаптивные тренировки для детей. Заявка обрабатывается вручную, без автоматической записи на катер.{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/social-mission.css') }}?v=4" />
+{% endblock %}
+
+{% block content %}
+<section class="mw-section mw-surface social-page">
+  <div class="mw-container">
+    <header class="social-hero">
+      <p class="social-hero__eyebrow">MyWave Social 2.0</p>
+      <h1>Социальная программа: безопасные тренировки для детей</h1>
+      <p class="social-hero__lead">
+        MyWave развивает адаптивные программы — подготовка на суше, бережный выход на воду
+        и при допуске социальные сеты. Мы работаем спокойно, уважительно и с фокусом на безопасность.
+        Каждая заявка рассматривается <strong>вручную</strong>.
+      </p>
+    </header>
+
+    <div class="social-grid">
+      <article class="mw-card social-card">
+        <h2>Кому помогает программа</h2>
+        <ul>
+          <li>Детям 6–17 лет, которым нужна бережная адаптированная программа.</li>
+          <li>Семьям, готовым заранее обсудить ограничения по здоровью и безопасность.</li>
+          <li>Тем, кто хочет попробовать вейксерфинг в поддерживающей среде.</li>
+        </ul>
+      </article>
+
+      <article class="mw-card social-card">
+        <h2>Как подать заявку</h2>
+        <ol class="social-steps">
+          <li>Заполните форму ниже — укажите контакт и краткую информацию о ребёнке.</li>
+          <li>Отметьте согласие на обработку данных и правила участия.</li>
+          <li>Дождитесь звонка или сообщения от команды MyWave.</li>
+        </ol>
+      </article>
+
+      <article class="mw-card social-card">
+        <h2>Что происходит после заявки</h2>
+        <ol class="social-steps">
+          <li>Мы связываемся с родителем или представителем.</li>
+          <li>Уточняем детали по безопасности и готовности к тренировке.</li>
+          <li>При одобрении администратор <strong>вручную</strong> назначает социальную тренировку.</li>
+        </ol>
+      </article>
+
+      <article class="mw-card social-card social-card--notice">
+        <h2>Что MyWave не обещает автоматически</h2>
+        <ul>
+          <li>Мгновенную запись на коммерческий слот катера.</li>
+          <li>Гарантию выхода на воду без предварительного согласования.</li>
+          <li>Медицинскую диагностику или замену врачебной консультации.</li>
+          <li>Публикацию персональных или медицинских данных.</li>
+        </ul>
+        <p class="social-muted">Социальная заявка <strong>не бронирует</strong> катер и не занимает коммерческую ёмкость.</p>
+      </article>
+    </div>
+
+    {% if public_stats_enabled and public_stats %}
+    <section class="mw-card social-stats-card" aria-label="Публичная статистика программы">
+      <h2>Программа в цифрах</h2>
+      <p class="social-muted">Агрегированные показатели без персональных данных.</p>
+      {# PR55: stats only when SOCIAL_PUBLIC_STATS_ENABLED #}
+    </section>
+    {% endif %}
+
+    <section id="social-apply" class="mw-card social-apply-card">
+      <h2>Форма заявки</h2>
+      <p class="social-apply-intro">
+        Заполните поля ниже. Мы обработаем заявку вручную и свяжемся с вами для согласования безопасности.
+      </p>
+
+      {% if applications_enabled %}
+        {% include 'partials/social_application_form.html' %}
+      {% else %}
+        <p class="social-apply-disabled">Приём заявок временно недоступен. Напишите нам в контактах на главной странице.</p>
+      {% endif %}
+    </section>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/social-application-form.js') }}?v=3" defer></script>
+{% endblock %}

@@ -69,6 +69,7 @@ class TestSocialApplyApi:
     def test_apply_valid_payload_with_consent_version(self, client, social_flags_on, mocker):
         from app.services.social_store import SocialWriteResult
 
+        mocker.patch("app.routes.social.notify_new_application", return_value=True)
         mocker.patch(
             "app.routes.social.append_social_application",
             return_value=SocialWriteResult(
@@ -99,6 +100,7 @@ class TestSocialApplyApi:
         from app.services.social_store import SocialWriteResult
 
         captured = {}
+        mocker.patch("app.routes.social.notify_new_application", return_value=True)
 
         def fake_append(data, **kwargs):
             captured["data"] = dict(data)

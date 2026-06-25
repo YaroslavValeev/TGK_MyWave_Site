@@ -3,28 +3,8 @@
 
   <div class="mw-grid-2">
     <div class="mw-field">
-      <label for="social-parent-name">ФИО родителя / представителя *</label>
+      <label for="social-parent-name">Имя контактного лица *</label>
       <input type="text" id="social-parent-name" name="parent_name" required maxlength="120" autocomplete="name">
-    </div>
-    <div class="mw-field">
-      <label for="social-parent-phone">Телефон *</label>
-      <input type="tel" id="social-parent-phone" name="parent_phone" required autocomplete="tel" placeholder="+7 (916) 000-00-00">
-    </div>
-    <div class="mw-field">
-      <label for="social-parent-email">Email</label>
-      <input type="email" id="social-parent-email" name="parent_email" autocomplete="email" maxlength="120">
-    </div>
-    <div class="mw-field">
-      <label for="social-child-name">Имя ребёнка *</label>
-      <input type="text" id="social-child-name" name="child_first_name" required maxlength="80" autocomplete="off">
-    </div>
-    <div class="mw-field">
-      <label for="social-child-age">Возраст ребёнка *</label>
-      <input type="number" id="social-child-age" name="child_age" required min="6" max="17" inputmode="numeric">
-    </div>
-    <div class="mw-field">
-      <label for="social-city">Город</label>
-      <input type="text" id="social-city" name="city" maxlength="100" autocomplete="address-level2">
     </div>
     <div class="mw-field">
       <label for="social-preferred-contact">Удобный способ связи *</label>
@@ -35,20 +15,41 @@
         <option value="email">Email</option>
       </select>
     </div>
+    <div class="mw-field js-social-phone-field">
+      <label for="social-parent-phone">Телефон</label>
+      <input type="tel" id="social-parent-phone" name="parent_phone" autocomplete="tel" placeholder="+7 (916) 000-00-00">
+    </div>
     <div class="mw-field js-social-telegram-field" hidden>
       <label for="social-telegram">Telegram @username</label>
       <input type="text" id="social-telegram" name="telegram_username" maxlength="80" placeholder="@username">
     </div>
+    <div class="mw-field">
+      <label for="social-parent-email">Email</label>
+      <input type="email" id="social-parent-email" name="parent_email" autocomplete="email" maxlength="120">
+    </div>
+    <div class="mw-field">
+      <label for="social-child-name">Имя ребёнка / участника *</label>
+      <input type="text" id="social-child-name" name="child_first_name" required maxlength="80" autocomplete="off">
+    </div>
+    <div class="mw-field">
+      <label for="social-child-age">Возраст *</label>
+      <input type="number" id="social-child-age" name="child_age" required min="6" max="17" inputmode="numeric">
+    </div>
+    <div class="mw-field">
+      <label for="social-city">Город / локация</label>
+      <input type="text" id="social-city" name="city" maxlength="100" autocomplete="address-level2">
+    </div>
   </div>
 
   <div class="mw-field">
-    <label for="social-health-notes">Заметки по безопасности (аллергии, спасжилет и т.п.)</label>
-    <textarea id="social-health-notes" name="health_notes" rows="3" maxlength="500" placeholder="Кратко, только то, что важно для безопасности на тренировке"></textarea>
+    <label for="social-health-notes">Важно для безопасности (необязательно)</label>
+    <textarea id="social-health-notes" name="health_notes" rows="2" maxlength="500" placeholder="Кратко: аллергии, спасжилет, ограничения нагрузки — только то, что нужно тренеру"></textarea>
+    <p class="social-field-hint">Не указывайте диагнозы и документы — мы обсудим детали при звонке.</p>
   </div>
 
   <div class="mw-field">
-    <label for="social-motivation">Почему хотите участвовать</label>
-    <textarea id="social-motivation" name="motivation_text" rows="3" maxlength="500"></textarea>
+    <label for="social-motivation">Комментарий</label>
+    <textarea id="social-motivation" name="motivation_text" rows="3" maxlength="500" placeholder="Кратко: почему хотите участвовать"></textarea>
   </div>
 
   <fieldset class="social-consents">

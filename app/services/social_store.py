@@ -104,7 +104,6 @@ def validate_application_payload(data: Mapping[str, Any]) -> List[str]:
 
     required_strings = {
         "parent_name": data.get("parent_name"),
-        "parent_phone": data.get("parent_phone"),
         "child_first_name": data.get("child_first_name"),
         "preferred_contact": data.get("preferred_contact"),
         "consent_version": data.get("consent_version"),
@@ -131,8 +130,23 @@ def validate_application_payload(data: Mapping[str, Any]) -> List[str]:
         errors.append("invalid:preferred_contact")
 
     phone_digits = _normalize_phone(str(data.get("parent_phone") or ""))
+    telegram = str(data.get("telegram_username") or "").strip()
     if phone_digits and len(phone_digits) < 10:
         errors.append("invalid:parent_phone")
+
+    if preferred == "telegram" and len(telegram) < 2:
+        errors.append("required:telegram_username")
+    elif preferred == "email":
+        email_probe = str(data.get("parent_email") or "").strip()
+        if not email_probe or "@" not in email_probe:
+            errors.append("required:parent_email")
+    elif len(phone_digits) < 10:
+        errors.append("invalid:parent_phone")
+
+    if len(phone_digits) < 10 and len(telegram) < 2:
+        email_probe = str(data.get("parent_email") or "").strip()
+        if "@" not in email_probe:
+            errors.append("invalid:contact")
 
     health = str(data.get("health_notes") or "")
     if len(health) > HEALTH_NOTES_MAX_LEN:
