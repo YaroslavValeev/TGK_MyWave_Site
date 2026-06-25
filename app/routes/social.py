@@ -20,6 +20,7 @@ from app.services.social_store import (
     append_social_application,
     validate_application_payload,
 )
+from app.services.project_applications import submit_project_application
 
 logger = get_logger(__name__)
 
@@ -111,6 +112,29 @@ def social_apply():
         "social_apply_ok",
         extra={"application_id": result.application_id, "flags": get_social_feature_flags()},
     )
+    try:
+        motivation = str(data.get("motivation_text") or "").strip()[:180]
+        child_age = data.get("child_age")
+        submit_project_application(
+            "social",
+            {
+                "name": str(data.get("parent_name") or "").strip(),
+                "phone": str(data.get("parent_phone") or "").strip(),
+                "email": str(data.get("parent_email") or "").strip(),
+                "telegram": str(data.get("telegram_username") or "").strip(),
+                "comment": f"child_age={child_age}; motivation={motivation}" if motivation else f"child_age={child_age}",
+                "page_url": request.headers.get("Referer", ""),
+                "source": "web_social_form",
+                "consent_version": data.get("consent_version", CONSENT_VERSION),
+                "consent_personal_data": data.get("consent_personal_data"),
+                "consent_media": data.get("consent_media"),
+            },
+        )
+    except Exception as notify_exc:
+        logger.warning(
+            "social_project_application_failed error=%s",
+            str(notify_exc)[:200],
+        )
     return jsonify(
         ok=True,
         application_id=result.application_id,

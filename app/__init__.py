@@ -609,7 +609,19 @@ def create_app(config_name="development"):
         except Exception:
             pass
         urls = {
-            'static': ['/', '/projects', '/services', '/book', '/calculator', '/blog', '/privacy', '/offer'],
+            'static': [
+                '/',
+                '/projects',
+                '/services',
+                '/book',
+                '/calculator',
+                '/blog',
+                '/privacy',
+                '/offer',
+                '/legal/personal-data-consent',
+                '/legal/media-consent',
+                '/legal/wake-challenge-consent',
+            ],
             'project_slugs': project_slugs
         }
         xml = render_template('sitemap.xml', lastmod=lastmod, urls=urls)

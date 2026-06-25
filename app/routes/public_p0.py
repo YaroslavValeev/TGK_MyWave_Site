@@ -1,6 +1,8 @@
-"""P0 public routes: robots.txt, privacy, offer."""
+"""P0 public routes: robots.txt, privacy, offer, PR54 legal consents."""
 
 from flask import Blueprint, make_response, render_template
+
+from app.services.project_applications import CONSENT_VERSION
 
 public_p0_bp = Blueprint("public_p0", __name__)
 
@@ -26,3 +28,18 @@ def privacy_page():
 @public_p0_bp.route("/offer", methods=["GET"], endpoint="offer_page")
 def offer_page():
     return render_template("legal/offer.html")
+
+
+@public_p0_bp.route("/legal/personal-data-consent", methods=["GET"], endpoint="legal_personal_data_consent")
+def legal_personal_data_consent():
+    return render_template("legal/personal-data-consent.html", consent_version=CONSENT_VERSION)
+
+
+@public_p0_bp.route("/legal/media-consent", methods=["GET"], endpoint="legal_media_consent")
+def legal_media_consent():
+    return render_template("legal/media-consent.html", consent_version=CONSENT_VERSION)
+
+
+@public_p0_bp.route("/legal/wake-challenge-consent", methods=["GET"], endpoint="legal_wake_challenge_consent")
+def legal_wake_challenge_consent():
+    return render_template("legal/wake-challenge-consent.html", consent_version=CONSENT_VERSION)

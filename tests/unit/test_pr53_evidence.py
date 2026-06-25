@@ -42,7 +42,7 @@ def test_product_telegram_message_full_contract():
         "Телефон: +7 916 123 45 67",
         "Telegram: @maria",
         "Email: maria@example.com",
-        "Проект/услуга: Баланс-борд",
+        "Товар: Баланс-борд",
         "Комментарий: Нужен самовывоз",
         "Источник: product",
         "Страница: https://mywavewake.ru/shop/product/balance-board",

@@ -20,3 +20,13 @@ def test_offer_page(client):
     resp = client.get("/offer")
     assert resp.status_code == 200
     assert "оферта".encode("utf-8") in resp.data.lower()
+
+
+def test_legal_consent_pages(client):
+    for path in (
+        "/legal/personal-data-consent",
+        "/legal/media-consent",
+        "/legal/wake-challenge-consent",
+    ):
+        resp = client.get(path)
+        assert resp.status_code == 200

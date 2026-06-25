@@ -26,6 +26,7 @@ def test_format_product_application_message():
     assert "Иван" in text
     assert "Баланс-борд" in text
     assert "Количество: 2" in text
+    assert "balance-board" in text
 
 
 @patch("app.services.application_notifications.send_telegram_notification", return_value=True)

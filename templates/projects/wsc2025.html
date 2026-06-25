@@ -431,8 +431,14 @@
           <div class="wsc2025-form-group"><label for="coach-club">Клуб/школа</label><input type="text" id="coach-club" name="club" placeholder="Необязательно" maxlength="100"></div>
           <div class="wsc2025-form-group"><label for="coach-experience_years">Опыт (лет) *</label><input type="number" id="coach-experience_years" name="experience_years" required placeholder="5" min="0" max="40"><span class="wsc2025-form-error" id="coach-experience_years-error"></span></div>
           <div class="wsc2025-form-group"><label for="coach-portfolio_url">Ссылка на видео/портфолио</label><input type="url" id="coach-portfolio_url" name="portfolio_url" placeholder="https://..." maxlength="500"></div>
-          <div class="wsc2025-form-group"><label class="wsc2025-checkbox-label"><input type="checkbox" name="consent_participation" required><span>Согласен с условиями *</span></label></div>
-          <div class="wsc2025-form-group"><label class="wsc2025-checkbox-label"><input type="checkbox" name="consent_media" required><span>Разрешаю фото/видео *</span></label></div>
+          <div class="wsc2025-consent-block">
+            <p class="wsc2025-consent-links">
+              <a href="{{ url_for('public_p0.legal_personal_data_consent') }}" class="wsc2025-consent-word" target="_blank" rel="noopener noreferrer">согласия</a>
+            </p>
+            <div class="wsc2025-form-group"><label class="wsc2025-checkbox-label"><input type="checkbox" name="consent_personal_data" required><span>Обработка персональных данных *</span></label></div>
+            <div class="wsc2025-form-group"><label class="wsc2025-checkbox-label"><input type="checkbox" name="consent_media" required><span>Фото и видео *</span></label></div>
+            <div class="wsc2025-form-group"><label class="wsc2025-checkbox-label"><input type="checkbox" name="consent_participation" required><span>Условия Wake Challenge *</span></label></div>
+          </div>
           <button type="submit" class="btn-primary wsc2025-form-submit"><span class="wsc2025-form-submit-text">Подать заявку</span><span class="wsc2025-form-submit-loader" style="display:none">Отправка...</span></button>
           <div class="wsc2025-form-message" id="coach-form-message"></div>
         </form>
