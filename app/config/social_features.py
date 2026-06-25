@@ -32,6 +32,11 @@ def is_social_admin_notifications_enabled() -> bool:
     return is_social_module_enabled() and _env_flag("SOCIAL_ADMIN_NOTIFICATIONS_ENABLED")
 
 
+def is_social_booking_enabled() -> bool:
+    """PR56 — social calendar booking; OFF in PR55."""
+    return is_social_module_enabled() and _env_flag("SOCIAL_BOOKING_ENABLED")
+
+
 def get_social_feature_flags() -> Dict[str, bool]:
     """Snapshot for logging/tests (no secrets)."""
     return {
@@ -40,4 +45,5 @@ def get_social_feature_flags() -> Dict[str, bool]:
         "SOCIAL_APPLICATIONS_ENABLED": is_social_applications_enabled(),
         "SOCIAL_PUBLIC_STATS_ENABLED": is_social_public_stats_enabled(),
         "SOCIAL_ADMIN_NOTIFICATIONS_ENABLED": is_social_admin_notifications_enabled(),
+        "SOCIAL_BOOKING_ENABLED": is_social_booking_enabled(),
     }

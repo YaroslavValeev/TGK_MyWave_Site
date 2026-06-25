@@ -1,26 +1,29 @@
-"""MyWave Social Mission — public routes and apply API (Social-2/4 staging UI)."""
+"""MyWave Social Mission — public routes and apply API (PR55 Social 2.0 MVP)."""
 
 from __future__ import annotations
 
 import hashlib
+from typing import Any, Mapping
 
 from flask import Blueprint, abort, current_app, jsonify, render_template, request
 
 from app.config.social_features import (
     get_social_feature_flags,
+    is_social_admin_notifications_enabled,
     is_social_applications_enabled,
+    is_social_booking_enabled,
     is_social_module_enabled,
     is_social_public_stats_enabled,
     is_social_widget_enabled,
 )
 from app.extensions import csrf, limiter
 from app.modules.logger import get_logger
+from app.services.application_notifications import notify_new_application
 from app.services.social_stats import get_public_social_stats
 from app.services.social_store import (
     append_social_application,
     validate_application_payload,
 )
-from app.services.project_applications import submit_project_application
 
 logger = get_logger(__name__)
 
@@ -42,12 +45,36 @@ def _require_module() -> None:
         abort(404)
 
 
+def build_social_notify_payload(
+    application_id: str,
+    data: Mapping[str, Any],
+    *,
+    page_url: str = "",
+) -> dict[str, Any]:
+    """Telegram-safe payload — no health_notes / motivation_text content."""
+    health = str(data.get("health_notes") or "").strip()
+    return {
+        "application_id": application_id,
+        "parent_name": str(data.get("parent_name") or "").strip(),
+        "parent_phone": str(data.get("parent_phone") or "").strip(),
+        "telegram_username": str(data.get("telegram_username") or "").strip(),
+        "child_age": data.get("child_age"),
+        "city": str(data.get("city") or "").strip(),
+        "has_safety_info": bool(health),
+        "page_url": page_url,
+        "source": str(data.get("source") or "web_social_form").strip(),
+        "status": "new",
+    }
+
+
 @social_bp.app_context_processor
 def _inject_social_template_flags():
     return {
         "social_module_enabled": is_social_module_enabled(),
         "social_widget_enabled": is_social_widget_enabled(),
         "social_applications_enabled": is_social_applications_enabled(),
+        "social_public_stats_enabled": is_social_public_stats_enabled(),
+        "social_booking_enabled": is_social_booking_enabled(),
         "social_public_stats": get_public_social_stats() if is_social_public_stats_enabled() else None,
         "consent_version": CONSENT_VERSION,
     }
@@ -60,6 +87,7 @@ def social_page():
         "social/index.html",
         consent_version=CONSENT_VERSION,
         applications_enabled=is_social_applications_enabled(),
+        public_stats_enabled=is_social_public_stats_enabled(),
         public_stats=get_public_social_stats() if is_social_public_stats_enabled() else None,
     )
 
@@ -87,6 +115,9 @@ def social_apply():
     if not is_social_applications_enabled():
         return jsonify(error="social_applications_disabled"), 503
 
+    if is_social_booking_enabled():
+        logger.warning("social_booking_flag_on_but_unsupported_in_pr55")
+
     payload = request.get_json(silent=True) if request.is_json else None
     if payload is None:
         payload = request.form.to_dict(flat=True)
@@ -112,32 +143,26 @@ def social_apply():
         "social_apply_ok",
         extra={"application_id": result.application_id, "flags": get_social_feature_flags()},
     )
-    try:
-        motivation = str(data.get("motivation_text") or "").strip()[:180]
-        child_age = data.get("child_age")
-        submit_project_application(
-            "social",
-            {
-                "name": str(data.get("parent_name") or "").strip(),
-                "phone": str(data.get("parent_phone") or "").strip(),
-                "email": str(data.get("parent_email") or "").strip(),
-                "telegram": str(data.get("telegram_username") or "").strip(),
-                "comment": f"child_age={child_age}; motivation={motivation}" if motivation else f"child_age={child_age}",
-                "page_url": request.headers.get("Referer", ""),
-                "source": "web_social_form",
-                "consent_version": data.get("consent_version", CONSENT_VERSION),
-                "consent_personal_data": data.get("consent_personal_data"),
-                "consent_media": data.get("consent_media"),
-            },
+
+    if is_social_admin_notifications_enabled():
+        page_url = request.headers.get("Referer", "") or "/social"
+        notify_payload = build_social_notify_payload(
+            result.application_id,
+            data,
+            page_url=page_url,
         )
-    except Exception as notify_exc:
-        logger.warning(
-            "social_project_application_failed error=%s",
-            str(notify_exc)[:200],
-        )
+        try:
+            notify_new_application("social", notify_payload)
+        except Exception as notify_exc:
+            logger.warning(
+                "social_notify_failed application_id=%s error=%s",
+                result.application_id,
+                str(notify_exc)[:200],
+            )
+
     return jsonify(
         ok=True,
         application_id=result.application_id,
         status=result.status,
-        message="Заявка принята. Мы свяжемся с вами после рассмотрения.",
+        message="Заявка принята. Мы свяжемся с вами после ручной проверки и согласования безопасности.",
     ), 201

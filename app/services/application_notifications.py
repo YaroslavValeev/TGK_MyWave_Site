@@ -78,8 +78,49 @@ def _normalize_lead_status(raw: Any) -> str:
     return text
 
 
+def format_social_telegram_message(payload: Mapping[str, Any]) -> str:
+    """Sanitized Telegram for Social applications — no health_notes / medical details."""
+    app_id = _sanitize_notify_value(payload.get("application_id"))
+    name = _sanitize_notify_value(_pick(payload, "parent_name", "name")) or "—"
+    phone = _sanitize_notify_value(_pick(payload, "parent_phone", "phone"))
+    telegram = _sanitize_notify_value(_pick(payload, "telegram_username", "telegram"))
+    age = _sanitize_notify_value(payload.get("child_age"))
+    city = _sanitize_notify_value(payload.get("city"))
+    page_url = _sanitize_notify_value(_pick(payload, "page_url")) or "—"
+
+    has_safety = payload.get("has_safety_info")
+    if isinstance(has_safety, bool):
+        safety_label = "да" if has_safety else "нет"
+    else:
+        safety_label = _sanitize_notify_value(has_safety) or "нет"
+
+    lines = ["Новая заявка: MyWave Social", ""]
+    if app_id:
+        lines.append(f"ID: {app_id}")
+    lines.append(f"Имя: {name}")
+    if phone:
+        lines.append(f"Телефон: {phone}")
+    if telegram:
+        lines.append(f"Telegram: {telegram}")
+    if age:
+        lines.append(f"Возраст: {age}")
+    if city:
+        lines.append(f"Город: {city}")
+    lines.extend(
+        [
+            f"Важная информация для безопасности: {safety_label}",
+            f"Страница: {page_url}",
+            f"Статус: {_normalize_lead_status(payload.get('status'))}",
+        ]
+    )
+    return "\n".join(lines)
+
+
 def format_application_telegram_message(application_type: str, payload: Mapping[str, Any]) -> str:
     """Build admin Telegram text from normalized payload."""
+    if application_type == "social":
+        return format_social_telegram_message(payload)
+
     title = APPLICATION_TYPE_LABELS.get(application_type, application_type)
     name = _sanitize_notify_value(_pick(payload, "name", "parent_name", "full_name")) or "—"
     phone = _sanitize_notify_value(_pick(payload, "phone", "parent_phone")) or "—"

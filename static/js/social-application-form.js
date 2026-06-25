@@ -59,12 +59,14 @@
     return body;
   }
 
-  function toggleTelegramField(form) {
+  function toggleContactFields(form) {
     var select = form.querySelector('[name="preferred_contact"]');
-    var field = form.querySelector(".js-social-telegram-field");
-    if (!select || !field) return;
-    var show = select.value === "telegram";
-    field.hidden = !show;
+    var phoneField = form.querySelector(".js-social-phone-field");
+    var tgField = form.querySelector(".js-social-telegram-field");
+    if (!select) return;
+    var mode = select.value;
+    if (phoneField) phoneField.hidden = mode === "telegram";
+    if (tgField) tgField.hidden = mode !== "telegram";
   }
 
   function initForm(form) {
@@ -75,9 +77,9 @@
     var contactSelect = form.querySelector('[name="preferred_contact"]');
     if (contactSelect) {
       contactSelect.addEventListener("change", function () {
-        toggleTelegramField(form);
+        toggleContactFields(form);
       });
-      toggleTelegramField(form);
+      toggleContactFields(form);
     }
 
     form.addEventListener("submit", function (e) {
@@ -98,9 +100,13 @@
         .then(parseResponse)
         .then(function (result) {
           if (result.ok && result.data && result.data.ok) {
-            showMessage(messageEl, "Заявка отправлена", "success");
+            showMessage(
+              messageEl,
+              (result.data.message || "Заявка отправлена"),
+              "success"
+            );
             form.reset();
-            toggleTelegramField(form);
+            toggleContactFields(form);
             return;
           }
           showMessage(messageEl, resolveErrorMessage(result), "error");

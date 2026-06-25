@@ -18,6 +18,7 @@ class TestSocialFlagsDefaultOff:
             "SOCIAL_APPLICATIONS_ENABLED",
             "SOCIAL_PUBLIC_STATS_ENABLED",
             "SOCIAL_ADMIN_NOTIFICATIONS_ENABLED",
+            "SOCIAL_BOOKING_ENABLED",
         ):
             monkeypatch.delenv(key, raising=False)
 
@@ -27,6 +28,7 @@ class TestSocialFlagsDefaultOff:
             "SOCIAL_APPLICATIONS_ENABLED": False,
             "SOCIAL_PUBLIC_STATS_ENABLED": False,
             "SOCIAL_ADMIN_NOTIFICATIONS_ENABLED": False,
+            "SOCIAL_BOOKING_ENABLED": False,
         }
 
     def test_child_flags_require_module_master(self, monkeypatch):
@@ -41,6 +43,9 @@ class TestSocialFlagsDefaultOff:
         assert is_social_applications_enabled() is False
         assert is_social_public_stats_enabled() is False
         assert is_social_admin_notifications_enabled() is False
+        from app.config.social_features import is_social_booking_enabled
+
+        assert is_social_booking_enabled() is False
 
     def test_truthy_env_values(self, monkeypatch):
         monkeypatch.setenv("SOCIAL_MODULE_ENABLED", "1")

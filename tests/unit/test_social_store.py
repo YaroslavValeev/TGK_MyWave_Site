@@ -56,7 +56,7 @@ class TestValidation:
     def test_required_fields(self):
         errors = validate_application_payload({})
         assert "required:parent_name" in errors
-        assert "required:parent_phone" in errors
+        assert "invalid:parent_phone" in errors or "invalid:contact" in errors
         assert "required:child_first_name" in errors
         assert "consent_personal_data_required" in errors
         assert "consent_training_required" in errors

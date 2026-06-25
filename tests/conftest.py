@@ -34,6 +34,7 @@ for _social_flag in (
     'SOCIAL_APPLICATIONS_ENABLED',
     'SOCIAL_PUBLIC_STATS_ENABLED',
     'SOCIAL_ADMIN_NOTIFICATIONS_ENABLED',
+    'SOCIAL_BOOKING_ENABLED',
 ):
     os.environ[_social_flag] = '0'
 
@@ -90,3 +91,28 @@ def mock_external_apis(mocker):
     # patch common external integrations
     mocker.patch('app.services.google_sheets_service.append_record', return_value=True)
     mocker.patch('app.services.openai_service.ask', return_value='Тестовый ответ')
+
+
+@pytest.fixture(autouse=True)
+def _reset_flask_limiter_storage():
+    """Avoid 429 across tests sharing in-memory Flask-Limiter bucket."""
+    try:
+        from app.extensions import limiter as flask_limiter
+    except ImportError:
+        yield
+        return
+    if flask_limiter is None:
+        yield
+        return
+    storage = getattr(flask_limiter, "_storage", None)
+    if storage is not None and hasattr(storage, "storage"):
+        try:
+            storage.storage.clear()
+        except Exception:
+            pass
+    yield
+    if storage is not None and hasattr(storage, "storage"):
+        try:
+            storage.storage.clear()
+        except Exception:
+            pass
