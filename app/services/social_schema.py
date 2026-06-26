@@ -40,14 +40,19 @@ SOCIAL_APPLICATIONS_HEADERS: Tuple[str, ...] = (
 SOCIAL_SESSIONS_HEADERS: Tuple[str, ...] = (
     "session_id",
     "application_id",
-    "scheduled_date",
-    "scheduled_time",
-    "service",
-    "booking_id",
-    "calendar_event_id",
-    "status",
     "created_at",
-    "created_by",
+    "updated_at",
+    "status",
+    "assigned_by",
+    "session_date",
+    "session_time",
+    "location",
+    "service_type",
+    "coach",
+    "notes",
+    "calendar_event_id",
+    "booking_id",
+    "source",
 )
 
 SOCIAL_IMPACT_HEADERS: Tuple[str, ...] = (
@@ -76,6 +81,14 @@ SHEET_HEADER_CONTRACTS = {
 APPLICATION_STATUSES = frozenset(
     {"new", "review", "approved", "rejected", "scheduled", "closed"}
 )
+
+ASSIGNABLE_APPLICATION_STATUSES = frozenset({"new", "review", "approved"})
+
+SESSION_STATUSES = frozenset({"scheduled", "completed", "cancelled"})
+
+SESSION_STATUS_TRANSITIONS = {
+    "scheduled": frozenset({"completed", "cancelled"}),
+}
 
 PREFERRED_CONTACT_VALUES = frozenset({"phone", "telegram", "email"})
 
