@@ -116,6 +116,52 @@ def format_social_telegram_message(payload: Mapping[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def format_social_session_scheduled_message(payload: Mapping[str, Any]) -> str:
+    """Sanitized Telegram for manual session assign — no health / PII beyond IDs."""
+    app_id = _sanitize_notify_value(payload.get("application_id"))
+    sess_id = _sanitize_notify_value(payload.get("session_id"))
+    session_date = _sanitize_notify_value(payload.get("session_date"))
+    session_time = _sanitize_notify_value(payload.get("session_time"))
+    location = _sanitize_notify_value(payload.get("location")) or "—"
+    status = _normalize_lead_status(payload.get("status")) or "scheduled"
+
+    lines = ["Social session scheduled", ""]
+    if app_id:
+        lines.append(f"application_id: {app_id}")
+    if sess_id:
+        lines.append(f"session_id: {sess_id}")
+    if session_date:
+        lines.append(f"Дата: {session_date}")
+    if session_time:
+        lines.append(f"Время: {session_time}")
+    lines.append(f"Локация: {location}")
+    lines.append(f"status={status}")
+    return "\n".join(lines)
+
+
+def notify_social_session_scheduled(payload: Mapping[str, Any]) -> bool:
+    """Best-effort Telegram after manual social session assign."""
+    message = format_social_session_scheduled_message(payload)
+    app_id = _sanitize_notify_value(payload.get("application_id")) or "Social session"
+    try:
+        ok = send_telegram_notification(app_id, "", message)
+        logger.info(
+            "social_session_notify_result",
+            extra={
+                "application_id": app_id,
+                "session_id": _sanitize_notify_value(payload.get("session_id")),
+                "telegram_ok": bool(ok),
+            },
+        )
+        return bool(ok)
+    except Exception as exc:
+        logger.warning(
+            "social_session_notify_failed",
+            extra={"error": str(exc)[:200]},
+        )
+        return False
+
+
 def format_application_telegram_message(application_type: str, payload: Mapping[str, Any]) -> str:
     """Build admin Telegram text from normalized payload."""
     if application_type == "social":

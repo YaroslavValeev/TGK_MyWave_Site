@@ -9,6 +9,7 @@ from app.services.social_schema import (
     SOCIAL_APPLICATIONS_SHEET,
     SOCIAL_AUDIT_LOG_SHEET,
     SOCIAL_IMPACT_SHEET,
+    SOCIAL_SESSIONS_HEADERS,
     SOCIAL_SESSIONS_SHEET,
     validate_sheet_headers,
 )
@@ -177,18 +178,7 @@ class TestSheetHeadersContract:
             return list(
                 {
                     SOCIAL_APPLICATIONS_SHEET: SOCIAL_APPLICATIONS_HEADERS,
-                    SOCIAL_SESSIONS_SHEET: (
-                        "session_id",
-                        "application_id",
-                        "scheduled_date",
-                        "scheduled_time",
-                        "service",
-                        "booking_id",
-                        "calendar_event_id",
-                        "status",
-                        "created_at",
-                        "created_by",
-                    ),
+                    SOCIAL_SESSIONS_SHEET: SOCIAL_SESSIONS_HEADERS,
                     SOCIAL_IMPACT_SHEET: (
                         "metric_key",
                         "metric_value",

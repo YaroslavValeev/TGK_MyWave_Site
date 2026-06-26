@@ -18,7 +18,15 @@ from app.config.social_features import (
 )
 from app.extensions import csrf, limiter
 from app.modules.logger import get_logger
-from app.services.application_notifications import notify_new_application
+from app.services.application_notifications import (
+    notify_new_application,
+    notify_social_session_scheduled,
+)
+from app.services.social_sessions import (
+    manual_assign_social_session,
+    transition_social_session_status,
+    validate_assign_payload,
+)
 from app.services.social_stats import get_public_social_stats
 from app.services.social_store import (
     append_social_application,
@@ -108,6 +116,111 @@ def _apply_rate_limit():
     return limiter.limit("5 per minute", key_func=get_remote_address)
 
 
+def _require_admin_token() -> bool:
+    admin_token = current_app.config.get("ADMIN_TOKEN")
+    if not admin_token:
+        return True
+    provided = request.headers.get("X-Admin-Token", "")
+    return provided == admin_token
+
+
+@social_bp.route("/api/social/sessions/assign", methods=["POST"])
+@csrf.exempt
+def social_session_assign():
+    """Manual assign only — admin token + SOCIAL_BOOKING_ENABLED. No calendar auto-write."""
+    if not is_social_module_enabled() or not is_social_booking_enabled():
+        return jsonify(error="social_booking_disabled"), 503
+    if not _require_admin_token():
+        return jsonify(error="unauthorized"), 401
+
+    payload = request.get_json(silent=True) if request.is_json else None
+    if payload is None:
+        payload = request.form.to_dict(flat=True)
+
+    errors = validate_assign_payload(payload)
+    if errors:
+        return jsonify(ok=False, errors=errors), 400
+
+    data = dict(payload)
+    data.setdefault("assigned_by", request.headers.get("X-Actor", "admin"))
+
+    try:
+        result = manual_assign_social_session(data)
+    except ValueError as exc:
+        code = str(exc)
+        status = 404 if "not_found" in code else 409 if "already" in code or "not_assignable" in code else 400
+        return jsonify(ok=False, error=code), status
+    except Exception as exc:
+        logger.warning("social_session_assign_failed err=%s", exc, exc_info=True)
+        return jsonify(ok=False, error="write_failed"), 500
+
+    if is_social_admin_notifications_enabled():
+        try:
+            notify_social_session_scheduled(
+                {
+                    "application_id": result.application_id,
+                    "session_id": result.session_id,
+                    "session_date": result.session_date,
+                    "session_time": result.session_time,
+                    "location": result.location,
+                    "status": result.status,
+                }
+            )
+        except Exception as notify_exc:
+            logger.warning(
+                "social_session_notify_failed session_id=%s error=%s",
+                result.session_id,
+                str(notify_exc)[:200],
+            )
+
+    return jsonify(
+        ok=True,
+        session_id=result.session_id,
+        application_id=result.application_id,
+        status=result.status,
+        session_date=result.session_date,
+        session_time=result.session_time,
+        location=result.location,
+    ), 201
+
+
+@social_bp.route("/api/social/sessions/<session_id>/status", methods=["POST", "PATCH"])
+@csrf.exempt
+def social_session_status(session_id: str):
+    if not is_social_module_enabled() or not is_social_booking_enabled():
+        return jsonify(error="social_booking_disabled"), 503
+    if not _require_admin_token():
+        return jsonify(error="unauthorized"), 401
+
+    payload = request.get_json(silent=True) if request.is_json else None
+    if payload is None:
+        payload = request.form.to_dict(flat=True)
+    new_status = str(payload.get("status") or "").strip().lower()
+    actor = str(payload.get("actor") or request.headers.get("X-Actor") or "admin").strip()
+
+    try:
+        result = transition_social_session_status(
+            session_id,
+            new_status,
+            actor=actor,
+        )
+    except ValueError as exc:
+        code = str(exc)
+        status = 404 if "not_found" in code else 409 if "forbidden" in code or "unchanged" in code else 400
+        return jsonify(ok=False, error=code), status
+    except Exception as exc:
+        logger.warning("social_session_status_failed err=%s", exc, exc_info=True)
+        return jsonify(ok=False, error="write_failed"), 500
+
+    return jsonify(
+        ok=True,
+        session_id=result.session_id,
+        application_id=result.application_id,
+        old_status=result.old_status,
+        status=result.new_status,
+    )
+
+
 @social_bp.route("/api/social/apply", methods=["POST"])
 @csrf.exempt
 @_apply_rate_limit()
@@ -116,7 +229,7 @@ def social_apply():
         return jsonify(error="social_applications_disabled"), 503
 
     if is_social_booking_enabled():
-        logger.warning("social_booking_flag_on_but_unsupported_in_pr55")
+        logger.debug("social_apply_public_no_autobook booking_flag_on_manual_assign_only")
 
     payload = request.get_json(silent=True) if request.is_json else None
     if payload is None:
