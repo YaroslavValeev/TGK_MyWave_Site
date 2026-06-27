@@ -63,7 +63,7 @@ class TestPR56RouteGating:
     def test_assign_401_when_token_required(self, client, monkeypatch):
         monkeypatch.setenv("SOCIAL_MODULE_ENABLED", "1")
         monkeypatch.setenv("SOCIAL_BOOKING_ENABLED", "1")
-        monkeypatch.setitem(client.application.config, "ADMIN_TOKEN", "secret-token")
+        monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
         resp = client.post(
             "/api/social/sessions/assign",
             json={
@@ -74,6 +74,56 @@ class TestPR56RouteGating:
             },
         )
         assert resp.status_code == 401
+
+    def test_assign_401_from_env_admin_token_without_header(self, client, monkeypatch):
+        monkeypatch.setenv("SOCIAL_MODULE_ENABLED", "1")
+        monkeypatch.setenv("SOCIAL_BOOKING_ENABLED", "1")
+        monkeypatch.setenv("ADMIN_TOKEN", "env-secret-token")
+        monkeypatch.delitem(client.application.config, "ADMIN_TOKEN", raising=False)
+        resp = client.post(
+            "/api/social/sessions/assign",
+            json={
+                "application_id": "soc_app_bbbbbbbbbbbbbbbb",
+                "session_date": "2026-07-01",
+                "session_time": "10:00",
+                "assigned_by": "admin",
+            },
+        )
+        assert resp.status_code == 401
+        assert resp.get_json().get("error") == "unauthorized"
+
+    def test_assign_401_bad_token_before_validation(self, client, monkeypatch):
+        monkeypatch.setenv("SOCIAL_MODULE_ENABLED", "1")
+        monkeypatch.setenv("SOCIAL_BOOKING_ENABLED", "1")
+        monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
+        resp = client.post(
+            "/api/social/sessions/assign",
+            headers={"X-Admin-Token": "wrong"},
+            json={
+                "application_id": "not-a-valid-id",
+                "session_date": "bad",
+                "session_time": "bad",
+                "assigned_by": "",
+            },
+        )
+        assert resp.status_code == 401
+
+    def test_assign_503_when_booking_on_but_admin_token_missing(self, client, monkeypatch):
+        monkeypatch.setenv("SOCIAL_MODULE_ENABLED", "1")
+        monkeypatch.setenv("SOCIAL_BOOKING_ENABLED", "1")
+        monkeypatch.delenv("ADMIN_TOKEN", raising=False)
+        monkeypatch.delitem(client.application.config, "ADMIN_TOKEN", raising=False)
+        resp = client.post(
+            "/api/social/sessions/assign",
+            json={
+                "application_id": "soc_app_cccccccccccccccc",
+                "session_date": "2026-07-01",
+                "session_time": "10:00",
+                "assigned_by": "admin",
+            },
+        )
+        assert resp.status_code == 503
+        assert resp.get_json().get("error") == "admin_token_not_configured"
 
     def test_status_503_when_booking_disabled(self, client, monkeypatch):
         monkeypatch.setenv("SOCIAL_MODULE_ENABLED", "1")

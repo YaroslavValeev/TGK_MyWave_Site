@@ -74,7 +74,7 @@ echo "=== assign closed while SOCIAL_BOOKING_ENABLED=false ==="
 CODE="$(curl -sS -o /dev/null -w '%{http_code}' \
   -X POST http://127.0.0.1:5000/api/social/sessions/assign \
   -H 'Content-Type: application/json' \
-  -d '{"application_id":"soc_app_test000000000000","session_date":"2026-07-01","session_time":"10:00","assigned_by":"setup_check"}')"
+  -d '{"application_id":"soc_app_aabbccddeeff0011","session_date":"2026-07-01","session_time":"10:00","assigned_by":"setup_check"}')"
 echo "assign_status_code=${CODE}"
 if [[ "$CODE" != "503" ]]; then
   echo "WARN: expected 503 while SOCIAL_BOOKING_ENABLED=false, got ${CODE}"

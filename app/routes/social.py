@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import hashlib
-from typing import Any, Mapping
+import os
+from typing import Any, Mapping, Tuple
 
 from flask import Blueprint, abort, current_app, jsonify, render_template, request
 
@@ -116,12 +117,27 @@ def _apply_rate_limit():
     return limiter.limit("5 per minute", key_func=get_remote_address)
 
 
-def _require_admin_token() -> bool:
-    admin_token = current_app.config.get("ADMIN_TOKEN")
+def _resolve_admin_token() -> str:
+    """ADMIN_TOKEN from Flask config or .env (load_dotenv in main.py)."""
+    raw = current_app.config.get("ADMIN_TOKEN") if current_app else None
+    if not raw:
+        raw = os.getenv("ADMIN_TOKEN", "")
+    return str(raw or "").strip()
+
+
+def _enforce_social_admin_auth() -> Tuple[bool, int, str]:
+    """
+    Auth gate for PR56 admin endpoints.
+    Must run before payload validation.
+    Returns (allowed, http_status, error_code).
+    """
+    admin_token = _resolve_admin_token()
     if not admin_token:
-        return True
+        return False, 503, "admin_token_not_configured"
     provided = request.headers.get("X-Admin-Token", "")
-    return provided == admin_token
+    if provided != admin_token:
+        return False, 401, "unauthorized"
+    return True, 0, ""
 
 
 @social_bp.route("/api/social/sessions/assign", methods=["POST"])
@@ -130,8 +146,9 @@ def social_session_assign():
     """Manual assign only — admin token + SOCIAL_BOOKING_ENABLED. No calendar auto-write."""
     if not is_social_module_enabled() or not is_social_booking_enabled():
         return jsonify(error="social_booking_disabled"), 503
-    if not _require_admin_token():
-        return jsonify(error="unauthorized"), 401
+    allowed, deny_status, deny_error = _enforce_social_admin_auth()
+    if not allowed:
+        return jsonify(error=deny_error), deny_status
 
     payload = request.get_json(silent=True) if request.is_json else None
     if payload is None:
@@ -189,8 +206,9 @@ def social_session_assign():
 def social_session_status(session_id: str):
     if not is_social_module_enabled() or not is_social_booking_enabled():
         return jsonify(error="social_booking_disabled"), 503
-    if not _require_admin_token():
-        return jsonify(error="unauthorized"), 401
+    allowed, deny_status, deny_error = _enforce_social_admin_auth()
+    if not allowed:
+        return jsonify(error=deny_error), deny_status
 
     payload = request.get_json(silent=True) if request.is_json else None
     if payload is None:
