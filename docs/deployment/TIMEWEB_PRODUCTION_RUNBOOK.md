@@ -132,6 +132,44 @@ Runtime / optional:
 - `GPTS_MODEL` / `FALLBACK_MODEL` содержат только имена моделей
 - `.env` и `service_account.json` не хранятся в Git
 
+## `.env` permissions contract (mywave-site)
+
+Сервис `mywave-site.service` работает от **`www-data`**. Приложение вызывает `load_dotenv()` в `main.py` **до** импорта Flask — файл `.env` **обязан** быть читаемым для service user.
+
+| Параметр | Значение |
+|----------|----------|
+| Путь | `/var/www/mywave/.env` |
+| Owner | `root` |
+| Group | `www-data` |
+| Mode | **`640`** |
+
+```bash
+# Правильно (после ЛЮБОГО изменения .env):
+sudo chown root:www-data /var/www/mywave/.env
+sudo chmod 640 /var/www/mywave/.env
+
+# ЗАПРЕЩЕНО для этого сервиса:
+chmod 600 /var/www/mywave/.env   # → PermissionError → gunicorn status=3 → HTTP 502
+```
+
+**Обязательные pre-restart проверки** (после правки `.env`):
+
+```bash
+sudo bash /var/www/mywave/automation/production/prod_env_permissions_fix.sh
+sudo bash /var/www/mywave/automation/production/prod_env_readable_check.sh
+sudo bash /var/www/mywave/automation/production/prod_import_as_run_user.sh
+```
+
+**Triage 502 / gunicorn exit status=3:**
+
+1. `journalctl -u mywave-site -n 80 --no-pager`
+2. Искать `PermissionError` для `/var/www/mywave/.env`
+3. Исправить права **до** отката кода
+4. PR56 rollout: [PR56_PRODUCTION_ROLLOUT_RUNBOOK.md](../integration/PR56_PRODUCTION_ROLLOUT_RUNBOOK.md)
+5. Incident report: [PR56_PRODUCTION_INCIDENT_20260627.md](../ops/PR56_PRODUCTION_INCIDENT_20260627.md)
+
+Секреты в логах/чатах **не печатать** — только `SET`/`MISSING` и fingerprint prefix.
+
 ## Redis (production)
 
 ```bash
