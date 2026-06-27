@@ -123,6 +123,28 @@ Code **does not auto-create** these tabs — verify with:
 sudo bash automation/production/prod_social_sessions_headers_check.sh
 ```
 
+### Option A — write-safe script (recommended)
+
+Same pattern as PR48 `Social_Applications` script:
+
+```bash
+# Dry-run (read-only probe + prints headers)
+PROD_ROOT=/var/www/mywave /var/www/mywave/venv/bin/python scripts/prod_create_social_pr56_tabs.py
+
+# Apply (creates missing tabs + row 1 only)
+SOCIAL_TAB_CREATE_APPLY=1 PROD_ROOT=/var/www/mywave \
+  /var/www/mywave/venv/bin/python scripts/prod_create_social_pr56_tabs.py
+
+# Verify
+bash automation/production/prod_social_sessions_headers_check.sh
+```
+
+**Scope:** Admin sheet only · header row 1 · no data rows · no booking/parser edits.
+
+### Option B — Owner manual (Sheets UI)
+
+Admin spreadsheet → Add sheet → paste row 1 only (no data rows). See header CSV above.
+
 ### 2. ADMIN_TOKEN setup (safe script)
 
 ```bash
