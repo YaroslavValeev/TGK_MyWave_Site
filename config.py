@@ -158,6 +158,7 @@ class Config:
     SOCIAL_SESSIONS_SHEET_NAME = os.getenv("SOCIAL_SESSIONS_SHEET_NAME", "Social_Sessions")
     SOCIAL_IMPACT_SHEET_NAME = os.getenv("SOCIAL_IMPACT_SHEET_NAME", "Social_Impact")
     SOCIAL_AUDIT_LOG_SHEET_NAME = os.getenv("SOCIAL_AUDIT_LOG_SHEET_NAME", "Social_Audit_Log")
+    ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
     
     # Проверяем существование директории configs
     CONFIG_DIR = CONFIG_DIR_PATH

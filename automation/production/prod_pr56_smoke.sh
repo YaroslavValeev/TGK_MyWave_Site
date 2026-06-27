@@ -36,7 +36,7 @@ _check "slots_boat" "${BASE}/api/calendar/slots/${DATE}?service=boat" "200"
 ASSIGN_CODE="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 \
   -X POST "${BASE}/api/social/sessions/assign" \
   -H 'Content-Type: application/json' \
-  -d '{"application_id":"soc_app_smoke0000000000","session_date":"2026-07-01","session_time":"10:00","assigned_by":"smoke"}')"
+  -d '{"application_id":"soc_app_aabbccddeeff0011","session_date":"2026-07-01","session_time":"10:00","assigned_by":"smoke"}')"
 if [[ "$PHASE" == "--phase-b" ]]; then
   if [[ "$ASSIGN_CODE" == "401" ]] || [[ "$ASSIGN_CODE" == "403" ]]; then
     echo "OK   assign_no_token  ${ASSIGN_CODE}"
