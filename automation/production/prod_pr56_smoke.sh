@@ -44,6 +44,18 @@ if [[ "$PHASE" == "--phase-b" ]]; then
     echo "FAIL assign_no_token  ${ASSIGN_CODE} (expected 401/403)"
     FAIL=1
   fi
+
+  BAD_TOKEN_CODE="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 \
+    -X POST "${BASE}/api/social/sessions/assign" \
+    -H 'Content-Type: application/json' \
+    -H 'X-Admin-Token: pr56-smoke-bad-token' \
+    -d '{"application_id":"not-valid","session_date":"bad","session_time":"bad","assigned_by":""}')"
+  if [[ "$BAD_TOKEN_CODE" == "401" ]] || [[ "$BAD_TOKEN_CODE" == "403" ]]; then
+    echo "OK   assign_bad_token  ${BAD_TOKEN_CODE}"
+  else
+    echo "FAIL assign_bad_token  ${BAD_TOKEN_CODE} (expected 401/403)"
+    FAIL=1
+  fi
 else
   if [[ "$ASSIGN_CODE" == "503" ]]; then
     echo "OK   assign_disabled  503"
