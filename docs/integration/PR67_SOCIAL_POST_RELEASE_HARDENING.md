@@ -1,22 +1,25 @@
 # PR67 — Social manual assign post-release hardening (proposal)
 
 **Prerequisite:** PR56 production CLOSED / PASS (`3b70a038`)  
-**Status:** PROPOSED — not approved for runtime  
+**Status:** IMPLEMENTED in **PR #68** (`feature/pr68-social-post-release-hardening`)  
 **Risk level:** Low (docs + tests + smoke only)
+
+> GitHub PR #67 was used for docs-only closure. Implementation PR is **#68**.
 
 ## Goal
 
 Stabilize PR56 after successful production rollout. No new booking behavior, no admin UI implementation.
 
-## Proposed scope
+## Scope (PR68)
 
-| # | Item | Type |
-|---|------|------|
-| 1 | Release evidence docs (this repo) | docs |
-| 2 | Regression tests: auth-first, sanitized Telegram, boot `.env` | tests |
-| 3 | `prod_pr56_smoke.sh` — optional `bad_token` check inline | scripts |
-| 4 | Rollback / safe-mode one-liner doc sync | docs |
-| 5 | Admin workflow **spec** (no UI) — assign form fields, status flow | docs |
+| # | Item | Type | Doc / path |
+|---|------|------|------------|
+| 1 | Release evidence docs | docs | merged in PR #67 |
+| 2 | Telegram + sheets headers regression tests | tests | `tests/unit/test_pr56_telegram_regression.py`, `test_pr56_sheets_headers_regression.py` |
+| 3 | `prod_pr56_smoke.sh` — `bad_token` check in `--phase-b` | scripts | `automation/production/prod_pr56_smoke.sh` |
+| 4 | Rollback / safe-mode reference | docs | [PR56_ROLLBACK_SAFE_MODE.md](PR56_ROLLBACK_SAFE_MODE.md) |
+| 5 | Admin workflow spec (no UI) | docs | [SOCIAL_ADMIN_ASSIGN_WORKFLOW_SPEC.md](SOCIAL_ADMIN_ASSIGN_WORKFLOW_SPEC.md) |
+| 6 | Post-release QA checklist | docs | [PR56_POST_RELEASE_QA_CHECKLIST.md](PR56_POST_RELEASE_QA_CHECKLIST.md) |
 
 ## Out of scope
 
