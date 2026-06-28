@@ -1,6 +1,6 @@
 # Social manual assign — Admin workflow spec (no UI)
 
-**Status:** SPEC ONLY — no admin UI in PR56/PR68  
+**Status:** MVP implemented — see `/admin/social` routes  
 **API:** existing `POST /api/social/sessions/assign`, `PATCH|POST .../sessions/<id>/status`  
 **Auth:** `X-Admin-Token` + `SOCIAL_BOOKING_ENABLED=true`
 

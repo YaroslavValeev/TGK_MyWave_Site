@@ -1,0 +1,63 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Назначить сессию — {{ application.application_id }}{% endblock %}
+{% block admin_title %}Назначить сессию{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin_social.index') }}">Social</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('admin_social.detail', application_id=application.application_id) }}">{{ application.application_id }}</a></li>
+<li class="breadcrumb-item active">Назначить</li>
+{% endblock %}
+
+{% block admin_content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title mb-0">Назначение для {{ application.application_id }}</h3>
+    </div>
+    <form method="post" class="card-body">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+            <label for="session_date">Дата *</label>
+            <input type="date" class="form-control" id="session_date" name="session_date"
+                   value="{{ form_data.get('session_date', '') }}" required>
+        </div>
+        <div class="form-group">
+            <label for="session_time">Время *</label>
+            <input type="time" class="form-control" id="session_time" name="session_time"
+                   value="{{ form_data.get('session_time', '') }}" required>
+        </div>
+        <div class="form-group">
+            <label for="location">Локация *</label>
+            <input type="text" class="form-control" id="location" name="location"
+                   value="{{ form_data.get('location', '') }}" required maxlength="200">
+        </div>
+        <div class="form-group">
+            <label for="coach">Тренер</label>
+            <input type="text" class="form-control" id="coach" name="coach"
+                   value="{{ form_data.get('coach', '') }}" maxlength="120">
+        </div>
+        <div class="form-group">
+            <label for="service_type">Тип услуги</label>
+            <input type="text" class="form-control" id="service_type" name="service_type"
+                   value="{{ form_data.get('service_type', '') }}" maxlength="64">
+        </div>
+        <div class="form-group">
+            <label for="notes">Комментарий (только Sheets, не в Telegram)</label>
+            <textarea class="form-control" id="notes" name="notes" rows="3" maxlength="500">{{ form_data.get('notes', '') }}</textarea>
+        </div>
+        <input type="hidden" name="assigned_by" value="{{ form_data.get('assigned_by', '') }}">
+
+        {% if show_confirm %}
+        <div class="alert alert-warning">
+            Подтвердите назначение сессии для <strong>{{ application.application_id }}</strong>.
+        </div>
+        <input type="hidden" name="confirm" value="yes">
+        <button type="submit" class="btn btn-success">Подтвердить назначение</button>
+        {% else %}
+        <button type="submit" class="btn btn-primary">Проверить и подтвердить</button>
+        {% endif %}
+        <a href="{{ url_for('admin_social.detail', application_id=application.application_id) }}"
+           class="btn btn-secondary ml-2">Отмена</a>
+    </form>
+</div>
+{% endblock %}
