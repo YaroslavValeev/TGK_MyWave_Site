@@ -1,8 +1,15 @@
 # PR56 Production Rollout Runbook — Two-Phase Safe Deploy
 
-**Prerequisite:** hotfix scripts merged (`automation/production/prod_*`).  
-**Current prod baseline:** `c35d19cc` (PR55).  
-**Target PR56 commit:** `5216818c` (merge) / feature `66145d20`.
+**Status:** CLOSED / PASS (2026-06-28)  
+**Production HEAD:** `3b70a038`  
+**Evidence:** [docs/evidence/pr56/README.md](../evidence/pr56/README.md) · [release notes](../releases/2026-06-28-runtime-pr56-social-manual-assign.md)
+
+**No further deploy actions required** — post-release QA observation only.
+
+---
+
+**Historical prerequisite:** hotfix scripts merged (`automation/production/prod_*`).  
+**Historical prod baseline:** `c35d19cc` (PR55) → Phase A `716d81c0` → alignment `3b70a038`.
 
 ---
 
