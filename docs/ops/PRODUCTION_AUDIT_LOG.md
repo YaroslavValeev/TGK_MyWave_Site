@@ -44,6 +44,7 @@
 | 2026-05-17 | Checklist final art pushed to `main` (~49 webp, ~150 MB) | content | `1976d637` | PARTIAL | 53/62 final; 9 participant still placeholder; prod pull pending |
 | 2026-05-17 | Remove accidental PNG from checklist folder | content | `c8101ae2` | PASS | cleanup after art commit |
 | 2026-06-28 | **PR56 Social manual assign** — Phase A/B, PR66 auth, alignment | runtime | `3b70a038` | PASS | manual assign ENABLED; evidence [pr56](../evidence/pr56/README.md) |
+| 2026-06-29 | **PR56 post-release monitoring** D0–D2 closure | ops/docs | `df24a4d9` | PASS | CLOSED/PASS; no prod deploy; [QA log](../evidence/pr56/QA_MONITORING_LOG.md) |
 
 ---
 
