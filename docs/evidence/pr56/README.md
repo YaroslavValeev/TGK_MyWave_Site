@@ -76,6 +76,11 @@ automation/production/prod_social_sessions_headers_check.sh
 automation/production/prod_admin_token_setup.sh
 ```
 
+## Post-release QA
+
+- D0 / D1 / D2 (2026-06-28 — 2026-06-29): **CLOSED / PASS**
+- [QA_MONITORING_LOG.md](QA_MONITORING_LOG.md) · [PR56_POST_RELEASE_QA_CHECKLIST.md](../../integration/PR56_POST_RELEASE_QA_CHECKLIST.md)
+
 ## No further deploy required
 
-PR56 rollout complete. Monitor post-release QA checklist in release notes only.
+PR56 rollout and post-release monitoring complete. Production actions not required unless incident or rollback.
