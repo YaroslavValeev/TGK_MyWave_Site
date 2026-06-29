@@ -136,14 +136,26 @@ Browser QA status: **IN PROGRESS** — external access restored (VPN off, 2026-0
 
 ### Browser QA checklist (Owner, in progress)
 
-1. Open `https://mywavewake.ru/admin/social/` → redirect to `/login` without session
-2. Login: email user with `is_admin=True` (not legacy `ADMIN_USERNAME`)
-3. List + filters
-4. Detail — no `health_notes` / `motivation_text` / `internal_notes`
-5. Assign form + confirmation screen
-6. **No real assign** unless intentional
+| # | Step | Status |
+|---|------|--------|
+| 1 | `/admin/social/` → redirect `/login` without session | **PASS** (curl 302; VPN off) |
+| 2 | `/login` page renders (email + password) | **PASS** (browser, VPN off, 2026-06-29) |
+| 3 | Login: email user with `is_admin=True` | pending |
+| 4 | List + filters | pending |
+| 5 | Detail — no `health_notes` / `motivation_text` / `internal_notes` | pending |
+| 6 | Assign form + confirmation screen | pending |
+| 7 | No real assign unless intentional | — |
 
-### Earlier client diagnostics (historical)
+**Auth note:** use Flask-Login `User` DB (`email` + password, `is_admin=True`), not legacy `ADMIN_USERNAME`.
+
+### VPN access pattern (Owner, confirmed 2026-06-29)
+
+| VPN | Result |
+|-----|--------|
+| **OFF** | site loads; `/login` 200; public pages OK |
+| **ON** (wintun) | site does not load (`ERR_TIMED_OUT` / timeout) |
+
+Not a production incident. Document for future **external access reliability** backlog (split tunnel / MTU / bypass rules).
 
 | Check | Result |
 |-------|--------|
