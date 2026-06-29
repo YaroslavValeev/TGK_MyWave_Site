@@ -1,0 +1,64 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Social — заявки{% endblock %}
+{% block admin_title %}Social Mission — заявки{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item active">Social</li>
+{% endblock %}
+
+{% block admin_content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title mb-0">Социальные заявки</h3>
+        <div>
+            {% for s in status_filters %}
+            <a href="{{ url_for('admin_social.index', status=s) }}"
+               class="btn btn-sm {% if status_filter == s %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+                {{ s }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if applications %}
+        <table class="table table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Статус</th>
+                    <th>Возраст</th>
+                    <th>Город</th>
+                    <th>Создана</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                <tr>
+                    <td><code>{{ app.application_id }}</code></td>
+                    <td><span class="badge badge-info">{{ app.status }}</span></td>
+                    <td>{{ app.child_age or '—' }}</td>
+                    <td>{{ app.city or '—' }}</td>
+                    <td>{{ app.created_at or '—' }}</td>
+                    <td>
+                        <a href="{{ url_for('admin_social.detail', application_id=app.application_id) }}"
+                           class="btn btn-sm btn-outline-primary">Открыть</a>
+                        {% if app.status in assignable_statuses %}
+                        <a href="{{ url_for('admin_social.assign', application_id=app.application_id) }}"
+                           class="btn btn-sm btn-success">Назначить</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="p-3 mb-0 text-muted">Заявок не найдено.</p>
+        {% endif %}
+    </div>
+</div>
+<p class="text-muted small mt-2">
+    Health / motivation / internal notes не отображаются. Безопасность: только флаг «важная информация» на карточке заявки.
+</p>
+{% endblock %}

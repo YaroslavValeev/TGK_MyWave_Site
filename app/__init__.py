@@ -39,6 +39,7 @@ from app.routes.admin_images import admin_images_bp
 from app.extensions import init_extensions, init_websocket, socketio, api, csrf
 from app.routes.api import api_ns
 from app.routes.admin import bp as admin_bp
+from app.routes.admin.social import bp as admin_social_bp
 
 # Импорт остальных blueprint-ов
 from app.routes.auth import auth_bp
@@ -462,6 +463,7 @@ def create_app(config_name="development"):
     app.register_blueprint(content_bp)
     app.register_blueprint(booking_api_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(admin_social_bp)
     app.register_blueprint(admin_images_bp)
     app.register_blueprint(health_bp)
     

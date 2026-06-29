@@ -1,0 +1,68 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Social — {{ application.application_id }}{% endblock %}
+{% block admin_title %}Заявка {{ application.application_id }}{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin_social.index') }}">Social</a></li>
+<li class="breadcrumb-item active">{{ application.application_id }}</li>
+{% endblock %}
+
+{% block admin_content %}
+<div class="card mb-3">
+    <div class="card-header d-flex justify-content-between">
+        <h3 class="card-title mb-0">Карточка заявки</h3>
+        {% if can_assign %}
+        <a href="{{ url_for('admin_social.assign', application_id=application.application_id) }}"
+           class="btn btn-success btn-sm">Назначить сессию</a>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">ID</dt><dd class="col-sm-9"><code>{{ application.application_id }}</code></dd>
+            <dt class="col-sm-3">Статус</dt><dd class="col-sm-9">{{ application.status }}</dd>
+            <dt class="col-sm-3">Создана</dt><dd class="col-sm-9">{{ application.created_at or '—' }}</dd>
+            <dt class="col-sm-3">Обновлена</dt><dd class="col-sm-9">{{ application.updated_at or '—' }}</dd>
+            <dt class="col-sm-3">Ребёнок</dt><dd class="col-sm-9">{{ application.child_first_name or '—' }}, {{ application.child_age or '—' }} лет</dd>
+            <dt class="col-sm-3">Город</dt><dd class="col-sm-9">{{ application.city or '—' }}</dd>
+            <dt class="col-sm-3">Контакт</dt><dd class="col-sm-9">{{ application.preferred_contact or '—' }}</dd>
+            <dt class="col-sm-3">Родитель</dt><dd class="col-sm-9">{{ application.parent_name or '—' }}</dd>
+            <dt class="col-sm-3">Телефон</dt><dd class="col-sm-9">{{ application.parent_phone or '—' }}</dd>
+            <dt class="col-sm-3">Telegram</dt><dd class="col-sm-9">{{ application.telegram_username or '—' }}</dd>
+            <dt class="col-sm-3">Важная информация</dt>
+            <dd class="col-sm-9">{{ 'да' if application.has_safety_info == 'yes' else 'нет' }} (содержимое не показывается)</dd>
+            <dt class="col-sm-3">Источник</dt><dd class="col-sm-9">{{ application.source or '—' }}</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><h3 class="card-title mb-0">Audit trail</h3></div>
+    <div class="card-body p-0">
+        {% if audit_events %}
+        <table class="table table-sm mb-0">
+            <thead>
+                <tr>
+                    <th>Время</th>
+                    <th>Actor</th>
+                    <th>Action</th>
+                    <th>Summary</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ev in audit_events %}
+                <tr>
+                    <td>{{ ev.timestamp }}</td>
+                    <td>{{ ev.actor }}</td>
+                    <td>{{ ev.action }}</td>
+                    <td><code>{{ ev.payload_summary }}</code></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="p-3 mb-0 text-muted">Записей audit log пока нет.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

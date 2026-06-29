@@ -38,6 +38,10 @@
                            href="{{ url_for('admin.index') }}" title="В разработке">
                             <i class="fas fa-calendar"></i> События
                         </a>
+                        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('admin_social') %}active{% endif %}" 
+                           href="{{ url_for('admin_social.index') }}">
+                            <i class="fas fa-hands-helping"></i> Social
+                        </a>
                         <a class="nav-link {% if request.endpoint.startswith('admin_images') %}active{% endif %}" 
                            href="{{ url_for('admin_images.index') }}">
                             <i class="fas fa-images"></i> Изображения

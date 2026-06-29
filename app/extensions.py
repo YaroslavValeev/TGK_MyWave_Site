@@ -173,7 +173,7 @@ def init_extensions(app, db=None):
     def _unauthorized():
         p = (request.path or "")
         if p.startswith("/admin") and not p.startswith("/admin/login"):
-            return redirect(url_for("admin.login", next=request.url))
+            return redirect(url_for("auth.login", next=request.url))
         return redirect(url_for("auth.login", next=request.url))
 
     # Flask-Limiter (rate limiting)
