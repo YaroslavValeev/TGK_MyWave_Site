@@ -1,9 +1,11 @@
 # PR70 — Admin UI MVP — Production Deploy Evidence
 
-**Status:** DEPLOYED / PASS  
+**Status:** DEPLOYED / SERVER-SIDE PASS — Browser QA **IN PROGRESS** (external access restored)  
 **Date:** 2026-06-29  
 **Merge commit:** `de37a19e` (`de37a19eccc2b9220acd4023e9d948cb315c759e`)  
-**Previous HEAD:** `3b70a038`
+**Production HEAD (after PR71):** `83daf51f`  
+**Previous HEAD:** `3b70a038`  
+**Production incident:** NO
 
 ## Deploy summary
 
@@ -40,7 +42,7 @@
 
 - [x] Server-side deploy smoke — PASS (2026-06-29)
 - [x] External access diagnostics — see below
-- [ ] Browser QA: login admin → `/admin/social`
+- [ ] Browser QA: login admin → `/admin/social` — **IN PROGRESS** (VPN off; curl OK)
 
 ## External access diagnostics (2026-06-29)
 
@@ -96,11 +98,72 @@ Browser QA status: **IN PROGRESS** — VPN blocker **resolved** (2026-06-29); se
 | `/admin/social/` (no auth) | 302 → `/login?next=...` |
 | `GET /login` | **500** — `TemplateNotFound: auth/login.html` |
 | Root cause | `auth.login` renders `auth/login.html`; template was missing (only `templates/login.html` for legacy `admin_panel.login`) |
-| Fix | PR hotfix: add `templates/auth/login.html` (+ register) |
-| Deploy | **pending Owner approval** (minimal template-only hotfix) |
+| Fix | PR #71 — `templates/auth/login.html` (+ register) |
+| Deploy | **DONE** (2026-06-29, see PR71 section) |
 
 **Auth note for Browser QA:** `/admin/social` uses Flask-Login `User` DB (`email` + password, `is_admin=True`). Legacy `ADMIN_USERNAME`/`ADMIN_PASSWORD` env login (`admin_panel.login`) is a separate path.
 
+## PR71 login hotfix deploy (2026-06-29)
+
+**Merge commit:** `83daf51f` (`83daf51fc70710f10286fd8aabd83555375c1408`)  
+**Previous HEAD:** `de37a19e`  
+**Status:** DEPLOYED / SERVER-SIDE PASS
+
+| Check | Result |
+|-------|--------|
+| Code reset | `83daf51f` |
+| Import as `www-data` | PASS |
+| `mywave-site` | active |
+| `health/live`, `health/ready` | ok |
+| `GET /login` (local + nginx public) | **200** |
+| `/admin/social/` (no auth) | **302** → `/login?next=...` |
+| `prod_pr56_smoke.sh --phase-b` | PASS |
+| `.env` / feature flags | unchanged |
+| `git_status` | `?? static/downloads/` only |
+
+Browser QA status: **IN PROGRESS** — external access restored (VPN off, 2026-06-29).
+
+### External access restored (Owner PC, VPN off, 2026-06-29)
+
+| Check | Result |
+|-------|--------|
+| VPN/wintun | **disabled** |
+| `https://mywavewake.ru/health/live` | **200** |
+| `https://mywavewake.ru/login` | **200** |
+| `https://mywavewake.ru/admin/social/` | **302** → `/login` |
+
+**Conclusion:** blocker was VPN/client network path. PR70/PR71 code incident: **NO**. Nginx/Flask/prod: **OK**.
+
+### Browser QA checklist (Owner, in progress)
+
+| # | Step | Status |
+|---|------|--------|
+| 1 | `/admin/social/` → redirect `/login` without session | **PASS** (curl 302; VPN off) |
+| 2 | `/login` page renders (email + password) | **PASS** (browser, VPN off, 2026-06-29) |
+| 3 | Login: email user with `is_admin=True` | pending |
+| 4 | List + filters | pending |
+| 5 | Detail — no `health_notes` / `motivation_text` / `internal_notes` | pending |
+| 6 | Assign form + confirmation screen | pending |
+| 7 | No real assign unless intentional | — |
+
+**Auth note:** use Flask-Login `User` DB (`email` + password, `is_admin=True`), not legacy `ADMIN_USERNAME`.
+
+### VPN access pattern (Owner, confirmed 2026-06-29)
+
+| VPN | Result |
+|-----|--------|
+| **OFF** | site loads; `/login` 200; public pages OK |
+| **ON** (wintun) | site does not load (`ERR_TIMED_OUT` / timeout) |
+
+Not a production incident. Document for future **external access reliability** backlog (split tunnel / MTU / bypass rules).
+
+| Check | Result |
+|-------|--------|
+| With VPN / unstable path | intermittent `ERR_TIMED_OUT` |
+| `curl /admin/social` (once) | **308** → `/admin/social/` |
+| SSH tunnel `:8443` | failed (tunnel not listening locally) |
+
+**Blocker type (resolved):** VPN/client network — not PR70/PR71 code.
 
 ## Rollback
 
