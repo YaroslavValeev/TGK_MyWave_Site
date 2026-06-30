@@ -1,6 +1,7 @@
 """Admin routes for managing images"""
 from flask import Blueprint, render_template, request, jsonify, current_app
 from flask_login import login_required
+from app.utils.decorators import admin_required
 from app.services.images_service import save_image, get_image_url
 import os
 
@@ -8,12 +9,14 @@ admin_images_bp = Blueprint('admin_images', __name__, url_prefix='/admin/images'
 
 @admin_images_bp.route('/')
 @login_required
+@admin_required
 def index():
     """Show image management interface"""
     return render_template('admin/images.html')
 
 @admin_images_bp.route('/upload', methods=['POST'])
 @login_required
+@admin_required
 def upload():
     """Handle image upload"""
     if 'image' not in request.files:
@@ -49,6 +52,7 @@ def upload():
 
 @admin_images_bp.route('/list')
 @login_required
+@admin_required
 def list_images():
     """Get list of all images with their variations"""
     try:

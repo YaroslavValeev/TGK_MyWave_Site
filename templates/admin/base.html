@@ -1,72 +1,102 @@
-{% extends "base.html" %}
-
-{% block content_header %}
-<div class="container-fluid">
-    <div class="row mb-2">
-        <div class="col-sm-6">
-            <h1 class="m-0">{% block admin_title %}Административная панель{% endblock %}</h1>
-        </div>
-        <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-                <li class="breadcrumb-item"><a href="{{ url_for('admin.index') }}">Главная</a></li>
-                {% block breadcrumbs %}{% endblock %}
-            </ol>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Меню</h3>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}Админ-панель MyWave{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}?v=pr74">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="admin-body">
+<div class="admin-overlay" id="admin-overlay" aria-hidden="true"></div>
+<div class="admin-layout">
+    <aside class="admin-sidebar" id="admin-sidebar" aria-label="Навигация админки">
+        <div class="admin-sidebar__brand">
+            <a href="{{ url_for('admin.index') }}">
+                <div>
+                    <div class="admin-sidebar__logo">MyWave</div>
+                    <div class="admin-sidebar__subtitle">Панель управления</div>
                 </div>
-                <div class="card-body p-0">
-                    <nav class="nav flex-column">
-                        <a class="nav-link {% if request.endpoint == 'admin.index' %}active{% endif %}" 
-                           href="{{ url_for('admin.index') }}">
-                            <i class="fas fa-home"></i> Главная
-                        </a>
-                        <a class="nav-link {% if request.endpoint == 'admin.index' %}active{% endif %}" 
-                           href="{{ url_for('admin.index') }}" title="В разработке">
-                            <i class="fas fa-blog"></i> Блог
-                        </a>
-                        <a class="nav-link {% if request.endpoint == 'admin.index' %}active{% endif %}" 
-                           href="{{ url_for('admin.index') }}" title="В разработке">
-                            <i class="fas fa-calendar"></i> События
-                        </a>
-                        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('admin_social') %}active{% endif %}" 
-                           href="{{ url_for('admin_social.index') }}">
-                            <i class="fas fa-hands-helping"></i> Social
-                        </a>
-                        <a class="nav-link {% if request.endpoint.startswith('admin_images') %}active{% endif %}" 
-                           href="{{ url_for('admin_images.index') }}">
-                            <i class="fas fa-images"></i> Изображения
-                        </a>
-                        <a class="nav-link {% if request.endpoint == 'admin.index' %}active{% endif %}" 
-                           href="{{ url_for('admin.index') }}" title="В разработке">
-                            <i class="fas fa-users"></i> Пользователи
-                        </a>
-                        <a class="nav-link {% if request.endpoint == 'admin.index' %}active{% endif %}" 
-                           href="{{ url_for('admin.index') }}" title="В разработке">
-                            <i class="fas fa-cog"></i> Настройки
-                        </a>
-                    </nav>
-                </div>
+            </a>
+        </div>
+        <nav class="admin-nav" aria-label="Разделы">
+            <a class="admin-nav__link {% if request.endpoint == 'admin.index' %}active{% endif %}"
+               href="{{ url_for('admin.index') }}">
+                <i class="fas fa-home" aria-hidden="true"></i> Главная
+            </a>
+            <a class="admin-nav__link {% if request.endpoint and request.endpoint.startswith('admin_social') %}active{% endif %}"
+               href="{{ url_for('admin_social.index') }}">
+                <i class="fas fa-hands-helping" aria-hidden="true"></i> Social
+            </a>
+            <a class="admin-nav__link {% if request.endpoint and request.endpoint.startswith('admin_images') %}active{% endif %}"
+               href="{{ url_for('admin_images.index') }}">
+                <i class="fas fa-images" aria-hidden="true"></i> Изображения
+            </a>
+            <a class="admin-nav__link {% if request.endpoint == 'admin.blog' %}active{% endif %}"
+               href="{{ url_for('admin.blog') }}">
+                <i class="fas fa-blog" aria-hidden="true"></i> Блог
+            </a>
+            <a class="admin-nav__link {% if request.endpoint == 'admin.events' %}active{% endif %}"
+               href="{{ url_for('admin.events') }}">
+                <i class="fas fa-calendar" aria-hidden="true"></i> События
+            </a>
+            <a class="admin-nav__link {% if request.endpoint == 'admin.users' %}active{% endif %}"
+               href="{{ url_for('admin.users') }}">
+                <i class="fas fa-users" aria-hidden="true"></i> Пользователи
+            </a>
+            <a class="admin-nav__link {% if request.endpoint == 'admin.settings' %}active{% endif %}"
+               href="{{ url_for('admin.settings') }}">
+                <i class="fas fa-cog" aria-hidden="true"></i> Настройки
+            </a>
+        </nav>
+        <div class="admin-sidebar__footer">
+            Рабочая зона администратора
+        </div>
+    </aside>
+
+    <div class="admin-main">
+        <header class="admin-topbar">
+            <div class="admin-topbar__left">
+                <button type="button" class="admin-topbar__toggle" id="admin-sidebar-toggle"
+                        aria-label="Открыть меню">
+                    <i class="fas fa-bars" aria-hidden="true"></i>
+                </button>
+                <h1 class="admin-topbar__title">{% block admin_title %}Административная панель{% endblock %}</h1>
             </div>
-        </div>
-        <div class="col-md-9">
+            <div class="admin-topbar__actions">
+                {% if current_user.is_authenticated %}
+                <span class="admin-topbar__user">{{ current_user.email or current_user.username }}</span>
+                ·
+                <a href="{{ url_for('auth.logout') }}">Выйти</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <main class="admin-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="admin-flash admin-flash--{{ category if category in ['success','danger','warning','info','error'] else 'info' }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block breadcrumbs %}{% endblock %}
+
             {% block admin_content %}{% endblock %}
-        </div>
+        </main>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
-<!-- Дополнительные скрипты для админки -->
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
-{% endblock %}
+<script src="{{ url_for('static', filename='js/admin.js') }}?v=pr74" defer></script>
+{% block admin_scripts %}{% endblock %}
+</body>
+</html>

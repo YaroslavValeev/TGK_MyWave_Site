@@ -4,61 +4,114 @@
 {% block admin_title %}Social Mission — заявки{% endblock %}
 
 {% block breadcrumbs %}
-<li class="breadcrumb-item active">Social</li>
+<nav aria-label="breadcrumb">
+    <ol class="admin-breadcrumbs">
+        <li><a href="{{ url_for('admin.index') }}">Главная</a></li>
+        <li>Social</li>
+    </ol>
+</nav>
 {% endblock %}
 
 {% block admin_content %}
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h3 class="card-title mb-0">Социальные заявки</h3>
-        <div>
+<div class="admin-card">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Социальные заявки</h2>
+        <div class="admin-chip-group" role="group" aria-label="Фильтр по статусу">
             {% for s in status_filters %}
             <a href="{{ url_for('admin_social.index', status=s) }}"
-               class="btn btn-sm {% if status_filter == s %}btn-primary{% else %}btn-outline-secondary{% endif %}">
-                {{ s }}
+               class="admin-chip {% if status_filter == s %}active{% endif %}">
+                {{ status_labels.get(s, s) }}
             </a>
             {% endfor %}
         </div>
     </div>
-    <div class="card-body p-0">
-        {% if applications %}
-        <table class="table table-striped mb-0">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Статус</th>
-                    <th>Возраст</th>
-                    <th>Город</th>
-                    <th>Создана</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for app in applications %}
-                <tr>
-                    <td><code>{{ app.application_id }}</code></td>
-                    <td><span class="badge badge-info">{{ app.status }}</span></td>
-                    <td>{{ app.child_age or '—' }}</td>
-                    <td>{{ app.city or '—' }}</td>
-                    <td>{{ app.created_at or '—' }}</td>
-                    <td>
-                        <a href="{{ url_for('admin_social.detail', application_id=app.application_id) }}"
-                           class="btn btn-sm btn-outline-primary">Открыть</a>
-                        {% if app.status in assignable_statuses %}
-                        <a href="{{ url_for('admin_social.assign', application_id=app.application_id) }}"
-                           class="btn btn-sm btn-success">Назначить</a>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p class="p-3 mb-0 text-muted">Заявок не найдено.</p>
-        {% endif %}
+
+    {% if applications %}
+    <div class="admin-card__body admin-card__body--flush admin-table-desktop">
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Статус</th>
+                        <th>Возраст</th>
+                        <th>Город</th>
+                        <th>Создана</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td><code>{{ app.application_id }}</code></td>
+                        <td>
+                            <span class="admin-badge {{ status_badge_class.get(app.status, '') }}">
+                                {{ status_labels.get(app.status, app.status) }}
+                            </span>
+                        </td>
+                        <td>{{ app.child_age or '—' }}</td>
+                        <td>{{ app.city or '—' }}</td>
+                        <td>{{ app.created_at or '—' }}</td>
+                        <td>
+                            <div class="admin-table__actions">
+                                <a href="{{ url_for('admin_social.detail', application_id=app.application_id) }}"
+                                   class="admin-btn admin-btn--secondary admin-btn--sm">Открыть</a>
+                                {% if app.status in assignable_statuses %}
+                                <a href="{{ url_for('admin_social.assign', application_id=app.application_id) }}"
+                                   class="admin-btn admin-btn--success admin-btn--sm">Назначить</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
+
+    <div class="admin-mobile-cards">
+        {% for app in applications %}
+        <div class="admin-mobile-card">
+            <div class="admin-mobile-card__row">
+                <strong>ID</strong>
+                <code>{{ app.application_id }}</code>
+            </div>
+            <div class="admin-mobile-card__row">
+                <strong>Статус</strong>
+                <span class="admin-badge {{ status_badge_class.get(app.status, '') }}">
+                    {{ status_labels.get(app.status, app.status) }}
+                </span>
+            </div>
+            <div class="admin-mobile-card__row">
+                <strong>Возраст</strong>
+                <span>{{ app.child_age or '—' }}</span>
+            </div>
+            <div class="admin-mobile-card__row">
+                <strong>Город</strong>
+                <span>{{ app.city or '—' }}</span>
+            </div>
+            <div class="admin-mobile-card__row">
+                <strong>Создана</strong>
+                <span>{{ app.created_at or '—' }}</span>
+            </div>
+            <div class="admin-mobile-card__actions">
+                <a href="{{ url_for('admin_social.detail', application_id=app.application_id) }}"
+                   class="admin-btn admin-btn--secondary admin-btn--sm">Открыть</a>
+                {% if app.status in assignable_statuses %}
+                <a href="{{ url_for('admin_social.assign', application_id=app.application_id) }}"
+                   class="admin-btn admin-btn--success admin-btn--sm">Назначить</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="admin-card__body">
+        <p class="admin-muted mb-0">Заявок не найдено.</p>
+    </div>
+    {% endif %}
 </div>
-<p class="text-muted small mt-2">
+<p class="admin-muted">
     Health / motivation / internal notes не отображаются. Безопасность: только флаг «важная информация» на карточке заявки.
 </p>
 {% endblock %}
