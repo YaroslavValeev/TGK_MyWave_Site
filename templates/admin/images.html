@@ -1,171 +1,141 @@
 {% extends "admin/base.html" %}
 
 {% block title %}Управление изображениями{% endblock %}
+{% block admin_title %}Управление изображениями{% endblock %}
 
-{% block head %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="admin-breadcrumbs">
+        <li><a href="{{ url_for('admin.index') }}">Главная</a></li>
+        <li>Изображения</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block extra_head %}
 <style>
     .image-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         gap: 1rem;
-        padding: 1rem;
     }
-    
     .image-item {
-        border: 1px solid #ddd;
-        border-radius: 4px;
+        border: 1px solid var(--admin-border);
+        border-radius: 8px;
         padding: 0.5rem;
+        background: #fff;
     }
-    
     .image-preview {
         width: 100%;
         height: 150px;
         object-fit: cover;
         margin-bottom: 0.5rem;
+        border-radius: 6px;
     }
-    
-    .image-info {
-        font-size: 0.9rem;
-    }
-    
-    .image-actions {
-        display: flex;
-        gap: 0.5rem;
-        margin-top: 0.5rem;
-    }
-    
     .upload-zone {
-        border: 2px dashed #ccc;
-        border-radius: 4px;
+        border: 2px dashed var(--admin-border);
+        border-radius: 12px;
         padding: 2rem;
         text-align: center;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
         cursor: pointer;
+        background: #f8fafc;
     }
-    
     .upload-zone.dragover {
-        background: #f0f0f0;
-        border-color: #666;
+        background: #ecfeff;
+        border-color: var(--admin-brand);
     }
-    
     .size-variants {
         display: none;
         margin-top: 0.5rem;
-        background: #f9f9f9;
+        background: #f8fafc;
         padding: 0.5rem;
-        border-radius: 4px;
-    }
-    
-    .show-variants {
-        margin-top: 0.5rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
     }
 </style>
 {% endblock %}
 
-{% block content %}
-<div class="container">
-    <h1>Управление изображениями</h1>
-    
-    <div id="upload-zone" class="upload-zone">
-        <p>Перетащите изображения сюда или кликните для выбора</p>
-        <input type="file" id="file-input" multiple accept="image/*" style="display: none">
+{% block admin_content %}
+<div class="admin-card">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Загрузка изображений</h2>
     </div>
-    
-    <div id="image-grid" class="image-grid">
-        <!-- Изображения будут добавлены через JavaScript -->
+    <div class="admin-card__body">
+        <div id="upload-zone" class="upload-zone">
+            <p class="admin-muted mb-0">Перетащите изображения сюда или кликните для выбора</p>
+            <input type="file" id="file-input" multiple accept="image/*" style="display: none">
+        </div>
+        <div id="image-grid" class="image-grid"></div>
     </div>
 </div>
 {% endblock %}
 
-{% block scripts %}
+{% block admin_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const uploadZone = document.getElementById('upload-zone');
     const fileInput = document.getElementById('file-input');
     const imageGrid = document.getElementById('image-grid');
-    
-    // Загрузка списка изображений
+
     fetch('/admin/images/list')
         .then(response => response.json())
         .then(data => {
-            data.images.forEach(image => addImageToGrid(image));
+            (data.images || []).forEach(image => addImageToGrid(image));
         });
-    
-    // Обработка Drag & Drop
+
     uploadZone.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadZone.classList.add('dragover');
     });
-    
+
     uploadZone.addEventListener('dragleave', () => {
         uploadZone.classList.remove('dragover');
     });
-    
+
     uploadZone.addEventListener('drop', (e) => {
         e.preventDefault();
         uploadZone.classList.remove('dragover');
         handleFiles(e.dataTransfer.files);
     });
-    
-    uploadZone.addEventListener('click', () => {
-        fileInput.click();
-    });
-    
-    fileInput.addEventListener('change', () => {
-        handleFiles(fileInput.files);
-    });
-    
+
+    uploadZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
     function handleFiles(files) {
         Array.from(files).forEach(file => {
             const formData = new FormData();
             formData.append('image', file);
-            
-            fetch('/admin/images/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    addImageToGrid(data);
-                } else {
-                    alert('Ошибка загрузки: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Ошибка загрузки');
-            });
+            fetch('/admin/images/upload', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        addImageToGrid(data);
+                    } else {
+                        alert('Ошибка загрузки: ' + (data.error || 'unknown'));
+                    }
+                })
+                .catch(() => alert('Ошибка загрузки'));
         });
     }
-    
+
     function addImageToGrid(imageData) {
         const item = document.createElement('div');
         item.className = 'image-item';
-        
         item.innerHTML = `
             <img src="${imageData.urls.thumb}" alt="${imageData.filename}" class="image-preview">
-            <div class="image-info">
-                <div class="filename">${imageData.filename}</div>
-                <button class="show-variants">Показать варианты</button>
-                <div class="size-variants">
-                    <div>Thumb: <a href="${imageData.urls.thumb}" target="_blank">Открыть</a></div>
-                    <div>Small: <a href="${imageData.urls.small}" target="_blank">Открыть</a></div>
-                    <div>Medium: <a href="${imageData.urls.medium}" target="_blank">Открыть</a></div>
-                    <div>Large: <a href="${imageData.urls.large}" target="_blank">Открыть</a></div>
-                    <div>Original: <a href="${imageData.urls.original}" target="_blank">Открыть</a></div>
-                </div>
+            <div class="admin-muted">${imageData.filename}</div>
+            <button type="button" class="admin-btn admin-btn--secondary admin-btn--sm show-variants">Варианты</button>
+            <div class="size-variants">
+                <div>Thumb: <a href="${imageData.urls.thumb}" target="_blank" rel="noopener">Открыть</a></div>
+                <div>Original: <a href="${imageData.urls.original}" target="_blank" rel="noopener">Открыть</a></div>
             </div>
         `;
-        
-        // Обработчик для показа/скрытия вариантов
-        const showVariantsBtn = item.querySelector('.show-variants');
+        const btn = item.querySelector('.show-variants');
         const variants = item.querySelector('.size-variants');
-        
-        showVariantsBtn.addEventListener('click', () => {
+        btn.addEventListener('click', () => {
             variants.style.display = variants.style.display === 'none' ? 'block' : 'none';
         });
-        
         imageGrid.prepend(item);
     }
 });

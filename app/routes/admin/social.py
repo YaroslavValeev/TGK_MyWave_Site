@@ -25,6 +25,19 @@ from app.utils.decorators import admin_required
 bp = Blueprint("admin_social", __name__, url_prefix="/admin/social")
 
 _STATUS_FILTERS = ("all", "new", "review", "approved", "scheduled")
+_STATUS_LABELS = {
+    "all": "Все",
+    "new": "Новые",
+    "review": "На проверке",
+    "approved": "Одобрены",
+    "scheduled": "Назначены",
+}
+_STATUS_BADGE_CLASS = {
+    "new": "admin-badge--new",
+    "review": "admin-badge--review",
+    "approved": "admin-badge--approved",
+    "scheduled": "admin-badge--scheduled",
+}
 
 
 def _require_social_admin_ui() -> None:
@@ -64,6 +77,8 @@ def index():
         applications=applications,
         status_filter=status,
         status_filters=_STATUS_FILTERS,
+        status_labels=_STATUS_LABELS,
+        status_badge_class=_STATUS_BADGE_CLASS,
         assignable_statuses=sorted(ASSIGNABLE_APPLICATION_STATUSES),
     )
 

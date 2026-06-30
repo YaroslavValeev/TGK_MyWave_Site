@@ -2,8 +2,10 @@
 Пакет для административных маршрутов
 """
 import os
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, current_app
+from flask_login import login_required
 from app.database.models import db, BlogPost, CalendarEvent, User, Image
+from app.utils.decorators import admin_required
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -25,12 +27,18 @@ def _count_images_in_folder(static_folder, default=0):
         pass
     return default
 
+
+def _render_section_stub(section_title: str):
+    return render_template('admin/section_stub.html', section_title=section_title)
+
+
 @bp.route('/')
+@login_required
+@admin_required
 def index():
     """
     Главная страница административной панели
     """
-    from flask import current_app
     blog_posts_count = _safe_count(BlogPost)
     events_count = _safe_count(CalendarEvent)
     users_count = _safe_count(User)
@@ -49,3 +57,31 @@ def index():
         users_count=users_count,
         recent_actions=recent_actions,
     )
+
+
+@bp.route('/blog')
+@login_required
+@admin_required
+def blog():
+    return _render_section_stub('Блог')
+
+
+@bp.route('/events')
+@login_required
+@admin_required
+def events():
+    return _render_section_stub('События')
+
+
+@bp.route('/users')
+@login_required
+@admin_required
+def users():
+    return _render_section_stub('Пользователи')
+
+
+@bp.route('/settings')
+@login_required
+@admin_required
+def settings():
+    return _render_section_stub('Настройки')

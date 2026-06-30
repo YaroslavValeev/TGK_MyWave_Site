@@ -1,145 +1,65 @@
 {% extends "admin/base.html" %}
 
 {% block title %}Панель управления{% endblock %}
+{% block admin_title %}Обзор{% endblock %}
 
-{% block admin_content %}
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Обзор</h3>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-info">
-                    <div class="inner">
-                        <h3>{{ blog_posts_count }}</h3>
-                        <p>Блог посты</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-blog"></i>
-                    </div>
-                    <a href="#" class="small-box-footer" title="Раздел в разработке">
-                        Подробнее <i class="fas fa-arrow-circle-right"></i>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-success">
-                    <div class="inner">
-                        <h3>{{ events_count }}</h3>
-                        <p>События</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-calendar"></i>
-                    </div>
-                    <a href="{{ url_for('admin.index') }}" class="small-box-footer" title="События в разработке">
-                        Подробнее <i class="fas fa-arrow-circle-right"></i>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-warning">
-                    <div class="inner">
-                        <h3>{{ images_count }}</h3>
-                        <p>Изображения</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-images"></i>
-                    </div>
-                    <a href="{{ url_for('admin_images.index') }}" class="small-box-footer">
-                        Подробнее <i class="fas fa-arrow-circle-right"></i>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-danger">
-                    <div class="inner">
-                        <h3>{{ users_count }}</h3>
-                        <p>Пользователи</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <a href="#" class="small-box-footer" title="Раздел в разработке">
-                        Подробнее <i class="fas fa-arrow-circle-right"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Последние действия</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="timeline">
-                            {% for action in recent_actions %}
-                            <div>
-                                <i class="fas fa-{{ action.icon }} bg-blue"></i>
-                                <div class="timeline-item">
-                                    <span class="time">
-                                        <i class="fas fa-clock"></i> {{ action.time }}
-                                    </span>
-                                    <h3 class="timeline-header">{{ action.title }}</h3>
-                                    <div class="timeline-body">
-                                        {{ action.description }}
-                                    </div>
-                                </div>
-                            </div>
-                            {% else %}
-                            <p class="text-muted">Нет недавних действий</p>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Аналитика</h3>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="visitsChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="admin-breadcrumbs">
+        <li>Главная</li>
+    </ol>
+</nav>
 {% endblock %}
 
-{% block scripts %}
-{{ super() }}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Демо-данные для графика
-    const ctx = document.getElementById('visitsChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн'],
-            datasets: [{
-                label: 'Посещения',
-                data: [12, 19, 3, 5, 2, 3],
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-});
-</script>
+{% block admin_content %}
+<div class="admin-stat-grid">
+    <div class="admin-stat">
+        <div class="admin-stat__value">{{ blog_posts_count }}</div>
+        <div class="admin-stat__label">Блог посты</div>
+        <a href="{{ url_for('admin.blog') }}">Открыть раздел</a>
+    </div>
+    <div class="admin-stat">
+        <div class="admin-stat__value">{{ events_count }}</div>
+        <div class="admin-stat__label">События</div>
+        <a href="{{ url_for('admin.events') }}">Открыть раздел</a>
+    </div>
+    <div class="admin-stat">
+        <div class="admin-stat__value">{{ images_count }}</div>
+        <div class="admin-stat__label">Изображения</div>
+        <a href="{{ url_for('admin_images.index') }}">Управление</a>
+    </div>
+    <div class="admin-stat">
+        <div class="admin-stat__value">{{ users_count }}</div>
+        <div class="admin-stat__label">Пользователи</div>
+        <a href="{{ url_for('admin.users') }}">Открыть раздел</a>
+    </div>
+</div>
+
+<div class="admin-card" style="margin-top: 1rem;">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Быстрые действия</h2>
+    </div>
+    <div class="admin-card__body" style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+        <a href="{{ url_for('admin_social.index') }}" class="admin-btn admin-btn--primary">Social заявки</a>
+        <a href="{{ url_for('admin_images.index') }}" class="admin-btn admin-btn--secondary">Изображения</a>
+        <a href="{{ url_for('admin.settings') }}" class="admin-btn admin-btn--secondary">Настройки</a>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Последние действия</h2>
+    </div>
+    <div class="admin-card__body">
+        {% for action in recent_actions %}
+        <div style="margin-bottom: 0.75rem;">
+            <strong>{{ action.title }}</strong>
+            <span class="admin-muted"> — {{ action.time }}</span>
+            <div class="admin-muted">{{ action.description }}</div>
+        </div>
+        {% else %}
+        <p class="admin-muted mb-0">Нет недавних действий</p>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}
