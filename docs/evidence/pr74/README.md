@@ -85,6 +85,69 @@ During final Browser QA, Owner completed a **real assign** (intentional end-to-e
 
 **Not a production incident** — documented as Owner QA test assignment in Sheets.
 
+## Post-QA cleanup
+
+**Date:** 2026-07-01  
+**Cleanup type:** manual Google Sheets cleanup (Owner)  
+**Backup sheet:** `QA_CLEANUP_2026-07-01` (copy rows before delete)  
+**Production incident:** NO  
+**Server/deploy changes:** NO
+
+### Tabs touched
+
+- `Social_Applications`
+- `Social_Sessions`
+- `Social_Audit_Log`
+
+**Not touched:** Workouts, Client_Workouts, Clients, Calendar, booking tabs.
+
+### Removed (both QA pairs)
+
+| Tab | ID | Notes |
+|-----|-----|-------|
+| `Social_Applications` | `soc_app_41d546e3b5aa47ea` | PR74 Browser QA real assign |
+| `Social_Sessions` | `soc_sess_800eaf177db24034` | linked session |
+| `Social_Applications` | `soc_app_e7be01a15ded4365` | earlier QA/test row |
+| `Social_Sessions` | `soc_sess_e41e448019644a73` | linked session |
+
+### Audit rows removed
+
+All `Social_Audit_Log` rows containing any of:
+
+```text
+soc_app_41d546e3b5aa47ea
+soc_sess_800eaf177db24034
+soc_app_e7be01a15ded4365
+soc_sess_e41e448019644a73
+```
+
+### Second candidate decision
+
+| Item | Action | Reason |
+|------|--------|--------|
+| `soc_app_e7be01a15ded4365` | **REMOVED** | QA/test: «Тест Тестов», `+1234567890`, `@MyW23`, `owner_phase_b` |
+| `soc_sess_e41e448019644a73` | **REMOVED** | QA/test: coach «Test Coach», `adaptive_wake`, Павильон |
+
+### Deletion order (bottom-up per tab)
+
+1. Backup → `QA_CLEANUP_2026-07-01`
+2. `Social_Applications`: row 3, then row 2
+3. `Social_Sessions`: row 3, then row 2
+4. `Social_Audit_Log`: find/delete by ID (`Ctrl+F`)
+
+### Post-cleanup verify
+
+- Open `/admin/social/` — QA rows should disappear
+- Empty list is OK if no real applications remain
+
+### Pre-cleanup screenshots
+
+| File | Description |
+|------|-------------|
+| `screenshots/cleanup/01_social_applications_before.png` | 2 QA application rows |
+| `screenshots/cleanup/02_social_sessions_before.png` | 2 QA session rows |
+| `screenshots/cleanup/03_social_audit_log_before.png` | 4 audit rows |
+
 ## Not changed
 
 - Social assignment business logic (`manual_assign_social_session` contract)
