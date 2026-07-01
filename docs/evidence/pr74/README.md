@@ -1,11 +1,17 @@
 # PR74 — Admin shell and navigation hardening — Production Deploy Evidence
 
-**Status:** DEPLOYED / **Browser QA MOSTLY PASS** (2 screenshots pending)  
-**Date:** 2026-06-30  
+**Status:** **ACCEPTED** — DEPLOYED / Browser QA PASS  
+**Date:** 2026-06-30 (deploy) · 2026-07-01 (Browser QA closure)  
 **Merge commit:** `ffc08afc` (`ffc08afcb20c557b0ed329db28bf49fabe265bae`)  
 **Head commit:** `b710a087`  
 **Previous HEAD:** `bef474a9`  
-**Production incident:** NO
+
+```text
+BROWSER_QA=PASS
+PR74=ACCEPTED
+DEPLOY_SHA=ffc08afc
+Production incident: NO
+```
 
 ## Scope deployed
 
@@ -31,7 +37,7 @@
 | `prod_pr56_smoke.sh` | PASS |
 | `.env` / DB migrations / TGbotAdmin / node / Notifications v2 | **not in scope** |
 
-## Browser QA — confirmed (screenshots)
+## Browser QA — shell / navigation (PASS)
 
 | Check | Result |
 |-------|--------|
@@ -41,64 +47,43 @@
 | No floating chat in admin | PASS |
 | Social list | PASS |
 | Images page | PASS |
-| Blog stub (`/admin/blog`) | PASS |
-| Events stub (`/admin/events`) | PASS |
-| Users stub (`/admin/users`) | PASS |
-| Settings stub (`/admin/settings`) | PASS |
+| Blog / Events / Users / Settings stubs | PASS |
 | Dashboard looks like admin workspace | PASS |
 | Public UI regression | NO |
 
-## Browser QA — pending (2 screenshots)
+## Browser QA — detail / assign (PASS, 2026-07-01)
 
-Owner to capture **without submitting real assign**:
+| Check | Result |
+|-------|--------|
+| Social detail opens | PASS |
+| Status / age / city / contact / parent visible | PASS |
+| `health_notes` / `motivation_text` / `internal_notes` absent | PASS |
+| `has_safety_info` only yes/no + «содержимое не показывается» | PASS |
+| Assign form opens | PASS |
+| Confirmation step (warning card) appears | PASS |
+| Real assign gated by `confirm=yes` | PASS (code + Owner flow) |
 
-### 1. Social detail page
+### Screenshots
 
-- [ ] Status / age / city / contact / parent visible
-- [ ] `health_notes` / `motivation_text` / `internal_notes` **absent**
-- [ ] `has_safety_info` shown only as yes/no (content not displayed)
+| File | Description |
+|------|-------------|
+| `screenshots/01_social_detail_safe_fields.png` | Detail card: safe fields only, no sensitive text |
+| `screenshots/02_assign_confirmation_step.png` | Assign step 2: warning card before final confirm |
 
-Path: `/admin/social/` → «Открыть» on a `new` application.
+## Owner QA note — real assign performed
 
-### 2. Assign confirmation step
+During final Browser QA, Owner completed a **real assign** (intentional end-to-end test):
 
-- [ ] Form fields filled
-- [ ] Warning / confirmation card visible
-- [ ] Button «Подтвердить назначение» visible
-- [ ] **Real assign NOT submitted** (do not click final confirm)
+| Item | Value |
+|------|-------|
+| `application_id` | `soc_app_41d546e3b5aa47ea` |
+| `session_id` | `soc_sess_800eaf177db24034` |
+| `status` after assign | `scheduled` |
+| `session_date` / `time` / `location` | 2026-07-04 / 11:00 / Руза |
+| Audit trail | `session_assigned`, `application_status_changed` (new → scheduled) |
+| Telegram admin notification | sent («Social session scheduled») |
 
-Path: detail → «Назначить сессию» → fill fields → «Проверить и подтвердить».
-
-## Code / unit-test confirmation (pre-screenshot)
-
-| Check | Verified by |
-|-------|-------------|
-| Detail route exists | `admin_social.detail` |
-| Sensitive fields hidden | `sanitize_application_for_admin()` + `test_detail_no_health_in_body` |
-| Assign form opens | `assign.html` GET |
-| Confirmation step before real assign | `confirm != "yes"` → `show_confirm=True` |
-| `manual_assign_social_session()` gated | only when `confirm=yes` — `test_assign_requires_confirm` |
-
-## Screenshots
-
-Place final Browser QA captures under:
-
-```text
-docs/evidence/pr74/screenshots/
-  01_social_detail_safe_fields.png
-  02_assign_confirmation_step.png
-```
-
-## Closure criteria
-
-When both screenshots are attached and checklist above is checked:
-
-```text
-BROWSER_QA=PASS
-PR74=ACCEPTED
-DEPLOY_SHA=ffc08afc
-Production incident: NO
-```
+**Not a production incident** — documented as Owner QA test assignment in Sheets.
 
 ## Not changed
 
@@ -111,7 +96,8 @@ Production incident: NO
 ## Related
 
 - PR70/PR71/PR73 evidence: `docs/evidence/pr70/`, `pr71/`, `pr73/`
-- Notifications v2 prep: `docs/integration/NOTIFICATIONS_V2_PREP.md` (PR72)
+- PR72 (docs): `ee934d43` — evidence + Notifications v2 prep
+- Notifications v2 prep: `docs/integration/NOTIFICATIONS_V2_PREP.md`
 
 ## Rollback
 
