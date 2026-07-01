@@ -100,9 +100,12 @@ CLEANUP=PASS
 Social_Applications data rows after cleanup: 0
 Social_Sessions data rows after cleanup: 0
 Social_Audit_Log data rows after cleanup: 0
+/admin/social/ verified: empty list (PASS)
 ```
 
-Owner verify: `/admin/social/` — empty list expected (no real applications).
+**PR74 closure:** fully accepted after Post-QA cleanup (evidence `d09af9bf`, cleanup `525a97f3`).
+
+Owner verify `/admin/social/`: **PASS** — «Заявок не найдено» (2026-07-02).
 
 ### Tabs touched
 
@@ -158,6 +161,19 @@ soc_sess_e41e448019644a73
 | `screenshots/cleanup/01_social_applications_before.png` | 2 QA application rows |
 | `screenshots/cleanup/02_social_sessions_before.png` | 2 QA session rows |
 | `screenshots/cleanup/03_social_audit_log_before.png` | 4 audit rows |
+
+### Post-cleanup verification screenshots
+
+| File | Description |
+|------|-------------|
+| `screenshots/cleanup/04_qa_cleanup_backup_sheet.png` | `QA_CLEANUP_2026-07-01` — 8 backed-up rows |
+| `screenshots/cleanup/05_social_audit_log_after.png` | Audit log empty (headers only) |
+| `screenshots/cleanup/06_social_sessions_after.png` | Sessions empty (headers only) |
+| `screenshots/cleanup/07_admin_social_empty_list.png` | `/admin/social/` — no applications |
+
+### Utility (non-runtime)
+
+`tools/social_qa_cleanup.py` — optional dry-run/execute helper; not part of prod runtime.
 
 ## Not changed
 
