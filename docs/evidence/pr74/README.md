@@ -87,11 +87,22 @@ During final Browser QA, Owner completed a **real assign** (intentional end-to-e
 
 ## Post-QA cleanup
 
+**Status:** **COMPLETED**  
 **Date:** 2026-07-01  
-**Cleanup type:** manual Google Sheets cleanup (Owner)  
-**Backup sheet:** `QA_CLEANUP_2026-07-01` (copy rows before delete)  
+**Executed:** 2026-07-02T00:43Z via `tools/social_qa_cleanup.py --execute`  
+**Cleanup type:** Google Sheets cleanup (service account, read-write Social tabs only)  
+**Backup sheet:** `QA_CLEANUP_2026-07-01` — 8 rows backed up before delete  
 **Production incident:** NO  
 **Server/deploy changes:** NO
+
+```text
+CLEANUP=PASS
+Social_Applications data rows after cleanup: 0
+Social_Sessions data rows after cleanup: 0
+Social_Audit_Log data rows after cleanup: 0
+```
+
+Owner verify: `/admin/social/` — empty list expected (no real applications).
 
 ### Tabs touched
 
