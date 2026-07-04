@@ -2115,9 +2115,10 @@ chatWindow {
 
 /* Старые стили .slot-btn удалены - используются обновлённые стили ниже (строка ~2175) */
 
-/* Скрываем кнопку подтверждения слота, так как используем автопереход */
-#confirmSlotBtn {
-  display: none;
+/* Шаг 2: кнопка «Продолжить» нужна для boat (multi-slot); gym уходит на шаг 3 по клику на слот */
+#confirmSlotBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 /* Pangolin загружается из Google Fonts (base.html) — локальный woff2 не используется */
