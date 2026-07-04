@@ -12,7 +12,8 @@
 RELEASE_READY=NO
 Reason: Mobile QA sign-off pending; final release checklist incomplete
 
-Target deploy SHA (when GO): eef40bd4a970f31c349794d033e048657a4e510b
+Target deploy SHA (when GO): bf27da1f (main; includes PR75 `eef40bd4` + handoff doc)
+Minimum SHA with PR75 fix only: eef40bd4a970f31c349794d033e048657a4e510b
 Production HEAD (current, PR74): ffc08afcb20c557b0ed329db28bf49fabe265bae
 
 Included in target bundle:
@@ -74,22 +75,31 @@ Verify after deploy (Owner mobile):
 
 ---
 
-## Mobile QA — Owner checklist (PR75-focused)
+## Mobile QA — Owner checklist (this release)
 
-Official matrix IDs: [MOBILE_QA_MATRIX.md](../qa/MOBILE_QA_MATRIX.md)
+**Owner acceptance criteria** (primary for GO):
 
-| ID | Platform (canonical) | PR75 focus (this release) | Result |
-|----|----------------------|---------------------------|--------|
-| **A1** | Android phone · Chrome · 360×800 / 390×844 | **Boat** booking: set select → Continue visible → full flow | [ ] PASS / FAIL |
-| **A2** | Android phone · Yandex · 360×800 | **Gym** booking: slot → auto contact step; modal close/back | [ ] PASS / FAIL |
-| **I1** | iPhone · Safari · safe-area | Booking modals: no clipping; Continue/Confirm visible; scroll in modal | [ ] PASS / FAIL |
-| **T1** | Tablet · Chrome/Safari | Layout OK; booking modal usable; no overlap with chat widget | [ ] PASS / FAIL |
+| ID | Criterion | Result |
+|----|-----------|--------|
+| **A1** | Boat mobile booking flow — date → set → **Continue** → contact → confirm | [ ] PASS / FAIL |
+| **A2** | Gym booking flow — slot → contact step (no regression) | [ ] PASS / FAIL |
+| **I1** | Integration smoke / no JS modal regression (booking modals, back, close) | [ ] PASS / FAIL |
+| **T1** | Telegram / Sheets / booking smoke **or explicitly not touched** in this deploy | [ ] PASS / N/A |
 
-**Also run (matrix sections):** Hero, carousel, contacts, chat button, footer — mark in full matrix.
+**Matrix mapping** (canonical platforms — [MOBILE_QA_MATRIX.md](../qa/MOBILE_QA_MATRIX.md)):
 
-**Environment:** incognito · VPN off · hard refresh · verify CSS `?v=booking-slot-btn1` in Network tab.
+| Owner ID | Suggested device run |
+|----------|----------------------|
+| A1 | Android Chrome · 360×800 / 390×844 |
+| A2 | Android Yandex · 360×800 |
+| I1 | iPhone Safari · safe-area |
+| T1 | Server smoke only (`prod_pr56_smoke.sh`) — **no Telegram/Sheets mutation** in frontend deploy |
 
-**Screenshots:** `docs/qa/screenshots/2026-07-04/` (create on PASS)
+**PR75 verify on device:** `booking-mobile.css?v=booking-slot-btn1` · `#confirmSlotBtn` visible on boat step 2.
+
+**Environment:** incognito · VPN off · hard refresh.
+
+**Screenshots:** `docs/qa/screenshots/2026-07-04/`
 
 ---
 
@@ -179,7 +189,7 @@ Owner confirms:
 1. A1/A2/I1/T1 **PASS** (booking flows + matrix sections)  
 2. Release gate checklist **complete**  
 3. Rollback SHA **recorded**  
-4. Explicit **GO** for single deploy to `eef40bd4` (or newer `main` that includes PR75)
+4. Explicit **GO** for single deploy to `bf27da1f` (or newer `main` ≥ `eef40bd4`)
 
 Then team sends final one-line:
 
