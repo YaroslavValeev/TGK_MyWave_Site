@@ -143,6 +143,8 @@
   #modalSlots #confirmSlotBtn,
   #modalContact #confirmContactBtn {
     width: 100%;
+    display: block;
+    min-height: 44px;
   }
 
   .modal-content--compact {
