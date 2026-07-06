@@ -94,9 +94,9 @@ def test_append_online_request_writes_request_and_media(fake_store, monkeypatch)
     )
 
     assert result.online_request_id == "oc_req_abc123456789abcd"
-    assert result.request_status == "video_received"
+    assert result.request_status == "waiting_video"
     assert len(fake_store.rows.get("Online_Requests", [])) == 1
-    assert len(fake_store.rows.get("Media_Files", [])) == 1
+    assert len(fake_store.rows.get("Media_Files", [])) == 0
 
 
 def test_append_online_request_progress_month_waiting_payment(fake_store, monkeypatch):

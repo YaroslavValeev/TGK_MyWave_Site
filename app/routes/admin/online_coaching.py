@@ -18,11 +18,17 @@ from app.services.online_coaching_notifications import (
     notify_review_ready,
     notify_review_sent,
     notify_subscription_paid,
-    notify_video_received,
 )
 from app.services.online_coaching_payments import mark_paid, record_manual_payment_url
 from app.services.online_coaching_schema import REQUEST_STATUSES, SERVICE_TYPES, STATUSES_BY_SERVICE, service_display_name
-from app.services.online_coaching_store import append_diary_entry, append_followup, log_admin_action, update_request_fields
+from app.services.online_coaching_store import (
+    append_diary_entry,
+    append_followup,
+    build_status_transition_fields,
+    list_media_for_request,
+    log_admin_action,
+    update_request_fields,
+)
 from app.utils.decorators import admin_required
 
 bp = Blueprint("admin_online_coaching", __name__, url_prefix="/admin/online-coaching")
@@ -42,6 +48,17 @@ _STATUS_FILTERS = (
     "all", "new", "waiting_video", "waiting_payment", "paid", "subscription_active",
     "in_review", "review_ready", "completed",
 )
+
+_QUICK_ACTIONS = {
+    "request_video": "waiting_video",
+    "start_review": "in_review",
+    "review_sent": "review_sent",
+    "waiting_payment": "waiting_payment",
+    "mark_paid": "paid",
+    "complete": "completed",
+    "cancel_test": "cancelled",
+}
+
 _STATUS_LABELS = {
     "all": "Все",
     "new": "Новые",
@@ -108,10 +125,17 @@ def detail(online_request_id: str):
     service_type = record.get("service_type", "")
     status_options = STATUSES_BY_SERVICE.get(service_type, tuple(sorted(REQUEST_STATUSES)))
 
+    try:
+        media_files = list_media_for_request(online_request_id)
+    except Exception:
+        media_files = []
+
     return render_template(
         "admin/online_coaching/detail.html",
         request_record=record,
         request_statuses=status_options,
+        media_files=media_files,
+        quick_actions=_QUICK_ACTIONS,
     )
 
 
@@ -127,7 +151,8 @@ def change_status(online_request_id: str):
 
     try:
         prev = get_online_request_detail(online_request_id) or {}
-        updated = update_request_fields(online_request_id, {"request_status": new_status})
+        fields = build_status_transition_fields(new_status)
+        updated = update_request_fields(online_request_id, fields)
     except ValueError as exc:
         if "not_found" in str(exc):
             flash("Заявка не найдена.", "warning")
@@ -148,9 +173,7 @@ def change_status(online_request_id: str):
 
     if is_online_coaching_notifications_enabled():
         try:
-            if new_status == "video_received":
-                notify_video_received(updated)
-            elif new_status == "review_ready":
+            if new_status == "review_ready":
                 notify_review_ready(updated)
             elif new_status == "review_sent":
                 notify_review_sent(updated)
@@ -160,6 +183,71 @@ def change_status(online_request_id: str):
             pass
 
     flash(f"Статус обновлён: {new_status}", "success")
+    return redirect(url_for("admin_online_coaching.detail", online_request_id=online_request_id))
+
+
+@bp.route("/<online_request_id>/quick-action", methods=["POST"])
+@login_required
+@admin_required
+def quick_action(online_request_id: str):
+    _require_admin_ui()
+    action = (request.form.get("action") or "").strip().lower()
+    new_status = _QUICK_ACTIONS.get(action)
+    if not new_status:
+        flash("Неизвестное действие.", "danger")
+        return redirect(url_for("admin_online_coaching.detail", online_request_id=online_request_id))
+
+    if action == "mark_paid":
+        amount_raw = (request.form.get("amount") or "").strip()
+        amount = float(amount_raw) if amount_raw else None
+        try:
+            result = mark_paid(online_request_id, amount=amount)
+            log_admin_action(
+                online_request_id,
+                actor=_actor_name(),
+                action="quick_mark_paid",
+                summary=str(result.get("amount")),
+                client_id=(get_online_request_detail(online_request_id) or {}).get("client_id", ""),
+            )
+            flash("Оплата отмечена.", "success")
+        except ValueError:
+            flash("Не удалось отметить оплату.", "danger")
+        except Exception:
+            flash("Ошибка записи в Sheets.", "danger")
+        return redirect(url_for("admin_online_coaching.detail", online_request_id=online_request_id))
+
+    try:
+        prev = get_online_request_detail(online_request_id) or {}
+        fields = build_status_transition_fields(new_status)
+        updated = update_request_fields(online_request_id, fields)
+    except ValueError as exc:
+        if "not_found" in str(exc):
+            flash("Заявка не найдена.", "warning")
+        else:
+            flash("Не удалось выполнить действие.", "danger")
+        return redirect(url_for("admin_online_coaching.detail", online_request_id=online_request_id))
+    except Exception:
+        flash("Ошибка записи в Sheets.", "danger")
+        return redirect(url_for("admin_online_coaching.detail", online_request_id=online_request_id))
+
+    log_admin_action(
+        online_request_id,
+        actor=_actor_name(),
+        action=f"quick_{action}",
+        summary=f"{prev.get('request_status', '—')} -> {new_status}",
+        client_id=prev.get("client_id", ""),
+    )
+
+    if is_online_coaching_notifications_enabled():
+        try:
+            if new_status == "review_sent":
+                notify_review_sent(updated)
+            elif new_status == "waiting_payment":
+                notify_payment_needed(updated)
+        except Exception:
+            pass
+
+    flash(f"Действие выполнено: {new_status}", "success")
     return redirect(url_for("admin_online_coaching.detail", online_request_id=online_request_id))
 
 

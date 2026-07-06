@@ -8,7 +8,7 @@ import os
 import re
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
 
 from flask import current_app
@@ -18,6 +18,7 @@ from app.services.online_coaching_schema import (
     COMMENT_MAX_LEN,
     GOAL_MAX_LEN,
     INJURIES_MAX_LEN,
+    IN_REVIEW_REMINDER_HOURS,
     LEVELS,
     MEDIA_FILES_HEADERS,
     MEDIA_FILES_SHEET,
@@ -27,15 +28,24 @@ from app.services.online_coaching_schema import (
     ONLINE_FOLLOWUPS_SHEET,
     ONLINE_REQUESTS_HEADERS,
     ONLINE_REQUESTS_SHEET,
+    PAYMENT_REMINDER_HOURS,
     PAYMENT_STATUSES,
     PAYMENT_TIMING_BY_SERVICE,
     PREFERRED_CHANNELS,
     REQUEST_STATUSES,
+    REVIEW_DEADLINE_HOURS,
+    REVIEW_TASK_MAX_LEN,
     SERVICE_TYPES,
     SHEET_HEADER_CONTRACTS,
+    SPOT_OR_LOCATION_MAX_LEN,
+    TRAINING_COMMENT_MAX_LEN,
+    TRAINING_DATE_MAX_LEN,
+    VIDEO_REMINDER_HOURS,
     col_letter,
+    normalize_video_urls,
     payment_timing_for_service,
     validate_sheet_headers,
+    validate_video_urls,
 )
 
 logger = get_logger(__name__)
@@ -91,6 +101,11 @@ def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def _iso_offset_hours(hours: int, *, base: Optional[datetime] = None) -> str:
+    dt = base or datetime.now(timezone.utc)
+    return (dt + timedelta(hours=hours)).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
 def _truthy_consent(value: object) -> bool:
     if isinstance(value, bool):
         return value
@@ -104,11 +119,12 @@ def _normalize_phone(phone: str) -> str:
     return digits
 
 
-def resolve_initial_status(service_type: str, video_url: str) -> str:
+def resolve_initial_status(service_type: str, video_url: str = "") -> str:
+    """Initial status after apply. Video check always waits for media step (PR83)."""
     if service_type == "progress_month":
         return "waiting_payment"
     if service_type == "video_check":
-        return "video_received" if str(video_url or "").strip() else "waiting_video"
+        return "waiting_video"
     return "new"
 
 
@@ -245,6 +261,12 @@ def build_request_row(
         "consent_personal_data": "TRUE" if payload.consent_personal_data else "FALSE",
         "consent_version": payload.consent_version,
         "ip_hash": payload.ip_hash,
+        "review_task": "",
+        "training_comment": "",
+        "training_date": "",
+        "spot_or_location": "",
+        "in_review_at": "",
+        "paid_at": "",
     }
 
 
@@ -377,6 +399,142 @@ def _append_media_file(
     return media_id
 
 
+def list_media_for_request(
+    online_request_id: str,
+    *,
+    sheet_records: Optional[SheetRecordsFn] = None,
+) -> List[Dict[str, str]]:
+    spreadsheet_id = resolve_spreadsheet_id()
+    if not spreadsheet_id:
+        raise RuntimeError("SPREADSHEET_ID is empty")
+    sheet_name = resolve_sheet_name("MEDIA_FILES_SHEET_NAME", MEDIA_FILES_SHEET)
+    reader = _records_reader(sheet_records)
+    records = reader(spreadsheet_id, sheet_name)
+    needle = online_request_id.strip().lower()
+    rows: List[Dict[str, str]] = []
+    for record in records:
+        if str(record.get("online_request_id") or "").strip().lower() != needle:
+            continue
+        rows.append({str(k): str(v or "").strip() for k, v in record.items()})
+    rows.sort(key=lambda r: r.get("created_at", ""))
+    return rows
+
+
+def validate_media_payload(data: Mapping[str, Any]) -> List[str]:
+    errors: List[str] = []
+    urls = normalize_video_urls(data.get("video_urls"))
+    errors.extend(validate_video_urls(urls))
+
+    review_task = str(data.get("review_task") or "").strip()
+    if not review_task:
+        errors.append("required:review_task")
+    elif len(review_task) > REVIEW_TASK_MAX_LEN:
+        errors.append("invalid:review_task_length")
+
+    training_comment = str(data.get("training_comment") or "").strip()
+    if not training_comment:
+        errors.append("required:training_comment")
+    elif len(training_comment) > TRAINING_COMMENT_MAX_LEN:
+        errors.append("invalid:training_comment_length")
+
+    training_date = str(data.get("training_date") or "").strip()
+    if training_date and len(training_date) > TRAINING_DATE_MAX_LEN:
+        errors.append("invalid:training_date_length")
+
+    spot = str(data.get("spot_or_location") or "").strip()
+    if spot and len(spot) > SPOT_OR_LOCATION_MAX_LEN:
+        errors.append("invalid:spot_or_location_length")
+
+    return errors
+
+
+def append_request_media(
+    online_request_id: str,
+    data: Mapping[str, Any],
+    *,
+    sheet_append: Optional[SheetAppendFn] = None,
+    sheet_records: Optional[SheetRecordsFn] = None,
+    sheet_update: Optional[SheetUpdateFn] = None,
+) -> Dict[str, str]:
+    """Attach 1–3 video URLs and client task to an existing request."""
+    errors = validate_media_payload(data)
+    if errors:
+        raise ValueError("; ".join(errors))
+
+    _row_number, record = find_request_by_id(online_request_id, sheet_records=sheet_records)
+    if record is None:
+        raise ValueError("request_not_found")
+
+    service_type = str(record.get("service_type") or "").strip().lower()
+    current_status = str(record.get("request_status") or "").strip().lower()
+    if service_type == "video_check" and current_status not in {"waiting_video", "new"}:
+        if current_status == "video_received":
+            raise ValueError("media_already_received")
+        raise ValueError(f"invalid_status_for_media:{current_status}")
+
+    urls = normalize_video_urls(data.get("video_urls"))
+    review_task = str(data.get("review_task") or "").strip()
+    training_comment = str(data.get("training_comment") or "").strip()
+    training_date = str(data.get("training_date") or "").strip()
+    spot_or_location = str(data.get("spot_or_location") or "").strip()
+    client_id = str(record.get("client_id") or "")
+
+    now = datetime.now(timezone.utc)
+    deadline_at = _iso_offset_hours(REVIEW_DEADLINE_HOURS, base=now)
+    next_followup_at = _iso_offset_hours(VIDEO_REMINDER_HOURS, base=now)
+
+    update_fields: Dict[str, str] = {
+        "video_url": urls[0],
+        "review_task": review_task,
+        "training_comment": training_comment,
+        "training_date": training_date,
+        "spot_or_location": spot_or_location,
+        "request_status": "video_received",
+        "deadline_at": deadline_at,
+        "next_followup_at": next_followup_at,
+    }
+    merged = update_request_fields(
+        online_request_id,
+        update_fields,
+        sheet_records=sheet_records,
+        sheet_update=sheet_update,
+    )
+
+    for url in urls:
+        _append_media_file(
+            client_id=client_id,
+            online_request_id=online_request_id,
+            video_url=url,
+            sheet_append=sheet_append,
+        )
+
+    merged["video_urls"] = urls
+    logger.info(
+        "online_coaching_media_appended",
+        extra={
+            "online_request_id": online_request_id,
+            "video_count": len(urls),
+            "request_status": "video_received",
+        },
+    )
+    return merged
+
+
+def build_status_transition_fields(new_status: str) -> Dict[str, str]:
+    """Extra request fields when admin changes workflow status."""
+    fields: Dict[str, str] = {"request_status": new_status}
+    if new_status == "in_review":
+        fields["in_review_at"] = _utc_now_iso()
+        fields["next_followup_at"] = _iso_offset_hours(IN_REVIEW_REMINDER_HOURS)
+    elif new_status == "waiting_payment":
+        fields["next_followup_at"] = _iso_offset_hours(PAYMENT_REMINDER_HOURS)
+    elif new_status == "paid":
+        fields["paid_at"] = _utc_now_iso()
+    elif new_status == "waiting_video":
+        fields["next_followup_at"] = _iso_offset_hours(VIDEO_REMINDER_HOURS)
+    return fields
+
+
 def _log_bot_event_optional(client_id: str, event_type: str, metadata: str) -> None:
     try:
         from app.services.sheets_writer import save_bot_event_to_sheets
@@ -438,6 +596,8 @@ def append_online_request(
         request_status=request_status,
         payment_status=payment_status,
     )
+    if request_status == "waiting_video":
+        row_dict["next_followup_at"] = _iso_offset_hours(VIDEO_REMINDER_HOURS)
     values = row_dict_to_values(row_dict)
 
     spreadsheet_id = resolve_spreadsheet_id()
@@ -452,13 +612,7 @@ def append_online_request(
 
         append_record(spreadsheet_id, sheet_name, values)
 
-    if payload.video_url.strip():
-        _append_media_file(
-            client_id=client_id,
-            online_request_id=req_id,
-            video_url=payload.video_url.strip(),
-            sheet_append=sheet_append,
-        )
+    # Media for video_check is submitted via POST .../media (PR83), not on apply.
 
     if log_bot_event and client_id:
         _log_bot_event_optional(

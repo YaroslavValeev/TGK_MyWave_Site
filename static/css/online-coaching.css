@@ -175,3 +175,13 @@
     white-space: nowrap;
   }
 }
+
+.oc-step-panel {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--mw-border, rgba(0, 0, 0, 0.08));
+}
+
+.oc-step-panel h3 {
+  margin: 0 0 0.75rem;
+}

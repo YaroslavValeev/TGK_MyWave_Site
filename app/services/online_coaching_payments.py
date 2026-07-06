@@ -125,6 +125,7 @@ def mark_paid(
         {
             "payment_status": "paid",
             "request_status": final_status,
+            "paid_at": paid_at,
         },
         sheet_records=sheet_records,
         sheet_update=sheet_update,
