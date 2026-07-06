@@ -1,0 +1,101 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Online Coaching — заявки{% endblock %}
+{% block admin_title %}Online Coaching — заявки{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="admin-breadcrumbs">
+        <li><a href="{{ url_for('admin.index') }}">Главная</a></li>
+        <li>Online Coaching</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Заявки Online Coaching</h2>
+        <div class="admin-chip-group" role="group" aria-label="Фильтр по статусу">
+            {% for s in status_filters %}
+            <a href="{{ url_for('admin_online_coaching.index', status=s) }}"
+               class="admin-chip {% if status_filter == s %}active{% endif %}">
+                {{ status_labels.get(s, s) }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if requests %}
+    <div class="admin-card__body admin-card__body--flush admin-table-desktop">
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Статус</th>
+                        <th>Услуга</th>
+                        <th>Имя</th>
+                        <th>Канал</th>
+                        <th>Создана</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                    <tr>
+                        <td><code>{{ req.online_request_id }}</code></td>
+                        <td><span class="admin-badge">{{ req.request_status or '—' }}</span></td>
+                        <td>{{ req.service_type or '—' }}</td>
+                        <td>{{ req.name or '—' }}</td>
+                        <td>{{ req.preferred_channel or '—' }}</td>
+                        <td>{{ req.created_at or '—' }}</td>
+                        <td>
+                            <a href="{{ url_for('admin_online_coaching.detail', online_request_id=req.online_request_id) }}"
+                               class="admin-btn admin-btn--secondary admin-btn--sm">Открыть</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="admin-mobile-cards">
+        {% for req in requests %}
+        <div class="admin-mobile-card">
+            <div class="admin-mobile-card__row">
+                <strong>ID</strong>
+                <code>{{ req.online_request_id }}</code>
+            </div>
+            <div class="admin-mobile-card__row">
+                <strong>Статус</strong>
+                <span>{{ req.request_status or '—' }}</span>
+            </div>
+            <div class="admin-mobile-card__row">
+                <strong>Услуга</strong>
+                <span>{{ req.service_type or '—' }}</span>
+            </div>
+            <div class="admin-mobile-card__row">
+                <strong>Имя</strong>
+                <span>{{ req.name or '—' }}</span>
+            </div>
+            <div class="admin-mobile-card__row">
+                <strong>Создана</strong>
+                <span>{{ req.created_at or '—' }}</span>
+            </div>
+            <div class="admin-mobile-card__actions">
+                <a href="{{ url_for('admin_online_coaching.detail', online_request_id=req.online_request_id) }}"
+                   class="admin-btn admin-btn--secondary admin-btn--sm">Открыть</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="admin-card__body">
+        <p class="admin-muted mb-0">Заявок не найдено.</p>
+    </div>
+    {% endif %}
+</div>
+<p class="admin-muted">Травмы/ограничения не отображаются — только флаг «важная информация» на карточке.</p>
+{% endblock %}

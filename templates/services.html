@@ -37,11 +37,12 @@
             {% endif %}
           </div>
           <div class="service-card-actions">
-            {% if service.modal_id %}
-            <button class="btn btn-primary-lg book-now"
-                    data-service="{{ service.service_id }}"
+                        {% if service.page_url %}
+            <a class="btn btn-primary-lg" href="{{ service.page_url }}">{{ service.button_text|default('Подробнее / Записаться') }}</a>
+            {% elif service.modal_id %}
+            <button class="btn btn-primary-lg book-now" data-service="{{ service.service_id }}"
                     data-modal="{{ service.modal_id }}">
-              {{ service.button_text }}
+                {{ service.button_text|default('Подробнее / Записаться') }}
             </button>
             {% endif %}
           </div>

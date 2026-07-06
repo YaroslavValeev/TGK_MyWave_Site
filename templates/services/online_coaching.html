@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+
+{% block title %}MyWave Online Coaching{% endblock %}
+{% block meta_description %}Онлайн-тренировки MyWave: разбор видео, месячное сопровождение и Live Coach по вейкборду и вейксерфингу.{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/online-coaching.css') }}?v=1" />
+{% endblock %}
+
+{% block content %}
+<section class="mw-section mw-surface oc-page">
+  <div class="mw-container">
+
+    <header class="oc-hero" id="oc-top">
+      <p class="oc-hero__eyebrow">MyWave Online Coaching</p>
+      <h1>Онлайн-тренировки MyWave</h1>
+      <p class="oc-hero__lead">
+        Разбор техники, задания и сопровождение прогресса в вейкборде и вейксерфинге — онлайн, между тренировками и сезонами.
+      </p>
+      <p class="oc-muted">
+        Прогресс в катании не заканчивается после сета. Отправь видео тренировки, получи разбор техники, понятные задания и план следующего шага.
+      </p>
+      <div class="oc-hero__actions">
+        <a href="#oc-apply" class="btn-primary" data-service-type="video_check">Отправить видео на разбор</a>
+        <a href="#oc-formats" class="btn-secondary">Выбрать формат</a>
+      </div>
+    </header>
+
+    <section id="oc-formats" class="oc-section" aria-labelledby="oc-formats-title">
+      <h2 id="oc-formats-title">Три формата услуги</h2>
+      <div class="oc-grid oc-grid--services">
+        <article class="mw-card oc-card oc-service-card">
+          <h3>MyWave Video Check</h3>
+          <p class="oc-muted">Разовый видеоразбор техники с заданиями и дневником.</p>
+          <ul>
+            <li>Анкета и ссылка на видео</li>
+            <li>3 главные ошибки</li>
+            <li>2–4 задания</li>
+            <li>Короткий дневник рекомендаций</li>
+          </ul>
+          <p class="oc-price">3 500 ₽</p>
+          <p class="oc-price-note">Оплата после разбора</p>
+          <button type="button" class="btn-secondary oc-service-card__cta" data-service-type="video_check">Выбрать Video Check</button>
+        </article>
+
+        <article class="mw-card oc-card oc-card--highlight oc-service-card">
+          <h3>MyWave Progress Month</h3>
+          <p class="oc-muted">Видеоразборы каждой вашей тренировки в течение месяца, задания на воде и суше, ОФП, смежные дисциплины и дневник прогресса.</p>
+          <ul>
+            <li>До 8 тренировок за 30 дней</li>
+            <li>До 3 роликов по 60–90 сек после каждой тренировки</li>
+            <li>Ответ до 48 часов</li>
+          </ul>
+          <p class="oc-price">12 900 ₽ / месяц</p>
+          <p class="oc-price-note">Оплата при покупке</p>
+          <button type="button" class="btn-primary oc-service-card__cta" data-service-type="progress_month">Выбрать Progress Month</button>
+        </article>
+
+        <article class="mw-card oc-card oc-service-card">
+          <h3>MyWave Live Coach</h3>
+          <p class="oc-muted">Онлайн-занятие в реальном времени: на суше, в зале, дома или в безопасном формате на воде.</p>
+          <p><strong>На суше:</strong> баланс, батут, серфскейт, тренажёры, ОФП — тренер корректирует технику по видеосвязи.</p>
+          <p><strong>На воде:</strong> рекомендации до попытки, после попытки или между сетами — без отвлечения во время движения.</p>
+          <p class="oc-price">от 3 500 ₽ / 30 мин</p>
+          <p class="oc-price-note">Разовое занятие — оплата после</p>
+          <div class="oc-hero__actions" style="margin-top:0.75rem;">
+            <button type="button" class="btn-secondary" data-service-type="live_coach_land">Live на суше</button>
+            <button type="button" class="btn-secondary" data-service-type="live_coach_water">Live на воде</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="oc-audience" class="mw-card oc-card oc-section" aria-labelledby="oc-audience-title">
+      <h2 id="oc-audience-title">Кому подходит</h2>
+      <div class="oc-grid">
+        <article>
+          <h3>Video Check</h3>
+          <p class="oc-muted">Разовый разбор техники: перед сезоном, после паузы или когда нужен свежий взгляд тренера на конкретный элемент.</p>
+        </article>
+        <article>
+          <h3>Progress Month</h3>
+          <p class="oc-muted">Райдерам, которые тренируются регулярно и хотят разбор каждой тренировки, задания и дневник прогресса в течение месяца.</p>
+        </article>
+        <article>
+          <h3>Live Coach</h3>
+          <p class="oc-muted">Для работы на суше (баланс, ОФП, батут) или безопасной онлайн-подсказки на воде — до попытки, после или между сетами.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="oc-how" class="mw-card oc-card oc-section" aria-labelledby="oc-how-title">
+      <h2 id="oc-how-title">Как это работает</h2>
+      <ol class="oc-steps">
+        <li>Выберите формат и оставьте заявку с контактом и целью.</li>
+        <li>Мы свяжемся в выбранном канале (Telegram — приоритет в MVP).</li>
+        <li>Для Video Check / Progress Month — пришлите ссылку на видео или файл в Telegram.</li>
+        <li>Тренер делает разбор, фиксирует задания в дневнике.</li>
+        <li>Оплата: Progress Month — сразу; Video Check и разовый Live — после услуги.</li>
+      </ol>
+    </section>
+
+    <section id="oc-included" class="oc-section" aria-labelledby="oc-included-title">
+      <h2 id="oc-included-title">Что входит в каждый формат</h2>
+      <div class="mw-card oc-card">
+        <table class="oc-included-table">
+          <thead>
+            <tr>
+              <th>Компонент</th>
+              <th>Video Check</th>
+              <th>Progress Month</th>
+              <th>Live Coach</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Анкета / цель</td><td>✓</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Видеоразбор</td><td>1 раз</td><td>Каждая тренировка</td><td>—</td></tr>
+            <tr><td>Задания на воде / суше</td><td>2–4</td><td>Регулярно</td><td>В сессии</td></tr>
+            <tr><td>ОФП / смежные дисциплины</td><td>По необходимости</td><td>✓</td><td>По формату</td></tr>
+            <tr><td>Дневник прогресса</td><td>Краткий</td><td>Полный</td><td>Заметки</td></tr>
+            <tr><td>Live видеосвязь</td><td>—</td><td>—</td><td>✓</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="oc-prices" class="oc-section" aria-labelledby="oc-prices-title">
+      <h2 id="oc-prices-title">Цены</h2>
+      <div class="oc-grid">
+        <article class="mw-card oc-card">
+          <h3>Video Check</h3>
+          <p class="oc-price">3 500 ₽</p>
+          <p class="oc-muted">Разовый разбор, оплата после получения разбора.</p>
+        </article>
+        <article class="mw-card oc-card oc-card--highlight">
+          <h3>Progress Month</h3>
+          <p class="oc-price">12 900 ₽ / месяц</p>
+          <p class="oc-muted">До 8 тренировок, оплата при старте подписки.</p>
+        </article>
+        <article class="mw-card oc-card">
+          <h3>Live Coach</h3>
+          <p class="oc-price">3 500 ₽ — 30 мин (суша)</p>
+          <p class="oc-price">5 500 ₽ — 60 мин (вода)</p>
+          <p class="oc-muted">Разовое занятие — оплата после. Пакеты — по запросу.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="oc-film" class="mw-card oc-card oc-section" aria-labelledby="oc-film-title">
+      <h2 id="oc-film-title">Как снять видео</h2>
+      <ul>
+        <li>Снимайте сбоку или сзади — видно позу, работу ног и доску.</li>
+        <li>Длительность 60–90 секунд на один ролик (для Progress Month — до 3 роликов).</li>
+        <li>Стабильная камера или штатив, хорошее освещение.</li>
+        <li>Безопасность: не снимайте себя во время опасных манёвров на воде.</li>
+        <li>Загрузите на Google Drive, Яндекс.Диск или отправьте в Telegram — вставьте ссылку в форму.</li>
+      </ul>
+    </section>
+
+    <section id="oc-diary" class="mw-card oc-card oc-section" aria-labelledby="oc-diary-title">
+      <h2 id="oc-diary-title">Как работает дневник</h2>
+      <p class="oc-section-intro">После разбора тренер фиксирует цель, главную ошибку, задания на воду, сушу и ОФП. В MVP дневник ведётся в Google Sheets/Docs — вы получаете ссылку после первого разбора.</p>
+      <ul>
+        <li>Текущая цель и главная ошибка</li>
+        <li>Задания: вода, суша, ОФП, смежные дисциплины</li>
+        <li>Запрос следующего видео</li>
+        <li>Комментарии тренера и еженедельная корректировка (Progress Month)</li>
+      </ul>
+    </section>
+
+    <section id="oc-safety" class="mw-card oc-card oc-card--highlight oc-section" aria-labelledby="oc-safety-title">
+      <h2 id="oc-safety-title">Безопасность</h2>
+      <ul>
+        <li>Укажите травмы и ограничения в заявке — мы учтём их в рекомендациях.</li>
+        <li>Live на воде: инструкции только до/после попытки или между сетами.</li>
+        <li>Онлайн-разбор не заменяет медицинскую консультацию.</li>
+        <li>Не публикуем ваши персональные и медицинские данные без согласия.</li>
+      </ul>
+    </section>
+
+    <section id="oc-faq" class="oc-section oc-faq" aria-labelledby="oc-faq-title">
+      <h2 id="oc-faq-title">FAQ</h2>
+      <div class="mw-card oc-card">
+        <details>
+          <summary>Как быстро вы отвечаете?</summary>
+          <p>Для Progress Month — до 48 часов после каждого видео. Video Check — согласуем дедлайн при приёме заявки.</p>
+        </details>
+        <details>
+          <summary>Нужно ли платить сразу?</summary>
+          <p>Progress Month — оплата при покупке. Video Check и разовый Live — после получения разбора или занятия.</p>
+        </details>
+        <details>
+          <summary>Можно ли без видео?</summary>
+          <p>Для Video Check и Progress Month видео обязательно. Live Coach — формат без предварительного ролика.</p>
+        </details>
+        <details>
+          <summary>Как связаться с тренером?</summary>
+          <p>Выберите канал в форме: Telegram, WhatsApp, MAX, телефон или email. В MVP автоматические уведомления — в Telegram.</p>
+        </details>
+      </div>
+    </section>
+
+    <section id="oc-apply" class="mw-card oc-card oc-apply-card" aria-labelledby="oc-apply-title">
+      <h2 id="oc-apply-title">Форма заявки</h2>
+      <p class="oc-section-intro">Заполните поля ниже. Мы обработаем заявку и свяжемся с вами в выбранном канале.</p>
+
+      {% if applications_enabled %}
+      <form id="oc-application-form" class="oc-form" novalidate>
+        <input type="hidden" name="consent_version" value="{{ consent_version }}">
+
+        <div class="mw-grid-2">
+          <div class="mw-field">
+            <label for="oc-name">Имя *</label>
+            <input type="text" id="oc-name" name="name" required maxlength="120" autocomplete="name">
+          </div>
+          <div class="mw-field js-oc-phone-field">
+            <label for="oc-phone">Телефон *</label>
+            <input type="tel" id="oc-phone" name="phone" required autocomplete="tel" placeholder="+7 (916) 000-00-00">
+          </div>
+          <div class="mw-field js-oc-email-field" hidden>
+            <label for="oc-email">Email *</label>
+            <input type="email" id="oc-email" name="email" autocomplete="email" maxlength="120">
+          </div>
+          <div class="mw-field">
+            <label for="oc-preferred-channel">Удобный канал связи *</label>
+            <select id="oc-preferred-channel" name="preferred_channel" required>
+              <option value="">Выберите</option>
+              <option value="telegram">Telegram</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="max">MAX</option>
+              <option value="phone">Телефон</option>
+              <option value="email">Email</option>
+            </select>
+          </div>
+          <div class="mw-field js-oc-telegram-field" hidden>
+            <label for="oc-telegram">Telegram @username</label>
+            <input type="text" id="oc-telegram" name="telegram_username" maxlength="80" placeholder="@username">
+          </div>
+          <div class="mw-field js-oc-whatsapp-field" hidden>
+            <label for="oc-whatsapp">WhatsApp</label>
+            <input type="tel" id="oc-whatsapp" name="whatsapp_phone" autocomplete="tel" placeholder="+7...">
+          </div>
+          <div class="mw-field js-oc-max-field" hidden>
+            <label for="oc-max">MAX контакт</label>
+            <input type="text" id="oc-max" name="max_contact" maxlength="120" placeholder="ник или номер">
+          </div>
+          <div class="mw-field">
+            <label for="oc-service-type">Услуга *</label>
+            <select id="oc-service-type" name="service_type" required>
+              <option value="">Выберите</option>
+              <option value="video_check">Video Check — разбор видео</option>
+              <option value="progress_month">Progress Month — месяц сопровождения</option>
+              <option value="live_coach_land">Live Coach — суша</option>
+              <option value="live_coach_water">Live Coach — вода</option>
+            </select>
+          </div>
+          <div class="mw-field">
+            <label for="oc-discipline">Дисциплина</label>
+            <select id="oc-discipline" name="discipline">
+              <option value="">Не указано</option>
+              <option value="wakesurf">Вейксерфинг</option>
+              <option value="wakeboard">Вейкборд</option>
+              <option value="both">Обе</option>
+              <option value="other">Другое</option>
+            </select>
+          </div>
+          <div class="mw-field">
+            <label for="oc-level">Уровень</label>
+            <select id="oc-level" name="level">
+              <option value="">Не указано</option>
+              <option value="beginner">Начинающий</option>
+              <option value="intermediate">Продолжающий</option>
+              <option value="advanced">Продвинутый</option>
+              <option value="pro">Про</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mw-field">
+          <label for="oc-goal">Цель</label>
+          <textarea id="oc-goal" name="goal" rows="2" maxlength="500" placeholder="Например: стабильнее держаться в волне"></textarea>
+        </div>
+
+        <div class="mw-field">
+          <label for="oc-injuries">Травмы / ограничения</label>
+          <textarea id="oc-injuries" name="injuries_or_limits" rows="2" maxlength="500" placeholder="Кратко: что важно учесть тренеру"></textarea>
+          <p class="oc-field-hint">Не указывайте диагнозы и документы — обсудим детали при связи.</p>
+        </div>
+
+        <div class="mw-field">
+          <label for="oc-video-url">Ссылка на видео</label>
+          <input type="url" id="oc-video-url" name="video_url" maxlength="500" placeholder="https://...">
+          <p class="oc-field-hint">Google Drive, Яндекс.Диск или ссылка из Telegram. Можно добавить позже.</p>
+        </div>
+
+        <div class="mw-field">
+          <label for="oc-comment">Комментарий</label>
+          <textarea id="oc-comment" name="comment" rows="3" maxlength="1000" placeholder="Дополнительные пожелания"></textarea>
+        </div>
+
+        <fieldset class="oc-consents">
+          <legend>Согласия</legend>
+          <label class="oc-consent-item">
+            <input type="checkbox" name="consent_personal_data" value="1" required>
+            Согласен(на) на обработку персональных данных *
+          </label>
+          <label class="oc-consent-item">
+            <input type="checkbox" name="consent_training" value="1" required>
+            Согласен(на) с условиями онлайн-услуг MyWave *
+          </label>
+        </fieldset>
+
+        {% include 'partials/legal_consent.html' %}
+
+        <button type="submit" class="btn-primary">Отправить заявку</button>
+        <p id="oc-form-message" class="mw-form-message" role="status" aria-live="polite" hidden></p>
+      </form>
+      {% else %}
+      <p class="oc-apply-disabled">Приём заявок временно недоступен. Напишите нам в контактах на главной странице.</p>
+      {% endif %}
+    </section>
+
+    <section class="mw-card oc-card oc-final-cta oc-section" aria-labelledby="oc-final-title">
+      <h2 id="oc-final-title">Готовы к следующему шагу?</h2>
+      <p class="oc-muted">Выберите формат или сразу отправьте видео на разбор — мы поможем выстроить прогресс между тренировками.</p>
+      <div class="oc-hero__actions" style="justify-content:center;">
+        <a href="#oc-apply" class="btn-primary" data-service-type="video_check">Отправить видео на разбор</a>
+        <a href="#oc-formats" class="btn-secondary">Сравнить форматы</a>
+      </div>
+    </section>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/online-coaching-form.js') }}?v=1" defer></script>
+{% endblock %}
