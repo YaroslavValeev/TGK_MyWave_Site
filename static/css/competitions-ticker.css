@@ -34,59 +34,29 @@
 }
 
 .home-competitions-ticker__viewport {
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: hidden;
     width: 100%;
     padding-left: 6.5rem;
-    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+    overscroll-behavior-inline: contain;
     scrollbar-width: none;
     cursor: grab;
     mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
 }
 
-.home-competitions-ticker__viewport.is-autoplay {
-    overflow: hidden;
-    touch-action: pan-y;
+.home-competitions-ticker__viewport::-webkit-scrollbar {
+    display: none;
 }
 
-.home-competitions-ticker__viewport.is-autoplay .home-competitions-ticker__track {
-    animation: competitions-ticker-marquee var(--ticker-duration, 840s) linear infinite;
-    will-change: transform;
-}
-
-.home-competitions-ticker__viewport.is-autoplay.is-paused .home-competitions-ticker__track {
-    animation-play-state: paused;
-}
-
-@keyframes competitions-ticker-marquee {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(-50%);
-    }
-}
-
-.home-competitions-ticker__viewport.is-scrollable {
-    cursor: grab;
-}
-
-.home-competitions-ticker__viewport.is-scrollable.is-dragging {
+.home-competitions-ticker__viewport.is-dragging {
     cursor: grabbing;
     user-select: none;
 }
 
-.home-competitions-ticker__viewport.is-dragging .home-competitions-ticker__track {
-    will-change: transform;
-}
-
 .home-competitions-ticker__viewport.is-dragging a {
     pointer-events: none;
-}
-
-.home-competitions-ticker__viewport::-webkit-scrollbar {
-    display: none;
 }
 
 .home-competitions-ticker__track {
@@ -95,7 +65,11 @@
     align-items: center;
     gap: 0;
     white-space: nowrap;
-    will-change: transform;
+    width: max-content;
+    min-width: max-content;
+    transform: none !important;
+    animation: none !important;
+    will-change: auto;
 }
 
 .home-competitions-ticker__item {
@@ -157,10 +131,7 @@
 
     .home-competitions-ticker__viewport {
         padding-left: 0;
-    }
-
-    .home-competitions-ticker__viewport.is-autoplay {
-        overflow: hidden;
+        touch-action: pan-x pan-y;
     }
 
     .home-competitions-ticker__link,
@@ -172,11 +143,6 @@
 @media (prefers-reduced-motion: reduce) {
     .home-competitions-ticker__viewport {
         mask-image: none;
-    }
-
-    .home-competitions-ticker__viewport.is-autoplay .home-competitions-ticker__track {
-        animation: none;
-        transform: none;
     }
 
     .home-competitions-ticker__track {

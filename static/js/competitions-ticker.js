@@ -1,61 +1,25 @@
 /**
  * Бегущая строка соревнований:
- * - autoplay via CSS transform (desktop + mobile, ~840s loop);
- * - pause on hover, focus, touch;
- * - pointer drag with momentum (1:1 finger tracking + inertia);
- * - prefers-reduced-motion: native horizontal scroll only.
+ * - source of truth: viewport.scrollLeft;
+ * - mobile: native horizontal scroll + browser inertia;
+ * - desktop: mouse drag + custom momentum;
+ * - autoplay: requestAnimationFrame;
+ * - loop: cycleWidth normalization on duplicated content.
  */
 (function () {
-  var BASE_DURATION_SEC = 840;
-  var DRAG_THRESHOLD_PX = 8;
-  var MOMENTUM_MIN_VELOCITY = 0.04;
+  var AUTO_SPEED_PX_PER_SEC = 18;
+  var RESUME_DELAY_MS = 1200;
+  var MOUSE_DRAG_THRESHOLD_PX = 5;
   var MOMENTUM_FRICTION = 0.94;
-  var MOMENTUM_MAX_VELOCITY = 2.4;
+  var MOMENTUM_MIN_VELOCITY = 0.02;
+  var MOMENTUM_MAX_VELOCITY = 3.2;
+  var CLONE_SETS = 2;
 
   function prefersReducedMotion() {
     return (
       window.matchMedia &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     );
-  }
-
-  function getTranslateX(el) {
-    var style = window.getComputedStyle(el);
-    var transform = style.transform;
-    if (!transform || transform === "none") {
-      return 0;
-    }
-    if (typeof DOMMatrix !== "undefined") {
-      return new DOMMatrix(transform).m41;
-    }
-    var match = transform.match(/matrix\(([^)]+)\)/);
-    if (match) {
-      var parts = match[1].split(",");
-      return parseFloat(parts[4]) || 0;
-    }
-    return 0;
-  }
-
-  function setManualTranslate(track, x) {
-    track.style.animation = "none";
-    track.style.transform = "translateX(" + x + "px)";
-  }
-
-  function syncAnimationFromTranslate(track, durationSec) {
-    var half = track.scrollWidth / 2;
-    if (!half) {
-      track.style.animation = "";
-      track.style.transform = "";
-      track.style.animationDelay = "";
-      return;
-    }
-    var x = getTranslateX(track);
-    var progress = (Math.abs(x) % half) / half;
-    var delay = -progress * durationSec;
-    track.style.animation = "";
-    track.style.transform = "";
-    track.style.animationDelay = delay + "s";
-    void track.offsetWidth;
   }
 
   function initTicker(root) {
@@ -65,10 +29,13 @@
       return;
     }
 
-    var reduced = prefersReducedMotion();
+    var originalCount = track.children.length;
+    if (!originalCount) {
+      return;
+    }
 
-    if (!reduced) {
-      var children = Array.from(track.children);
+    var children = Array.from(track.children);
+    for (var cloneIndex = 0; cloneIndex < CLONE_SETS; cloneIndex += 1) {
       children.forEach(function (node) {
         var dup = node.cloneNode(true);
         dup.setAttribute("aria-hidden", "true");
@@ -77,21 +44,44 @@
     }
 
     track.dataset.tickerReady = "1";
-    root.style.setProperty("--ticker-duration", BASE_DURATION_SEC + "s");
-    viewport.classList.add("is-scrollable");
+    viewport.classList.add("is-native-scroll");
 
-    if (reduced) {
+    if (prefersReducedMotion()) {
       viewport.classList.add("is-manual-only");
       return;
     }
 
-    viewport.classList.add("is-autoplay");
-
+    var cycleWidth = 0;
+    var autoplayPaused = false;
+    var autoplayFrame = null;
+    var lastFrameTime = 0;
     var resumeTimer = null;
     var dragState = null;
+    var momentumFrame = null;
+
+    function measureCycleWidth() {
+      cycleWidth = track.scrollWidth / (CLONE_SETS + 1);
+      return cycleWidth;
+    }
+
+    function normalizeScroll() {
+      if (!cycleWidth) {
+        return;
+      }
+      while (viewport.scrollLeft >= cycleWidth * 2) {
+        viewport.scrollLeft -= cycleWidth;
+      }
+      while (viewport.scrollLeft <= 0) {
+        viewport.scrollLeft += cycleWidth;
+      }
+    }
 
     function pauseAutoplay() {
-      viewport.classList.add("is-paused");
+      autoplayPaused = true;
+      if (autoplayFrame) {
+        window.cancelAnimationFrame(autoplayFrame);
+        autoplayFrame = null;
+      }
     }
 
     function scheduleResume(delay) {
@@ -99,31 +89,54 @@
         clearTimeout(resumeTimer);
       }
       resumeTimer = setTimeout(function () {
-        if (!viewport.classList.contains("is-user-holding")) {
-          viewport.classList.remove("is-paused");
+        if (!dragState && !momentumFrame) {
+          autoplayPaused = false;
+          lastFrameTime = 0;
+          startAutoplay();
         }
-      }, delay || 500);
+      }, delay || RESUME_DELAY_MS);
     }
 
-    root.addEventListener("mouseenter", pauseAutoplay);
-    root.addEventListener("mouseleave", function () {
-      if (!dragState) {
-        scheduleResume(250);
-      }
-    });
-    root.addEventListener("focusin", pauseAutoplay);
-    root.addEventListener("focusout", function () {
-      if (!dragState) {
-        scheduleResume(250);
-      }
-    });
-
-    function clearDragState(resumeDelay) {
-      if (!dragState) {
+    function startAutoplay() {
+      if (autoplayFrame || autoplayPaused) {
         return;
       }
-      if (dragState.momentumFrame) {
-        window.cancelAnimationFrame(dragState.momentumFrame);
+
+      function step(now) {
+        if (autoplayPaused) {
+          autoplayFrame = null;
+          return;
+        }
+        if (!lastFrameTime) {
+          lastFrameTime = now;
+        }
+        var dt = now - lastFrameTime;
+        lastFrameTime = now;
+        viewport.scrollLeft += AUTO_SPEED_PX_PER_SEC * dt / 1000;
+        normalizeScroll();
+        autoplayFrame = window.requestAnimationFrame(step);
+      }
+
+      autoplayFrame = window.requestAnimationFrame(step);
+    }
+
+    function onTouchStart() {
+      pauseAutoplay();
+    }
+
+    function onTouchEnd() {
+      normalizeScroll();
+      scheduleResume(RESUME_DELAY_MS);
+    }
+
+    viewport.addEventListener("touchstart", onTouchStart, { passive: true });
+    viewport.addEventListener("touchend", onTouchEnd, { passive: true });
+    viewport.addEventListener("touchcancel", onTouchEnd, { passive: true });
+    viewport.addEventListener("scroll", normalizeScroll, { passive: true });
+
+    function clearDragState() {
+      if (!dragState) {
+        return;
       }
       viewport.classList.remove("is-dragging", "is-user-holding");
       try {
@@ -132,73 +145,63 @@
         /* ignore */
       }
       dragState = null;
-      if (typeof resumeDelay === "number") {
-        scheduleResume(resumeDelay);
-      }
     }
 
     function startMomentum(state) {
-      var velocity = state.velocityX * 16;
-      var x = state.currentTranslate;
+      var velocity = -state.velocityX * 16;
 
       function step() {
-        x += velocity;
-        velocity *= MOMENTUM_FRICTION;
-        state.currentTranslate = x;
-        setManualTranslate(track, x);
-
-        if (Math.abs(velocity) > MOMENTUM_MIN_VELOCITY) {
-          state.momentumFrame = window.requestAnimationFrame(step);
+        if (Math.abs(velocity) <= MOMENTUM_MIN_VELOCITY) {
+          momentumFrame = null;
+          normalizeScroll();
+          scheduleResume(RESUME_DELAY_MS);
           return;
         }
-
-        syncAnimationFromTranslate(track, BASE_DURATION_SEC);
-        clearDragState(350);
+        viewport.scrollLeft += velocity;
+        velocity *= MOMENTUM_FRICTION;
+        normalizeScroll();
+        momentumFrame = window.requestAnimationFrame(step);
       }
 
-      state.momentumFrame = window.requestAnimationFrame(step);
+      if (momentumFrame) {
+        window.cancelAnimationFrame(momentumFrame);
+      }
+      momentumFrame = window.requestAnimationFrame(step);
     }
 
     function onPointerDown(e) {
-      if (e.pointerType === "mouse" && e.button !== 0) {
+      if (e.pointerType !== "mouse" || e.button !== 0) {
         return;
       }
-      if (dragState && dragState.momentumFrame) {
-        window.cancelAnimationFrame(dragState.momentumFrame);
+      if (momentumFrame) {
+        window.cancelAnimationFrame(momentumFrame);
+        momentumFrame = null;
       }
+      pauseAutoplay();
       dragState = {
         pointerId: e.pointerId,
         startClientX: e.clientX,
-        startClientY: e.clientY,
-        startTranslate: getTranslateX(track),
+        startScrollLeft: viewport.scrollLeft,
         lastClientX: e.clientX,
         lastTime: performance.now(),
-        currentTranslate: getTranslateX(track),
         velocityX: 0,
-        momentumFrame: null,
         moved: false,
         target: e.target,
       };
       viewport.classList.add("is-user-holding");
-      pauseAutoplay();
       if (viewport.setPointerCapture) {
         viewport.setPointerCapture(e.pointerId);
       }
     }
 
     function onPointerMove(e) {
-      if (!dragState || dragState.pointerId !== e.pointerId) {
+      if (!dragState || dragState.pointerId !== e.pointerId || e.pointerType !== "mouse") {
         return;
       }
-      var dx = e.clientX - dragState.startClientX;
-      var dy = e.clientY - dragState.startClientY;
 
+      var dx = e.clientX - dragState.startClientX;
       if (!dragState.moved) {
-        if (Math.abs(dy) > DRAG_THRESHOLD_PX && Math.abs(dy) > Math.abs(dx)) {
-          clearDragState(250);
-          return;
-        }
-        if (Math.abs(dx) <= DRAG_THRESHOLD_PX) {
+        if (Math.abs(dx) < MOUSE_DRAG_THRESHOLD_PX) {
           return;
         }
         dragState.moved = true;
@@ -212,16 +215,15 @@
       var now = performance.now();
       var frameDx = e.clientX - dragState.lastClientX;
       var dt = Math.max(16, now - dragState.lastTime);
-
       dragState.velocityX = Math.max(
         -MOMENTUM_MAX_VELOCITY,
         Math.min(MOMENTUM_MAX_VELOCITY, frameDx / dt)
       );
-      dragState.currentTranslate += frameDx;
       dragState.lastClientX = e.clientX;
       dragState.lastTime = now;
 
-      setManualTranslate(track, dragState.currentTranslate);
+      viewport.scrollLeft = dragState.startScrollLeft - (e.clientX - dragState.startClientX);
+      normalizeScroll();
     }
 
     function onPointerUp(e) {
@@ -242,14 +244,38 @@
         }
         startMomentum(dragState);
       } else {
-        clearDragState(250);
+        scheduleResume(250);
       }
+      clearDragState();
     }
 
     viewport.addEventListener("pointerdown", onPointerDown);
     viewport.addEventListener("pointermove", onPointerMove);
     viewport.addEventListener("pointerup", onPointerUp);
     viewport.addEventListener("pointercancel", onPointerUp);
+
+    root.addEventListener("mouseenter", pauseAutoplay);
+    root.addEventListener("mouseleave", function () {
+      if (!dragState && !momentumFrame) {
+        scheduleResume(250);
+      }
+    });
+    root.addEventListener("focusin", pauseAutoplay);
+    root.addEventListener("focusout", function () {
+      if (!dragState && !momentumFrame) {
+        scheduleResume(250);
+      }
+    });
+
+    measureCycleWidth();
+    viewport.scrollLeft = cycleWidth;
+    normalizeScroll();
+    startAutoplay();
+
+    window.addEventListener("resize", function () {
+      measureCycleWidth();
+      normalizeScroll();
+    });
   }
 
   function initAll() {
