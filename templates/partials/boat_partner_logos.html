@@ -1,19 +1,9 @@
-{# Black logo lockup: MyWave X Loaded (boat service card only) #}
-{% set mywave_logo_path = 'images/logotip_MyWave/MyWave_logo_package_brand_turquoise/01_master/MyWave_logo_black.svg' %}
-{% set loaded_logo_path = 'images/Logotip_Loaded/Loaded_logo_black_site.svg' %}
+{# Black partner lockup: MyWave X Loaded (boat service card only) #}
 <div class="boat-partner-logos" aria-label="MyWave X Loaded">
   <img
-    class="boat-partner-logos__logo boat-partner-logos__logo--mywave"
-    src="{{ url_for('static', filename=mywave_logo_path) }}"
-    alt="MyWave"
-    loading="lazy"
-    decoding="async"
-  >
-  <span class="boat-partner-logos__x" aria-hidden="true">X</span>
-  <img
-    class="boat-partner-logos__logo boat-partner-logos__logo--loaded"
-    src="{{ url_for('static', filename=loaded_logo_path) }}"
-    alt="Loaded"
+    class="boat-partner-logos__lockup"
+    src="{{ url_for('static', filename='images/partners/mywave-x-loaded-black-lockup.svg') }}"
+    alt="MyWave X Loaded"
     loading="lazy"
     decoding="async"
   >

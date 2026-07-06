@@ -1,4 +1,4 @@
-"""PR77 — home content (25+ лет) and competitions ticker touch drag."""
+"""PR77/PR82 — home content (25+ лет), partner lockup, native ticker scroll."""
 
 from pathlib import Path
 
@@ -20,36 +20,37 @@ def test_no_visible_23_plus_in_templates():
     assert hits == [], f"unexpected 23+ in templates: {hits}"
 
 
-def test_competitions_ticker_touch_drag_support():
+def test_competitions_ticker_native_scroll_support():
     js = Path("static/js/competitions-ticker.js").read_text(encoding="utf-8")
     css = Path("static/css/competitions-ticker.css").read_text(encoding="utf-8")
 
-    assert "pointerdown" in js
-    assert "syncAnimationFromTranslate" in js
-    assert "setManualTranslate" in js
-    assert "startMomentum" in js
-    assert "MOMENTUM_FRICTION" in js
+    assert "scrollLeft" in js
+    assert "cycleWidth" in js
     assert "requestAnimationFrame" in js
-    assert "is-dragging" in js
-    assert "viewport.scrollLeft" not in js
+    assert "passive: true" in js
+    assert "setManualTranslate" not in js
+    assert "syncAnimationFromTranslate" not in js
+    assert "translateX(" not in js
 
-    assert "touch-action: pan-y" in css
+    assert "overflow-x: auto" in css
+    assert "-webkit-overflow-scrolling: touch" in css
+    assert "touch-action: pan-x pan-y" in css
+    assert "competitions-ticker-marquee" not in css
     assert "is-dragging a" in css.replace("\n", " ")
 
 
-def test_index_loads_competitions_ticker_v10(client):
+def test_index_loads_competitions_ticker_v11(client):
     html = client.get("/").get_data(as_text=True)
-    assert "competitions-ticker.js?v=10" in html
-    assert "competitions-ticker.css?v=10" in html
+    assert "competitions-ticker.js?v=11" in html
+    assert "competitions-ticker.css?v=11" in html
 
 
-def test_boat_card_shows_partner_logos(client):
+def test_boat_card_shows_partner_lockup(client):
     html = client.get("/").get_data(as_text=True)
     assert 'aria-label="MyWave X Loaded"' in html
-    assert 'alt="MyWave"' in html
-    assert 'alt="Loaded"' in html
-    assert "MyWave_logo_black.svg" in html
-    assert "Loaded_logo_black_site.svg" in html
+    assert 'alt="MyWave X Loaded"' in html
+    assert "mywave-x-loaded-black-lockup.svg" in html
+    assert "boat-partner-logos__lockup" in html
     assert html.count('class="boat-partner-logos"') == 1
 
 
@@ -58,17 +59,24 @@ def test_boat_partner_logos_only_for_boat_service():
     assert "service.service_id == 'boat'" in index
     assert "boat_partner_logos.html" in index
     page = Path("page.html").read_text(encoding="utf-8")
-    assert "boat-partner-logos" in page
-    assert "MyWave_logo_black.svg" in page
+    assert "boat-partner-logos__lockup" in page
+    assert "mywave-x-loaded-black-lockup.svg" in page
 
 
 def test_boat_partner_logos_styles():
     css = Path("static/css/style.css").read_text(encoding="utf-8")
     assert ".boat-partner-logos" in css
-    assert "grid-template-columns" in css
-    assert ".boat-partner-logos__logo--mywave" in css
-    assert ".boat-partner-logos__logo--loaded" in css
-    assert ".boat-partner-logos__x" in css
+    assert ".boat-partner-logos__lockup" in css
+    assert ".boat-partner-logos__logo--mywave" not in css
+    assert ".boat-partner-logos__x" not in css
+
+
+def test_partner_lockup_asset_exists():
+    path = Path("static/images/partners/mywave-x-loaded-black-lockup.svg")
+    assert path.is_file()
+    text = path.read_text(encoding="utf-8")
+    assert "MyWave X Loaded" in text
+    assert 'fill="#000' in text or "fill:#000" in text
 
 
 def test_mywave_black_logo_asset_exists():
@@ -82,4 +90,3 @@ def test_mywave_black_logo_asset_exists():
 def test_loaded_logo_asset_exists():
     path = Path("static/images/Logotip_Loaded/Loaded_logo_black_site.svg")
     assert path.is_file()
-

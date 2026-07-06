@@ -549,70 +549,32 @@ h1, h2, h3, h4, p {
 .service-card-media-btn.next { right: 10px; }
 .service-card-media-btn:hover { background: rgba(0, 0, 0, 0.6); }
 
-.boat-card .boat-partner-logos,
-#boat-card .boat-partner-logos {
+.boat-partner-logos {
   width: 100%;
   box-sizing: border-box;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  column-gap: clamp(14px, 4vw, 30px);
-  margin: 18px 0 24px;
-  padding: 0 clamp(8px, 4vw, 26px);
+  display: block;
+  margin: clamp(16px, 3vw, 24px) 0 clamp(22px, 4vw, 32px);
+  padding: 0;
 }
 
-.boat-partner-logos__logo {
+.boat-partner-logos__lockup {
   display: block;
   width: 100%;
-  height: clamp(30px, 6vw, 42px);
+  max-width: 560px;
+  height: auto;
+  max-height: clamp(44px, 8vw, 72px);
+  margin: 0 auto;
   object-fit: contain;
 }
 
-.boat-partner-logos__logo--mywave {
-  justify-self: end;
-  max-width: 190px;
-  transform: scale(1.18);
-  transform-origin: right center;
-}
-
-.boat-partner-logos__logo--loaded {
-  justify-self: start;
-  max-width: 170px;
-}
-
-.boat-partner-logos__x {
-  justify-self: center;
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: 900;
-  font-size: clamp(26px, 6vw, 40px);
-  line-height: 1;
-  color: #000;
-  letter-spacing: 0.02em;
-}
-
 @media (max-width: 480px) {
-  .boat-card .boat-partner-logos,
-  #boat-card .boat-partner-logos {
-    column-gap: 16px;
-    margin: 16px 0 22px;
-    padding-inline: 10px;
+  .boat-partner-logos {
+    margin: 18px 0 28px;
   }
 
-  .boat-partner-logos__logo {
-    height: 32px;
-  }
-
-  .boat-partner-logos__logo--mywave {
-    max-width: 150px;
-    transform: scale(1.22);
-  }
-
-  .boat-partner-logos__logo--loaded {
-    max-width: 135px;
-  }
-
-  .boat-partner-logos__x {
-    font-size: 30px;
+  .boat-partner-logos__lockup {
+    max-width: 100%;
+    max-height: 54px;
   }
 }
 
