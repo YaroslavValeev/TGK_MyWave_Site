@@ -34,20 +34,20 @@
 }
 
 .home-competitions-ticker__viewport {
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: hidden;
     width: 100%;
     padding-left: 6.5rem;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-x;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(53, 192, 205, 0.45) transparent;
+    scrollbar-width: none;
+    cursor: grab;
     mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
 }
 
 .home-competitions-ticker__viewport.is-autoplay {
     overflow: hidden;
-    touch-action: pan-x;
+    touch-action: pan-y;
 }
 
 .home-competitions-ticker__viewport.is-autoplay .home-competitions-ticker__track {
@@ -77,17 +77,16 @@
     user-select: none;
 }
 
-.home-competitions-ticker__viewport.is-scrollable.is-dragging a {
+.home-competitions-ticker__viewport.is-dragging .home-competitions-ticker__track {
+    will-change: transform;
+}
+
+.home-competitions-ticker__viewport.is-dragging a {
     pointer-events: none;
 }
 
 .home-competitions-ticker__viewport::-webkit-scrollbar {
-    height: 4px;
-}
-
-.home-competitions-ticker__viewport::-webkit-scrollbar-thumb {
-    background: rgba(53, 192, 205, 0.45);
-    border-radius: 4px;
+    display: none;
 }
 
 .home-competitions-ticker__track {

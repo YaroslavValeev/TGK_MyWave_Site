@@ -2,12 +2,15 @@
  * Бегущая строка соревнований:
  * - autoplay via CSS transform (desktop + mobile, ~840s loop);
  * - pause on hover, focus, touch;
- * - pointer drag / swipe on mobile and desktop (pauses autoplay, then resumes);
+ * - pointer drag with momentum (1:1 finger tracking + inertia);
  * - prefers-reduced-motion: native horizontal scroll only.
  */
 (function () {
   var BASE_DURATION_SEC = 840;
   var DRAG_THRESHOLD_PX = 8;
+  var MOMENTUM_MIN_VELOCITY = 0.04;
+  var MOMENTUM_FRICTION = 0.94;
+  var MOMENTUM_MAX_VELOCITY = 2.4;
 
   function prefersReducedMotion() {
     return (
@@ -119,6 +122,9 @@
       if (!dragState) {
         return;
       }
+      if (dragState.momentumFrame) {
+        window.cancelAnimationFrame(dragState.momentumFrame);
+      }
       viewport.classList.remove("is-dragging", "is-user-holding");
       try {
         viewport.releasePointerCapture(dragState.pointerId);
@@ -131,15 +137,45 @@
       }
     }
 
+    function startMomentum(state) {
+      var velocity = state.velocityX * 16;
+      var x = state.currentTranslate;
+
+      function step() {
+        x += velocity;
+        velocity *= MOMENTUM_FRICTION;
+        state.currentTranslate = x;
+        setManualTranslate(track, x);
+
+        if (Math.abs(velocity) > MOMENTUM_MIN_VELOCITY) {
+          state.momentumFrame = window.requestAnimationFrame(step);
+          return;
+        }
+
+        syncAnimationFromTranslate(track, BASE_DURATION_SEC);
+        clearDragState(350);
+      }
+
+      state.momentumFrame = window.requestAnimationFrame(step);
+    }
+
     function onPointerDown(e) {
       if (e.pointerType === "mouse" && e.button !== 0) {
         return;
+      }
+      if (dragState && dragState.momentumFrame) {
+        window.cancelAnimationFrame(dragState.momentumFrame);
       }
       dragState = {
         pointerId: e.pointerId,
         startClientX: e.clientX,
         startClientY: e.clientY,
         startTranslate: getTranslateX(track),
+        lastClientX: e.clientX,
+        lastTime: performance.now(),
+        currentTranslate: getTranslateX(track),
+        velocityX: 0,
+        momentumFrame: null,
         moved: false,
         target: e.target,
       };
@@ -172,7 +208,20 @@
         e.preventDefault();
       }
       viewport.classList.add("is-dragging");
-      setManualTranslate(track, dragState.startTranslate + dx);
+
+      var now = performance.now();
+      var frameDx = e.clientX - dragState.lastClientX;
+      var dt = Math.max(16, now - dragState.lastTime);
+
+      dragState.velocityX = Math.max(
+        -MOMENTUM_MAX_VELOCITY,
+        Math.min(MOMENTUM_MAX_VELOCITY, frameDx / dt)
+      );
+      dragState.currentTranslate += frameDx;
+      dragState.lastClientX = e.clientX;
+      dragState.lastTime = now;
+
+      setManualTranslate(track, dragState.currentTranslate);
     }
 
     function onPointerUp(e) {
@@ -181,7 +230,6 @@
       }
 
       if (dragState.moved) {
-        syncAnimationFromTranslate(track, BASE_DURATION_SEC);
         var link = dragState.target.closest && dragState.target.closest("a");
         if (link) {
           link.addEventListener(
@@ -192,7 +240,7 @@
             { once: true, capture: true }
           );
         }
-        clearDragState(700);
+        startMomentum(dragState);
       } else {
         clearDragState(250);
       }
