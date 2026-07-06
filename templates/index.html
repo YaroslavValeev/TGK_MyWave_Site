@@ -54,6 +54,9 @@
             {% include 'partials/service_card_media.html' %}
           </div>
           <h4>{{ service.name }}</h4>
+          {% if service.service_id == 'boat' %}
+          {% include 'partials/boat_partner_logos.html' %}
+          {% endif %}
           <p class="service-description service-description--short">{{ service.description }}</p>
           <p>Цена: {{ service.price }}</p>
           <div class="card-details">

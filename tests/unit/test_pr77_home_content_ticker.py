@@ -38,3 +38,37 @@ def test_index_loads_competitions_ticker_v9(client):
     html = client.get("/").get_data(as_text=True)
     assert "competitions-ticker.js?v=9" in html
     assert "competitions-ticker.css?v=9" in html
+
+
+def test_boat_card_shows_partner_logos(client):
+    html = client.get("/").get_data(as_text=True)
+    assert 'aria-label="MyWave X Loaded"' in html
+    assert 'alt="MyWave"' in html
+    assert 'alt="Loaded"' in html
+    assert "MyWave_logo_black.svg" in html
+    assert "Loaded_logo_black.svg" in html
+    assert html.count('class="boat-partner-logos"') == 1
+
+
+def test_boat_partner_logos_only_for_boat_service():
+    index = Path("templates/index.html").read_text(encoding="utf-8")
+    assert "service.service_id == 'boat'" in index
+    assert "boat_partner_logos.html" in index
+    page = Path("page.html").read_text(encoding="utf-8")
+    assert "boat-partner-logos" in page
+    assert "MyWave_logo_black.svg" in page
+
+
+def test_boat_partner_logos_styles():
+    css = Path("static/css/style.css").read_text(encoding="utf-8")
+    assert ".boat-partner-logos" in css
+    assert ".boat-partner-logos__x" in css
+
+
+def test_mywave_black_logo_asset_exists():
+    path = Path(
+        "static/images/logotip_MyWave/MyWave_logo_package_brand_turquoise/"
+        "01_master/MyWave_logo_black.svg"
+    )
+    assert path.is_file()
+
