@@ -113,6 +113,55 @@ def send_telegram_notification(name, phone, slot_or_message):
     return True
 
 
+@retry(attempts=3, delay=2)
+def send_telegram_notification_with_keyboard(text: str, inline_keyboard: list) -> bool:
+    """Send Telegram message with inline URL keyboard. Never raises to callers."""
+    message = str(text or "").strip()
+    if not message:
+        logger.warning("telegram_keyboard_notify_skipped reason=empty_text")
+        return False
+
+    token = _telegram_bot_token()
+    chat_id = _telegram_chat_id()
+    if not token or not chat_id:
+        logger.warning(
+            "telegram_keyboard_notify_skipped reason=missing_credentials has_token=%s has_chat_id=%s",
+            bool(token),
+            bool(chat_id),
+        )
+        return False
+
+    payload = {
+        "chat_id": chat_id,
+        "text": message,
+        "reply_markup": {"inline_keyboard": inline_keyboard or []},
+    }
+    response = requests.post(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        json=payload,
+        timeout=15,
+    )
+    if not response.ok:
+        safe_body = response.text
+        if token:
+            safe_body = safe_body.replace(token, "***")
+        logger.error(
+            "telegram_keyboard_notify_failed status=%s has_chat_id=%s body=%s",
+            response.status_code,
+            bool(chat_id),
+            safe_body[:300],
+        )
+        return False
+
+    logger.info(
+        "telegram_keyboard_notify_sent has_chat_id=%s message_len=%s buttons=%s",
+        bool(chat_id),
+        len(message),
+        sum(len(row) for row in (inline_keyboard or [])),
+    )
+    return True
+
+
 def send_admin_email(subject: str, body: str, to_email: str | None = None) -> bool:
     """
     Email администратору (SMTP из .env). Если SMTP не настроен — логируем и возвращаем False.

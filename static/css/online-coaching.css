@@ -1,0 +1,177 @@
+/* MyWave Online Coaching — mobile-first, aligned with social-mission / mw-* */
+
+.oc-page .oc-hero {
+  margin-bottom: 1.5rem;
+}
+
+.oc-hero__eyebrow {
+  color: var(--mw-brand, #35c0cd);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  margin: 0 0 0.5rem;
+}
+
+.oc-hero__lead,
+.oc-muted,
+.oc-section-intro {
+  color: var(--mw-muted);
+  line-height: 1.6;
+  max-width: 68ch;
+}
+
+.oc-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.oc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.oc-grid--services {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.oc-card ul,
+.oc-card ol,
+.oc-steps {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--mw-muted);
+  line-height: 1.55;
+}
+
+.oc-card--highlight {
+  border-left: 3px solid var(--mw-brand, #35c0cd);
+}
+
+.oc-price {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--mw-text, #1a2a32);
+  margin: 0.5rem 0 0;
+}
+
+.oc-price-note {
+  font-size: 0.85rem;
+  color: var(--mw-muted);
+  margin: 0.25rem 0 0;
+}
+
+.oc-service-card__cta {
+  margin-top: 0.85rem;
+}
+
+.oc-section {
+  margin-bottom: 1.25rem;
+}
+
+.oc-section h2 {
+  margin-bottom: 0.65rem;
+}
+
+.oc-faq details {
+  border-bottom: 1px solid rgba(53, 192, 205, 0.15);
+  padding: 0.65rem 0;
+}
+
+.oc-faq summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--mw-text, #1a2a32);
+}
+
+.oc-faq p {
+  margin: 0.5rem 0 0;
+  color: var(--mw-muted);
+  line-height: 1.55;
+}
+
+.oc-apply-card {
+  margin-top: 0.5rem;
+}
+
+.oc-form .oc-consents {
+  border: 0;
+  margin: 1rem 0;
+  padding: 0;
+}
+
+.oc-consent-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.oc-field-hint {
+  color: var(--mw-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0.35rem 0 0;
+}
+
+.oc-apply-disabled {
+  color: var(--mw-muted);
+}
+
+.oc-final-cta {
+  text-align: center;
+  padding: 1.25rem 1rem;
+}
+
+.oc-final-cta h2 {
+  margin-bottom: 0.5rem;
+}
+
+.oc-included-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.oc-included-table th,
+.oc-included-table td {
+  border: 1px solid rgba(53, 192, 205, 0.18);
+  padding: 0.5rem 0.65rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.oc-included-table th {
+  background: rgba(53, 192, 205, 0.08);
+}
+
+@media (max-width: 700px) {
+  .oc-page .oc-grid,
+  .oc-page .oc-grid--services {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .oc-page .oc-hero h1 {
+    font-size: 1.45rem;
+    line-height: 1.25;
+  }
+
+  .oc-hero__actions .btn-primary,
+  .oc-hero__actions .btn-secondary,
+  .oc-form .btn-primary,
+  .oc-final-cta .btn-primary {
+    width: 100%;
+  }
+
+  .oc-included-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}

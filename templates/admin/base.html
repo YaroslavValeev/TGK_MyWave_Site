@@ -34,6 +34,12 @@
                href="{{ url_for('admin_social.index') }}">
                 <i class="fas fa-hands-helping" aria-hidden="true"></i> Social
             </a>
+            {% if online_coaching_enabled and online_coaching_admin_enabled %}
+            <a class="admin-nav__link {% if request.endpoint and request.endpoint.startswith('admin_online_coaching') %}active{% endif %}"
+               href="{{ url_for('admin_online_coaching.index') }}">
+                <i class="fas fa-video" aria-hidden="true"></i> Online Coaching
+            </a>
+            {% endif %}
             <a class="admin-nav__link {% if request.endpoint and request.endpoint.startswith('admin_images') %}active{% endif %}"
                href="{{ url_for('admin_images.index') }}">
                 <i class="fas fa-images" aria-hidden="true"></i> Изображения

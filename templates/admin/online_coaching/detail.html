@@ -1,0 +1,211 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Online Coaching — {{ request_record.online_request_id }}{% endblock %}
+{% block admin_title %}Заявка {{ request_record.online_request_id }}{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="admin-breadcrumbs">
+        <li><a href="{{ url_for('admin.index') }}">Главная</a></li>
+        <li><a href="{{ url_for('admin_online_coaching.index') }}">Online Coaching</a></li>
+        <li>{{ request_record.online_request_id }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Карточка заявки</h2>
+        {% if request_record.diary_url %}
+        <a href="{{ request_record.diary_url }}" target="_blank" rel="noopener" class="admin-btn admin-btn--secondary admin-btn--sm">Открыть дневник</a>
+        {% endif %}
+    </div>
+    <div class="admin-card__body">
+        <div class="admin-detail-grid">
+            <div class="admin-detail-item admin-detail-item--highlight">
+                <div class="admin-detail-item__label">Статус</div>
+                <div class="admin-detail-item__value">{{ request_record.request_status or '—' }}</div>
+            </div>
+            <div class="admin-detail-item admin-detail-item--highlight">
+                <div class="admin-detail-item__label">Услуга</div>
+                <div class="admin-detail-item__value">{{ request_record.service_type or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Имя</div>
+                <div class="admin-detail-item__value">{{ request_record.name or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Телефон</div>
+                <div class="admin-detail-item__value">{{ request_record.phone or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Email</div>
+                <div class="admin-detail-item__value">{{ request_record.email or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Канал</div>
+                <div class="admin-detail-item__value">{{ request_record.preferred_channel or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Telegram</div>
+                <div class="admin-detail-item__value">{{ request_record.telegram_username or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">WhatsApp</div>
+                <div class="admin-detail-item__value">{{ request_record.whatsapp_phone or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">MAX</div>
+                <div class="admin-detail-item__value">{{ request_record.max_contact or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Дисциплина</div>
+                <div class="admin-detail-item__value">{{ request_record.discipline or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Уровень</div>
+                <div class="admin-detail-item__value">{{ request_record.level or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Цель</div>
+                <div class="admin-detail-item__value">{{ request_record.goal or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Ограничения по здоровью</div>
+                <div class="admin-detail-item__value">{{ request_record.injuries_or_limits or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Видео</div>
+                <div class="admin-detail-item__value">
+                    {% if request_record.video_url %}
+                    <a href="{{ request_record.video_url }}" target="_blank" rel="noopener">Открыть</a>
+                    {% else %}—{% endif %}
+                </div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Комментарий</div>
+                <div class="admin-detail-item__value">{{ request_record.comment or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Оплата</div>
+                <div class="admin-detail-item__value">{{ request_record.payment_status or '—' }} / {{ request_record.payment_required_timing or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Ссылка Т-Банк</div>
+                <div class="admin-detail-item__value">
+                    {% if request_record.tbank_payment_url %}
+                    <a href="{{ request_record.tbank_payment_url }}" target="_blank" rel="noopener">Открыть</a>
+                    {% else %}—{% endif %}
+                </div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">ID</div>
+                <div class="admin-detail-item__value"><code>{{ request_record.online_request_id }}</code></div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Создана</div>
+                <div class="admin-detail-item__value">{{ request_record.created_at or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Обновлена</div>
+                <div class="admin-detail-item__value">{{ request_record.updated_at or '—' }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Смена статуса</h2>
+    </div>
+    <div class="admin-card__body">
+        <form method="post" action="{{ url_for('admin_online_coaching.change_status', online_request_id=request_record.online_request_id) }}" class="admin-form-inline">
+            <select name="status" class="admin-input" required>
+                {% for st in request_statuses %}
+                <option value="{{ st }}" {% if request_record.request_status == st %}selected{% endif %}>{{ st }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="admin-btn admin-btn--primary admin-btn--sm">Сохранить статус</button>
+        </form>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Оплата</h2>
+    </div>
+    <div class="admin-card__body">
+        <form method="post" action="{{ url_for('admin_online_coaching.save_payment_url', online_request_id=request_record.online_request_id) }}" class="admin-form-stack">
+            <label class="admin-label" for="tbank_payment_url">Ссылка Т-Банк</label>
+            <input type="url" id="tbank_payment_url" name="tbank_payment_url" class="admin-input" value="{{ request_record.tbank_payment_url or '' }}" placeholder="https://...">
+            <label class="admin-label" for="payment-amount">Сумма (опционально)</label>
+            <input type="number" id="payment-amount" name="amount" class="admin-input" step="0.01" min="0" placeholder="3500">
+            <button type="submit" class="admin-btn admin-btn--secondary admin-btn--sm">Сохранить ссылку</button>
+        </form>
+        <hr class="admin-divider">
+        <form method="post" action="{{ url_for('admin_online_coaching.mark_paid_action', online_request_id=request_record.online_request_id) }}" class="admin-form-inline">
+            <input type="number" name="amount" class="admin-input" step="0.01" min="0" placeholder="Сумма">
+            <button type="submit" class="admin-btn admin-btn--success admin-btn--sm">Отметить оплаченным</button>
+        </form>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Запись дневника</h2>
+    </div>
+    <div class="admin-card__body">
+        <form method="post" action="{{ url_for('admin_online_coaching.add_diary_entry', online_request_id=request_record.online_request_id) }}" class="admin-form-stack">
+            <div class="admin-form-grid">
+                <div>
+                    <label class="admin-label" for="diary-date">Дата</label>
+                    <input type="date" id="diary-date" name="date" class="admin-input">
+                </div>
+                <div>
+                    <label class="admin-label" for="diary-url">Ссылка на дневник</label>
+                    <input type="url" id="diary-url" name="diary_url" class="admin-input" value="{{ request_record.diary_url or '' }}" placeholder="https://docs.google.com/...">
+                </div>
+            </div>
+            <label class="admin-label" for="diary-goal">Цель (current_goal)</label>
+            <textarea id="diary-goal" name="current_goal" class="admin-input" rows="2"></textarea>
+            <label class="admin-label" for="diary-mistake">Главная ошибка (main_mistake)</label>
+            <textarea id="diary-mistake" name="main_mistake" class="admin-input" rows="2"></textarea>
+            <label class="admin-label" for="diary-water">Задание на воду (water_task)</label>
+            <textarea id="diary-water" name="water_task" class="admin-input" rows="2"></textarea>
+            <label class="admin-label" for="diary-land">Задание на сушу (land_task)</label>
+            <textarea id="diary-land" name="land_task" class="admin-input" rows="2"></textarea>
+            <label class="admin-label" for="diary-notes">Заметки тренера (trainer_notes)</label>
+            <textarea id="diary-notes" name="trainer_notes" class="admin-input" rows="3"></textarea>
+            <button type="submit" class="admin-btn admin-btn--primary admin-btn--sm">Сохранить запись</button>
+        </form>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Follow-up</h2>
+    </div>
+    <div class="admin-card__body">
+        <form method="post" action="{{ url_for('admin_online_coaching.add_followup', online_request_id=request_record.online_request_id) }}" class="admin-form-stack">
+            <div class="admin-form-grid">
+                <div>
+                    <label class="admin-label" for="followup-at">Дата/время</label>
+                    <input type="datetime-local" id="followup-at" name="scheduled_at" class="admin-input">
+                </div>
+                <div>
+                    <label class="admin-label" for="followup-channel">Канал</label>
+                    <input type="text" id="followup-channel" name="channel" class="admin-input" value="{{ request_record.preferred_channel or '' }}" placeholder="telegram">
+                </div>
+            </div>
+            <label class="admin-label" for="followup-note">Заметка</label>
+            <textarea id="followup-note" name="note" class="admin-input" rows="2" placeholder="Напомнить о видео / апсейл Progress Month"></textarea>
+            <button type="submit" class="admin-btn admin-btn--secondary admin-btn--sm">Запланировать follow-up</button>
+        </form>
+        <form method="post" action="{{ url_for('admin_online_coaching.change_status', online_request_id=request_record.online_request_id) }}" class="admin-form-inline" style="margin-top:0.75rem;">
+            <input type="hidden" name="status" value="renewal_offered">
+            <button type="submit" class="admin-btn admin-btn--sm">Предложить продление</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
