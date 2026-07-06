@@ -11,7 +11,7 @@ from __future__ import annotations
 import logging
 import os
 import re
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Dict, Mapping, Optional, Sequence
 
 from flask import current_app, has_app_context
 
@@ -99,10 +99,61 @@ def _inline_open_admin_only(online_request_id: str) -> list:
     return [[{"text": "Открыть заявку", "url": admin_detail_url(online_request_id)}]]
 
 
-def format_new_request_message(record: Mapping[str, Any]) -> str:
+def _inline_keyboard_with_videos(online_request_id: str, video_urls: Sequence[str]) -> list:
+    """Admin + external video URL buttons (no status mutation)."""
+    rows: list = []
+    urls = [str(u).strip() for u in video_urls if str(u).strip()]
+    if len(urls) == 1:
+        rows.append([
+            {"text": "Открыть видео", "url": urls[0]},
+            {"text": "Открыть заявку", "url": admin_detail_url(online_request_id)},
+        ])
+    elif len(urls) > 1:
+        video_row = []
+        for idx, url in enumerate(urls[:3], start=1):
+            video_row.append({"text": f"Видео {idx}", "url": url})
+        rows.append(video_row)
+        rows.append([{"text": "Открыть заявку", "url": admin_detail_url(online_request_id)}])
+    else:
+        rows.append([{"text": "Открыть заявку", "url": admin_detail_url(online_request_id)}])
+    return rows
+
+
+def _format_video_lines(video_urls: Sequence[str], fallback_url: str = "") -> str:
+    urls = [str(u).strip() for u in video_urls if str(u).strip()]
+    if not urls and fallback_url.strip():
+        urls = [fallback_url.strip()]
+    if not urls:
+        return "—"
+    return "\n".join(f"{idx}. {url}" for idx, url in enumerate(urls, start=1))
+
+
+def collect_video_urls_from_record(
+    record: Mapping[str, Any],
+    video_urls: Optional[Sequence[str]] = None,
+) -> list:
+    if video_urls:
+        return [str(u).strip() for u in video_urls if str(u).strip()][:3]
+    raw_list = record.get("video_urls")
+    if isinstance(raw_list, (list, tuple)) and raw_list:
+        return [str(u).strip() for u in raw_list if str(u).strip()][:3]
+    primary = str(record.get("video_url") or "").strip()
+    return [primary] if primary else []
+
+
+def format_new_request_message(
+    record: Mapping[str, Any],
+    *,
+    video_urls: Optional[Sequence[str]] = None,
+) -> str:
     safe = sanitize_record_for_telegram(record)
     timing = safe["payment_required_timing"] or "—"
     pay_hint = "требуется сейчас" if timing == "upfront" else "после услуги"
+    urls = collect_video_urls_from_record(record, video_urls)
+    if urls:
+        video_block = f"Видео:\n{_format_video_lines(urls)}"
+    else:
+        video_block = f"Видео: {safe['video_flag']}"
     return (
         "Новая заявка MyWave Online Coaching\n\n"
         f"Формат: {_service_label(safe['service_type'])}\n"
@@ -114,20 +165,61 @@ def format_new_request_message(record: Mapping[str, Any]) -> str:
         f"Уровень: {safe['level']}\n"
         f"Цель: {safe['goal_short']}\n"
         f"Ограничения по здоровью: {safe['health_limits']}\n"
-        f"Видео: {safe['video_flag']}\n"
+        f"{video_block}\n"
         f"Оплата: {pay_hint}\n"
         f"Статус: {safe['request_status']}\n"
         f"ID: {safe['online_request_id']}"
     )
 
 
-def format_video_received_message(record: Mapping[str, Any]) -> str:
+def format_materials_received_message(
+    record: Mapping[str, Any],
+    *,
+    video_urls: Optional[Sequence[str]] = None,
+) -> str:
     safe = sanitize_record_for_telegram(record)
+    timing = safe["payment_required_timing"] or "—"
+    pay_hint = "требуется сейчас" if timing == "upfront" else "после услуги"
+    review_task = (str(record.get("review_task") or "—"))[:500]
+    training_comment = (str(record.get("training_comment") or "—"))[:500]
+    video_block = _format_video_lines(
+        video_urls or [],
+        fallback_url=str(record.get("video_url") or ""),
+    )
+    return (
+        "Новые материалы к заявке MyWave Online Coaching\n\n"
+        f"Формат: {_service_label(safe['service_type'])}\n"
+        f"Имя: {safe['name']}\n"
+        f"Телефон: {safe['phone_masked']}\n"
+        f"Канал связи: {safe['preferred_channel']}\n"
+        f"Контакт: {safe['contact_hint']}\n"
+        f"Дисциплина: {safe['discipline']}\n"
+        f"Уровень: {safe['level']}\n\n"
+        f"Задача клиента:\n{review_task}\n\n"
+        f"Комментарий:\n{training_comment}\n\n"
+        f"Видео:\n{video_block}\n\n"
+        f"Оплата: {pay_hint}\n"
+        f"Статус: {safe['request_status']}\n"
+        f"ID: {safe['online_request_id']}"
+    )
+
+
+def format_video_received_message(
+    record: Mapping[str, Any],
+    *,
+    video_urls: Optional[Sequence[str]] = None,
+) -> str:
+    safe = sanitize_record_for_telegram(record)
+    urls = collect_video_urls_from_record(record, video_urls)
+    if urls:
+        video_block = f"Видео:\n{_format_video_lines(urls)}"
+    else:
+        video_block = f"Видео: {safe['video_flag']}"
     return (
         "Видео получено\n\n"
         f"Клиент: {safe['name']}\n"
         f"Услуга: {_service_label(safe['service_type'])}\n"
-        f"Видео: {safe['video_flag']}\n"
+        f"{video_block}\n"
         f"Дедлайн разбора: {safe['deadline_at']}\n"
         f"ID: {safe['online_request_id']}"
     )
@@ -211,12 +303,41 @@ def _send(text: str, keyboard: list, *, event: str, req_id: str) -> bool:
 
 def notify_new_online_request(record: Mapping[str, Any]) -> bool:
     req_id = str(record.get("online_request_id") or "")
-    return _send(format_new_request_message(record), _inline_open_admin_only(req_id), event="new_request", req_id=req_id)
+    urls = collect_video_urls_from_record(record)
+    keyboard = _inline_keyboard_with_videos(req_id, urls)
+    return _send(format_new_request_message(record, video_urls=urls), keyboard, event="new_request", req_id=req_id)
+
+
+def notify_materials_received(
+    record: Mapping[str, Any],
+    *,
+    video_urls: Optional[Sequence[str]] = None,
+) -> bool:
+    req_id = str(record.get("online_request_id") or "")
+    urls = list(video_urls or []) or normalize_video_urls_from_record(record)
+    keyboard = _inline_keyboard_with_videos(req_id, urls)
+    return _send(
+        format_materials_received_message(record, video_urls=urls),
+        keyboard,
+        event="materials_received",
+        req_id=req_id,
+    )
+
+
+def normalize_video_urls_from_record(record: Mapping[str, Any]) -> list:
+    return collect_video_urls_from_record(record)
 
 
 def notify_video_received(record: Mapping[str, Any]) -> bool:
     req_id = str(record.get("online_request_id") or "")
-    return _send(format_video_received_message(record), _inline_open_admin_only(req_id), event="video_received", req_id=req_id)
+    urls = collect_video_urls_from_record(record)
+    keyboard = _inline_keyboard_with_videos(req_id, urls)
+    return _send(
+        format_video_received_message(record, video_urls=urls),
+        keyboard,
+        event="video_received",
+        req_id=req_id,
+    )
 
 
 def notify_review_ready(record: Mapping[str, Any]) -> bool:

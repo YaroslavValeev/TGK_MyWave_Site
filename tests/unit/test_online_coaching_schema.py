@@ -34,8 +34,8 @@ class TestInitialStatus:
     def test_video_check_without_video(self):
         assert resolve_initial_status("video_check", "") == "waiting_video"
 
-    def test_video_check_with_video(self):
-        assert resolve_initial_status("video_check", "https://example.com/v") == "video_received"
+    def test_video_check_with_video_still_waiting(self):
+        assert resolve_initial_status("video_check", "https://example.com/v") == "waiting_video"
 
     def test_live_new(self):
         assert resolve_initial_status("live_coach_land", "") == "new"

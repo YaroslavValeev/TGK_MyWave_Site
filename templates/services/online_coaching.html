@@ -286,17 +286,6 @@
           <p class="oc-field-hint">Не указывайте диагнозы и документы — обсудим детали при связи.</p>
         </div>
 
-        <div class="mw-field">
-          <label for="oc-video-url">Ссылка на видео</label>
-          <input type="url" id="oc-video-url" name="video_url" maxlength="500" placeholder="https://...">
-          <p class="oc-field-hint">Google Drive, Яндекс.Диск или ссылка из Telegram. Можно добавить позже.</p>
-        </div>
-
-        <div class="mw-field">
-          <label for="oc-comment">Комментарий</label>
-          <textarea id="oc-comment" name="comment" rows="3" maxlength="1000" placeholder="Дополнительные пожелания"></textarea>
-        </div>
-
         <fieldset class="oc-consents">
           <legend>Согласия</legend>
           <label class="oc-consent-item">
@@ -314,6 +303,61 @@
         <button type="submit" class="btn-primary">Отправить заявку</button>
         <p id="oc-form-message" class="mw-form-message" role="status" aria-live="polite" hidden></p>
       </form>
+
+      <div id="oc-apply-success" class="oc-step-panel" hidden>
+        <h3>Заявка принята</h3>
+        <p class="oc-muted">Номер заявки: <strong id="oc-request-id-display"></strong></p>
+        <p id="oc-apply-success-text" class="oc-section-intro"></p>
+        <button type="button" class="btn-primary" id="oc-btn-add-video">Добавить видео</button>
+      </div>
+
+      <form id="oc-video-form" class="oc-form oc-step-panel" hidden novalidate>
+        <h3>Добавьте видео и задачу</h3>
+        <p class="oc-field-hint">
+          Вставьте 1–3 ссылки на видео тренировки. Подойдут Telegram, Google Drive, Яндекс Диск, VK Видео или другое облако.
+          Доступ по ссылке должен быть открыт.
+        </p>
+        <div class="mw-field">
+          <label for="oc-video-url-1">Ссылка на видео 1 *</label>
+          <input type="url" id="oc-video-url-1" name="video_url_1" maxlength="500" placeholder="https://..." required>
+        </div>
+        <div class="mw-field">
+          <label for="oc-video-url-2">Ссылка на видео 2</label>
+          <input type="url" id="oc-video-url-2" name="video_url_2" maxlength="500" placeholder="https://...">
+        </div>
+        <div class="mw-field">
+          <label for="oc-video-url-3">Ссылка на видео 3</label>
+          <input type="url" id="oc-video-url-3" name="video_url_3" maxlength="500" placeholder="https://...">
+        </div>
+        <div class="mw-field">
+          <label for="oc-review-task">Задача для разбора *</label>
+          <textarea id="oc-review-task" name="review_task" rows="2" maxlength="1000" required placeholder="Что разобрать"></textarea>
+        </div>
+        <div class="mw-field">
+          <label for="oc-training-comment">Комментарий к тренировке *</label>
+          <textarea id="oc-training-comment" name="training_comment" rows="3" maxlength="1000" required placeholder="Условия, ощущения, что хотите улучшить"></textarea>
+        </div>
+        <div class="mw-grid-2">
+          <div class="mw-field">
+            <label for="oc-training-date">Дата тренировки</label>
+            <input type="date" id="oc-training-date" name="training_date">
+          </div>
+          <div class="mw-field">
+            <label for="oc-spot">Место / спот</label>
+            <input type="text" id="oc-spot" name="spot_or_location" maxlength="200" placeholder="Необязательно">
+          </div>
+        </div>
+        <button type="submit" class="btn-primary">Отправить видео и задачу</button>
+        <p id="oc-video-message" class="mw-form-message" role="status" aria-live="polite" hidden></p>
+      </form>
+
+      <div id="oc-video-done" class="oc-step-panel" hidden>
+        <h3>Видео получено</h3>
+        <p class="oc-section-intro">
+          Ярослав получил материалы и подготовит разбор.<br>
+          Оплата за разбор видео — после получения разбора.
+        </p>
+      </div>
       {% else %}
       <p class="oc-apply-disabled">Приём заявок временно недоступен. Напишите нам в контактах на главной странице.</p>
       {% endif %}
@@ -333,5 +377,5 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="{{ url_for('static', filename='js/online-coaching-form.js') }}?v=1" defer></script>
+  <script src="{{ url_for('static', filename='js/online-coaching-form.js') }}?v=2" defer></script>
 {% endblock %}

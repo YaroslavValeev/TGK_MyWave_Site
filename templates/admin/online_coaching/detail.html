@@ -117,6 +117,86 @@
 
 <div class="admin-card">
     <div class="admin-card__header">
+        <h2 class="admin-card__title">Материалы клиента</h2>
+    </div>
+    <div class="admin-card__body">
+        <div class="admin-detail-grid">
+            {% for idx in range(1, 4) %}
+            {% set media = media_files[idx - 1] if media_files|length >= idx else none %}
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Видео {{ idx }}</div>
+                <div class="admin-detail-item__value">
+                    {% if media and media.url %}
+                    <a href="{{ media.url }}" target="_blank" rel="noopener">Открыть</a>
+                    {% elif idx == 1 and request_record.video_url %}
+                    <a href="{{ request_record.video_url }}" target="_blank" rel="noopener">Открыть</a>
+                    {% else %}—{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Задача клиента</div>
+                <div class="admin-detail-item__value">{{ request_record.review_task or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Комментарий</div>
+                <div class="admin-detail-item__value">{{ request_record.training_comment or request_record.comment or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Дата тренировки</div>
+                <div class="admin-detail-item__value">{{ request_record.training_date or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Локация</div>
+                <div class="admin-detail-item__value">{{ request_record.spot_or_location or '—' }}</div>
+            </div>
+            <div class="admin-detail-item admin-detail-item--highlight">
+                <div class="admin-detail-item__label">Статус</div>
+                <div class="admin-detail-item__value">{{ request_record.request_status or '—' }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Дедлайн разбора</div>
+                <div class="admin-detail-item__value">{{ request_record.deadline_at or '—' }}</div>
+            </div>
+            {% if request_record.in_review_at %}
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Взято в работу</div>
+                <div class="admin-detail-item__value">{{ request_record.in_review_at }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Быстрые действия</h2>
+    </div>
+    <div class="admin-card__body">
+        <div class="admin-form-inline" style="flex-wrap:wrap;gap:0.5rem;">
+            {% set qa_labels = {
+                'request_video': 'Запросить видео',
+                'start_review': 'Взять в работу',
+                'review_sent': 'Разбор отправлен',
+                'waiting_payment': 'Ожидает оплату',
+                'mark_paid': 'Оплачено',
+                'complete': 'Завершить',
+                'cancel_test': 'Отменить тестовую заявку'
+            } %}
+            {% for action_key, action_status in quick_actions.items() %}
+            <form method="post" action="{{ url_for('admin_online_coaching.quick_action', online_request_id=request_record.online_request_id) }}">
+                <input type="hidden" name="action" value="{{ action_key }}">
+                <button type="submit" class="admin-btn admin-btn--sm {% if action_key == 'start_review' %}admin-btn--primary{% elif action_key == 'cancel_test' %}admin-btn--danger{% else %}admin-btn--secondary{% endif %}">
+                    {{ qa_labels.get(action_key, action_key) }}
+                </button>
+            </form>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card__header">
         <h2 class="admin-card__title">Смена статуса</h2>
     </div>
     <div class="admin-card__body">
