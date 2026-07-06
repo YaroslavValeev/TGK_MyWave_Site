@@ -47,7 +47,7 @@
 
 .home-competitions-ticker__viewport.is-autoplay {
     overflow: hidden;
-    touch-action: manipulation;
+    touch-action: pan-x;
 }
 
 .home-competitions-ticker__viewport.is-autoplay .home-competitions-ticker__track {
@@ -74,6 +74,11 @@
 
 .home-competitions-ticker__viewport.is-scrollable.is-dragging {
     cursor: grabbing;
+    user-select: none;
+}
+
+.home-competitions-ticker__viewport.is-scrollable.is-dragging a {
+    pointer-events: none;
 }
 
 .home-competitions-ticker__viewport::-webkit-scrollbar {

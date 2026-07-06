@@ -2546,6 +2546,48 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
 .service-card h3 {
   margin-top: 0;
 }
+
+.boat-partner-logos {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 3vw, 18px);
+  margin: 10px 0 12px;
+  padding: 8px 10px;
+  box-sizing: border-box;
+}
+
+.boat-partner-logos__logo {
+  display: block;
+  max-width: min(38%, 150px);
+  max-height: 42px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: none;
+}
+
+.boat-partner-logos__x {
+  flex: 0 0 auto;
+  font-weight: 800;
+  font-size: clamp(18px, 4vw, 26px);
+  line-height: 1;
+  color: #111;
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 480px) {
+  .boat-partner-logos {
+    gap: 10px;
+    padding-inline: 4px;
+  }
+
+  .boat-partner-logos__logo {
+    max-height: 34px;
+  }
+}
+
 .price {
   font-weight: bold;
   margin: 12px 0;

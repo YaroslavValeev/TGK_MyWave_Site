@@ -23,43 +23,53 @@ GOOGLE_SERVICE_ACCOUNT_FILE=...
 
 ## Команды на сервере (production)
 
+**Target:** `main` @ PR #78 merge commit `5d0a1e3d8fd47d2a756e4d72caa8e39426ec757e`
+
 ```bash
-# 1. Перейти в каталог проекта
-cd /var/www/mywave
+set -euo pipefail
+PROD_ROOT=/var/www/mywave
+cd "$PROD_ROOT"
+PY="$PROD_ROOT/venv/bin/python"
+EXPECTED_HEAD="5d0a1e3d8fd47d2a756e4d72caa8e39426ec757e"
 
-# 2. Получить код (ветка с Online Coaching)
-git fetch origin
-git checkout hotfix/booking-confirm-slot-btn-mobile
-git pull origin hotfix/booking-confirm-slot-btn-mobile
+# 1. Код: только main (не detached HEAD, не release-doc SHA)
+git -c safe.directory="$PROD_ROOT" fetch origin main
+git -c safe.directory="$PROD_ROOT" checkout main
+git -c safe.directory="$PROD_ROOT" pull --ff-only origin main
+ACTUAL="$(git -c safe.directory="$PROD_ROOT" rev-parse HEAD)"
+test "$ACTUAL" = "$EXPECTED_HEAD"
 
-# 3. Зависимости (если менялись)
+# 2. Зависимости (если менялись)
 source venv/bin/activate
 pip install -r requirements.txt
 
-# 4. Проверка листов Google Sheets (dry-run)
-python scripts/ensure_online_coaching_sheets.py
+# 3. Проверка листов Google Sheets (dry-run; при 503 — повторить через 30–60 с)
+DISABLE_TELEGRAM=1 ENABLE_GOOGLE_SERVICES=1 "$PY" scripts/ensure_online_coaching_sheets.py
 
-# 4b. Быстрый smoke маршрутов (без dev-сервера, ~5 сек)
-DISABLE_TELEGRAM=1 ENABLE_GOOGLE_SERVICES=0 ONLINE_COACHING_ENABLED=1 python scripts/smoke_online_coaching_routes.py
+# 4. Быстрый smoke маршрутов (без dev-сервера, ~5 сек)
+DISABLE_TELEGRAM=1 ENABLE_GOOGLE_SERVICES=0 ONLINE_COACHING_ENABLED=1 \
+  "$PY" scripts/smoke_online_coaching_routes.py
 
 # 5. Создать листы + заголовки (если dry-run показал missing)
-ONLINE_COACHING_SHEETS_APPLY=1 python scripts/ensure_online_coaching_sheets.py
+ONLINE_COACHING_SHEETS_APPLY=1 DISABLE_TELEGRAM=1 ENABLE_GOOGLE_SERVICES=1 \
+  "$PY" scripts/ensure_online_coaching_sheets.py
 
 # 6. Тесты (опционально на сервере)
-pytest tests/unit/test_online_coaching_schema.py \
-  tests/unit/test_online_coaching_routes.py \
-  tests/unit/test_online_coaching_store.py \
-  tests/unit/test_online_coaching_payments.py \
-  tests/unit/test_online_coaching_notifications.py -q
+DISABLE_TELEGRAM=1 ENABLE_GOOGLE_SERVICES=0 ONLINE_COACHING_ENABLED=1 \
+  "$PY" -m pytest tests/unit/test_online_coaching_*.py -q
 
-# 7. Перезапуск приложения
+# 7. Перезапуск приложения (только mywave-site)
 sudo systemctl restart mywave-site
 sudo systemctl status mywave-site --no-pager
 
-# 8. Smoke
+# 8. Smoke (публичный URL; не curl 127.0.0.1:5000 — gunicorn слушает socket)
 curl -sI https://mywavewake.ru/services/online-coaching | head -5
-curl -s https://mywavewake.ru/health
+curl -sI https://mywavewake.ru/online-coaching | head -5
+curl -s https://mywavewake.ru/health/live
 ```
+
+**Важно:** всегда использовать `$PROD_ROOT/venv/bin/python`, не системный `python3`.
+Не переключаться на detached HEAD (`3654bbb2` и др.) — это старый release-doc commit без Online Coaching.
 
 ## Smoke после деплоя
 

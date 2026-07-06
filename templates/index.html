@@ -4,7 +4,7 @@
 {% block title %}MyWave — Тренировки по вейксерфингу{% endblock %}
 
 {% block extra_head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/competitions-ticker.css') }}?v=8" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/competitions-ticker.css') }}?v=9" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/social-mission.css') }}?v=3" />
 {% endblock %}
 
@@ -27,7 +27,7 @@
     <div class="feature-list">
       <div class="feature-item">
         <h4>Профессионализм</h4>
-        <p>Многолетний опыт (23+ лет) и высокая квалификация.</p>
+        <p>Многолетний опыт (25+ лет) и высокая квалификация.</p>
       </div>
       <div class="feature-item">
         <h4>Комфорт и безопасность</h4>
@@ -54,6 +54,9 @@
             {% include 'partials/service_card_media.html' %}
           </div>
           <h4>{{ service.name }}</h4>
+          {% if service.service_id == 'boat' %}
+          {% include 'partials/boat_partner_logos.html' %}
+          {% endif %}
           <p class="service-description service-description--short">{{ service.description }}</p>
           <p>Цена: {{ service.price }}</p>
           <div class="card-details">
@@ -266,5 +269,5 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="{{ url_for('static', filename='js/competitions-ticker.js') }}?v=8" defer></script>
+  <script src="{{ url_for('static', filename='js/competitions-ticker.js') }}?v=9" defer></script>
 {% endblock %}
