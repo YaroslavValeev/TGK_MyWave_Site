@@ -229,7 +229,9 @@
   .products-carousel .product-card .btn-secondary,
   .products-carousel .product-card .product-card__buy,
   .projects-carousel .project-card .btn-secondary,
-  .services-carousel .service-card .btn-book {
+  .services-carousel .service-card .btn-book,
+  .services-carousel .service-card .service-card-actions,
+  .services-carousel .service-card .service-card__cta {
     width: 100%;
     min-height: 44px;
     margin-top: auto;
