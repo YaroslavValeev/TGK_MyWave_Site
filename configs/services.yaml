@@ -57,7 +57,7 @@ services:
   - service_id: online_coaching
     name: "MyWave Online Coaching"
     description: "Разбор видео, месячное сопровождение и Live Coach по вейкборду и вейксерфингу — онлайн между тренировками."
-    price: "от 3 500 ₽"
+    price: "от 1 500 ₽"
     image_folder: "images/Services/Gym"
     cover_index: 0
     page_url: "/services/online-coaching"

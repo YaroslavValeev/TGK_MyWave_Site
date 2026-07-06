@@ -74,10 +74,10 @@ DISCIPLINES = frozenset({"wakesurf", "wakeboard", "both", "other"})
 LEVELS = frozenset({"beginner", "intermediate", "advanced", "pro"})
 
 SERVICE_PRICES = {
-    "video_check": 3500,
-    "progress_month": 12900,
+    "video_check": 1500,
+    "progress_month": 12000,
     "live_coach_land": 3500,
-    "live_coach_water": 5500,
+    "live_coach_water": 3500,
 }
 
 PAYMENT_TIMING_BY_SERVICE = {
