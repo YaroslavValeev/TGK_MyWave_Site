@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from typing import Any, Mapping
 
 from flask import Blueprint, abort, current_app, jsonify, redirect, render_template, request, url_for
@@ -16,14 +17,30 @@ from app.config.online_coaching_features import (
 )
 from app.extensions import csrf, limiter
 from app.modules.logger import get_logger
-from app.services.online_coaching_notifications import notify_new_online_request
-from app.services.online_coaching_store import append_online_request, validate_application_payload
+from app.services.online_coaching_notifications import notify_materials_received, notify_new_online_request
+from app.services.online_coaching_store import (
+    append_online_request,
+    append_request_media,
+    validate_application_payload,
+    validate_media_payload,
+)
 
 logger = get_logger(__name__)
 
 online_coaching_bp = Blueprint("online_coaching", __name__)
 
 CONSENT_VERSION = "2026-07-v1"
+_REQUEST_ID_PATH_RE = re.compile(r"^oc_req_[0-9a-f]{12,32}$", re.IGNORECASE)
+
+_APPLY_SUCCESS_MESSAGES = {
+    "video_check": (
+        "Заявка принята. Следующий шаг — добавьте видео тренировки, задачу для разбора и комментарий. "
+        "Оплата за разбор видео — после получения разбора."
+    ),
+    "progress_month": "Заявка принята. Мы свяжемся с вами для оплаты и старта подписки.",
+    "live_coach_land": "Заявка принята. Мы свяжемся с вами для согласования онлайн-занятия.",
+    "live_coach_water": "Заявка принята. Мы свяжемся с вами для согласования онлайн-занятия.",
+}
 
 
 def _hash_client_ip() -> str:
@@ -73,6 +90,11 @@ def _apply_rate_limit():
     return limiter.limit("5 per minute", key_func=get_remote_address)
 
 
+def _apply_success_message(service_type: str) -> str:
+    key = str(service_type or "").strip().lower()
+    return _APPLY_SUCCESS_MESSAGES.get(key, "Заявка принята. Мы свяжемся с вами в выбранном канале.")
+
+
 @online_coaching_bp.route("/api/online-coaching/apply", methods=["POST"])
 @csrf.exempt
 @_apply_rate_limit()
@@ -92,6 +114,9 @@ def online_coaching_apply():
     data.setdefault("consent_version", CONSENT_VERSION)
     data["ip_hash"] = _hash_client_ip()
     data.setdefault("source", "web_online_coaching")
+    # Video for video_check is submitted on the media step (PR83).
+    if str(data.get("service_type") or "").strip().lower() == "video_check":
+        data.pop("video_url", None)
 
     try:
         result = append_online_request(data)
@@ -100,6 +125,9 @@ def online_coaching_apply():
     except Exception as exc:
         logger.warning("online_coaching_apply_failed err=%s", exc, exc_info=True)
         return jsonify(ok=False, error="write_failed"), 500
+
+    service_type = str(data.get("service_type") or "").strip().lower()
+    show_video_step = service_type == "video_check" and result.request_status == "waiting_video"
 
     logger.info(
         "online_coaching_apply_ok",
@@ -113,9 +141,9 @@ def online_coaching_apply():
             "payment_required_timing": result.payment_required_timing,
             **{k: data.get(k, "") for k in (
                 "name", "phone", "email", "preferred_channel", "telegram_username",
-                "discipline", "level", "goal", "video_url", "service_type",
-                "injuries_or_limits",
+                "discipline", "level", "goal", "service_type", "injuries_or_limits",
             )},
+            "video_url": "",
         }
         try:
             notify_new_online_request(notify_record)
@@ -131,5 +159,60 @@ def online_coaching_apply():
         online_request_id=result.online_request_id,
         request_status=result.request_status,
         payment_required_timing=result.payment_required_timing,
-        message="Заявка принята. Мы свяжемся с вами в выбранном канале.",
+        show_video_step=show_video_step,
+        message=_apply_success_message(service_type),
     ), 201
+
+
+@online_coaching_bp.route("/api/online-coaching/<online_request_id>/media", methods=["POST"])
+@csrf.exempt
+@_apply_rate_limit()
+def online_coaching_submit_media(online_request_id: str):
+    if not is_online_coaching_applications_enabled():
+        return jsonify(error="online_coaching_applications_disabled"), 503
+
+    req_id = (online_request_id or "").strip()
+    if not _REQUEST_ID_PATH_RE.match(req_id):
+        return jsonify(ok=False, errors=["invalid:online_request_id"]), 400
+
+    payload = request.get_json(silent=True) if request.is_json else None
+    if payload is None:
+        payload = request.form.to_dict(flat=True)
+
+    errors = validate_media_payload(payload or {})
+    if errors:
+        return jsonify(ok=False, errors=errors), 400
+
+    try:
+        updated = append_request_media(req_id, payload or {})
+    except ValueError as exc:
+        code = str(exc)
+        if "not_found" in code:
+            return jsonify(ok=False, errors=["request_not_found"]), 404
+        if "media_already_received" in code:
+            return jsonify(ok=False, errors=["media_already_received"]), 409
+        if "invalid_status_for_media" in code:
+            return jsonify(ok=False, errors=[code]), 409
+        return jsonify(ok=False, errors=[code]), 400
+    except Exception as exc:
+        logger.warning("online_coaching_media_failed id=%s err=%s", req_id, exc, exc_info=True)
+        return jsonify(ok=False, error="write_failed"), 500
+
+    video_urls = updated.get("video_urls") or []
+
+    if is_online_coaching_notifications_enabled():
+        try:
+            notify_materials_received(updated, video_urls=video_urls)
+        except Exception as notify_exc:
+            logger.warning(
+                "online_coaching_media_notify_failed id=%s error=%s",
+                req_id,
+                str(notify_exc)[:200],
+            )
+
+    return jsonify(
+        ok=True,
+        online_request_id=req_id,
+        status="video_received",
+        message="Видео получено",
+    ), 200

@@ -4,6 +4,7 @@ Google Sheets header contracts for MyWave Online Coaching tabs.
 
 from __future__ import annotations
 
+import re
 from typing import Iterable, List, Sequence, Tuple
 
 ONLINE_REQUESTS_SHEET = "Online_Requests"
@@ -136,6 +137,12 @@ ONLINE_REQUESTS_HEADERS: Tuple[str, ...] = (
     "consent_personal_data",
     "consent_version",
     "ip_hash",
+    "review_task",
+    "training_comment",
+    "training_date",
+    "spot_or_location",
+    "in_review_at",
+    "paid_at",
 )
 
 ONLINE_DIARIES_HEADERS: Tuple[str, ...] = (
@@ -224,6 +231,53 @@ MVP_SHEET_CONTRACTS = {
 GOAL_MAX_LEN = 500
 COMMENT_MAX_LEN = 1000
 INJURIES_MAX_LEN = 500
+REVIEW_TASK_MAX_LEN = 1000
+TRAINING_COMMENT_MAX_LEN = 1000
+TRAINING_DATE_MAX_LEN = 32
+SPOT_OR_LOCATION_MAX_LEN = 200
+
+VIDEO_URL_MAX_LEN = 500
+VIDEO_URL_MAX_COUNT = 3
+REVIEW_DEADLINE_HOURS = 48
+VIDEO_REMINDER_HOURS = 24
+IN_REVIEW_REMINDER_HOURS = 48
+PAYMENT_REMINDER_HOURS = 24
+
+_VIDEO_URL_SCHEME_RE = re.compile(r"^https?://", re.IGNORECASE)
+_UNSAFE_URL_RE = re.compile(r"<[^>]+>|javascript:", re.IGNORECASE)
+
+
+def normalize_video_urls(raw_urls: object) -> List[str]:
+    """Normalize 1–3 video URLs from list or legacy single string."""
+    urls: List[str] = []
+    if isinstance(raw_urls, str):
+        candidate = raw_urls.strip()
+        if candidate:
+            urls.append(candidate)
+    elif isinstance(raw_urls, (list, tuple)):
+        for item in raw_urls:
+            text = str(item or "").strip()
+            if text:
+                urls.append(text)
+    return urls[:VIDEO_URL_MAX_COUNT]
+
+
+def validate_video_urls(urls: Sequence[str]) -> List[str]:
+    """Return validation error codes for video URL list."""
+    errors: List[str] = []
+    if not urls:
+        errors.append("required:video_urls")
+        return errors
+    if len(urls) > VIDEO_URL_MAX_COUNT:
+        errors.append("invalid:video_urls_count")
+    for url in urls:
+        if len(url) > VIDEO_URL_MAX_LEN:
+            errors.append("invalid:video_url_length")
+        if not _VIDEO_URL_SCHEME_RE.match(url):
+            errors.append("invalid:video_url_scheme")
+        if _UNSAFE_URL_RE.search(url):
+            errors.append("invalid:video_url_unsafe")
+    return errors
 
 
 def col_letter(index: int) -> str:
