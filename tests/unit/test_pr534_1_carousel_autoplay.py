@@ -10,9 +10,10 @@ def test_competitions_ticker_uses_css_transform_autoplay():
     assert "is-autoplay" in js
     assert "pointerdown" in js
     assert "syncAnimationFromTranslate" in js
+    assert "startMomentum" in js
+    assert "requestAnimationFrame" in js
     assert "MOBILE_AUTO_SCROLL" not in js
     assert "viewport.scrollLeft" not in js
-    assert "requestAnimationFrame" not in js
     assert "--ticker-duration" in js
     assert "840" in js
 
@@ -22,10 +23,10 @@ def test_competitions_ticker_uses_css_transform_autoplay():
     assert "is-autoplay" in css
 
 
-def test_index_loads_competitions_ticker_v8(client):
+def test_index_loads_competitions_ticker_v10(client):
     html = client.get("/").get_data(as_text=True)
-    assert "competitions-ticker.js?v=9" in html
-    assert "competitions-ticker.css?v=9" in html
+    assert "competitions-ticker.js?v=10" in html
+    assert "competitions-ticker.css?v=10" in html
 
 
 def test_pr534_footer_and_notify_regressions():

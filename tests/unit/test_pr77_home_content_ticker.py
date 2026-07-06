@@ -27,17 +27,20 @@ def test_competitions_ticker_touch_drag_support():
     assert "pointerdown" in js
     assert "syncAnimationFromTranslate" in js
     assert "setManualTranslate" in js
+    assert "startMomentum" in js
+    assert "MOMENTUM_FRICTION" in js
+    assert "requestAnimationFrame" in js
     assert "is-dragging" in js
     assert "viewport.scrollLeft" not in js
 
-    assert "touch-action: pan-x" in css
+    assert "touch-action: pan-y" in css
     assert "is-dragging a" in css.replace("\n", " ")
 
 
-def test_index_loads_competitions_ticker_v9(client):
+def test_index_loads_competitions_ticker_v10(client):
     html = client.get("/").get_data(as_text=True)
-    assert "competitions-ticker.js?v=9" in html
-    assert "competitions-ticker.css?v=9" in html
+    assert "competitions-ticker.js?v=10" in html
+    assert "competitions-ticker.css?v=10" in html
 
 
 def test_boat_card_shows_partner_logos(client):
@@ -62,6 +65,9 @@ def test_boat_partner_logos_only_for_boat_service():
 def test_boat_partner_logos_styles():
     css = Path("static/css/style.css").read_text(encoding="utf-8")
     assert ".boat-partner-logos" in css
+    assert "grid-template-columns" in css
+    assert ".boat-partner-logos__logo--mywave" in css
+    assert ".boat-partner-logos__logo--loaded" in css
     assert ".boat-partner-logos__x" in css
 
 
