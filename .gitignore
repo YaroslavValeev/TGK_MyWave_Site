@@ -40,6 +40,9 @@ configs/service_account.json
 *.db
 uploads/
 
+# Runtime user uploads (review photos etc.) — created on server by ensure_media_upload_dirs.sh
+static/downloads/
+
 # Service account
 configs/service_account.json
 instance/service_account.json

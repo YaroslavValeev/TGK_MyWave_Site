@@ -40,6 +40,7 @@ from app.extensions import init_extensions, init_websocket, socketio, api, csrf
 from app.routes.api import api_ns
 from app.routes.admin import bp as admin_bp
 from app.routes.admin.social import bp as admin_social_bp
+from app.routes.admin.online_coaching import bp as admin_online_coaching_bp
 
 # Импорт остальных blueprint-ов
 from app.routes.auth import auth_bp
@@ -387,6 +388,12 @@ def create_app(config_name="development"):
         app.register_blueprint(social_bp)
     except Exception as e:
         app.logger.warning("social_bp failed to load: %s", e, exc_info=True)
+    try:
+        from app.routes.online_coaching import online_coaching_bp
+
+        app.register_blueprint(online_coaching_bp)
+    except Exception as e:
+        app.logger.warning("online_coaching_bp failed to load: %s", e, exc_info=True)
     app.register_blueprint(about_bp)
     app.register_blueprint(contact_bp)
     app.register_blueprint(calendar_bp)
@@ -464,6 +471,7 @@ def create_app(config_name="development"):
     app.register_blueprint(booking_api_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(admin_social_bp)
+    app.register_blueprint(admin_online_coaching_bp)
     app.register_blueprint(admin_images_bp)
     app.register_blueprint(health_bp)
     
