@@ -43,6 +43,14 @@ def _range_duration_minutes(service_type: str, set_count: int) -> int:
     return GYM_SLOT_MINUTES
 
 
+def _safe_workout_duration_minutes(value) -> int:
+    """Return workout duration in minutes; tolerate shifted/manual Sheets values."""
+    try:
+        return int(value or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
 def is_duplicate_web_booking(
     phone: str,
     date: str,
@@ -77,7 +85,7 @@ def is_duplicate_web_booking(
         if w.get("workout_id")
     }
     duration_by_id = {
-        str(w.get("workout_id") or ""): int(w.get("duration") or 0)
+        str(w.get("workout_id") or ""): _safe_workout_duration_minutes(w.get("duration"))
         for w in workouts
         if w.get("workout_id")
     }

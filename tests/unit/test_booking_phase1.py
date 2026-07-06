@@ -61,6 +61,33 @@ class TestIdempotency:
                     "+79160117179", "2026-06-01", "12:00", "gym"
                 )
 
+    def test_duplicate_skips_non_numeric_workout_duration(self, app):
+        """Prod Workouts rows may have text in duration (e.g. 'Зал'); must not 500."""
+        with app.app_context():
+            app.config["SPREADSHEET_ID"] = "test-sheet"
+            with patch(
+                "app.services.booking.idempotency.read_records",
+                side_effect=[
+                    [{"client_id": "c1", "phone": "+79160117179"}],
+                    [
+                        {
+                            "client_id": "c1",
+                            "workout_id": "evt_old",
+                            "date": "2026-06-01",
+                            "time": "12:00",
+                            "status": "подтверждено",
+                        }
+                    ],
+                    [
+                        {"workout_id": "evt_old", "workout_type": "gym", "duration": "Зал"},
+                        {"workout_id": "evt_other", "workout_type": "boat", "duration": "60"},
+                    ],
+                ],
+            ):
+                assert is_duplicate_web_booking(
+                    "+79160117179", "2026-06-01", "12:00", "gym"
+                )
+
 
 class TestClientResolver:
     def test_reuse_existing_client_by_phone(self, app):
