@@ -29,7 +29,7 @@
             </div>
             <div class="admin-detail-item admin-detail-item--highlight">
                 <div class="admin-detail-item__label">Услуга</div>
-                <div class="admin-detail-item__value">{{ request_record.service_type or '—' }}</div>
+                <div class="admin-detail-item__value">{{ oc_service_label(request_record.service_type) }}</div>
             </div>
             <div class="admin-detail-item">
                 <div class="admin-detail-item__label">Имя</div>
@@ -199,7 +199,7 @@
                 </div>
             </div>
             <label class="admin-label" for="followup-note">Заметка</label>
-            <textarea id="followup-note" name="note" class="admin-input" rows="2" placeholder="Напомнить о видео / апсейл Progress Month"></textarea>
+            <textarea id="followup-note" name="note" class="admin-input" rows="2" placeholder="Напомнить о видео / апсейл «Эффективный месяц»"></textarea>
             <button type="submit" class="admin-btn admin-btn--secondary admin-btn--sm">Запланировать follow-up</button>
         </form>
         <form method="post" action="{{ url_for('admin_online_coaching.change_status', online_request_id=request_record.online_request_id) }}" class="admin-form-inline" style="margin-top:0.75rem;">

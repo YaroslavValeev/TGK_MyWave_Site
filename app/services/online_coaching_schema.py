@@ -80,6 +80,20 @@ SERVICE_PRICES = {
     "live_coach_water": 3500,
 }
 
+PROGRESS_MONTH_MAX_SESSIONS = 10
+
+SERVICE_DISPLAY_NAMES = {
+    "video_check": "Разбор видео",
+    "progress_month": "Эффективный месяц",
+    "live_coach_land": "Прямая связь (суша)",
+    "live_coach_water": "Прямая связь (вода)",
+}
+
+
+def service_display_name(service_type: str) -> str:
+    key = str(service_type or "").strip().lower()
+    return SERVICE_DISPLAY_NAMES.get(key, key or "—")
+
 PAYMENT_TIMING_BY_SERVICE = {
     "video_check": "after_service",
     "progress_month": "upfront",
