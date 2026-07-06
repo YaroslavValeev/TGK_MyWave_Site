@@ -46,7 +46,7 @@ def test_boat_card_shows_partner_logos(client):
     assert 'alt="MyWave"' in html
     assert 'alt="Loaded"' in html
     assert "MyWave_logo_black.svg" in html
-    assert "Loaded_logo_black.svg" in html
+    assert "Loaded_logo_black_site.svg" in html
     assert html.count('class="boat-partner-logos"') == 1
 
 
@@ -70,5 +70,10 @@ def test_mywave_black_logo_asset_exists():
         "static/images/logotip_MyWave/MyWave_logo_package_brand_turquoise/"
         "01_master/MyWave_logo_black.svg"
     )
+    assert path.is_file()
+
+
+def test_loaded_logo_asset_exists():
+    path = Path("static/images/Logotip_Loaded/Loaded_logo_black_site.svg")
     assert path.is_file()
 
