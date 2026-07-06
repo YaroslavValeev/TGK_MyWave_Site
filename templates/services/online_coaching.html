@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}MyWave Online Coaching{% endblock %}
-{% block meta_description %}Онлайн-тренировки MyWave: разбор видео, месячное сопровождение и Live Coach по вейкборду и вейксерфингу.{% endblock %}
+{% block meta_description %}Онлайн-тренировки MyWave: разбор видео, эффективный месяц и прямая связь по вейкборду и вейксерфингу.{% endblock %}
 
 {% block extra_head %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/online-coaching.css') }}?v=1" />
@@ -30,7 +30,7 @@
       <h2 id="oc-formats-title">Три формата услуги</h2>
       <div class="oc-grid oc-grid--services">
         <article class="mw-card oc-card oc-service-card">
-          <h3>MyWave Video Check</h3>
+          <h3>Разбор видео</h3>
           <p class="oc-muted">Разовый видеоразбор техники с заданиями и дневником.</p>
           <ul>
             <li>Анкета и ссылка на видео</li>
@@ -40,32 +40,32 @@
           </ul>
           <p class="oc-price">1 500 ₽ / сет</p>
           <p class="oc-price-note">Оплата после разбора</p>
-          <button type="button" class="btn-secondary oc-service-card__cta" data-service-type="video_check">Выбрать Video Check</button>
+          <button type="button" class="btn-secondary oc-service-card__cta" data-service-type="video_check">Выбрать «Разбор видео»</button>
         </article>
 
         <article class="mw-card oc-card oc-card--highlight oc-service-card">
-          <h3>MyWave Progress Month</h3>
+          <h3>Эффективный месяц</h3>
           <p class="oc-muted">Видеоразборы каждой вашей тренировки в течение месяца, задания на воде и суше, ОФП, смежные дисциплины и дневник прогресса.</p>
           <ul>
-            <li>До 8 тренировок за 30 дней</li>
+            <li>До 10 тренировок в месяц</li>
             <li>До 3 роликов по 60–90 сек после каждой тренировки</li>
             <li>Ответ до 48 часов</li>
           </ul>
           <p class="oc-price">12 000 ₽ / сет</p>
           <p class="oc-price-note">Оплата при покупке</p>
-          <button type="button" class="btn-primary oc-service-card__cta" data-service-type="progress_month">Выбрать Progress Month</button>
+          <button type="button" class="btn-primary oc-service-card__cta" data-service-type="progress_month">Выбрать «Эффективный месяц»</button>
         </article>
 
         <article class="mw-card oc-card oc-service-card">
-          <h3>MyWave Live Coach</h3>
+          <h3>Прямая связь</h3>
           <p class="oc-muted">Онлайн-занятие в реальном времени: на суше, в зале, дома или в безопасном формате на воде.</p>
           <p><strong>На суше:</strong> баланс, батут, серфскейт, тренажёры, ОФП — тренер корректирует технику по видеосвязи.</p>
           <p><strong>На воде:</strong> рекомендации до попытки, после попытки или между сетами — без отвлечения во время движения.</p>
           <p class="oc-price">3 500 ₽ — 60 мин (суша / вода)</p>
           <p class="oc-price-note">Разовое занятие — оплата после</p>
           <div class="oc-hero__actions" style="margin-top:0.75rem;">
-            <button type="button" class="btn-secondary" data-service-type="live_coach_land">Live на суше</button>
-            <button type="button" class="btn-secondary" data-service-type="live_coach_water">Live на воде</button>
+            <button type="button" class="btn-secondary" data-service-type="live_coach_land">На суше</button>
+            <button type="button" class="btn-secondary" data-service-type="live_coach_water">На воде</button>
           </div>
         </article>
       </div>
@@ -75,15 +75,15 @@
       <h2 id="oc-audience-title">Кому подходит</h2>
       <div class="oc-grid">
         <article>
-          <h3>Video Check</h3>
+          <h3>Разбор видео</h3>
           <p class="oc-muted">Разовый разбор техники: перед сезоном, после паузы или когда нужен свежий взгляд тренера на конкретный элемент.</p>
         </article>
         <article>
-          <h3>Progress Month</h3>
+          <h3>Эффективный месяц</h3>
           <p class="oc-muted">Райдерам, которые тренируются регулярно и хотят разбор каждой тренировки, задания и дневник прогресса в течение месяца.</p>
         </article>
         <article>
-          <h3>Live Coach</h3>
+          <h3>Прямая связь</h3>
           <p class="oc-muted">Для работы на суше (баланс, ОФП, батут) или безопасной онлайн-подсказки на воде — до попытки, после или между сетами.</p>
         </article>
       </div>
@@ -94,9 +94,9 @@
       <ol class="oc-steps">
         <li>Выберите формат и оставьте заявку с контактом и целью.</li>
         <li>Мы свяжемся в выбранном канале (Telegram — приоритет в MVP).</li>
-        <li>Для Video Check / Progress Month — пришлите ссылку на видео или файл в Telegram.</li>
+        <li>Для «Разбор видео» и «Эффективный месяц» — пришлите ссылку на видео или файл в Telegram.</li>
         <li>Тренер делает разбор, фиксирует задания в дневнике.</li>
-        <li>Оплата: Progress Month — сразу; Video Check и разовый Live — после услуги.</li>
+        <li>Оплата: «Эффективный месяц» — сразу; «Разбор видео» и «Прямая связь» — после услуги.</li>
       </ol>
     </section>
 
@@ -107,9 +107,9 @@
           <thead>
             <tr>
               <th>Компонент</th>
-              <th>Video Check</th>
-              <th>Progress Month</th>
-              <th>Live Coach</th>
+              <th>Разбор видео</th>
+              <th>Эффективный месяц</th>
+              <th>Прямая связь</th>
             </tr>
           </thead>
           <tbody>
@@ -128,17 +128,17 @@
       <h2 id="oc-prices-title">Цены</h2>
       <div class="oc-grid">
         <article class="mw-card oc-card">
-          <h3>Video Check</h3>
+          <h3>Разбор видео</h3>
           <p class="oc-price">1 500 ₽ / сет</p>
           <p class="oc-muted">Разовый разбор, оплата после получения разбора.</p>
         </article>
         <article class="mw-card oc-card oc-card--highlight">
-          <h3>Progress Month</h3>
+          <h3>Эффективный месяц</h3>
           <p class="oc-price">12 000 ₽ / сет</p>
-          <p class="oc-muted">До 8 тренировок, оплата при старте подписки.</p>
+          <p class="oc-muted">До 10 тренировок в месяц, оплата при старте подписки.</p>
         </article>
         <article class="mw-card oc-card">
-          <h3>Live Coach</h3>
+          <h3>Прямая связь</h3>
           <p class="oc-price">3 500 ₽ — 60 мин (суша / вода)</p>
           <p class="oc-muted">Разовое занятие — оплата после. Пакеты — по запросу.</p>
         </article>
@@ -149,7 +149,7 @@
       <h2 id="oc-film-title">Как снять видео</h2>
       <ul>
         <li>Снимайте сбоку или сзади — видно позу, работу ног и доску.</li>
-        <li>Длительность 60–90 секунд на один ролик (для Progress Month — до 3 роликов).</li>
+        <li>Длительность 60–90 секунд на один ролик (для «Эффективного месяца» — до 3 роликов).</li>
         <li>Стабильная камера или штатив, хорошее освещение.</li>
         <li>Безопасность: не снимайте себя во время опасных манёвров на воде.</li>
         <li>Загрузите на Google Drive, Яндекс.Диск или отправьте в Telegram — вставьте ссылку в форму.</li>
@@ -163,7 +163,7 @@
         <li>Текущая цель и главная ошибка</li>
         <li>Задания: вода, суша, ОФП, смежные дисциплины</li>
         <li>Запрос следующего видео</li>
-        <li>Комментарии тренера и еженедельная корректировка (Progress Month)</li>
+        <li>Комментарии тренера и еженедельная корректировка («Эффективный месяц»)</li>
       </ul>
     </section>
 
@@ -171,7 +171,7 @@
       <h2 id="oc-safety-title">Безопасность</h2>
       <ul>
         <li>Укажите травмы и ограничения в заявке — мы учтём их в рекомендациях.</li>
-        <li>Live на воде: инструкции только до/после попытки или между сетами.</li>
+        <li>Прямая связь на воде: инструкции только до/после попытки или между сетами.</li>
         <li>Онлайн-разбор не заменяет медицинскую консультацию.</li>
         <li>Не публикуем ваши персональные и медицинские данные без согласия.</li>
       </ul>
@@ -182,15 +182,15 @@
       <div class="mw-card oc-card">
         <details>
           <summary>Как быстро вы отвечаете?</summary>
-          <p>Для Progress Month — до 48 часов после каждого видео. Video Check — согласуем дедлайн при приёме заявки.</p>
+          <p>Для «Эффективный месяц» — до 48 часов после каждого видео. «Разбор видео» — согласуем дедлайн при приёме заявки.</p>
         </details>
         <details>
           <summary>Нужно ли платить сразу?</summary>
-          <p>Progress Month — оплата при покупке. Video Check и разовый Live — после получения разбора или занятия.</p>
+          <p>«Эффективный месяц» — оплата при покупке. «Разбор видео» и «Прямая связь» — после получения разбора или занятия.</p>
         </details>
         <details>
           <summary>Можно ли без видео?</summary>
-          <p>Для Video Check и Progress Month видео обязательно. Live Coach — формат без предварительного ролика.</p>
+          <p>Для «Разбор видео» и «Эффективный месяц» видео обязательно. «Прямая связь» — формат без предварительного ролика.</p>
         </details>
         <details>
           <summary>Как связаться с тренером?</summary>
@@ -247,10 +247,10 @@
             <label for="oc-service-type">Услуга *</label>
             <select id="oc-service-type" name="service_type" required>
               <option value="">Выберите</option>
-              <option value="video_check">Video Check — разбор видео</option>
-              <option value="progress_month">Progress Month — месяц сопровождения</option>
-              <option value="live_coach_land">Live Coach — суша</option>
-              <option value="live_coach_water">Live Coach — вода</option>
+              <option value="video_check">Разбор видео</option>
+              <option value="progress_month">Эффективный месяц</option>
+              <option value="live_coach_land">Прямая связь — суша</option>
+              <option value="live_coach_water">Прямая связь — вода</option>
             </select>
           </div>
           <div class="mw-field">

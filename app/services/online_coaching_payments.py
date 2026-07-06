@@ -12,6 +12,7 @@ from app.modules.logger import get_logger
 from app.services.online_coaching_schema import (
     ONLINE_PAYMENTS_HEADERS,
     ONLINE_PAYMENTS_SHEET,
+    PROGRESS_MONTH_MAX_SESSIONS,
     SERVICE_PRICES,
     payment_timing_for_service,
 )
@@ -178,7 +179,7 @@ def mark_paid(
             subscription_id=subscription_id,
             client_id=client_id,
             package_type="progress_month",
-            total_sessions="8",
+            total_sessions=str(PROGRESS_MONTH_MAX_SESSIONS),
             used_sessions="0",
             purchase_date=purchase_date,
             expiry_date=expiry,

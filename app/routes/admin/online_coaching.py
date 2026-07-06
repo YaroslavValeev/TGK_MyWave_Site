@@ -21,11 +21,22 @@ from app.services.online_coaching_notifications import (
     notify_video_received,
 )
 from app.services.online_coaching_payments import mark_paid, record_manual_payment_url
-from app.services.online_coaching_schema import REQUEST_STATUSES, SERVICE_TYPES, STATUSES_BY_SERVICE
+from app.services.online_coaching_schema import REQUEST_STATUSES, SERVICE_TYPES, STATUSES_BY_SERVICE, service_display_name
 from app.services.online_coaching_store import append_diary_entry, append_followup, log_admin_action, update_request_fields
 from app.utils.decorators import admin_required
 
 bp = Blueprint("admin_online_coaching", __name__, url_prefix="/admin/online-coaching")
+
+
+@bp.app_context_processor
+def _inject_oc_service_labels():
+    from app.services.online_coaching_schema import SERVICE_DISPLAY_NAMES
+
+    return {
+        "oc_service_label": service_display_name,
+        "oc_service_labels": SERVICE_DISPLAY_NAMES,
+    }
+
 
 _STATUS_FILTERS = (
     "all", "new", "waiting_video", "waiting_payment", "paid", "subscription_active",

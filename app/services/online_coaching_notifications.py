@@ -16,16 +16,9 @@ from typing import Any, Dict, Mapping, Optional
 from flask import current_app, has_app_context
 
 from app.services.notifications import send_telegram_notification_with_keyboard
-from app.services.online_coaching_schema import SERVICE_PRICES
+from app.services.online_coaching_schema import PROGRESS_MONTH_MAX_SESSIONS, SERVICE_PRICES, service_display_name
 
 logger = logging.getLogger(__name__)
-
-_SERVICE_LABELS = {
-    "video_check": "Video Check",
-    "progress_month": "Progress Month",
-    "live_coach_land": "Live Coach (суша)",
-    "live_coach_water": "Live Coach (вода)",
-}
 
 _PHONE_MASK_RE = re.compile(r"\D+")
 
@@ -52,7 +45,7 @@ def admin_detail_url(online_request_id: str) -> str:
 
 
 def _service_label(service_type: str) -> str:
-    return _SERVICE_LABELS.get(service_type, service_type or "—")
+    return service_display_name(service_type)
 
 
 def _mask_phone(phone: str) -> str:
@@ -184,11 +177,11 @@ def format_payment_needed_message(record: Mapping[str, Any], amount: Optional[fl
 def format_subscription_paid_message(record: Mapping[str, Any], *, period_end: str = "") -> str:
     safe = sanitize_record_for_telegram(record)
     return (
-        "Подписка Progress Month активирована\n\n"
+        "Подписка «Эффективный месяц» активирована\n\n"
         f"Клиент: {safe['name']}\n"
         f"Период: {safe['created_at'][:10] if safe['created_at'] else '—'} — {period_end or '—'}\n"
         "Статус: subscription_active\n"
-        "Лимит: до 8 тренировок/месяц\n"
+        f"Лимит: до {PROGRESS_MONTH_MAX_SESSIONS} тренировок/месяц\n"
         f"Канал связи: {safe['preferred_channel']}\n"
         f"ID: {safe['online_request_id']}"
     )

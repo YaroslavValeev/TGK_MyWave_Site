@@ -46,7 +46,7 @@
                     <tr>
                         <td><code>{{ req.online_request_id }}</code></td>
                         <td><span class="admin-badge">{{ req.request_status or '—' }}</span></td>
-                        <td>{{ req.service_type or '—' }}</td>
+                        <td>{{ oc_service_label(req.service_type) }}</td>
                         <td>{{ req.name or '—' }}</td>
                         <td>{{ req.preferred_channel or '—' }}</td>
                         <td>{{ req.created_at or '—' }}</td>
@@ -74,7 +74,7 @@
             </div>
             <div class="admin-mobile-card__row">
                 <strong>Услуга</strong>
-                <span>{{ req.service_type or '—' }}</span>
+                <span>{{ oc_service_label(req.service_type) }}</span>
             </div>
             <div class="admin-mobile-card__row">
                 <strong>Имя</strong>
