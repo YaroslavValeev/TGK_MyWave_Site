@@ -49,7 +49,7 @@ def test_boat_card_shows_partner_lockup(client):
     html = client.get("/").get_data(as_text=True)
     assert 'aria-label="MyWave X Loaded"' in html
     assert 'alt="MyWave X Loaded"' in html
-    assert "mywave-x-loaded-black-lockup.svg" in html
+    assert "mywave-x-loaded-black-lockup.png" in html
     assert "boat-partner-logos__lockup" in html
     assert html.count('class="boat-partner-logos"') == 1
 
@@ -60,7 +60,7 @@ def test_boat_partner_logos_only_for_boat_service():
     assert "boat_partner_logos.html" in index
     page = Path("page.html").read_text(encoding="utf-8")
     assert "boat-partner-logos__lockup" in page
-    assert "mywave-x-loaded-black-lockup.svg" in page
+    assert "mywave-x-loaded-black-lockup.png" in page
 
 
 def test_boat_partner_logos_styles():
@@ -72,11 +72,9 @@ def test_boat_partner_logos_styles():
 
 
 def test_partner_lockup_asset_exists():
-    path = Path("static/images/partners/mywave-x-loaded-black-lockup.svg")
-    assert path.is_file()
-    text = path.read_text(encoding="utf-8")
-    assert "MyWave X Loaded" in text
-    assert 'fill="#000' in text or "fill:#000" in text
+    png = Path("static/images/partners/mywave-x-loaded-black-lockup.png")
+    assert png.is_file()
+    assert png.stat().st_size > 10000
 
 
 def test_mywave_black_logo_asset_exists():
