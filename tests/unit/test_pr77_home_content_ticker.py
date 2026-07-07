@@ -77,6 +77,21 @@ def test_partner_lockup_asset_exists():
     assert png.stat().st_size > 10000
 
 
+def test_home_online_coaching_service_card_cta(client):
+    html = client.get("/").get_data(as_text=True)
+    assert 'href="/services/online-coaching"' in html
+    assert "service-card__cta" in html
+    assert "Подробнее / Оставить заявку" in html
+    assert "service-card-actions" in html
+
+
+def test_services_carousel_desktop_card_flex_layout():
+    css = Path("static/css/services-carousel.css").read_text(encoding="utf-8")
+    assert ".services-carousel .service-card-actions" in css
+    assert "margin-top: auto" in css
+    assert "flex-direction: column" in css
+
+
 def test_mywave_black_logo_asset_exists():
     path = Path(
         "static/images/logotip_MyWave/MyWave_logo_package_brand_turquoise/"
