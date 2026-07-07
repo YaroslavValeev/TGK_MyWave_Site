@@ -92,7 +92,12 @@ def list_public_camps(session, filters: Optional[Dict[str, Any]] = None) -> List
             start = date(y, m, 1)
             end = date(y, m, monthrange(y, m)[1])
             q = q.filter(Camp.start_date <= end, or_(Camp.end_date.is_(None), Camp.end_date >= start))
-    q = q.order_by(Camp.is_featured.desc(), Camp.priority.desc(), Camp.start_date.asc())
+    q = q.order_by(
+        Camp.is_owner_camp.desc(),
+        Camp.is_featured.desc(),
+        Camp.priority.desc(),
+        Camp.start_date.asc(),
+    )
     return q.all()
 
 
@@ -105,7 +110,7 @@ def get_similar_camps(session, camp: Camp, limit: int = 4) -> List[Camp]:
         session.query(Camp)
         .filter(Camp.publication_status == "published", Camp.id != camp.id)
         .filter(or_(Camp.sport == camp.sport, Camp.country == camp.country))
-        .order_by(Camp.is_featured.desc(), Camp.start_date.asc())
+        .order_by(Camp.is_owner_camp.desc(), Camp.is_featured.desc(), Camp.start_date.asc())
         .limit(limit)
     )
     return q.all()

@@ -38,7 +38,7 @@ def mywave_tour_camps_feed_url() -> str:
 def mywave_tour_camps_api_url() -> str:
     return os.environ.get(
         "MYWAVE_TOUR_CAMPS_API_URL",
-        "https://api.mywavetour.ru/camps",
+        "https://api.mywavetour.ru/api/v1/camps",
     ).strip()
 
 
@@ -47,7 +47,7 @@ def mywave_tour_camp_api_token() -> str:
 
 
 def mywave_tour_use_api_pagination() -> bool:
-    return _flag("MYWAVE_TOUR_USE_API_PAGINATION", "0")
+    return _flag("MYWAVE_TOUR_USE_API_PAGINATION", "1")
 
 
 def get_camp_feature_flags() -> Dict[str, bool]:
