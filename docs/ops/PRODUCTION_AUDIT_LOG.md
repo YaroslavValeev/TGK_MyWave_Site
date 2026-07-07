@@ -45,6 +45,7 @@
 | 2026-05-17 | Remove accidental PNG from checklist folder | content | `c8101ae2` | PASS | cleanup after art commit |
 | 2026-06-28 | **PR56 Social manual assign** — Phase A/B, PR66 auth, alignment | runtime | `3b70a038` | PASS | manual assign ENABLED; evidence [pr56](../evidence/pr56/README.md) |
 | 2026-06-29 | **PR56 post-release monitoring** D0–D2 closure | ops/docs | `df24a4d9` | PASS | CLOSED/PASS; no prod deploy; [QA log](../evidence/pr56/QA_MONITORING_LOG.md) |
+| 2026-07-07 | **PR97** public CTA unify + product card click | frontend | `43dc7ca2` | PASS | Owner QA PASS; rollback `beb5c8ad`; [release](../releases/2026-07-07-frontend-public-cta-product-card-click.md) |
 
 ---
 
