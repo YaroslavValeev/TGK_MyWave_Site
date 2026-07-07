@@ -218,3 +218,24 @@ def online_coaching_submit_media(online_request_id: str):
         status="video_received",
         message="Видео получено",
     ), 200
+
+
+@online_coaching_bp.route("/api/online-coaching/tbank/webhook", methods=["POST"])
+@csrf.exempt
+def online_coaching_tbank_webhook():
+    if not is_online_coaching_tbank_api_enabled():
+        return jsonify(error="tbank_api_disabled"), 503
+
+    payload = request.get_json(silent=True) or {}
+    try:
+        result = handle_tbank_notification(payload)
+    except ValueError as exc:
+        code = str(exc)
+        if "token" in code:
+            return jsonify(error="invalid_token"), 403
+        return jsonify(error=code), 400
+    except Exception as exc:
+        logger.warning("online_coaching_tbank_webhook_failed err=%s", exc, exc_info=True)
+        return jsonify(error="webhook_failed"), 500
+
+    return jsonify(ok=True, **{k: v for k, v in result.items() if k != "result"}), 200
