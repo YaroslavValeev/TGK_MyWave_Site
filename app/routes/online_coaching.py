@@ -15,11 +15,13 @@ from app.config.online_coaching_features import (
     is_online_coaching_enabled,
     is_online_coaching_notifications_enabled,
     is_online_coaching_tbank_api_enabled,
+    is_online_coaching_telegram_video_upload_enabled,
 )
 from app.extensions import csrf, limiter
 from app.modules.logger import get_logger
 from app.services.online_coaching_notifications import notify_materials_received, notify_new_online_request
 from app.services.online_coaching_tbank import handle_tbank_notification
+from app.services.online_coaching_telegram_ingest import ingest_telegram_update, verify_telegram_webhook_secret
 from app.services.online_coaching_store import (
     append_online_request,
     append_request_media,
@@ -217,4 +219,63 @@ def online_coaching_submit_media(online_request_id: str):
         online_request_id=req_id,
         status="video_received",
         message="Видео получено",
+    ), 200
+
+
+@online_coaching_bp.route("/api/online-coaching/tbank/webhook", methods=["POST"])
+@csrf.exempt
+def online_coaching_tbank_webhook():
+    if not is_online_coaching_tbank_api_enabled():
+        return jsonify(error="tbank_api_disabled"), 503
+
+    payload = request.get_json(silent=True) or {}
+    try:
+        result = handle_tbank_notification(payload)
+    except ValueError as exc:
+        code = str(exc)
+        if "token" in code:
+            return jsonify(error="invalid_token"), 403
+        return jsonify(error=code), 400
+    except Exception as exc:
+        logger.warning("online_coaching_tbank_webhook_failed err=%s", exc, exc_info=True)
+        return jsonify(error="webhook_failed"), 500
+
+    return jsonify(ok=True, **{k: v for k, v in result.items() if k != "result"}), 200
+
+
+@online_coaching_bp.route("/api/online-coaching/telegram/webhook", methods=["POST"])
+@csrf.exempt
+def online_coaching_telegram_webhook():
+    if not is_online_coaching_telegram_video_upload_enabled():
+        return jsonify(error="telegram_video_upload_disabled"), 503
+
+    if not verify_telegram_webhook_secret(request.headers):
+        return jsonify(error="invalid_webhook_secret"), 403
+
+    update = request.get_json(silent=True) or {}
+    try:
+        result = ingest_telegram_update(update)
+    except ValueError as exc:
+        return jsonify(ok=False, error=str(exc)), 400
+    except Exception as exc:
+        logger.warning("online_coaching_telegram_ingest_failed err=%s", exc, exc_info=True)
+        return jsonify(ok=False, error="ingest_failed"), 500
+
+    if is_online_coaching_notifications_enabled():
+        try:
+            notify_materials_received(
+                result.get("record") or {},
+                video_urls=result.get("video_urls") or [],
+            )
+        except Exception as notify_exc:
+            logger.warning(
+                "online_coaching_telegram_notify_failed id=%s error=%s",
+                result.get("online_request_id"),
+                str(notify_exc)[:200],
+            )
+
+    return jsonify(
+        ok=True,
+        online_request_id=result.get("online_request_id"),
+        status="video_received",
     ), 200
