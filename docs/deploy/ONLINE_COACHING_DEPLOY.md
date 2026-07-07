@@ -101,6 +101,53 @@ sudo systemctl restart mywave-site
 
 Пока оплата полуавтоматическая: ссылка из кабинета Т-Банка → admin UI → «Сохранить ссылку» → «Оплачено».
 
+## PR #83 deploy (video-step + Telegram video links)
+
+**Target:** `main` @ merge commit `20983b2f7c69d798293dee89df9172b6b18443ff`
+
+```bash
+set -euo pipefail
+PROD_ROOT=/var/www/mywave
+cd "$PROD_ROOT"
+PY="$PROD_ROOT/venv/bin/python"
+EXPECTED_HEAD="20983b2f7c69d798293dee89df9172b6b18443ff"
+SERVICE_USER="${SERVICE_USER:-www-data}"
+
+git -c safe.directory="$PROD_ROOT" fetch origin main
+git -c safe.directory="$PROD_ROOT" checkout main
+git -c safe.directory="$PROD_ROOT" pull --ff-only origin main
+test "$(git -c safe.directory="$PROD_ROOT" rev-parse HEAD)" = "$EXPECTED_HEAD"
+
+# Runtime dirs (required — иначе PermissionError на logs/app.log → 502)
+sudo mkdir -p "$PROD_ROOT/logs" "$PROD_ROOT/instance"
+sudo chown -R "$SERVICE_USER:$SERVICE_USER" "$PROD_ROOT/logs" "$PROD_ROOT/instance"
+sudo find "$PROD_ROOT/logs" -type d -exec chmod 775 {} \;
+sudo find "$PROD_ROOT/logs" -type f -exec chmod 664 {} \; 2>/dev/null || true
+
+# Sheets: required for new Online_Requests columns (PR83)
+ONLINE_COACHING_SHEETS_APPLY=1 DISABLE_TELEGRAM=1 ENABLE_GOOGLE_SERVICES=1 \
+  "$PY" scripts/ensure_online_coaching_sheets.py
+
+DISABLE_TELEGRAM=1 ENABLE_GOOGLE_SERVICES=0 ONLINE_COACHING_ENABLED=1 \
+  "$PY" scripts/smoke_online_coaching_routes.py
+
+DISABLE_TELEGRAM=1 ENABLE_GOOGLE_SERVICES=0 ONLINE_COACHING_ENABLED=1 \
+  "$PY" -m pytest tests/unit/test_online_coaching_*.py -q
+
+sudo systemctl restart mywave-site
+sleep 12
+
+curl -sf https://mywavewake.ru/health/live
+curl -sI https://mywavewake.ru/services/online-coaching | head -5
+curl -sf https://mywavewake.ru/services/online-coaching | grep -q 'id="oc-video-form"'
+```
+
+**Новые колонки `Online_Requests`:** `review_task`, `training_comment`, `training_date`, `spot_or_location`, `in_review_at`, `paid_at`.
+
+**502 после restart:** сначала `journalctl -u mywave-site -n 80` — если `PermissionError` на `logs/app.log` или `.env`, чинить права (см. `docs/ops/PR56_PRODUCTION_INCIDENT_20260627.md`). PR83-код при этом уже на сервере.
+
+**Не трогать:** `mywave-node`, TGbotAdmin, `mywave-telegram-bot`.
+
 ## Security checklist (Owner)
 
 - [ ] `NOTIFICATION_BOT_TOKEN`, `ADMIN_CHAT_ID`, `SPREADSHEET_ID`, `GOOGLE_SERVICE_ACCOUNT_FILE` — только в `.env`, не в Git
