@@ -30,9 +30,20 @@ def test_style_css_does_not_override_public_cta_fill():
 
 def test_base_html_cache_bust_for_public_cta():
     base = Path("templates/base.html").read_text(encoding="utf-8")
-    assert "?v=public-cta1" in base
+    assert "?v=public-cta2" in base
     assert "css/branding.css" in base
     assert "css/style.css" in base
+
+
+def test_hero_book_now_has_emphasized_glass_outline():
+    css = Path("static/css/branding.css").read_text(encoding="utf-8")
+    assert ".hero-section .btn-primary.book-now" in css
+    assert "border-width: 2.5px" in css
+    assert "backdrop-filter: blur" in css
+    assert "rgba(255, 255, 255, 0.52)" in css
+    hero_block = css.split(".hero-section .btn-primary.book-now", 1)[1].split(".brand-logo--footer", 1)[0]
+    assert "background: var(--mw-brand)" not in hero_block
+    assert "#35C0CD" not in hero_block or "border-color" in hero_block
 
 
 def test_home_preserves_ticker_lockup_and_25_years(client):

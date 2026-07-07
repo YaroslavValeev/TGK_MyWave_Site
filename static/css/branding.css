@@ -991,6 +991,33 @@ Wake Surf Safari 2026 Styles
 
 .hero-section .btn-primary.book-now {
   margin-top: 0.15rem;
+  min-height: 48px;
+  padding: 13px 28px;
+  border-width: 2.5px !important;
+  border-color: #00bcd4 !important;
+  background: rgba(255, 255, 255, 0.52) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #141414 !important;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow:
+    0 6px 24px rgba(0, 60, 80, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.hero-section .btn-primary.book-now:hover {
+  background: rgba(255, 255, 255, 0.78) !important;
+  border-color: #00acc1 !important;
+  color: #141414 !important;
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 32px rgba(0, 188, 212, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.hero-section .btn-primary.book-now:active {
+  transform: translateY(0) scale(0.99);
 }
 
 .brand-logo--footer {
