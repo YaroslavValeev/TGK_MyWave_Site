@@ -14,6 +14,9 @@
 {% endblock %}
 
 {% block admin_content %}
+{% macro oc_csrf_field() %}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{% endmacro %}
 <div class="admin-card">
     <div class="admin-card__header">
         <h2 class="admin-card__title">Карточка заявки</h2>
@@ -185,6 +188,7 @@
             } %}
             {% for action_key, action_status in quick_actions.items() %}
             <form method="post" action="{{ url_for('admin_online_coaching.quick_action', online_request_id=request_record.online_request_id) }}">
+                {{ oc_csrf_field() }}
                 <input type="hidden" name="action" value="{{ action_key }}">
                 <button type="submit" class="admin-btn admin-btn--sm {% if action_key == 'start_review' %}admin-btn--primary{% elif action_key == 'cancel_test' %}admin-btn--danger{% else %}admin-btn--secondary{% endif %}">
                     {{ qa_labels.get(action_key, action_key) }}
@@ -201,6 +205,7 @@
     </div>
     <div class="admin-card__body">
         <form method="post" action="{{ url_for('admin_online_coaching.change_status', online_request_id=request_record.online_request_id) }}" class="admin-form-inline">
+            {{ oc_csrf_field() }}
             <select name="status" class="admin-input" required>
                 {% for st in request_statuses %}
                 <option value="{{ st }}" {% if request_record.request_status == st %}selected{% endif %}>{{ st }}</option>
@@ -217,6 +222,7 @@
     </div>
     <div class="admin-card__body">
         <form method="post" action="{{ url_for('admin_online_coaching.save_payment_url', online_request_id=request_record.online_request_id) }}" class="admin-form-stack">
+            {{ oc_csrf_field() }}
             <label class="admin-label" for="tbank_payment_url">Ссылка Т-Банк</label>
             <input type="url" id="tbank_payment_url" name="tbank_payment_url" class="admin-input" value="{{ request_record.tbank_payment_url or '' }}" placeholder="https://...">
             <label class="admin-label" for="payment-amount">Сумма (опционально)</label>
@@ -225,6 +231,7 @@
         </form>
         <hr class="admin-divider">
         <form method="post" action="{{ url_for('admin_online_coaching.mark_paid_action', online_request_id=request_record.online_request_id) }}" class="admin-form-inline">
+            {{ oc_csrf_field() }}
             <input type="number" name="amount" class="admin-input" step="0.01" min="0" placeholder="Сумма">
             <button type="submit" class="admin-btn admin-btn--success admin-btn--sm">Отметить оплаченным</button>
         </form>
@@ -237,6 +244,7 @@
     </div>
     <div class="admin-card__body">
         <form method="post" action="{{ url_for('admin_online_coaching.add_diary_entry', online_request_id=request_record.online_request_id) }}" class="admin-form-stack">
+            {{ oc_csrf_field() }}
             <div class="admin-form-grid">
                 <div>
                     <label class="admin-label" for="diary-date">Дата</label>
@@ -268,6 +276,7 @@
     </div>
     <div class="admin-card__body">
         <form method="post" action="{{ url_for('admin_online_coaching.add_followup', online_request_id=request_record.online_request_id) }}" class="admin-form-stack">
+            {{ oc_csrf_field() }}
             <div class="admin-form-grid">
                 <div>
                     <label class="admin-label" for="followup-at">Дата/время</label>
@@ -283,6 +292,7 @@
             <button type="submit" class="admin-btn admin-btn--secondary admin-btn--sm">Запланировать follow-up</button>
         </form>
         <form method="post" action="{{ url_for('admin_online_coaching.change_status', online_request_id=request_record.online_request_id) }}" class="admin-form-inline" style="margin-top:0.75rem;">
+            {{ oc_csrf_field() }}
             <input type="hidden" name="status" value="renewal_offered">
             <button type="submit" class="admin-btn admin-btn--sm">Предложить продление</button>
         </form>
