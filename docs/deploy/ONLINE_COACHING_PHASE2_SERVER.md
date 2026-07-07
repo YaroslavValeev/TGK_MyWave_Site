@@ -15,8 +15,8 @@ cd "$PROD_ROOT"
 PY="$PROD_ROOT/venv/bin/python"
 SERVICE_USER="${SERVICE_USER:-www-data}"
 
-# После merge PR #90 — подставьте реальный hash:
-EXPECTED_HEAD="ЗАМЕНИТЕ_НА_git_rev-parse_HEAD_ПОСЛЕ_MERGE"
+# После merge PR #91 + #94 (2026-07-07):
+EXPECTED_HEAD="7b4589d229f795db4103712843ab0c0090915b61"
 
 git -c safe.directory="$PROD_ROOT" fetch origin main
 git -c safe.directory="$PROD_ROOT" checkout main
