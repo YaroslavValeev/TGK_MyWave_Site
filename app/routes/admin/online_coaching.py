@@ -11,6 +11,7 @@ from app.config.online_coaching_features import (
     is_online_coaching_admin_enabled,
     is_online_coaching_enabled,
     is_online_coaching_notifications_enabled,
+    is_online_coaching_tbank_api_enabled,
 )
 from app.services.online_coaching_admin import get_online_request, get_online_request_detail, list_online_requests
 from app.services.online_coaching_notifications import (
@@ -20,6 +21,7 @@ from app.services.online_coaching_notifications import (
     notify_subscription_paid,
 )
 from app.services.online_coaching_payments import mark_paid, record_manual_payment_url
+from app.services.online_coaching_tbank import init_tbank_payment, is_tbank_configured
 from app.services.online_coaching_schema import REQUEST_STATUSES, SERVICE_TYPES, STATUSES_BY_SERVICE, service_display_name
 from app.services.online_coaching_store import (
     append_diary_entry,
@@ -136,6 +138,7 @@ def detail(online_request_id: str):
         request_statuses=status_options,
         media_files=media_files,
         quick_actions=_QUICK_ACTIONS,
+        tbank_api_enabled=is_online_coaching_tbank_api_enabled() and is_tbank_configured(),
     )
 
 
@@ -277,6 +280,41 @@ def save_payment_url(online_request_id: str):
         return redirect(url_for("admin_online_coaching.detail", online_request_id=online_request_id))
 
     flash("Ссылка на оплату сохранена.", "success")
+    return redirect(url_for("admin_online_coaching.detail", online_request_id=online_request_id))
+
+
+@bp.route("/<online_request_id>/create-tbank-payment", methods=["POST"])
+@login_required
+@admin_required
+def create_tbank_payment(online_request_id: str):
+    _require_admin_ui()
+    if not is_online_coaching_tbank_api_enabled() or not is_tbank_configured():
+        flash("T-Bank API не настроен или выключен.", "warning")
+        return redirect(url_for("admin_online_coaching.detail", online_request_id=online_request_id))
+
+    amount_raw = (request.form.get("amount") or "").strip()
+    amount = float(amount_raw) if amount_raw else None
+    return_url = (request.form.get("return_url") or "").strip()
+
+    try:
+        result = init_tbank_payment(online_request_id, amount=amount, return_url=return_url)
+        log_admin_action(
+            online_request_id,
+            actor=_actor_name(),
+            action="tbank_api_init",
+            summary=str(result.get("tbank_order_id") or ""),
+        )
+    except ValueError as exc:
+        if "not_found" in str(exc):
+            flash("Заявка не найдена.", "warning")
+        else:
+            flash("Не удалось создать платёж.", "danger")
+        return redirect(url_for("admin_online_coaching.detail", online_request_id=online_request_id))
+    except Exception:
+        flash("Ошибка T-Bank API.", "danger")
+        return redirect(url_for("admin_online_coaching.detail", online_request_id=online_request_id))
+
+    flash("Ссылка T-Bank создана через API.", "success")
     return redirect(url_for("admin_online_coaching.detail", online_request_id=online_request_id))
 
 

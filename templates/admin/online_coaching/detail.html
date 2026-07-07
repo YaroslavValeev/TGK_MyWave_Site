@@ -229,6 +229,13 @@
             <input type="number" id="payment-amount" name="amount" class="admin-input" step="0.01" min="0" placeholder="1500">
             <button type="submit" class="admin-btn admin-btn--secondary admin-btn--sm">Сохранить ссылку</button>
         </form>
+        {% if tbank_api_enabled %}
+        <form method="post" action="{{ url_for('admin_online_coaching.create_tbank_payment', online_request_id=request_record.online_request_id) }}" class="admin-form-inline" style="margin-top: 0.75rem;">
+            {{ oc_csrf_field() }}
+            <input type="number" name="amount" class="admin-input" step="0.01" min="0" placeholder="Сумма (опц.)">
+            <button type="submit" class="admin-btn admin-btn--primary admin-btn--sm">Создать ссылку T-Bank (API)</button>
+        </form>
+        {% endif %}
         <hr class="admin-divider">
         <form method="post" action="{{ url_for('admin_online_coaching.mark_paid_action', online_request_id=request_record.online_request_id) }}" class="admin-form-inline">
             {{ oc_csrf_field() }}
