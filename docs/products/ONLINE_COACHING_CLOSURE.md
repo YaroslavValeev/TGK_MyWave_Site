@@ -80,8 +80,7 @@ For E2E/test rows (`oc_req_*`):
 ## Backlog (separate PRs — not part of OC closure)
 
 - Browser QA home ticker / boat logos (PR80 lineage) — visual sign-off
-- Phase 2: Telegram video file upload, T-Bank API/webhook, reminders cron
-- WhatsApp/MAX automation
+- **Phase 2:** см. [ONLINE_COACHING_PHASE2.md](./ONLINE_COACHING_PHASE2.md) — T-Bank API, reminders, Telegram video, MAX
 
 ---
 
