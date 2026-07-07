@@ -12,6 +12,7 @@ from app.config.online_coaching_features import (
     get_online_coaching_feature_flags,
     is_online_coaching_admin_enabled,
     is_online_coaching_applications_enabled,
+    is_online_coaching_channel_notify_enabled,
     is_online_coaching_enabled,
     is_online_coaching_notifications_enabled,
     is_online_coaching_tbank_api_enabled,
@@ -20,6 +21,7 @@ from app.config.online_coaching_features import (
 from app.extensions import csrf, limiter
 from app.modules.logger import get_logger
 from app.services.online_coaching_notifications import notify_materials_received, notify_new_online_request
+from app.services.online_coaching_channels import notify_client_channel
 from app.services.online_coaching_tbank import handle_tbank_notification
 from app.services.online_coaching_telegram_ingest import ingest_telegram_update, verify_telegram_webhook_secret
 from app.services.online_coaching_store import (
@@ -158,6 +160,26 @@ def online_coaching_apply():
                 str(notify_exc)[:200],
             )
 
+    if is_online_coaching_channel_notify_enabled():
+        try:
+            notify_client_channel(
+                {
+                    "online_request_id": result.online_request_id,
+                    "request_status": result.request_status,
+                    **{k: data.get(k, "") for k in (
+                        "name", "preferred_channel", "telegram_username", "whatsapp_phone",
+                        "max_contact", "email", "phone", "service_type",
+                    )},
+                },
+                event="application_received",
+            )
+        except Exception as channel_exc:
+            logger.warning(
+                "online_coaching_channel_notify_failed id=%s error=%s",
+                result.online_request_id,
+                str(channel_exc)[:200],
+            )
+
     return jsonify(
         ok=True,
         online_request_id=result.online_request_id,
@@ -212,6 +234,16 @@ def online_coaching_submit_media(online_request_id: str):
                 "online_coaching_media_notify_failed id=%s error=%s",
                 req_id,
                 str(notify_exc)[:200],
+            )
+
+    if is_online_coaching_channel_notify_enabled():
+        try:
+            notify_client_channel(updated, event="video_received")
+        except Exception as channel_exc:
+            logger.warning(
+                "online_coaching_channel_notify_failed id=%s error=%s",
+                req_id,
+                str(channel_exc)[:200],
             )
 
     return jsonify(
@@ -272,6 +304,16 @@ def online_coaching_telegram_webhook():
                 "online_coaching_telegram_notify_failed id=%s error=%s",
                 result.get("online_request_id"),
                 str(notify_exc)[:200],
+            )
+
+    if is_online_coaching_channel_notify_enabled() and result.get("record"):
+        try:
+            notify_client_channel(result["record"], event="video_received")
+        except Exception as channel_exc:
+            logger.warning(
+                "online_coaching_channel_notify_failed id=%s error=%s",
+                result.get("online_request_id"),
+                str(channel_exc)[:200],
             )
 
     return jsonify(
