@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 from typing import Any, Dict, Optional
-from urllib.error import URLError
 
 from app.database.camp_models import CampImportLog
 from app.database.models import db
@@ -18,13 +17,25 @@ from app.services.camps.validate import validate_camp
 logger = logging.getLogger(__name__)
 
 
+def _failure_message(exc: Exception) -> str:
+    if isinstance(exc, TourCampFetchError):
+        if exc.kind == "auth" or exc.status_code in (401, 403):
+            return f"tour_auth_error_{exc.status_code}"
+        if exc.kind == "server" or exc.status_code >= 500:
+            return f"tour_server_error_{exc.status_code}"
+        if exc.kind == "timeout":
+            return "tour_timeout"
+        return str(exc)[:500]
+    return str(exc)[:500]
+
+
 def sync_camps_from_tour(*, session=None, updated_since: Optional[datetime] = None) -> Dict[str, Any]:
     session = session or db.session
     log = CampImportLog(source_system="mywavetour", status="running")
     session.add(log)
     session.commit()
 
-    stats = {
+    stats: Dict[str, Any] = {
         "fetched": 0,
         "created": 0,
         "updated": 0,
@@ -32,6 +43,7 @@ def sync_camps_from_tour(*, session=None, updated_since: Optional[datetime] = No
         "duplicates": 0,
         "errors": 0,
         "archived": 0,
+        "content_rights_unknown": 0,
     }
     try:
         raw_items = fetch_all_tour_camps(updated_since=updated_since)
@@ -72,6 +84,8 @@ def sync_camps_from_tour(*, session=None, updated_since: Optional[datetime] = No
                 elif not existing:
                     normalized["publication_status"] = "pending_review"
                     normalized["robots_index"] = False
+                    if normalized.get("content_rights_status") == "unknown":
+                        stats["content_rights_unknown"] += 1
 
                 upsert_camp(session, normalized, existing=existing)
                 if existing:
@@ -96,11 +110,24 @@ def sync_camps_from_tour(*, session=None, updated_since: Optional[datetime] = No
         log.details_json = stats
         session.commit()
         return stats
-    except (TourCampFetchError, URLError, TimeoutError, ValueError) as exc:
+    except TourCampFetchError as exc:
         log.status = "failed"
-        log.message = str(exc)[:500]
+        log.message = _failure_message(exc)
         log.finished_at = datetime.utcnow()
         log.error_count = stats["errors"] + 1
+        log.details_json = {**stats, "fetch_error": log.message}
+        session.commit()
+        logger.error(
+            "camp_sync_failed",
+            extra={"error": str(exc), "status_code": exc.status_code, "kind": exc.kind},
+        )
+        raise
+    except Exception as exc:
+        log.status = "failed"
+        log.message = _failure_message(exc)
+        log.finished_at = datetime.utcnow()
+        log.error_count = stats["errors"] + 1
+        log.details_json = {**stats, "fetch_error": log.message}
         session.commit()
         logger.error("camp_sync_failed", extra={"error": str(exc)})
         raise

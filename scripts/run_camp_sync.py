@@ -30,7 +30,20 @@ def main() -> int:
             print("camp_sync: CAMP_IMPORT_ENABLED=0 — skip")
             return 0
         since = datetime.fromisoformat(args.updated_since) if args.updated_since else None
-        stats = sync_camps_from_tour(updated_since=since)
+        try:
+            stats = sync_camps_from_tour(updated_since=since)
+        except Exception as exc:
+            from app.services.camps.tour_client import TourCampFetchError
+
+            if isinstance(exc, TourCampFetchError):
+                app.logger.error(
+                    "camp_sync_failed",
+                    extra={"status_code": exc.status_code, "kind": exc.kind, "error": str(exc)},
+                )
+            else:
+                app.logger.exception("camp_sync_failed")
+            print(f"camp_sync: failed — {exc}")
+            return 1
         app.logger.info("camp_sync_done", extra=stats)
         print(f"camp_sync: {stats}")
     return 0

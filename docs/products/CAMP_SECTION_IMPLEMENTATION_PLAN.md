@@ -120,14 +120,41 @@ Camp — **новая сущность каталога**, отдельная о
 
 ## 7. Cron / периодический импорт
 
-В коде нет APScheduler. Рекомендация:
+В коде нет APScheduler. Рекомендация (включать **только после Owner GO**):
 
 ```bash
-# каждые 6 часов
-0 */6 * * * cd /var/www/mywave && /var/www/mywave/venv/bin/flask camp-sync >> /var/log/mywave/camp-sync.log 2>&1
+# каждые 6 часов — предпочтительно через scripts/run_camp_sync.py (без eventlet noise от flask CLI)
+0 */6 * * * cd /var/www/mywave && /var/www/mywave/venv/bin/python scripts/run_camp_sync.py >> /var/log/mywave/camp-sync.log 2>&1
 ```
 
-Альтернатива: GitHub Actions по аналогии с `blog-health.yml`.
+Альтернатива: `flask camp-sync` (требует регистрации CLI в app factory).
+
+**Production service:** `sudo systemctl restart mywave-site` (не `mywave`).
+
+---
+
+## 7.1. Финальный MVP-контракт MyWaveTour (2026-07)
+
+| Параметр | Значение |
+|----------|----------|
+| List endpoint | `GET https://api.mywavetour.ru/api/v1/camps?status=published&sports=wakesurf,wakeboard&audience=ru&limit=100&offset=0` |
+| Detail | `GET https://api.mywavetour.ru/api/v1/camps/{id}` |
+| Auth | `Authorization: Bearer <MYWAVE_TOUR_CAMP_API_TOKEN>` |
+| Envelope | `{"items": [], "next_offset": null}` |
+| Legacy feed | `GET /camps-feed.json` — тот же envelope (fallback) |
+
+**Env на Site:**
+
+- `MYWAVE_TOUR_CAMP_API_TOKEN` — обязателен для импорта
+- `MYWAVE_TOUR_CAMPS_API_URL` — default `https://api.mywavetour.ru/api/v1/camps`
+- `MYWAVE_TOUR_CAMPS_FEED_URL` — optional fallback
+- `MYWAVE_TOUR_USE_API_PAGINATION` — default `1`
+
+**Ошибки Tour API (401/403/500/timeout):** пишутся в `CampImportLog`, публичный раздел не падает, импортированные кемпы не удаляются, `publication_status` не меняется из-за временной ошибки.
+
+**Статусы Tour:** `publication_status` (published/hidden/archived), `availability_status` (available/few_spots/sold_out/unknown), `content_rights_status` (partner_allowed/unknown) — влияет на модерацию, не блокирует импорт.
+
+**Публикация Site:** новые внешние кемпы → `pending_review`; дубли → `possible_duplicate`; owner camps → `is_owner_camp=true`, приоритет в списке.
 
 ---
 
@@ -172,8 +199,7 @@ Camp — **новая сущность каталога**, отдельная о
 | `sync_camps_from_tour()` | ✅ + `CampImportLog` |
 | `archive_expired_camps()` | ✅ `end_date < today` → `archived` |
 
-**Контракт MyWaveTour feed.** Env: `MYWAVE_TOUR_CAMPS_FEED_URL` (default `https://api.mywavetour.ru/camps-feed.json`), `MYWAVE_TOUR_CAMPS_API_URL`, `MYWAVE_TOUR_CAMP_API_TOKEN`, `MYWAVE_TOUR_USE_API_PAGINATION`.  
-Команда Tour должна предоставить: схему JSON, `external_id`, `updated_at`, права на контент, rate limits.
+**Контракт MyWaveTour feed.** См. §7.1 — Bearer auth, envelope `{items, next_offset}`, pagination через `next_offset`, `updated_since` incremental.
 
 ### Логика публикации
 
