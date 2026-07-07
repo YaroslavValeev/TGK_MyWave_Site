@@ -103,14 +103,14 @@ sudo systemctl restart mywave-site
 
 ## PR #83 deploy (video-step + Telegram video links)
 
-**Target:** `main` @ merge commit `20983b2f7c69d798293dee89df9172b6b18443ff`
+**Target:** `main` @ `e57538e5c6030979a5ee32f225d0f681d60e4af8` (PR83 + PR88 + PR86)
 
 ```bash
 set -euo pipefail
 PROD_ROOT=/var/www/mywave
 cd "$PROD_ROOT"
 PY="$PROD_ROOT/venv/bin/python"
-EXPECTED_HEAD="20983b2f7c69d798293dee89df9172b6b18443ff"
+EXPECTED_HEAD="e57538e5c6030979a5ee32f225d0f681d60e4af8"
 SERVICE_USER="${SERVICE_USER:-www-data}"
 
 git -c safe.directory="$PROD_ROOT" fetch origin main

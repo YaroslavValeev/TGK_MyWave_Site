@@ -1,8 +1,10 @@
 # MyWave Online Coaching — PR / Merge Report
 
-**Branch (local):** `main` — рекомендуется feature-branch перед push, напр. `feat/online-coaching-mvp`  
-**Date:** 2026-07-05  
-**Status:** GREEN — ready for commit / push / Owner deploy
+> **Closure (2026-07-07):** см. [ONLINE_COACHING_CLOSURE.md](./ONLINE_COACHING_CLOSURE.md) — PR83/88/86 DEPLOYED GREEN on `e57538e5`.
+
+**Branch (local):** `main`  
+**Date:** 2026-07-05 (updated 2026-07-07)  
+**Status:** CLOSED — production E2E + admin GREEN
 
 ---
 
