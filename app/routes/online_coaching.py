@@ -14,10 +14,12 @@ from app.config.online_coaching_features import (
     is_online_coaching_applications_enabled,
     is_online_coaching_enabled,
     is_online_coaching_notifications_enabled,
+    is_online_coaching_tbank_api_enabled,
 )
 from app.extensions import csrf, limiter
 from app.modules.logger import get_logger
 from app.services.online_coaching_notifications import notify_materials_received, notify_new_online_request
+from app.services.online_coaching_tbank import handle_tbank_notification
 from app.services.online_coaching_store import (
     append_online_request,
     append_request_media,
