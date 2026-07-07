@@ -1,0 +1,58 @@
+{% extends "admin/base.html" %}
+{% block title %}Camp — админка{% endblock %}
+{% block content %}
+<h1>Camp catalog</h1>
+{% if import_enabled %}
+<form method="post" action="{{ url_for('admin_camp.sync_now') }}" style="margin-bottom:1rem;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="btn btn-primary">Синхронизировать MyWaveTour</button>
+</form>
+{% endif %}
+
+<form method="get" class="admin-filters">
+  <select name="status" onchange="this.form.submit()">
+    <option value="all" {% if status == 'all' %}selected{% endif %}>Все статусы</option>
+    {% for key, label in status_labels.items() %}
+    <option value="{{ key }}" {% if status == key %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+<table class="admin-table">
+  <thead>
+    <tr><th>ID</th><th>Название</th><th>Источник</th><th>Статус</th><th>Даты</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for c in camps %}
+    <tr>
+      <td>{{ c.id }}</td>
+      <td>{{ c.title }}</td>
+      <td>{{ c.source_system }}</td>
+      <td>{{ status_labels.get(c.publication_status, c.publication_status) }}</td>
+      <td>{% if c.start_date %}{{ c.start_date }}{% endif %}</td>
+      <td><a href="{{ url_for('admin_camp.detail', camp_id=c.id) }}">Открыть</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6">Кемпов пока нет. Запустите синхронизацию или создайте вручную (MVP: через БД/CLI).</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Import log</h2>
+<table class="admin-table">
+  <thead><tr><th>ID</th><th>Старт</th><th>Статус</th><th>Fetched</th><th>Created</th><th>Updated</th><th>Errors</th></tr></thead>
+  <tbody>
+    {% for log in logs %}
+    <tr>
+      <td>{{ log.id }}</td>
+      <td>{{ log.started_at }}</td>
+      <td>{{ log.status }}</td>
+      <td>{{ log.fetched_count }}</td>
+      <td>{{ log.created_count }}</td>
+      <td>{{ log.updated_count }}</td>
+      <td>{{ log.error_count }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

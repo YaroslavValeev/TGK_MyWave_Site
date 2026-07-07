@@ -473,6 +473,21 @@ def create_app(config_name="development"):
     app.register_blueprint(admin_social_bp)
     app.register_blueprint(admin_online_coaching_bp)
     app.register_blueprint(admin_images_bp)
+    try:
+        from app.routes.admin.camp import bp as admin_camp_bp
+        app.register_blueprint(admin_camp_bp)
+    except Exception:
+        app.logger.debug('admin_camp_bp not found or failed to import')
+    try:
+        from app.routes.projects.camp import bp as projects_camp_bp
+        app.register_blueprint(projects_camp_bp)
+    except Exception:
+        app.logger.debug('projects_camp_bp not found or failed to import')
+    try:
+        from app.routes.api_camps import api_camps_bp
+        app.register_blueprint(api_camps_bp)
+    except Exception:
+        app.logger.debug('api_camps_bp not found or failed to import')
     app.register_blueprint(health_bp)
     
     # Payment API blueprint
@@ -632,8 +647,23 @@ def create_app(config_name="development"):
                 '/legal/media-consent',
                 '/legal/wake-challenge-consent',
             ],
-            'project_slugs': project_slugs
+            'project_slugs': project_slugs,
+            'camp_slugs': [],
         }
+        try:
+            from app.config.camp_features import is_camp_public_enabled
+            if is_camp_public_enabled():
+                urls['static'].append('/projects/camp')
+                from app.database.models import db
+                from app.database.camp_models import Camp
+                urls['camp_slugs'] = [
+                    row.slug for row in db.session.query(Camp).filter(
+                        Camp.publication_status == 'published',
+                        Camp.robots_index.is_(True),
+                    ).all()
+                ]
+        except Exception:
+            pass
         xml = render_template('sitemap.xml', lastmod=lastmod, urls=urls)
         resp = make_response(xml)
         resp.headers['Content-Type'] = 'application/xml'
@@ -785,6 +815,12 @@ def create_app(config_name="development"):
         app.logger.debug("OpenAI chat runtime config log skipped: %s", e)
 
     register_jinja_filters(app)
+
+    try:
+        from app.cli.camp_sync import camp_sync_command
+        app.cli.add_command(camp_sync_command)
+    except Exception:
+        app.logger.debug('camp_sync CLI not registered')
 
     return app
 

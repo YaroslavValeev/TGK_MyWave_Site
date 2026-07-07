@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ seo.title }}{% endblock %}
+{% block meta %}
+  <meta name="description" content="{{ seo.meta_description }}">
+  <meta name="robots" content="{{ seo.robots }}">
+{% endblock %}
+{% block content %}
+<section class="camp-hero section">
+  <h1>Вейксерф и вейкборд кемпы</h1>
+  <p>Актуальные программы для русскоязычной аудитории — MyWave Camp, партнёры и проверенные кемпы из MyWaveTour.</p>
+  <div class="camp-hero__cta">
+    <a href="#camp-filters" class="btn btn-primary">Подобрать кемп</a>
+    <a href="#camp-suggest" class="btn btn-secondary">Предложить свой кемп</a>
+  </div>
+</section>
+
+<section id="camp-filters" class="camp-filters section">
+  <form method="get" class="camp-filters__form">
+    <label>Спорт
+      <select name="sport">
+        <option value="">Все</option>
+        <option value="wakesurf" {% if filters.sport == 'wakesurf' %}selected{% endif %}>Вейксерф</option>
+        <option value="wakeboard" {% if filters.sport == 'wakeboard' %}selected{% endif %}>Вейкборд</option>
+        <option value="mixed" {% if filters.sport == 'mixed' %}selected{% endif %}>Смешанный</option>
+      </select>
+    </label>
+    <label>Страна
+      <input type="text" name="country" value="{{ filters.country or '' }}" placeholder="Россия">
+    </label>
+    <label>Месяц
+      <input type="month" name="month" value="{{ filters.month or '' }}">
+    </label>
+    <button type="submit" class="btn btn-secondary">Применить</button>
+  </form>
+</section>
+
+<section class="camp-list section">
+  {% if camps %}
+  <div class="camp-grid">
+    {% for c in camps %}
+    <article class="service-card camp-card">
+      {% if c.cover_image_url %}
+      <img class="service-image" src="{{ c.cover_image_url }}" alt="{{ c.title }}" loading="lazy">
+      {% endif %}
+      <span class="camp-badge">{{ c.source_badge }}</span>
+      <h2><a href="{{ url_for('projects_camp.camp_detail', slug=c.slug) }}">{{ c.title }}</a></h2>
+      <p>{{ c.short_description or '' }}</p>
+      <p>{% if c.start_date %}{{ c.start_date }}{% if c.end_date %} — {{ c.end_date }}{% endif %}{% endif %}{% if c.country %}, {{ c.country }}{% endif %}</p>
+      {% if c.price_from %}<p>от {{ c.price_from }} {{ c.currency }}</p>{% endif %}
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p>Пока нет опубликованных кемпов. Скоро появятся новые программы.</p>
+  {% endif %}
+</section>
+
+<section class="camp-trust section">
+  <h2>Почему MyWave</h2>
+  <p>Мы отбираем кемпы по качеству программы, безопасности и прозрачности условий. Рекомендованные кемпы проходят модерацию команды MyWave.</p>
+</section>
+
+<section id="camp-suggest" class="section">
+  <h2>Предложить свой кемп</h2>
+  <p>Напишите нам через <a href="{{ url_for('contact.contact') }}">форму контактов</a> или в Telegram <a href="https://t.me/MyW23" target="_blank" rel="noopener">@MyW23</a>.</p>
+</section>
+{% endblock %}

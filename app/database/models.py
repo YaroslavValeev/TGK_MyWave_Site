@@ -259,3 +259,7 @@ class SafariBooking(db.Model):
     message = db.Column(db.Text)
     route_id = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# Camp catalog (Projects / Camp) — models in separate module for clarity.
+from app.database.camp_models import Camp, CampImportLog, CampLead  # noqa: E402,F401
