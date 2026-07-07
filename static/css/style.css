@@ -34,21 +34,7 @@
   padding-right: 2rem;
 }
 
-/* Глобальные классы для кнопок */
-.btn-primary,
-.btn-primary-lg {
-  background-color: #35C0CD;
-  color: #fff;
-  border-radius: 8px;
-  padding: 12px 24px;
-  font-weight: 600;
-  transition: background 0.3s;
-}
-
-.btn-primary:hover,
-.btn-primary-lg:hover {
-  background-color: #2ca8b4;
-}
+/* Public CTA colors live in branding.css */
 
 .btn-secondary-sm {
   padding: 0.5rem 1rem;
@@ -349,13 +335,6 @@ h1, h2, h3, h4, p {
 .hero-content .btn-primary {
   font-size: 16px;
   padding: 10px 32px;
-  border-radius: 8px;
-}
-
-.hero-section .btn-primary:hover {
-  background: #0097A7;
-  color: #fff;
-  transform: scale(1.05);
 }
 @media (max-width: 700px) {
   .hero-content {
@@ -478,13 +457,7 @@ h1, h2, h3, h4, p {
   margin-bottom: 0.5rem;
 }
 .btn-outline-brand {
-  background: #f2f4f5;
-  color: #333;
-  border: 1px solid #40cfd0;
-}
-.btn-outline-brand:hover {
-  background: #e9eff0;
-  border-color: #2fbdbf;
+  /* colors in branding.css */
 }
 @media (max-width: 1100px) {
   .blog-home-grid {
@@ -609,64 +582,12 @@ h1, h2, h3, h4, p {
   display: none;
 }
 
-/* Кнопки (минималистичные) */
-.btn-primary,
-.btn-secondary,
+/* Public CTA colors live in branding.css */
 .btn-link {
   cursor: pointer;
-  border: none;
-  border-radius: 4px;
-  padding: 0.75em 1.5em;
-  margin: 0.5em;
-  font-size: 1em;
-  transition: all 0.3s ease;
-  text-decoration: none;
-}
-.btn-primary {
-  background-color: transparent;
-  border: 2px solid #00bcd4;
-  color: #333;
-}
-.btn-primary:hover {
-  background-color: #00bcd4;
-  color: #fff;
-}
-.btn-secondary {
-  background-color: #E0E0E0;
-  color: #666666; /* Было #1A1A1A */
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  transition: background-color 0.3s ease;
-}
-.btn-secondary:hover {
-  background-color: #00bcd4;
-  color: #fff;
-}
-.btn-link {
   background: none;
   color: #333;
   text-decoration: underline;
-}
-
-/* Обновление стилей CTA-кнопки */
-.btn-primary {
-    background-color: #00BCD4;
-    color: #FFFFFF;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 18px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 450;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: transform 0.2s ease, background-color 0.3s ease;
-}
-.btn-primary:hover {
-    background-color: #0097A7;
-    transform: scale(1.05);
 }
 
 /* Контактная форма */
@@ -935,18 +856,7 @@ input:invalid {
 }
 
 .btn-primary-lg {
-  padding: 12px 24px;
-  background-color: #35C0CD;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.btn-primary-lg:hover {
-  background-color: #61B4CF;
+  /* colors in branding.css */
 }
 
 .btn-secondary-sm {
@@ -2253,20 +2163,7 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
   margin-bottom: 30px;
 }
 
-.btn-primary {
-  background-color: #35C0CD;
-  color: white;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 25px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.btn-primary:hover {
-  background-color: #2ba7b4;
-}
+/* Public CTA colors live in branding.css */
 
 .center-padding {
   text-align: center;
@@ -2483,21 +2380,7 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
     min-height: 100px;
 }
 
-/* Стили для кнопок навигации */
-.btn-primary {
-    background-color: #007bff;
-    color: white;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.btn-primary:hover {
-    background: #0056b3;
-    transform: translateY(-1px);
-}
+/* Public CTA colors live in branding.css */
 
 /* Стили для flatpickr */
 .flatpickr-calendar {
@@ -3004,14 +2887,7 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
   z-index: 2;
 }
 
-/* Override для btn-primary: всегда бирюзовый */
-.btn-primary {
-    background-color: #00BCD4 !important;
-    color: #FFFFFF !important;
-}
-.btn-primary:hover {
-    background-color: #0097A7 !important;
-}
+/* Public CTA colors live in branding.css */
 
 .cards-grid {
   display: grid;

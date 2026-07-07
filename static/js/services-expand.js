@@ -26,7 +26,7 @@
     cards.forEach(function (card) {
       card.addEventListener('click', function (e) {
         // Не раскрывать, если клик по кнопке или ссылке
-        if (e.target.closest('.book-now, .btn, a, .carousel-nav, .carousel-prev-inner, .carousel-next-inner, .wake-checklist__more-btn, .wake-checklist__checkbox, .card-media-carousel__indicator')) return;
+        if (e.target.closest('.book-now, .btn, a, .carousel-nav, .carousel-prev-inner, .carousel-next-inner, .wake-checklist__more-btn, .wake-checklist__checkbox, .card-media-carousel__indicator, .product-card')) return;
         card.classList.toggle('is-expanded');
         equalizeProjectCards();
       });

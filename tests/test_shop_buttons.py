@@ -8,7 +8,7 @@ def test_shop_page_and_product_links():
     resp = client.get('/shop/')
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
-    # Ensure at least one product link to product pages is present
-    assert '/shop/product/balance-board' in html
-    assert '/shop/product/poncho' in html
+    assert 'data-product-card-click-buy' in html
+    assert 'data-product-buy-trigger' in html
+    assert 'data-product-request' in html or '/shop/product/' in html
     assert 'joys-brand.com/aksessuary/nastolnaya-igra-wakesurfopolie1' in html

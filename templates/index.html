@@ -93,7 +93,9 @@
       <button class="carousel-prev" aria-label="Предыдущие товары">◀</button>
       <div class="carousel-track">
         {% for slug, product in products.items() %}
-        <div class="product-card product-card--unified js-expandable-card">
+        <div class="product-card product-card--unified" data-product-card-click-buy
+             data-mw-product-slug="{{ slug|e }}"
+             data-mw-product-title="{{ product.title|e }}">
           <div class="service-image-container product-card__image-wrap">
             {% if product.images and product.images|length > 1 %}
             <div class="card-media-carousel" data-images="{{ product.images|join('|') }}" data-image-urls="{{ (product.image_urls or [])|join('|') }}">
@@ -110,7 +112,7 @@
             <p class="service-description service-description--short">{{ product.description }}</p>
             <p class="price">{{ product.price }}</p>
             {% set buy_href = product.buy_url if product.buy_url else url_for('shop.product', slug=slug) %}
-            <a class="btn btn-secondary product-card__buy" href="{{ buy_href }}"{% if product.buy_url %} target="_blank" rel="noopener noreferrer"{% endif %}>Купить</a>
+            <a class="btn btn-secondary product-card__buy" data-product-buy-trigger href="{{ buy_href }}"{% if product.buy_url %} target="_blank" rel="noopener noreferrer"{% endif %}>Купить</a>
           </div>
         </div>
         {% endfor %}

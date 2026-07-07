@@ -114,6 +114,10 @@
   flex-direction: column;
   padding: 0;
   box-sizing: border-box;
+  cursor: pointer;
+}
+[data-product-card-click-buy] {
+  cursor: pointer;
 }
 .products-carousel .product-card--unified .product-card__image-wrap {
   flex-shrink: 0;
