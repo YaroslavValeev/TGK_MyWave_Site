@@ -31,6 +31,35 @@
     document.body.style.overflow = 'auto';
   }
 
+  function bindProductCardClickBuy() {
+    function triggerBuyFromCard(event) {
+      const card = event.target.closest('[data-product-card-click-buy]');
+      if (!card) return;
+
+      if (
+        event.target.closest('button, a, input, .carousel-nav, .carousel-prev-inner, .carousel-next-inner, [data-no-card-buy]')
+      ) {
+        return;
+      }
+
+      const buyButton = card.querySelector('[data-product-buy-trigger]');
+      if (buyButton) {
+        buyButton.click();
+      }
+    }
+
+    document.addEventListener('click', triggerBuyFromCard);
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      const card = event.target.closest('[data-product-card-click-buy]');
+      if (!card || event.target !== card) return;
+      event.preventDefault();
+      const buyButton = card.querySelector('[data-product-buy-trigger]');
+      if (buyButton) buyButton.click();
+    });
+  }
+
   function bindProductRequest() {
     const modal = document.getElementById('modalProductRequest');
     const form = document.getElementById('product-request-form');
@@ -105,8 +134,12 @@
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bindProductRequest);
+    document.addEventListener('DOMContentLoaded', function () {
+      bindProductRequest();
+      bindProductCardClickBuy();
+    });
   } else {
     bindProductRequest();
+    bindProductCardClickBuy();
   }
 })();

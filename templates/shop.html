@@ -24,7 +24,7 @@
                    'wakesurfpolia' if 'wakesurfpolia' in slug else
                    'poncho' if 'poncho' in slug or 'Пончо' in product.title else
                    'sertificate' if 'sertificate' in slug or 'Сертификат' in product.title else 'all' %}
-      <div class="product-card product-card--unified js-expandable-card" data-category="{{ cat }}"
+      <div class="product-card product-card--unified" data-product-card-click-buy data-category="{{ cat }}"
            data-mw-product-slug="{{ slug|e }}"
            data-mw-product-title="{{ product.title|e }}">
         <div class="service-image-container product-card__image-wrap">
@@ -43,9 +43,9 @@
           <p class="service-description service-description--short">{{ product.description }}</p>
           <p class="price">{{ product.price }}</p>
           {% if product.buy_url %}
-          <a class="btn btn-primary-lg product-card__buy" href="{{ product.buy_url }}" target="_blank" rel="noopener noreferrer">Купить</a>
+          <a class="btn btn-primary-lg product-card__buy" data-product-buy-trigger href="{{ product.buy_url }}" target="_blank" rel="noopener noreferrer">Купить</a>
           {% else %}
-          <button type="button" class="btn btn-primary-lg product-card__buy" data-product-request
+          <button type="button" class="btn btn-primary-lg product-card__buy" data-product-buy-trigger data-product-request
                   data-product-id="{{ slug }}"
                   data-product-title="{{ product.title }}">Купить</button>
           {% endif %}

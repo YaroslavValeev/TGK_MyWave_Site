@@ -8,39 +8,7 @@
   --color-white: #ffffff;
 }
 
-/* Buttons */
-.btn,
-.btn-primary,
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 0.6rem 1rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-}
-
-.btn-primary,
-.btn {
-  background: var(--primary-color);
-  color: var(--color-white);
-}
-
-.btn-secondary {
-  background: transparent;
-  color: var(--primary-color);
-  border: 2px solid var(--primary-color);
-}
-
-.btn:focus,
-.btn-primary:focus,
-.btn-secondary:focus {
-  outline: 3px solid rgba(0,0,0,0.08);
-  outline-offset: 2px;
-}
+/* Legacy button block removed — see unified public CTA system below */
 
 /* Utility */
 .hidden { display: none !important; }
@@ -75,6 +43,13 @@
 
   --mw-shadow-1: 0 8px 24px rgba(18,22,27,0.06);
   --mw-shadow-2: 0 14px 38px rgba(18,22,27,0.10);
+
+  /* Public CTA tokens (Owner spec) */
+  --mw-cta-border: #00bcd4;
+  --mw-cta-text: #1f1f1f;
+  --mw-cta-bg: #ffffff;
+  --mw-cta-hover-bg: rgba(0, 188, 212, 0.08);
+  --mw-cta-radius: 10px;
 
   /* Backward-compat with existing vars used across the project */
   --primary-color: var(--mw-brand);
@@ -190,61 +165,75 @@ html, body{
 }
 
 /* ---------------------------------------------------------
-   Buttons (unified)
+   Buttons (unified public CTA — white outline, turquoise border)
 --------------------------------------------------------- */
 .btn,
 .btn-primary,
 .btn-secondary,
+.btn-primary-lg,
+.btn-book,
+.service-card__cta,
+.product-card__buy,
+.btn-outline-brand,
 button.btn-primary,
 button.btn-secondary,
+button.btn-primary-lg,
 a.btn-primary,
-a.btn-secondary{
+a.btn-secondary,
+a.btn-primary-lg,
+a.btn-outline-brand,
+.contact button[type="submit"],
+.product-page .actions .btn-primary-lg,
+.product-page .actions .btn-outline{
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   min-height: 44px;
   padding: 12px 18px;
-  border-radius: 999px;
-  font-weight: 700;
+  border-radius: var(--mw-cta-radius) !important;
+  font-weight: 600;
   letter-spacing: 0.01em;
   text-decoration: none;
   cursor: pointer;
-  transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease;
+  background: var(--mw-cta-bg) !important;
+  color: var(--mw-cta-text) !important;
+  border: 1.5px solid var(--mw-cta-border) !important;
+  box-shadow: none !important;
+  transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
 }
 
-/* Primary */
-.btn-primary{
-  background: var(--mw-brand) !important;
-  color: #FFFFFF !important;
-  border: 1px solid rgba(0,0,0,0.0) !important;
-  box-shadow: 0 10px 26px rgba(53,192,205,0.22);
-}
-.btn-primary:hover{
-  background: var(--mw-brand-dark) !important;
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-primary-lg:hover,
+.btn-book:hover,
+.service-card__cta:hover,
+.product-card__buy:hover,
+.btn-outline-brand:hover,
+.contact button[type="submit"]:hover,
+.product-page .actions .btn-primary-lg:hover,
+.product-page .actions .btn-outline:hover{
+  background: var(--mw-cta-hover-bg) !important;
+  color: var(--mw-cta-text) !important;
+  border-color: var(--mw-cta-border) !important;
   transform: translateY(-1px);
-  box-shadow: 0 14px 34px rgba(53,192,205,0.28);
-}
-.btn-primary:active{
-  transform: translateY(0px) scale(0.99);
-}
-
-/* Secondary */
-.btn-secondary{
-  background: transparent !important;
-  color: var(--mw-text) !important;
-  border: 1px solid var(--mw-border) !important;
   box-shadow: none !important;
 }
-.btn-secondary:hover{
-  transform: translateY(-1px);
-  border-color: rgba(53,192,205,0.35) !important;
-  box-shadow: var(--mw-shadow-1);
+
+.btn-primary:active,
+.btn-secondary:active,
+.btn-primary-lg:active,
+.btn-book:active,
+.service-card__cta:active,
+.product-card__buy:active{
+  transform: translateY(0) scale(0.99);
 }
 
-/* Ghost helper for links */
+/* Ghost helper — same outline family, slightly softer fill */
 .btn-ghost{
-  background: rgba(255,255,255,0.70) !important;
+  background: rgba(255,255,255,0.85) !important;
+  border: 1.5px solid var(--mw-cta-border) !important;
+  color: var(--mw-cta-text) !important;
 }
 :root[data-theme="dark"] .btn-ghost{
   background: rgba(18,22,27,0.55) !important;
@@ -254,12 +243,33 @@ a.btn-secondary{
 .btn:focus-visible,
 .btn-primary:focus-visible,
 .btn-secondary:focus-visible,
+.btn-primary-lg:focus-visible,
 a.btn-primary:focus-visible,
 a.btn-secondary:focus-visible,
 button.btn-primary:focus-visible,
 button.btn-secondary:focus-visible{
-  outline: 3px solid rgba(53,192,205,0.35);
+  outline: 3px solid rgba(0, 188, 212, 0.35);
   outline-offset: 3px;
+}
+
+/* Non-CTA controls — keep native UI shapes */
+.carousel-prev,
+.carousel-next,
+.carousel-nav,
+.carousel-prev-inner,
+.carousel-next-inner,
+.burger-menu,
+.close-modal,
+.close-chat,
+.chat-toggle,
+.send-button,
+.open-chat-btn,
+.menu-btn,
+.file-upload-btn,
+.btn-back-step,
+.btn-secondary-sm,
+.btn-link-sm{
+  border-radius: unset;
 }
 
 /* ---------------------------------------------------------
