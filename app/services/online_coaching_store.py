@@ -740,6 +740,36 @@ def append_followup(
     return followup_id
 
 
+def log_followup_event(
+    online_request_id: str,
+    entry: Mapping[str, Any],
+    *,
+    sheet_append: Optional[SheetAppendFn] = None,
+) -> str:
+    """Append follow-up row without mutating request_status (cron reminders)."""
+    followup_id = f"oc_fu_{uuid.uuid4().hex[:12]}"
+    ts = _utc_now_iso()
+    row = {
+        "followup_id": followup_id,
+        "online_request_id": online_request_id,
+        "scheduled_at": str(entry.get("scheduled_at") or ""),
+        "channel": str(entry.get("channel") or "telegram"),
+        "note": str(entry.get("note") or "")[:500],
+        "status": str(entry.get("status") or "logged"),
+        "created_at": ts,
+    }
+    values = row_dict_to_values(row, ONLINE_FOLLOWUPS_HEADERS)
+    spreadsheet_id = resolve_spreadsheet_id()
+    sheet_name = resolve_sheet_name("ONLINE_FOLLOWUPS_SHEET_NAME", ONLINE_FOLLOWUPS_SHEET)
+    if sheet_append is not None:
+        sheet_append(spreadsheet_id, sheet_name, values)
+    else:
+        from app.services.google_sheets_service import append_record
+
+        append_record(spreadsheet_id, sheet_name, values)
+    return followup_id
+
+
 def validate_all_online_coaching_sheet_contracts(
     *,
     spreadsheet_id: Optional[str] = None,
