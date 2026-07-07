@@ -40,6 +40,12 @@
                 <i class="fas fa-video" aria-hidden="true"></i> Online Coaching
             </a>
             {% endif %}
+            {% if camp_admin_enabled %}
+            <a class="admin-nav__link {% if request.endpoint and request.endpoint.startswith('admin_camp') %}active{% endif %}"
+               href="{{ url_for('admin_camp.index') }}">
+                <i class="fas fa-campground" aria-hidden="true"></i> Camp
+            </a>
+            {% endif %}
             <a class="admin-nav__link {% if request.endpoint and request.endpoint.startswith('admin_images') %}active{% endif %}"
                href="{{ url_for('admin_images.index') }}">
                 <i class="fas fa-images" aria-hidden="true"></i> Изображения

@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ camp.title }} — Camp{% endblock %}
+{% block content %}
+<h1>{{ camp.title }}</h1>
+<p><strong>Slug:</strong> {{ camp.slug }} · <strong>Источник:</strong> {{ camp.source_system }} · <strong>Статус:</strong> {{ status_labels.get(camp.publication_status, camp.publication_status) }}</p>
+<p>{% if camp.start_date %}{{ camp.start_date }}{% if camp.end_date %} — {{ camp.end_date }}{% endif %}{% endif %} · {{ camp.country or '' }} {{ camp.city or '' }}</p>
+
+<form method="post" action="{{ url_for('admin_camp.publish', camp_id=camp.id) }}" style="display:inline;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="btn btn-primary">Опубликовать</button>
+</form>
+<form method="post" action="{{ url_for('admin_camp.hide', camp_id=camp.id) }}" style="display:inline;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="btn btn-secondary">Скрыть</button>
+</form>
+<a href="{{ url_for('admin_camp.index') }}" class="btn btn-link">← К списку</a>
+
+<h2>Overrides (JSON)</h2>
+<pre>{{ camp.site_overrides | tojson(indent=2) }}</pre>
+
+<h2>Source payload (фрагмент)</h2>
+<pre>{{ (camp.source_payload or {}) | tojson(indent=2) }}</pre>
+{% endblock %}

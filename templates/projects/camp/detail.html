@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ seo.title }}{% endblock %}
+{% block meta %}
+  <meta name="description" content="{{ seo.meta_description }}">
+  <meta name="robots" content="{{ seo.robots }}">
+  <link rel="canonical" href="{{ seo.canonical_url }}">
+  <script type="application/ld+json">{{ json_ld|safe }}</script>
+{% endblock %}
+{% block content %}
+<article class="camp-detail section">
+  <span class="camp-badge">{{ camp.source_badge }}</span>
+  <h1>{{ seo.h1 }}</h1>
+  {% if is_archived %}
+  <div class="camp-archived-notice" role="status">
+    Этот кемп уже прошёл. Ниже — похожие актуальные программы.
+  </div>
+  {% endif %}
+  {% if camp.cover_image_url %}
+  <img class="camp-detail__cover" src="{{ camp.cover_image_url }}" alt="{{ camp.title }}" loading="lazy">
+  {% endif %}
+  <p class="camp-detail__meta">
+    {% if camp.start_date %}{{ camp.start_date }}{% if camp.end_date %} — {{ camp.end_date }}{% endif %}{% endif %}
+    {% if camp.country %} · {{ camp.country }}{% if camp.city %}, {{ camp.city }}{% endif %}{% endif %}
+  </p>
+  {% if camp.short_description %}<p class="lead">{{ camp.short_description }}</p>{% endif %}
+  {% if camp.description %}<div class="camp-detail__body">{{ camp.description }}</div>{% endif %}
+  {% if camp.why_recommend %}
+  <section>
+    <h2>Почему рекомендуем</h2>
+    <div>{{ camp.why_recommend }}</div>
+  </section>
+  {% endif %}
+  {% if camp.lead_form_enabled and not is_archived %}
+  <section class="camp-lead">
+    <h2>Оставить заявку</h2>
+    <form id="camp-lead-form" data-camp-id="{{ camp.id }}">
+      <input type="text" name="name" required placeholder="Имя">
+      <input type="tel" name="phone" required placeholder="Телефон">
+      <input type="text" name="telegram" placeholder="Telegram">
+      <input type="text" name="level" placeholder="Уровень">
+      <textarea name="comment" placeholder="Комментарий"></textarea>
+      <button type="submit" class="btn btn-primary">Отправить заявку</button>
+    </form>
+  </section>
+  {% elif camp.booking_url %}
+  <p><a class="btn btn-primary" href="{{ camp.booking_url }}" target="_blank" rel="noopener noreferrer">Забронировать</a></p>
+  {% endif %}
+</article>
+
+{% if similar %}
+<section class="camp-similar section">
+  <h2>Похожие кемпы</h2>
+  <ul>
+    {% for s in similar %}
+    <li><a href="{{ url_for('projects_camp.camp_detail', slug=s.slug) }}">{{ s.title }}</a></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}
