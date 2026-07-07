@@ -818,9 +818,10 @@ def create_app(config_name="development"):
 
     try:
         from app.cli.camp_sync import camp_sync_command
+
         app.cli.add_command(camp_sync_command)
-    except Exception:
-        app.logger.debug('camp_sync CLI not registered')
+    except Exception as exc:
+        app.logger.warning("camp_sync CLI not registered: %s", exc)
 
     return app
 
