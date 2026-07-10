@@ -272,18 +272,25 @@ def _get_available_slots_internal(date_str):
 
     if is_phase2_availability_enabled():
         from app.services.booking.availability import build_gym_slots_from_calendar
+        from app.services.booking.schedule_policy import (
+            apply_gym_seasonal_slot_rows,
+            get_gym_available_slots,
+        )
 
         slot_rows = [
             {"time": rec["time"], "max_capacity": rec["max_capacity"]}
             for rec in schedule
             if normalize_day_of_week(rec["day_of_week"]) == day_of_week
         ]
+        slot_rows = apply_gym_seasonal_slot_rows(date_str, slot_rows)
         current_app.logger.info(
             "[gym] Phase 2 Calendar availability for %s (%s slots)",
             date_str,
             len(slot_rows),
         )
-        return build_gym_slots_from_calendar(date_str, slot_rows)
+        return get_gym_available_slots(
+            date_str, build_gym_slots_from_calendar(date_str, slot_rows)
+        )
 
     # 4) Считываем брони
     try:
@@ -297,12 +304,20 @@ def _get_available_slots_internal(date_str):
         relevant_bookings = []
 
     # 5) Формируем слоты
-    slots = []
-    for rec in schedule:
-        # Проверяем совпадение дня недели
-        if normalize_day_of_week(rec["day_of_week"]) != day_of_week:
-            continue
+    from app.services.booking.schedule_policy import (
+        apply_gym_seasonal_slot_rows,
+        get_gym_available_slots,
+    )
 
+    schedule_for_day = [
+        rec
+        for rec in schedule
+        if normalize_day_of_week(rec["day_of_week"]) == day_of_week
+    ]
+    seasonal_rows = apply_gym_seasonal_slot_rows(date_str, schedule_for_day)
+
+    slots = []
+    for rec in seasonal_rows:
         time_str = rec["time"]
         capacity = int(rec["max_capacity"])
         used = sum(1 for b in relevant_bookings if b.get("time") == time_str)
@@ -313,7 +328,9 @@ def _get_available_slots_internal(date_str):
         )
 
     # Сортируем слоты по времени и возвращаем
-    return sorted(slots, key=lambda x: x["time"])
+    return get_gym_available_slots(
+        date_str, sorted(slots, key=lambda x: x["time"])
+    )
 
 
 def _generate_service_token(service_name: str, ttl_minutes: int = 15) -> str:
@@ -1023,12 +1040,22 @@ def _book_slot_internal():
             from app.services.booking import (
                 CalendarBookingError,
                 DuplicateBookingError,
+                GymSeasonalRestrictionError,
                 SheetsBookingError,
                 SlotUnavailableError,
                 execute_web_booking,
             )
+            from app.services.booking.schedule_policy import (
+                assert_gym_slot_allowed,
+                seasonal_restriction_payload,
+            )
 
             svc = (service_type_from_payload or "gym").strip().lower()
+            if svc == "gym":
+                try:
+                    assert_gym_slot_allowed(data["date"], data["time"])
+                except GymSeasonalRestrictionError:
+                    return jsonify(seasonal_restriction_payload()), 409
             slot_times_raw = data.get("slot_times")
             booking_runs: list[tuple[str, int]] = []
 
@@ -1088,6 +1115,8 @@ def _book_slot_internal():
                     ),
                     400,
                 )
+            except GymSeasonalRestrictionError:
+                return jsonify(seasonal_restriction_payload()), 409
             except SlotUnavailableError as exc:
                 reason = str(exc)
                 if reason == "gym_capacity_full":

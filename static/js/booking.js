@@ -126,7 +126,7 @@ function getSlotsForDisplay(slots, service) {
 
 function applyHeroBookingSeasonToButton() {
   const heroBtn = document.getElementById('openBookingBtn');
-  if (!heroBtn) return;
+  if (!heroBtn || heroBtn.getAttribute('data-external-booking') === '1') return;
   const svc = resolveHeroBookingService();
   heroBtn.dataset.service = svc;
   heroBtn.setAttribute('data-service', svc);
@@ -1250,6 +1250,14 @@ function initializeBooking() {
       
       // If this button is intended to open a modal (has data-modal or data-service), we'll handle it.
       const shouldHandle = Boolean(modalId) || Boolean(resolvedService);
+
+      // External booking link (e.g. YCLIENTS widget) — do not open Site modal
+      if (btn.getAttribute('data-external-booking') === '1' && href) {
+        if (typeof mwGoal === 'function') {
+          mwGoal('open_booking_external', { url: href });
+        }
+        return;
+      }
 
       // If there's no modal/service but the element is a link, allow normal navigation.
       if (!shouldHandle && href && btn.tagName && btn.tagName.toLowerCase() === 'a') {

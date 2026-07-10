@@ -79,7 +79,6 @@ def get_available_slots(date: str) -> List[Dict[str, Any]]:
     norm_date = _normalize_date(date)
     if not norm_date:
         raise ValueError("Invalid date; expected YYYY-MM-DD or 'сегодня/завтра'")
-    # sheets_mod.get_available_slots accepts check_date
     slots = sheets_mod.get_available_slots(norm_date)
     # ensure stable keys and types
     normalized: List[Dict[str, Any]] = []
@@ -95,7 +94,9 @@ def get_available_slots(date: str) -> List[Dict[str, Any]]:
             )
         except Exception:
             continue
-    return normalized
+    from app.services.booking.schedule_policy import get_gym_available_slots
+
+    return get_gym_available_slots(norm_date, normalized)
 
 
 def get_capacity(date: str, time: str) -> Dict[str, int]:
@@ -133,6 +134,20 @@ def book_slot(date: str, time: str, name: str, phone: str) -> Dict[str, Any]:
     norm_time = _normalize_time(time)
     if not norm_date or not norm_time:
         raise ValueError("Invalid date/time for booking")
+
+    from app.services.booking.schedule_policy import (
+        GymSeasonalRestrictionError,
+        assert_gym_slot_allowed,
+    )
+
+    try:
+        assert_gym_slot_allowed(norm_date, norm_time)
+    except GymSeasonalRestrictionError as exc:
+        return {
+            "success": False,
+            "error": exc.code,
+            "confirm_text": exc.message,
+        }
 
     ok, msg = sheets_mod.book_slot(norm_date, norm_time, name, phone)
     # sheets_mod.book_slot returns tuple; message can be link or error text

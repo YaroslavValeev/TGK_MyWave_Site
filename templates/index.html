@@ -17,7 +17,11 @@
         {{ brand_logo('turquoise', 'brand-logo--hero') }}
       </h1>
       <p class="hero-subtitle">Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
-      <button class="btn-primary book-now" id="openBookingBtn" data-service="gym">Записаться</button>
+      {% if hero_booking_external_url %}
+      <a class="btn-primary book-now" id="openBookingBtn" href="{{ hero_booking_external_url }}" target="_blank" rel="noopener noreferrer" data-external-booking="1">Записаться</a>
+      {% else %}
+      <button class="btn-primary book-now" id="openBookingBtn" data-service="gym" type="button">Записаться</button>
+      {% endif %}
     </div>
   </section>
 

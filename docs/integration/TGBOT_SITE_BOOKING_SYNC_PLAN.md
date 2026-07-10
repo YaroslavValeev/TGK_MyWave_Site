@@ -324,3 +324,25 @@ tests/unit/test_booking_calendar_v2.py
 4. Staging deploy + smoke
 5. Owner-approved prod flag rollout
 
+### 12.10 Seasonal gym schedule 2026 (Site PR)
+
+**Период:** до `2026-09-30` включительно (авто-off с `2026-10-01`).
+
+**Правило зала:** только понедельник и четверг, слот `19:00` (90 min).
+
+**Server-side policy:** `app/services/booking/schedule_policy.py`  
+**Env:** `BOOKING_SEASONAL_RULES_ENABLED`, `BOOKING_SEASONAL_RULES_UNTIL`, `GYM_SEASONAL_*`
+
+**TGbotAdmin — два варианта (уточнить у владельца):**
+
+| Вариант | Поведение |
+|---------|-----------|
+| **A (предпочтительный)** | Бот вызывает Site `GET /api/calendar/slots/{date}?service=gym` и `POST /api/calendar/book` — seasonal policy на сервере Site |
+| **B** | Бот применяет тот же контракт локально (test vectors в `tests/unit/test_booking_schedule_policy.py`) |
+
+**Ошибка при нарушении:** HTTP 409, `error=gym_seasonal_schedule_restricted`.
+
+**Катер:** источник истины YCLIENTS (виджет / API). Site boat calendar booking — deprecated для новых клиентов при `YCLIENTS_ENABLED=0`.
+
+**Deploy:** [`docs/deploy/BOOKING_SEASONAL_DEPLOY.md`](../deploy/BOOKING_SEASONAL_DEPLOY.md) — отдельный Owner GO, не смешивать с Camp STOP.
+
