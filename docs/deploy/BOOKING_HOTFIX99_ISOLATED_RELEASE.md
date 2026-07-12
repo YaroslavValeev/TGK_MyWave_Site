@@ -11,19 +11,28 @@
 | Item | Value |
 |------|-------|
 | Branch | `hotfix/booking-add-calendar-from-eab7eb98` |
-| Release commit | `d9b68b75c81fd256da13fcde5756d17594bb56fa` |
+| Code fix commit | `d9b68b75c81fd256da13fcde5756d17594bb56fa` |
+| Branch tip (code + release note) | `1ed5277df4b37633b2cab93a9b7b569fc4d903ae` |
 | Base / rollback SHA | `eab7eb9859054024275df8ae8a5115e1d6830c89` |
 | Upstream source | PR #99 / `cdb4e59f248518575d1b275d1b0f7508f964d0b9` |
 | Method | branch from pin + cherry-pick #99 only |
+| Remote | https://github.com/YaroslavValeev/TGK_MyWave_Site/tree/hotfix/booking-add-calendar-from-eab7eb98 |
 
 ---
 
-## Compare: `eab7eb98` → `d9b68b75`
+## Compare: `eab7eb98` → branch tip
 
+**Code-only (`d9b68b75`):**
 ```
 static/js/booking.js | 2 ++
  1 file changed, 2 insertions(+)
 ```
+
+**Branch tip (`1ed5277d`) additionally includes:**
+```
+docs/deploy/BOOKING_HOTFIX99_ISOLATED_RELEASE.md
+```
+No Camp / migrations / cron.
 
 ### Patch
 
@@ -98,7 +107,7 @@ grep -n "calendarLocation = venueForCal" static/js/booking.js
 set -euo pipefail
 PROD_ROOT=/var/www/mywave
 GIT="git -c safe.directory=${PROD_ROOT}"
-EXPECTED_HEAD="d9b68b75c81fd256da13fcde5756d17594bb56fa"
+EXPECTED_HEAD="1ed5277df4b37633b2cab93a9b7b569fc4d903ae"
 ROLLBACK_SHA="eab7eb9859054024275df8ae8a5115e1d6830c89"
 
 cd "$PROD_ROOT"
@@ -120,9 +129,11 @@ $GIT fetch origin hotfix/booking-add-calendar-from-eab7eb98
 $GIT checkout -B deploy/booking-hotfix99 origin/hotfix/booking-add-calendar-from-eab7eb98
 test "$($GIT rev-parse HEAD)" = "$EXPECTED_HEAD"
 
-# confirm only booking.js changed vs pin
+# confirm no Camp — only booking.js (+ release note)
 $GIT diff --name-only "$ROLLBACK_SHA"...HEAD
-# expect ONLY: static/js/booking.js
+# expect:
+#   docs/deploy/BOOKING_HOTFIX99_ISOLATED_RELEASE.md
+#   static/js/booking.js
 
 echo "=== RESTART mywave-site ONLY ==="
 sudo systemctl restart mywave-site
@@ -150,6 +161,6 @@ curl -fsS https://mywavewake.ru/health/live
 - [ ] Compare report reviewed
 - [ ] Camp exclusion confirmed
 - [ ] Tests green
-- [ ] Explicit GO for production deploy of `d9b68b75`
+- [ ] Explicit GO for production deploy of tip `1ed5277d` (or code-only `d9b68b75`)
 - [ ] Deploy executed with EXPECTED_HEAD pin check
 - [ ] Manual smoke: booking confirm → “Add to Google Calendar” without JS ReferenceError
