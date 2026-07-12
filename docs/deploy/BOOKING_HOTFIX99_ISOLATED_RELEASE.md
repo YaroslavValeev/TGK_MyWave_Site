@@ -12,7 +12,8 @@
 |------|-------|
 | Branch | `hotfix/booking-add-calendar-from-eab7eb98` |
 | Code fix commit | `d9b68b75c81fd256da13fcde5756d17594bb56fa` |
-| Branch tip (code + release note) | `1ed5277df4b37633b2cab93a9b7b569fc4d903ae` |
+| Branch tip (code + release notes) | after push: `origin/hotfix/booking-add-calendar-from-eab7eb98` |
+| Recommended prod pin | `d9b68b75c81fd256da13fcde5756d17594bb56fa` (code-only) |
 | Base / rollback SHA | `eab7eb9859054024275df8ae8a5115e1d6830c89` |
 | Upstream source | PR #99 / `cdb4e59f248518575d1b275d1b0f7508f964d0b9` |
 | Method | branch from pin + cherry-pick #99 only |
@@ -28,7 +29,7 @@ static/js/booking.js | 2 ++
  1 file changed, 2 insertions(+)
 ```
 
-**Branch tip (`1ed5277d`) additionally includes:**
+**Branch tip additionally includes release notes only:**
 ```
 docs/deploy/BOOKING_HOTFIX99_ISOLATED_RELEASE.md
 ```
@@ -107,7 +108,7 @@ grep -n "calendarLocation = venueForCal" static/js/booking.js
 set -euo pipefail
 PROD_ROOT=/var/www/mywave
 GIT="git -c safe.directory=${PROD_ROOT}"
-EXPECTED_HEAD="1ed5277df4b37633b2cab93a9b7b569fc4d903ae"
+EXPECTED_HEAD="d9b68b75c81fd256da13fcde5756d17594bb56fa"
 ROLLBACK_SHA="eab7eb9859054024275df8ae8a5115e1d6830c89"
 
 cd "$PROD_ROOT"
@@ -126,14 +127,15 @@ fi
 
 echo "=== DEPLOY ISOLATED BOOKING HOTFIX (NOT main / NOT Camp) ==="
 $GIT fetch origin hotfix/booking-add-calendar-from-eab7eb98
-$GIT checkout -B deploy/booking-hotfix99 origin/hotfix/booking-add-calendar-from-eab7eb98
+# Code-only pin (recommended):
+$GIT checkout -B deploy/booking-hotfix99 "$EXPECTED_HEAD"
+# Or full branch tip (includes docs only):
+# $GIT checkout -B deploy/booking-hotfix99 origin/hotfix/booking-add-calendar-from-eab7eb98
 test "$($GIT rev-parse HEAD)" = "$EXPECTED_HEAD"
 
-# confirm no Camp — only booking.js (+ release note)
+# confirm only booking.js vs pin
 $GIT diff --name-only "$ROLLBACK_SHA"...HEAD
-# expect:
-#   docs/deploy/BOOKING_HOTFIX99_ISOLATED_RELEASE.md
-#   static/js/booking.js
+# expect ONLY: static/js/booking.js
 
 echo "=== RESTART mywave-site ONLY ==="
 sudo systemctl restart mywave-site
@@ -161,6 +163,6 @@ curl -fsS https://mywavewake.ru/health/live
 - [ ] Compare report reviewed
 - [ ] Camp exclusion confirmed
 - [ ] Tests green
-- [ ] Explicit GO for production deploy of tip `1ed5277d` (or code-only `d9b68b75`)
+- [ ] Explicit GO for production deploy of code pin `d9b68b75`
 - [ ] Deploy executed with EXPECTED_HEAD pin check
 - [ ] Manual smoke: booking confirm → “Add to Google Calendar” without JS ReferenceError
