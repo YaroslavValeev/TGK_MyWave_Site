@@ -8,17 +8,17 @@
 
 | service_type | Название | Цена MVP | payment_timing | Начальный статус заявки |
 |---|---|---:|---|---|
-| `video_check` | MyWave Video Check | 3 500 ₽ | `after_service` | `waiting_video` / `video_received` |
-| `progress_month` | MyWave Progress Month | 12 900 ₽/мес | `upfront` | `waiting_payment` |
-| `live_coach_land` | Live Coach — суша | 3 500 ₽ (30 мин) | `after_service` | `new` |
-| `live_coach_water` | Live Coach — вода | 5 500 ₽ (60 мин) | `after_service` | `new` |
+| `video_check` | MyWave Video Check | 1 500 ₽ / сет | `after_service` | `waiting_video` / `video_received` |
+| `progress_month` | MyWave Progress Month | 12 000 ₽ / месяц | `upfront` | `waiting_payment` |
+| `live_coach_land` | Live Coach — суша | 3 500 ₽ (60 мин) | `after_service` | `new` |
+| `live_coach_water` | Live Coach — вода | 3 500 ₽ (60 мин) | `after_service` | `new` |
 
 **Live package (Phase 2):** `package_upfront` — не в MVP форме, только по запросу тренера.
 
 ## 3. Progress Month — лимиты MVP
 
 - 30 календарных дней с даты оплаты
-- До 8 тренировок в месяц
+- До 10 тренировок в месяц
 - До 3 роликов по 60–90 сек после каждой тренировки
 - Срок ответа тренера: до 48 часов
 - Доп. разборы сверх лимита — отдельная платная опция (вручную)

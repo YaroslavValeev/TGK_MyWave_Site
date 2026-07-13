@@ -81,6 +81,14 @@ SERVICE_PRICES = {
     "live_coach_water": 3500,
 }
 
+# Billing unit for public copy, payment descriptions and Telegram notifications.
+SERVICE_PRICE_UNITS = {
+    "video_check": "сет",
+    "progress_month": "месяц",
+    "live_coach_land": "занятие",
+    "live_coach_water": "занятие",
+}
+
 PROGRESS_MONTH_MAX_SESSIONS = 10
 
 SERVICE_DISPLAY_NAMES = {
@@ -94,6 +102,21 @@ SERVICE_DISPLAY_NAMES = {
 def service_display_name(service_type: str) -> str:
     key = str(service_type or "").strip().lower()
     return SERVICE_DISPLAY_NAMES.get(key, key or "—")
+
+
+def format_service_price(service_type: str) -> str:
+    """Human-readable price with canonical billing unit (e.g. «12 000 ₽ / месяц»)."""
+    key = str(service_type or "").strip().lower()
+    amount = SERVICE_PRICES.get(key)
+    if not amount:
+        return "—"
+    price_str = f"{int(amount):,}".replace(",", " ")
+    unit = SERVICE_PRICE_UNITS.get(key, "")
+    if key in ("live_coach_land", "live_coach_water"):
+        return f"{price_str} ₽ — 60 мин"
+    if unit:
+        return f"{price_str} ₽ / {unit}"
+    return f"{price_str} ₽"
 
 PAYMENT_TIMING_BY_SERVICE = {
     "video_check": "after_service",

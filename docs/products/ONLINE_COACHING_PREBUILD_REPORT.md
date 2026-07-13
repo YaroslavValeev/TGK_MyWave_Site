@@ -9,7 +9,7 @@
 | service_type | Продукт | Цена MVP | Оплата | Стартовый статус |
 |---|---|---:|---|---|
 | `video_check` | MyWave Video Check | 3 500 ₽ | после услуги | `waiting_video` / `video_received` |
-| `progress_month` | Progress Month | 12 900 ₽/мес | upfront | `waiting_payment` |
+| `progress_month` | Progress Month | 12 000 ₽/мес | upfront | `waiting_payment` |
 | `live_coach_land` | Live Coach — суша | 3 500 ₽ | после занятия | `new` |
 | `live_coach_water` | Live Coach — вода | 5 500 ₽ | после занятия | `new` |
 
