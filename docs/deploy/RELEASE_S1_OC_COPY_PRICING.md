@@ -19,7 +19,6 @@
 - Camp
 - Blog
 - ParserNews
-- MAX/WhatsApp removal (→ Release S2)
 - Mobile polish / chat overlap (→ Release S2)
 - `.env` / production flags
 

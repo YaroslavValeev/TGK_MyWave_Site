@@ -12,7 +12,7 @@
 | Release | Branch (target) | Base SHA | Status | Scope |
 |---|---|---|---|---|
 | **S1** | `release/s1-oc-copy-pricing` | `d9b68b75` | In PR | OC copy + «12 000 ₽ / месяц», oc-film tips |
-| **S2** | `release/s2-oc-mobile-polish` | S1 tip | Planned | Mobile UX, RU statuses, remove MAX/WhatsApp from OC UI |
+| **S2** | `release/s2-oc-mobile-polish` | S1 tip | Planned | Mobile UX, RU statuses, chat overlap / format cards |
 | **S3** | `release/s3-calendar-ics-ux` | S1 or S2 tip | Planned | Calendar SUMMARY/LOCATION/ICS, boat/gym human titles |
 | **S4** | `release/booking-yclients-boat-v1` | `d9b68b75` | Scaffold exists (`efdcb2da`) | Cherry-pick boat/YClients only; flags OFF |
 | **S5** | — | S4 | Blocked | YClients read-only staging (needs credentials) |
@@ -29,7 +29,6 @@
 - **YClients:** только `service_type=boat`; gym и остальное — Site/TGbotAdmin
 - **Катер:** 1 клиент / 30-min slot; multi-set duration; YClients = SoT → GCal mirror → Sheets audit
 - **Зал:** 90 min, max 4 clients; Site/TGbotAdmin
-- **MAX/WhatsApp:** исключены из release waves S2+ (удаление из OC UI в S2)
 
 ## Architecture — boat booking (S4+)
 
