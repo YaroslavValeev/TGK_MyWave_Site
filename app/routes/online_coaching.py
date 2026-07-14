@@ -19,6 +19,8 @@ from app.config.online_coaching_features import (
     is_online_coaching_telegram_video_upload_enabled,
 )
 from app.extensions import csrf, limiter
+from app.config.rate_limit_config import RateLimitConfig
+from app.services.rate_limit import limit_by_config
 from app.modules.logger import get_logger
 from app.services.online_coaching_notifications import notify_materials_received, notify_new_online_request
 from app.services.online_coaching_channels import notify_client_channel
@@ -91,9 +93,7 @@ def online_coaching_short_redirect():
 def _apply_rate_limit():
     if limiter is None:
         return lambda f: f
-    from flask_limiter.util import get_remote_address
-
-    return limiter.limit("5 per minute", key_func=get_remote_address)
+    return limit_by_config(limiter, RateLimitConfig.ONLINE_COACHING, methods=["POST"])
 
 
 def _apply_success_message(service_type: str) -> str:

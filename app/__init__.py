@@ -282,6 +282,9 @@ def create_app(config_name="development"):
         app.logger.debug('CSRF disabled for testing environment')
     # Затем остальные расширения (в т.ч. csrf.init_app)
     init_extensions(app, db)
+    from app.services.rate_limit import apply_proxy_fix
+
+    apply_proxy_fix(app)
     init_websocket(app)
     
     # Инициализация кэширования
@@ -489,6 +492,12 @@ def create_app(config_name="development"):
     except Exception:
         app.logger.debug('api_camps_bp not found or failed to import')
     app.register_blueprint(health_bp)
+    try:
+        from app.extensions import limiter as _site_limiter
+        if _site_limiter is not None:
+            _site_limiter.exempt(health_bp)
+    except Exception:
+        app.logger.debug("health_bp rate-limit exempt skipped")
     
     # Payment API blueprint
     try:

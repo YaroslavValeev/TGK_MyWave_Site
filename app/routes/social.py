@@ -18,6 +18,8 @@ from app.config.social_features import (
     is_social_widget_enabled,
 )
 from app.extensions import csrf, limiter
+from app.config.rate_limit_config import RateLimitConfig
+from app.services.rate_limit import limit_by_config
 from app.modules.logger import get_logger
 from app.services.application_notifications import (
     notify_new_application,
@@ -112,9 +114,7 @@ def social_stats_api():
 def _apply_rate_limit():
     if limiter is None:
         return lambda f: f
-    from flask_limiter.util import get_remote_address
-
-    return limiter.limit("5 per minute", key_func=get_remote_address)
+    return limit_by_config(limiter, RateLimitConfig.SOCIAL_FORM, methods=["POST"])
 
 
 def _resolve_admin_token() -> str:

@@ -4,7 +4,14 @@
 **Base SHA (production pin):** `d9b68b75c81fd256da13fcde5756d17594bb56fa`  
 **Rollback SHA:** `d9b68b75c81fd256da13fcde5756d17594bb56fa` (same until S1 deployed)  
 **Branch:** `release/s1-oc-copy-pricing`  
-**Scope:** Online Coaching public copy and pricing unit only. No YClients, Camp, Blog, Parser, `.env`.
+**Scope:** Online Coaching public copy/pricing + P0 rate-limit fix. No YClients, Camp, Blog, Parser, `.env`.
+
+## P0 rate-limit (included in unified release)
+
+- Removed hardcoded global `200/day` + `50/hour` Flask-Limiter defaults.
+- Public GET (HTML, `/health`, `/static`, `/robots.txt`, `/sitemap.xml`) are not throttled by a small global bucket.
+- Endpoint-specific limits remain for login, booking, forms, chat, payment, admin auth (env-configurable).
+- Production expects `RATELIMIT_STORAGE_URI=redis://127.0.0.1:6379/0` and `TRUST_PROXY=1` behind Nginx.
 
 ## Changes
 
@@ -25,7 +32,7 @@
 ## Tests
 
 ```bash
-pytest tests/unit/test_online_coaching_schema.py tests/unit/test_online_coaching_public_copy.py -q
+pytest tests/unit/test_online_coaching_schema.py tests/unit/test_online_coaching_public_copy.py tests/unit/test_rate_limit_p0.py -q
 ```
 
 ## Deploy (only after Owner GO)

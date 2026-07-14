@@ -17,16 +17,25 @@ from urllib.parse import urlsplit
 # Production: RATELIMIT_STORAGE_URI=redis://127.0.0.1:6379/0 (или совместимый backend).
 try:
     from flask_limiter import Limiter
-    from flask_limiter.util import get_remote_address
+    from flask_limiter.errors import RateLimitExceeded
 
-    _ratelimit_uri = os.getenv("RATELIMIT_STORAGE_URI", "memory://")
+    from app.config.rate_limit_config import RateLimitConfig
+    from app.services.rate_limit import (
+        build_rate_limit_response,
+        get_client_ip,
+        should_skip_global_rate_limit,
+    )
+
     limiter = Limiter(
-        key_func=get_remote_address,
-        default_limits=["200 per day", "50 per hour"],
-        storage_uri=_ratelimit_uri,
+        key_func=get_client_ip,
+        default_limits=list(RateLimitConfig.DEFAULT_LIMITS),
+        default_limits_exempt_when=should_skip_global_rate_limit,
+        storage_uri=RateLimitConfig.STORAGE_URI,
+        enabled=RateLimitConfig.ENABLED,
     )
 except ImportError:
     limiter = None
+    RateLimitExceeded = None  # type: ignore[misc, assignment]
 
 
 def _origin_from_url(value: str) -> str:
@@ -179,7 +188,7 @@ def init_extensions(app, db=None):
     # Flask-Limiter (rate limiting)
     if limiter is not None:
         limiter.init_app(app)
-        uri = os.getenv("RATELIMIT_STORAGE_URI", "memory://")
+        uri = app.config.get("RATELIMIT_STORAGE_URI") or os.getenv("RATELIMIT_STORAGE_URI", "memory://")
         if uri.startswith("memory") and os.getenv("FLASK_ENV", "").lower() == "production":
             app.logger.warning(
                 "Flask-Limiter: in-memory storage in production — set RATELIMIT_STORAGE_URI "
@@ -190,6 +199,11 @@ def init_extensions(app, db=None):
                 "Flask-Limiter: storage_uri=memory:// (OK for local/dev). "
                 "Prod: RATELIMIT_STORAGE_URI=redis://..."
             )
+
+        if RateLimitExceeded is not None:
+            @app.errorhandler(RateLimitExceeded)
+            def _handle_rate_limit_exceeded(exc):
+                return build_rate_limit_response(exc)
     
     # Инициализация CORS
     CORS(
