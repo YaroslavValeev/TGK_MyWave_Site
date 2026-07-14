@@ -1,6 +1,7 @@
 # Release S1 — Online Coaching copy and pricing
 
 **Status:** ready for PR / Owner GO for deploy  
+**Release SHA:** `e548757fe6f0558ae6c4573c923b77b9da5cfc23`  
 **Base SHA (production pin):** `d9b68b75c81fd256da13fcde5756d17594bb56fa`  
 **Rollback SHA:** `d9b68b75c81fd256da13fcde5756d17594bb56fa` (same until S1 deployed)  
 **Branch:** `release/s1-oc-copy-pricing`  
@@ -54,6 +55,7 @@ git fetch origin release/s1-oc-copy-pricing
 git checkout release/s1-oc-copy-pricing
 git pull --ff-only origin release/s1-oc-copy-pricing
 # verify HEAD matches release commit SHA from PR
+test "$(git rev-parse HEAD)" = "e548757fe6f0558ae6c4573c923b77b9da5cfc23"
 sudo systemctl restart mywave-site.service
 sleep 15
 curl -fsS https://mywavewake.ru/health
