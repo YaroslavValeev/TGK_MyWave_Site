@@ -1,9 +1,9 @@
 # SITE — план завершения mywavewake.ru (S1–S11)
 
-**Production pin (текущий):** `b029c21a6876cb8a61b8d8c9b17473dd26ac4bda`  
-**Production branch:** `release/s1-oc-copy-pricing`  
-**Rollback SHA:** `d9b68b75c81fd256da13fcde5756d17594bb56fa`  
-**Health:** PASS — S1 + P0 rate-limit **DEPLOYED / VERIFIED** (2026-07-15)  
+**Production pin (текущий):** `77da818d203acb8df0cf75fdf4a43b016c424670`  
+**Production branch:** `release/s3-admin-sections-fill`  
+**Rollback SHA:** `c1ebacabe2b7e158f629bb6891362d8c6c6f5e94` (S2)  
+**Health:** PASS — S1 + P0 + S2 + S3a admin fill **DEPLOYED** (2026-07-15)  
 **Hotfix #99:** previously verified — не передеплоивать отдельно  
 **Emergency stash:** keep; do **not** `stash pop`
 
@@ -15,15 +15,16 @@
 |---|---|---|---|---|
 | **S1** | `release/s1-oc-copy-pricing` | `d9b68b75` | **DONE on prod** | OC copy + «12 000 ₽ / месяц», oc-film tips |
 | **P0** | (in S1 branch) | `d9b68b75` | **DONE on prod** | Remove global 200/day rate limit |
-| **S2** | `release/s2-oc-mobile-polish` | `b029c21a` | **NEXT** | Mobile UX, RU statuses, chat overlap / format cards |
-| **S3** | `release/s3-calendar-ics-ux` | S2 tip | Planned | Calendar SUMMARY/LOCATION/ICS, boat/gym human titles |
+| **S2** | `release/s2-oc-mobile-polish` | `48700c5a` | **DONE on prod** | Mobile UX, RU statuses, chat overlap / format cards |
+| **S3a** | `release/s3-admin-sections-fill` | `c1ebacab` | **DONE on prod** | Admin Blog/Events/Users/Settings + Camp UI fix |
+| **S3** | `release/s3-calendar-ics-ux` | `77da818d` | **NEXT** | Calendar SUMMARY/LOCATION/ICS, boat/gym human titles |
 | **S4** | `release/booking-yclients-boat-v1` | prod tip | Scaffold (`efdcb2da`) | Cherry-pick boat/YClients only; flags OFF |
 | **S5** | — | S4 | Blocked | YClients read-only staging (needs credentials) |
 | **S6** | — | S5 | Blocked | YClients controlled write E2E |
 | **S7** | — | — | Planned | Blog editorial standard + Blog v2 contract |
 | **S8** | — | — | Planned | Blog video rendering + CSP |
-| **S9** | — | — | Planned | Site Admin for Blog |
-| **S10** | — | — | **STOP** | Camp — Tour API `/api/v1/camps` not GO; `CAMP_PUBLIC_ENABLED=0` |
+| **S9** | — | — | Planned | Site Admin Blog write workflow |
+| **S10** | — | — | **STOP** | Camp — Tour API not GO; `CAMP_PUBLIC_ENABLED=0` |
 | **S11** | — | — | Planned | Final Site audit |
 
 ## Business rules (canonical)
