@@ -1,7 +1,9 @@
 # Release S3a — Site Admin sections fill (read-only)
 
 **Status:** ready for PR / Owner GO  
-**Base / rollback:** `c1ebacabe2b7e158f629bb6891362d8c6c6f5e94` (S2 on prod after restore)  
+**Release SHA:** `d59a1f3a037df560358b295ad926d34052a49181`  
+**PR:** https://github.com/YaroslavValeev/TGK_MyWave_Site/pull/102  
+**Base / rollback:** `c1ebacabe2b7e158f629bb6891362d8c6c6f5e94` (S2)  
 **Branch:** `release/s3-admin-sections-fill`
 
 ## Scope
