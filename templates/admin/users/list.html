@@ -1,0 +1,57 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Пользователи — админка{% endblock %}
+{% block admin_title %}Пользователи{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="admin-breadcrumbs">
+        <li><a href="{{ url_for('admin.index') }}">Главная</a></li>
+        <li>Пользователи</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Пользователи Site</h2>
+        <span class="admin-muted">Всего: {{ total }}</span>
+    </div>
+    <div class="admin-card__body">
+        <p class="admin-muted" style="margin-bottom:1rem;">
+            Read-only список аккаунтов. Создание/удаление и смена паролей — вне этого экрана (безопасность).
+        </p>
+        {% if users %}
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Имя</th>
+                        <th>Роль</th>
+                        <th>Admin</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>{{ u.id }}</td>
+                        <td>{{ u.username }}</td>
+                        <td>{{ u.email }}</td>
+                        <td>{{ u.full_name or '—' }}</td>
+                        <td>{{ u.role or '—' }}</td>
+                        <td>{% if u.is_admin %}<span class="admin-badge">да</span>{% else %}нет{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="admin-muted">Пользователей в БД нет.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "admin/base.html" %}
+
+{% block title %}События — админка{% endblock %}
+{% block admin_title %}События{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="admin-breadcrumbs">
+        <li><a href="{{ url_for('admin.index') }}">Главная</a></li>
+        <li>События</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Календарные события (БД)</h2>
+        <span class="admin-muted">Всего: {{ total }}</span>
+    </div>
+    <div class="admin-card__body">
+        <p class="admin-muted" style="margin-bottom:1rem;">
+            Зеркало событий из Google Calendar / booking pipeline.
+            <a href="/schedule" target="_blank" rel="noopener">Публичное расписание</a>
+            · <a href="/calendar" target="_blank" rel="noopener">Календарь</a>
+        </p>
+        {% if events %}
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Event ID</th>
+                        <th>Название</th>
+                        <th>Start</th>
+                        <th>End</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ev in events %}
+                    <tr>
+                        <td>{{ ev.id }}</td>
+                        <td><code>{{ ev.event_id }}</code></td>
+                        <td>{{ ev.summary or '—' }}</td>
+                        <td>{{ ev.start or '—' }}</td>
+                        <td>{{ ev.end or '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="admin-muted">В таблице calendar_event пока нет записей. События появятся после синхронизации с Google Calendar / бронирований.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -33,11 +33,20 @@ class TestAdminNavigation:
         assert "/admin/users" in body
         assert "/admin/settings" in body
 
-    def test_stub_sections_return_200(self, admin_logged_in):
-        for path in ("/admin/blog", "/admin/events", "/admin/users", "/admin/settings"):
+    def test_admin_sections_return_200_with_content(self, admin_logged_in):
+        cases = {
+            "/admin/blog": ("Публикации", "Блог"),
+            "/admin/events": ("Календарные события", "События"),
+            "/admin/users": ("Пользователи Site", "Пользователи"),
+            "/admin/settings": ("Статус модулей", "Настройки"),
+        }
+        for path, needles in cases.items():
             resp = admin_logged_in.get(path)
             assert resp.status_code == 200
-            assert "Раздел готовится" in resp.get_data(as_text=True)
+            body = resp.get_data(as_text=True)
+            assert "Раздел готовится" not in body
+            for needle in needles:
+                assert needle in body
 
     def test_admin_shell_has_no_public_chat_marker(self, admin_logged_in):
         resp = admin_logged_in.get("/admin/")
