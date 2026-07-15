@@ -28,7 +28,7 @@
         <div class="admin-detail-grid">
             <div class="admin-detail-item admin-detail-item--highlight">
                 <div class="admin-detail-item__label">Статус</div>
-                <div class="admin-detail-item__value">{{ request_record.request_status or '—' }}</div>
+                <div class="admin-detail-item__value">{{ oc_status_label(request_record.request_status) }}</div>
             </div>
             <div class="admin-detail-item admin-detail-item--highlight">
                 <div class="admin-detail-item__label">Услуга</div>
@@ -155,7 +155,7 @@
             </div>
             <div class="admin-detail-item admin-detail-item--highlight">
                 <div class="admin-detail-item__label">Статус</div>
-                <div class="admin-detail-item__value">{{ request_record.request_status or '—' }}</div>
+                <div class="admin-detail-item__value">{{ oc_status_label(request_record.request_status) }}</div>
             </div>
             <div class="admin-detail-item">
                 <div class="admin-detail-item__label">Дедлайн разбора</div>
@@ -208,7 +208,7 @@
             {{ oc_csrf_field() }}
             <select name="status" class="admin-input" required>
                 {% for st in request_statuses %}
-                <option value="{{ st }}" {% if request_record.request_status == st %}selected{% endif %}>{{ st }}</option>
+                <option value="{{ st }}" {% if request_record.request_status == st %}selected{% endif %}>{{ oc_status_label(st) }}</option>
                 {% endfor %}
             </select>
             <button type="submit" class="admin-btn admin-btn--primary admin-btn--sm">Сохранить статус</button>

@@ -98,10 +98,39 @@ SERVICE_DISPLAY_NAMES = {
     "live_coach_water": "Прямая связь (вода)",
 }
 
+# Human-readable statuses for public + admin UI (canonical codes stay in Sheets).
+REQUEST_STATUS_DISPLAY_NAMES = {
+    "new": "Новая",
+    "waiting_video": "Ожидает видео",
+    "video_received": "Видео получено",
+    "in_review": "На разборе",
+    "review_ready": "Разбор готов",
+    "review_sent": "Разбор отправлен",
+    "waiting_payment": "Ожидает оплату",
+    "paid": "Оплачено",
+    "completed": "Завершено",
+    "subscription_active": "Подписка активна",
+    "waiting_next_video": "Ожидает следующее видео",
+    "diary_updated": "Дневник обновлён",
+    "renewal_offered": "Предложено продление",
+    "live_scheduled": "Занятие назначено",
+    "live_completed": "Занятие проведено",
+    "waiting_contact": "Ожидает связи",
+    "followup_scheduled": "Follow-up запланирован",
+    "cancelled": "Отменено",
+}
+
 
 def service_display_name(service_type: str) -> str:
     key = str(service_type or "").strip().lower()
     return SERVICE_DISPLAY_NAMES.get(key, key or "—")
+
+
+def status_display_name(status: str) -> str:
+    key = str(status or "").strip().lower()
+    if not key:
+        return "—"
+    return REQUEST_STATUS_DISPLAY_NAMES.get(key, key)
 
 
 def format_service_price(service_type: str) -> str:

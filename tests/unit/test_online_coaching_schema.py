@@ -76,6 +76,14 @@ class TestSchema:
     def test_video_check_price_unit_is_set(self):
         assert format_service_price("video_check") == "1 500 ₽ / сет"
 
+    def test_status_display_names_ru(self):
+        from app.services.online_coaching_schema import status_display_name
+
+        assert status_display_name("waiting_payment") == "Ожидает оплату"
+        assert status_display_name("video_received") == "Видео получено"
+        assert status_display_name("in_review") == "На разборе"
+        assert status_display_name("completed") == "Завершено"
+
     def test_all_contract_sheets_known(self):
         for sheet in (
             ONLINE_REQUESTS_SHEET,
