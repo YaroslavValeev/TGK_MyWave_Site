@@ -413,6 +413,12 @@ def create_app(config_name="development"):
     app.register_blueprint(about_bp)
     app.register_blueprint(contact_bp)
     app.register_blueprint(calendar_bp)
+    try:
+        from app.routes.integrations.yclients import bp as yclients_integrations_bp
+
+        app.register_blueprint(yclients_integrations_bp)
+    except Exception:
+        app.logger.debug("yclients_integrations_bp not found or failed to import")
     app.register_blueprint(services_bp)
     app.register_blueprint(shop_bp)
     app.register_blueprint(booking_bp)
@@ -559,6 +565,12 @@ def create_app(config_name="development"):
         except Exception:
             app.logger.debug('Could not exempt safari_bp from CSRF (maybe not registered)')
         csrf.exempt(api_safari_bp)
+        try:
+            from app.routes.integrations.yclients import bp as _yclients_bp
+
+            csrf.exempt(_yclients_bp)
+        except Exception:
+            app.logger.debug("Could not exempt yclients_integrations_bp from CSRF")
     except Exception:
         app.logger.debug('Could not exempt blueprints from CSRF (maybe not needed)')
 

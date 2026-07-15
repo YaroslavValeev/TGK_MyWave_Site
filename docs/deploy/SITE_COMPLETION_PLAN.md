@@ -18,8 +18,8 @@
 | **P0** | (in S1 branch) | `d9b68b75` | **DONE on prod** | Remove global 200/day rate limit |
 | **S2** | `release/s2-oc-mobile-polish` | `48700c5a` | **DONE on prod** | Mobile UX, RU statuses, chat overlap / format cards |
 | **S3a** | `release/s3-admin-sections-fill` | `c1ebacab` | **DONE on prod** | Admin Blog/Events/Users/Settings + Camp UI fix |
-| **S3** | `release/s3-calendar-ics-ux` | `b37c8651` | **READY (code)** | Calendar SUMMARY/LOCATION/ICS, boat/gym human titles |
-| **S4** | `release/booking-yclients-boat-v1` | S3 tip | **NEXT after S3 deploy** | Cherry-pick boat/YClients only; flags OFF |
+| **S3** | `release/s3-calendar-ics-ux` | `b37c8651` | **READY (code)** · PR #103 · SHA `36944ed3` | Calendar SUMMARY/LOCATION/ICS, boat/gym human titles |
+| **S4** | `release/booking-yclients-boat-v1` | S3 tip | **READY (scaffold, flags OFF)** | YClients boat files only; no seasonal / no hero widget |
 | **S5** | — | S4 | Blocked | YClients read-only staging (needs credentials) |
 | **S6** | — | S5 | Blocked | YClients controlled write E2E |
 | **S7** | — | — | Planned | Blog editorial standard + Blog v2 contract |
