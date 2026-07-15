@@ -1,9 +1,11 @@
 # SITE — план завершения mywavewake.ru (S1–S11)
 
-**Production pin (текущий):** `d9b68b75c81fd256da13fcde5756d17594bb56fa`  
-**Production branch:** `deploy/booking-hotfix-99`  
-**Rollback SHA:** `eab7eb9859054024275df8ae8a5115e1d6830c89` (pre-hotfix #99)  
-**Health:** PASS — hotfix #99 **не передеплоивать**
+**Production pin (текущий):** `b029c21a6876cb8a61b8d8c9b17473dd26ac4bda`  
+**Production branch:** `release/s1-oc-copy-pricing`  
+**Rollback SHA:** `d9b68b75c81fd256da13fcde5756d17594bb56fa`  
+**Health:** PASS — S1 + P0 rate-limit **DEPLOYED / VERIFIED** (2026-07-15)  
+**Hotfix #99:** previously verified — не передеплоивать отдельно  
+**Emergency stash:** keep; do **not** `stash pop`
 
 Не использовать `git pull origin main` до консолидации release-веток.
 
@@ -11,16 +13,17 @@
 
 | Release | Branch (target) | Base SHA | Status | Scope |
 |---|---|---|---|---|
-| **S1** | `release/s1-oc-copy-pricing` | `d9b68b75` | In PR | OC copy + «12 000 ₽ / месяц», oc-film tips |
-| **S2** | `release/s2-oc-mobile-polish` | S1 tip | Planned | Mobile UX, RU statuses, chat overlap / format cards |
-| **S3** | `release/s3-calendar-ics-ux` | S1 or S2 tip | Planned | Calendar SUMMARY/LOCATION/ICS, boat/gym human titles |
-| **S4** | `release/booking-yclients-boat-v1` | `d9b68b75` | Scaffold exists (`efdcb2da`) | Cherry-pick boat/YClients only; flags OFF |
+| **S1** | `release/s1-oc-copy-pricing` | `d9b68b75` | **DONE on prod** | OC copy + «12 000 ₽ / месяц», oc-film tips |
+| **P0** | (in S1 branch) | `d9b68b75` | **DONE on prod** | Remove global 200/day rate limit |
+| **S2** | `release/s2-oc-mobile-polish` | `b029c21a` | **NEXT** | Mobile UX, RU statuses, chat overlap / format cards |
+| **S3** | `release/s3-calendar-ics-ux` | S2 tip | Planned | Calendar SUMMARY/LOCATION/ICS, boat/gym human titles |
+| **S4** | `release/booking-yclients-boat-v1` | prod tip | Scaffold (`efdcb2da`) | Cherry-pick boat/YClients only; flags OFF |
 | **S5** | — | S4 | Blocked | YClients read-only staging (needs credentials) |
 | **S6** | — | S5 | Blocked | YClients controlled write E2E |
 | **S7** | — | — | Planned | Blog editorial standard + Blog v2 contract |
 | **S8** | — | — | Planned | Blog video rendering + CSP |
 | **S9** | — | — | Planned | Site Admin for Blog |
-| **S10** | — | — | **STOP** | Camp — Tour API `/api/v1/camps` 404; `CAMP_PUBLIC_ENABLED=0` |
+| **S10** | — | — | **STOP** | Camp — Tour API `/api/v1/camps` not GO; `CAMP_PUBLIC_ENABLED=0` |
 | **S11** | — | — | Planned | Final Site audit |
 
 ## Business rules (canonical)
@@ -70,16 +73,18 @@ Telegram notification
 | SHA | Role |
 |---|---|
 | `eab7eb98` | Rollback before hotfix #99 code pin |
-| `d9b68b75` | **Current production** / S1–S4 base |
+| `d9b68b75` | Pre-S1 production / S1 rollback |
+| `b029c21a` | **Current production** (S1 + P0) |
 | `efdcb2da` | seasonal + YClients scaffold (cherry-pick source for S4) |
 | `cdb4e59f` | `origin/main` (includes Camp — not for prod deploy yet) |
 
 ## S1 deliverable
 
-See `docs/deploy/RELEASE_S1_OC_COPY_PRICING.md`.
+See `docs/deploy/RELEASE_S1_OC_COPY_PRICING.md`.  
+See also `docs/deploy/SITE_NEXT_WORK_PLAN.md`.
 
 ## Blockers
 
-1. **Camp S10:** Tour Camp API not ready (404).
+1. **Camp S10:** Tour Camp API not ready / no Owner GO.
 2. **YClients S5–S6:** Real credentials and API contract confirmation required.
-3. **Owner GO** required for any production deploy.
+3. **Owner GO** required for any further production deploy (S2+).
