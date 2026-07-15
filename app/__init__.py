@@ -118,6 +118,19 @@ def create_app(config_name="development"):
     def inject_csrf_token():
         return dict(csrf_token=generate_csrf())
 
+    # Client Calendar / ICS (S3): venues for booking.js data-mw-* without hardcoded maps
+    @app.context_processor
+    def inject_booking_client_venues():
+        from app.config.venue import MYWAVE_VENUE
+        from app.services.booking.client_calendar import build_client_venues_payload
+
+        return {
+            "booking_client_venues": build_client_venues_payload(),
+            "mywave_venue_name": MYWAVE_VENUE.get("name") or "MyWave Wake",
+            "mywave_venue_label": MYWAVE_VENUE.get("location_label") or "",
+            "mywave_venue_map_url": MYWAVE_VENUE.get("yandex_maps_url") or "",
+        }
+
     # Системная роль для публичного чата (см. docs/CHAT_RUNTIME_AND_RELEASE.md):
     # - CHAT_BACKEND=completions или отсутствие ASSISTANT_ID → Chat Completions + CHAT_SYSTEM_PROMPT
     #   (ниже: файл assistant_prompt.md, если не задано в env).
