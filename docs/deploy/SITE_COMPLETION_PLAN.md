@@ -1,10 +1,10 @@
 # SITE — план завершения mywavewake.ru (S1–S11)
 
-**Production pin (текущий):** `b37c86518bb74bd7f69d93fb98036bc789d5e60c`  
-**Production branch:** `release/s3-admin-sections-fill`  
-**Rollback SHA:** `c1ebacabe2b7e158f629bb6891362d8c6c6f5e94` (S2)  
-**Health:** PASS — S1 + P0 + S2 + S3a admin fill **DEPLOYED** (2026-07-15)  
-**Next deploy candidate:** `release/s3-calendar-ics-ux` (S3 Calendar/ICS)  
+**Production pin (текущий):** `7d37287deb9f3e17478fb73b4dd56c4faa10669c`  
+**Production branch:** `release/booking-yclients-boat-v1`  
+**Rollback SHA:** `36944ed30e1c407ca3db2bbbe28301a0f181ccd0` (S3-only) · `b37c86518bb74bd7f69d93fb98036bc789d5e60c` (S3a)  
+**Health:** PASS — S1 + P0 + S2 + S3a + **S3 Calendar ICS** + **S4 YClients scaffold OFF** (2026-07-15)  
+**Next:** S5 YClients read-only staging — **blocked** (credentials + Owner GO)  
 **Hotfix #99:** previously verified — не передеплоивать отдельно  
 **Emergency stash:** keep; do **not** `stash pop`
 
@@ -18,8 +18,8 @@
 | **P0** | (in S1 branch) | `d9b68b75` | **DONE on prod** | Remove global 200/day rate limit |
 | **S2** | `release/s2-oc-mobile-polish` | `48700c5a` | **DONE on prod** | Mobile UX, RU statuses, chat overlap / format cards |
 | **S3a** | `release/s3-admin-sections-fill` | `c1ebacab` | **DONE on prod** | Admin Blog/Events/Users/Settings + Camp UI fix |
-| **S3** | `release/s3-calendar-ics-ux` | `b37c8651` | **READY (code)** · PR #103 · SHA `36944ed3` | Calendar SUMMARY/LOCATION/ICS, boat/gym human titles |
-| **S4** | `release/booking-yclients-boat-v1` | S3 tip | **READY (scaffold, flags OFF)** | YClients boat files only; no seasonal / no hero widget |
+| **S3** | `release/s3-calendar-ics-ux` | `b37c8651` | **DONE on prod** · PR #103 · SHA `36944ed3` | Calendar SUMMARY/LOCATION/ICS, boat/gym human titles |
+| **S4** | `release/booking-yclients-boat-v1` | S3 tip | **DONE on prod** · PR #104 · SHA `7d37287d` · `YCLIENTS_ENABLED=0` | YClients boat scaffold OFF |
 | **S5** | — | S4 | Blocked | YClients read-only staging (needs credentials) |
 | **S6** | — | S5 | Blocked | YClients controlled write E2E |
 | **S7** | — | — | Planned | Blog editorial standard + Blog v2 contract |
