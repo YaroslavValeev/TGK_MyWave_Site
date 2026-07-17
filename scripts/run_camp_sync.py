@@ -44,7 +44,7 @@ def main() -> int:
                 app.logger.exception("camp_sync_failed")
             print(f"camp_sync: failed — {exc}")
             return 1
-        app.logger.info("camp_sync_done", extra=stats)
+        app.logger.info("camp_sync_done", extra={"camp_sync": stats})
         print(f"camp_sync: {stats}")
     return 0
 
