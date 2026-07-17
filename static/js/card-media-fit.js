@@ -34,6 +34,7 @@
   function scan(root) {
     var scope = root || document;
     var sel =
+      '[data-card-media-fit], ' +
       '.services-carousel .service-image, .products-carousel .service-image, ' +
       '.projects-carousel .project-card .service-image, ' +
       '.blog-index-grid .service-image, .blog-home-grid .service-image';
