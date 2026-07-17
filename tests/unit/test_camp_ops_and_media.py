@@ -34,3 +34,9 @@ def test_card_media_frame_is_16_by_9_and_supports_video_iframe():
 def test_media_fit_script_scans_opt_in_images():
     js = Path("static/js/card-media-fit.js").read_text(encoding="utf-8")
     assert "[data-card-media-fit]" in js
+
+
+def test_card_media_assets_have_cache_bust_versions():
+    base = Path("templates/base.html").read_text(encoding="utf-8")
+    assert "services-carousel.css') }}?v=card-media-frame1" in base
+    assert "card-media-fit.js') }}?v=2" in base
