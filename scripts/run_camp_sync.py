@@ -9,6 +9,16 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
+def _config_name() -> str:
+    """Use the same environment-driven Flask config selection as main.py."""
+    value = (os.getenv("FLASK_CONFIG") or os.getenv("FLASK_ENV") or "development").strip().lower()
+    if value in ("production", "prod"):
+        return "production"
+    if value in ("testing", "test"):
+        return "testing"
+    return "development"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Sync camps from MyWaveTour feed")
     parser.add_argument(
@@ -24,7 +34,7 @@ def main() -> int:
     from app.config.camp_features import is_camp_import_enabled
     from app.services.camps.import_service import sync_camps_from_tour
 
-    app = create_app()
+    app = create_app(_config_name())
     with app.app_context():
         if not is_camp_import_enabled():
             print("camp_sync: CAMP_IMPORT_ENABLED=0 — skip")
