@@ -56,7 +56,8 @@ def sync_camps_from_tour(*, session=None, updated_since: Optional[datetime] = No
             log.finished_at = datetime.utcnow()
             log.details_json = stats
             session.commit()
-            logger.info("camp_sync_empty_feed", extra=stats)
+            # Nest stats: LogRecord reserves keys like "created"
+            logger.info("camp_sync_empty_feed", extra={"camp_sync": stats})
             return stats
 
         for raw in raw_items:
