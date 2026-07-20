@@ -1,0 +1,28 @@
+{% set fallback_path = cover_fallback|default(camp_cover_fallback|default('images/Place1Logo.png')) %}
+<article class="service-card camp-card camp-showcase-card">
+  <div class="card-media-frame camp-card__media">
+    <img
+      class="service-image"
+      data-card-media-fit
+      src="{{ c.cover_image_url or url_for('static', filename=fallback_path) }}"
+      alt="{{ c.title }}"
+      loading="lazy"
+      data-fallback="{{ url_for('static', filename=fallback_path) }}"
+    >
+  </div>
+  <div class="camp-card__body">
+    <span class="camp-badge camp-badge--{{ 'partner' if c.partnership_confirmed else 'neutral' }}">{{ c.source_badge }}</span>
+    <h2 class="camp-card__title">{{ c.title }}</h2>
+    <ul class="camp-card__meta">
+      {% if c.sport_label %}<li>{{ c.sport_label }}</li>{% endif %}
+      {% if c.location_label %}<li>{{ c.location_label }}</li>{% endif %}
+      {% if c.dates_label %}<li>{{ c.dates_label }}</li>{% endif %}
+      {% if c.duration_label %}<li>{{ c.duration_label }}</li>{% endif %}
+    </ul>
+    <div class="camp-card__footer">
+      {% if c.price_label %}<p class="camp-card__price">{{ c.price_label }}</p>{% endif %}
+      <p class="camp-card__availability">{{ c.availability_label }}</p>
+      <a class="btn btn-primary camp-card__cta" href="{{ url_for('camps.camps_detail', camp_id=c.id) }}">Подробнее</a>
+    </div>
+  </div>
+</article>

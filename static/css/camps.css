@@ -1,0 +1,161 @@
+.camp-showcase-hero {
+  text-align: center;
+  padding-top: 2rem;
+}
+
+.camp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.camp-showcase-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.camp-card__media {
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.camp-card__media img,
+.camp-detail__cover-frame img,
+.camp-gallery__item img,
+.camp-video__embed iframe,
+.camp-video__embed video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camp-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  padding-top: 0.75rem;
+}
+
+.camp-card__title {
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.camp-card__meta {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: var(--color-muted, #666);
+  font-size: 0.95rem;
+}
+
+.camp-card__meta li + li {
+  margin-top: 0.15rem;
+}
+
+.camp-card__footer {
+  margin-top: auto;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.camp-card__price {
+  font-weight: 700;
+  margin: 0;
+}
+
+.camp-card__availability {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.camp-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.camp-badge--partner {
+  background: rgba(0, 128, 128, 0.12);
+}
+
+.camp-badge--neutral {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.camp-showcase-state__box {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.camp-showcase-state--error .camp-showcase-state__box {
+  border: 1px solid rgba(180, 0, 0, 0.15);
+  border-radius: 12px;
+  background: rgba(255, 240, 240, 0.6);
+}
+
+.camp-rights-notice {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: rgba(255, 193, 7, 0.15);
+  font-size: 0.95rem;
+}
+
+.camp-detail__cover-frame {
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.camp-detail__facts {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.camp-gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.camp-gallery__item {
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.camp-video__embed {
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.camp-detail__booking {
+  margin-top: 1.5rem;
+}
+
+.camp-home-section .camp-grid {
+  margin-top: 1rem;
+}
+
+.camp-home-cta {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .camp-grid {
+    grid-template-columns: 1fr;
+  }
+}

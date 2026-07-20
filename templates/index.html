@@ -6,6 +6,9 @@
 {% block extra_head %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/competitions-ticker.css') }}?v=11" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/social-mission.css') }}?v=3" />
+  {% if camp_home_enabled %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/camps.css') }}?v=1" />
+  {% endif %}
 {% endblock %}
 
 {% block content %}
@@ -150,6 +153,24 @@
     </div>
     <p class="projects-cta"><a href="{{ url_for('projects_page') }}" class="btn btn-outline-brand">Все проекты</a></p>
   </section>
+
+  {% if camp_home_enabled %}
+  <section id="tours-camps" class="camp-home-section section">
+    <h2>Туры и кемпы</h2>
+    {% if camp_preview %}
+    <div class="camp-grid">
+      {% for c in camp_preview %}
+        {% include 'camps/partials/card.html' %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <p>Актуальные вейксерф и вейкборд программы — в каталоге кемпов MyWave.</p>
+    {% endif %}
+    <p class="camp-home-cta">
+      <a href="{{ url_for('camps.camps_index') }}" class="btn btn-outline-brand">Все кемпы</a>
+    </p>
+  </section>
+  {% endif %}
 
   {% include 'partials/home_competitions_ticker.html' %}
 

@@ -8,7 +8,7 @@ import unicodedata
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 
-from app.services.camps.schema import LEVELS, SPORTS
+from app.services.camps.schema import AVAILABILITY_STATUSES, CONTENT_RIGHTS, LEVELS, SPORTS
 
 
 def _slugify(title: str, suffix: str = "") -> str:
@@ -69,6 +69,30 @@ def _normalize_external_id(raw_id: Any) -> str:
     if s.startswith("tour_") or s.startswith("tour-"):
         return s
     return f"tour_{s}"
+
+
+def _map_content_rights(raw: Any) -> str:
+    s = str(raw or "").strip().lower()
+    if s in CONTENT_RIGHTS:
+        return s
+    return "unknown"
+
+
+def _map_availability(raw: Any) -> str:
+    s = str(raw or "").strip().lower()
+    if s in AVAILABILITY_STATUSES:
+        return s
+    return "unknown"
+
+
+def _program_from_raw(raw: Dict[str, Any]) -> Optional[str]:
+    program = raw.get("program") or raw.get("programme") or raw.get("schedule")
+    if isinstance(program, list):
+        lines = [str(item).strip() for item in program if str(item).strip()]
+        return "\n".join(lines) if lines else None
+    if program:
+        return str(program).strip() or None
+    return None
 
 
 def _map_level(raw: Any) -> str:
@@ -173,8 +197,10 @@ def normalize_tour_camp(raw: Dict[str, Any]) -> Dict[str, Any]:
         "cover_image_url": str(raw.get("cover_image_url") or raw.get("image") or "").strip() or None,
         "gallery": gallery if isinstance(gallery, list) else None,
         "video_url": str(raw.get("video_url") or "").strip() or None,
-        "content_rights_status": str(raw.get("content_rights_status") or "partner_allowed").strip(),
-        "availability_status": str(raw.get("availability_status") or "unknown").strip(),
+        "program": _program_from_raw(raw),
+        "content_rights_status": _map_content_rights(raw.get("content_rights_status")),
+        "availability_status": _map_availability(raw.get("availability_status")),
+        "tour_publication_status": str(raw.get("publication_status") or "").strip().lower() or None,
         "is_owner_camp": False,
         "source_payload": raw,
         "source_updated_at": _parse_date(raw.get("updated_at")),

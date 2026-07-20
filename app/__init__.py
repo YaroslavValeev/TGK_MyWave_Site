@@ -180,6 +180,23 @@ def create_app(config_name="development"):
         except Exception as e:
             app.logger.warning("home: не удалось загрузить ticker соревнований: %s", e)
 
+        camp_preview = []
+        camp_home_enabled = False
+        try:
+            from app.config.camp_features import is_camp_public_enabled
+            from app.services.camps.showcase import fetch_showcase_preview
+
+            camp_home_enabled = is_camp_public_enabled()
+            if camp_home_enabled:
+                camp_preview = fetch_showcase_preview(limit=3)
+                for item in services:
+                    if item.get("service_id") == "camp":
+                        item["page_url"] = url_for("camps.camps_index")
+                        item.pop("modal_id", None)
+                        item["button_text"] = "Все кемпы"
+        except Exception as e:
+            app.logger.warning("home: не удалось загрузить превью кемпов: %s", e)
+
         return render_template(
             'index.html',
             months=months,
@@ -189,6 +206,8 @@ def create_app(config_name="development"):
             blog_preview_posts=blog_preview_posts,
             competitions_ticker=competitions_ticker,
             hero_booking_external_url=current_app.config.get("HERO_BOOKING_EXTERNAL_URL", ""),
+            camp_preview=camp_preview,
+            camp_home_enabled=camp_home_enabled,
         )
 
     @app.route('/favicon.ico')
@@ -485,6 +504,11 @@ def create_app(config_name="development"):
     except Exception:
         app.logger.debug('admin_camp_bp not found or failed to import')
     try:
+        from app.routes.camps import camps_bp
+        app.register_blueprint(camps_bp)
+    except Exception:
+        app.logger.debug('camps_bp not found or failed to import')
+    try:
         from app.routes.projects.camp import bp as projects_camp_bp
         app.register_blueprint(projects_camp_bp)
     except Exception:
@@ -664,15 +688,15 @@ def create_app(config_name="development"):
         try:
             from app.config.camp_features import is_camp_public_enabled
             if is_camp_public_enabled():
-                urls['static'].append('/projects/camp')
-                from app.database.models import db
-                from app.database.camp_models import Camp
-                urls['camp_slugs'] = [
-                    row.slug for row in db.session.query(Camp).filter(
-                        Camp.publication_status == 'published',
-                        Camp.robots_index.is_(True),
-                    ).all()
-                ]
+                urls['static'].append('/camps')
+                try:
+                    from app.services.camps.showcase import fetch_showcase_camps
+
+                    showcase = fetch_showcase_camps()
+                    if showcase.state == "ok":
+                        urls['camp_slugs'] = [c.get("id") for c in showcase.camps if c.get("id")]
+                except Exception:
+                    pass
         except Exception:
             pass
         xml = render_template('sitemap.xml', lastmod=lastmod, urls=urls)

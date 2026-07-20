@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ seo.title }}{% endblock %}
+{% block meta %}
+  <meta name="description" content="{{ seo.meta_description }}">
+  <meta name="robots" content="{{ seo.robots }}">
+{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/camps.css') }}?v=1" />
+{% endblock %}
+{% block content %}
+<section class="camp-showcase-hero section">
+  <h1>Туры и кемпы</h1>
+  <p>Актуальные вейксерф и вейкборд программы из каталога MyWaveTour.</p>
+</section>
+
+{% if page_state == 'ok' %}
+<section class="camp-showcase-list section">
+  <div class="camp-grid">
+    {% for c in camps %}
+      {% include 'camps/partials/card.html' %}
+    {% endfor %}
+  </div>
+</section>
+{% elif page_state == 'empty' %}
+<section class="camp-showcase-state section" role="status">
+  <div class="camp-showcase-state__box">
+    <h2>Пока пусто</h2>
+    <p>{{ page_message }}</p>
+  </div>
+</section>
+{% else %}
+<section class="camp-showcase-state section camp-showcase-state--error" role="alert">
+  <div class="camp-showcase-state__box">
+    <h2>Каталог временно недоступен</h2>
+    <p>{{ page_message }}</p>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
