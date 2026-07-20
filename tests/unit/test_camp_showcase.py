@@ -45,6 +45,13 @@ def test_is_showcase_public_filters_hidden_and_restricted():
     assert is_showcase_public({**MVP_CAMP, "content_rights_status": "restricted"}) is False
 
 
+def test_is_showcase_public_filters_non_ru_audience_and_other_sports():
+    assert is_showcase_public({**MVP_CAMP, "audience_language": ["ru"]}) is True
+    assert is_showcase_public({**MVP_CAMP, "audience_language": ["en"]}) is False
+    assert is_showcase_public({**MVP_CAMP, "sport": ["wakesurf"]}) is True
+    assert is_showcase_public({**MVP_CAMP, "sport": ["ski"]}) is False
+
+
 def test_to_showcase_view_unknown_rights_not_confirmed_partnership():
     view = to_showcase_view(MVP_CAMP)
     assert view["id"] == "tour_camp_api_mvp_wakesurf_v1"

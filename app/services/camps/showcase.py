@@ -23,6 +23,8 @@ NON_PUBLIC_PUBLICATION = frozenset({
     "possible_duplicate",
 })
 
+_SHOWCASE_SPORTS = frozenset({"wakesurf", "wakeboard", "mixed"})
+
 
 @dataclass
 class ShowcaseListResult:
@@ -63,6 +65,32 @@ def _map_content_rights(raw: Any) -> str:
     return "unknown"
 
 
+def _raw_sports(raw: Dict[str, Any]) -> set[str]:
+    sport = raw.get("sport") or raw.get("sports")
+    if isinstance(sport, list):
+        return {str(item).strip().lower() for item in sport if str(item).strip()}
+    if sport:
+        return {str(sport).strip().lower()}
+    return set()
+
+
+def _matches_showcase_sport(raw: Dict[str, Any]) -> bool:
+    sports = _raw_sports(raw)
+    if not sports:
+        return True
+    return bool(sports & _SHOWCASE_SPORTS)
+
+
+def _matches_showcase_audience(raw: Dict[str, Any]) -> bool:
+    audience = raw.get("audience_language") or raw.get("audience") or []
+    if isinstance(audience, str):
+        audience = [audience]
+    if not audience:
+        return True
+    langs = {str(item).strip().lower() for item in audience if str(item).strip()}
+    return "ru" in langs
+
+
 def is_showcase_public(raw: Dict[str, Any]) -> bool:
     pub = str(raw.get("publication_status") or raw.get("tour_publication_status") or "published").strip().lower()
     if pub in NON_PUBLIC_PUBLICATION:
@@ -70,6 +98,10 @@ def is_showcase_public(raw: Dict[str, Any]) -> bool:
     if pub and pub != "published":
         return False
     if _map_content_rights(raw.get("content_rights_status")) == "restricted":
+        return False
+    if not _matches_showcase_sport(raw):
+        return False
+    if not _matches_showcase_audience(raw):
         return False
     return bool(str(raw.get("id") or raw.get("external_id") or "").strip() or str(raw.get("title") or "").strip())
 
