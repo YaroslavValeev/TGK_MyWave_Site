@@ -38,7 +38,7 @@ def mywave_tour_camps_feed_url() -> str:
 def mywave_tour_camps_api_url() -> str:
     return os.environ.get(
         "MYWAVE_TOUR_CAMPS_API_URL",
-        "https://api.mywavetour.ru/camps",
+        "https://api.mywavetour.ru/api/v1/camps",
     ).strip()
 
 
