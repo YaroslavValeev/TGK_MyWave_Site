@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional
@@ -13,6 +14,8 @@ from app.services.camps.schema import (
     SPORT_LABELS,
 )
 from app.services.camps.tour_client import TourCampFetchError, fetch_tour_camp_detail, fetch_tour_camps
+
+logger = logging.getLogger(__name__)
 
 NON_PUBLIC_PUBLICATION = frozenset({
     "draft",
@@ -289,7 +292,19 @@ def fetch_showcase_detail(camp_id: str) -> ShowcaseDetailResult:
         if exc.status_code == 404:
             raw = _find_camp_in_showcase_list(camp_id)
             if raw is None:
+                logger.warning(
+                    "camp_detail_not_found",
+                    extra={"camp_id": camp_id, "source": "tour_detail_404"},
+                )
                 return ShowcaseDetailResult(state="not_found", message="Кемп не найден.")
+            logger.warning(
+                "camp_detail_fallback_list",
+                extra={
+                    "camp_id": camp_id,
+                    "source": "list_fallback",
+                    "tour_status": exc.status_code,
+                },
+            )
         else:
             state = _error_state(exc)
             return ShowcaseDetailResult(state=state, message=_error_message(state))

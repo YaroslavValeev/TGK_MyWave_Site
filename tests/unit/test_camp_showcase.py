@@ -104,7 +104,7 @@ def test_fetch_showcase_detail_not_found():
     assert result.state == "not_found"
 
 
-def test_fetch_showcase_detail_falls_back_to_list_on_404():
+def test_fetch_showcase_detail_falls_back_to_list_on_404(caplog):
     with patch(
         "app.services.camps.showcase.fetch_tour_camp_detail",
         side_effect=TourCampFetchError(404, "missing", kind="client"),
@@ -112,6 +112,8 @@ def test_fetch_showcase_detail_falls_back_to_list_on_404():
         "app.services.camps.showcase.fetch_tour_camps",
         return_value=[MVP_CAMP],
     ):
-        result = fetch_showcase_detail(MVP_CAMP["id"])
+        with caplog.at_level("WARNING"):
+            result = fetch_showcase_detail(MVP_CAMP["id"])
     assert result.state == "ok"
     assert result.camp["id"] == MVP_CAMP["id"]
+    assert any("camp_detail_fallback_list" in r.message for r in caplog.records)
