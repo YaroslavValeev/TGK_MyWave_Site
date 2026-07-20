@@ -51,7 +51,7 @@ def mywave_tour_camp_api_token() -> str:
 
 
 def mywave_tour_use_api_pagination() -> bool:
-    return _flag("MYWAVE_TOUR_USE_API_PAGINATION", "0")
+    return _flag("MYWAVE_TOUR_USE_API_PAGINATION", "1")
 
 
 def get_camp_feature_flags() -> Dict[str, bool]:

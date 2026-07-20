@@ -2,7 +2,13 @@
 {% block title %}{{ camp.title }} — Camp{% endblock %}
 {% block content %}
 <h1>{{ camp.title }}</h1>
-<p><strong>Slug:</strong> {{ camp.slug }} · <strong>Источник:</strong> {{ camp.source_system }} · <strong>Статус:</strong> {{ status_labels.get(camp.publication_status, camp.publication_status) }}</p>
+<p><strong>Slug:</strong> {{ camp.slug }} · <strong>Источник:</strong> {{ camp.source_system }} · <strong>Статус Site:</strong> {{ status_labels.get(camp.publication_status, camp.publication_status) }}</p>
+<p><strong>Права на контент:</strong> {{ content_rights_labels.get(camp.content_rights_status, camp.content_rights_status) }}
+{% if camp.content_rights_status == 'unknown' %}<span class="badge bg-warning text-dark">модерация</span>{% endif %}
+</p>
+{% if tour_publication_status %}
+<p><strong>Статус Tour:</strong> {{ tour_status_labels.get(tour_publication_status, tour_publication_status) }}</p>
+{% endif %}
 <p>{% if camp.start_date %}{{ camp.start_date }}{% if camp.end_date %} — {{ camp.end_date }}{% endif %}{% endif %} · {{ camp.country or '' }} {{ camp.city or '' }}</p>
 
 <form method="post" action="{{ url_for('admin_camp.publish', camp_id=camp.id) }}" style="display:inline;">

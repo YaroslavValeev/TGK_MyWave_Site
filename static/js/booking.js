@@ -1105,6 +1105,8 @@ function initializeBooking() {
               const dates = fmt(start)+'/'+fmt(end);
               const title = encodeURIComponent(`Запись в MyWave: ${payload.service_type}`);
               const details = encodeURIComponent(`Телефон: ${payload.phone}`);
+              const venueForCal = getMyWaveVenueFromBody();
+              const calendarLocation = venueForCal.mapUrl || venueForCal.label || '';
               const location = encodeURIComponent(calendarLocation);
               const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`;
               window.open(url, '_blank');

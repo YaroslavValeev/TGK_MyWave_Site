@@ -21,8 +21,8 @@ DEFAULT_TIMEOUT = 20
 USER_AGENT = "MyWave-Site-CampSync/1.0"
 # Tour prod probe: limit=5 returns items, limit=100 can return [] — keep pages small.
 DEFAULT_PAGE_LIMIT = 25
-# Tour API currently returns empty items for sports=/audience=/status= query params.
-# Filter published/wakesurf/ru audience client-side in showcase/import layers.
+# Tour API historically returned empty for sports=/audience=/status= query params.
+# Prefer minimal query; filter published/wakesurf/ru client-side in showcase.
 DEFAULT_LIST_QUERY = {
     "limit": str(DEFAULT_PAGE_LIMIT),
 }
@@ -241,4 +241,5 @@ def _fetch_legacy_feed_page(
     return parse_feed_payload(payload)
 
 
+# Backward-compatible alias used by import_service
 fetch_all_tour_camps = fetch_tour_camps

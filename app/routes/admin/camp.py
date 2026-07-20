@@ -9,7 +9,13 @@ from app.config.camp_features import is_camp_admin_enabled, is_camp_import_enabl
 from app.database.camp_models import Camp, CampImportLog
 from app.database.models import db
 from app.services.camps.import_service import sync_camps_from_tour
-from app.services.camps.schema import PUBLICATION_STATUS_LABELS, PUBLICATION_STATUSES
+from app.services.camps.schema import (
+    CONTENT_RIGHTS_LABELS,
+    PUBLICATION_STATUS_LABELS,
+    PUBLICATION_STATUSES,
+    TOUR_PUBLICATION_STATUS_LABELS,
+)
+from app.services.camps.tour_client import TourCampFetchError
 from app.utils.decorators import admin_required
 
 bp = Blueprint("admin_camp", __name__, url_prefix="/admin/camp")
@@ -64,7 +70,17 @@ def detail(camp_id: int):
     camp = db.session.get(Camp, camp_id)
     if not camp:
         abort(404)
-    return render_template("admin/camp/detail.html", camp=camp, status_labels=PUBLICATION_STATUS_LABELS)
+    tour_pub = None
+    if isinstance(camp.source_payload, dict):
+        tour_pub = camp.source_payload.get("publication_status")
+    return render_template(
+        "admin/camp/detail.html",
+        camp=camp,
+        status_labels=PUBLICATION_STATUS_LABELS,
+        content_rights_labels=CONTENT_RIGHTS_LABELS,
+        tour_status_labels=TOUR_PUBLICATION_STATUS_LABELS,
+        tour_publication_status=tour_pub,
+    )
 
 
 @bp.route("/<int:camp_id>/publish", methods=["POST"])
@@ -107,6 +123,26 @@ def sync_now():
     try:
         stats = sync_camps_from_tour()
         flash(f"Синхронизация завершена: {stats}", "success")
+    except TourCampFetchError as exc:
+        if exc.status_code in (401, 403):
+            flash(
+                "Ошибка авторизации MyWaveTour: проверьте MYWAVE_TOUR_CAMP_API_TOKEN. "
+                "Импортированные кемпы не изменены.",
+                "error",
+            )
+        elif exc.status_code >= 500:
+            flash(
+                f"Сервер MyWaveTour недоступен (HTTP {exc.status_code}). "
+                "Импортированные кемпы сохранены.",
+                "error",
+            )
+        elif exc.kind == "timeout":
+            flash(
+                "Таймаут запроса к MyWaveTour. Импортированные кемпы сохранены.",
+                "error",
+            )
+        else:
+            flash(f"Ошибка MyWaveTour: {exc}", "error")
     except Exception as exc:
         flash(f"Ошибка синхронизации: {exc}", "error")
     return redirect(url_for("admin_camp.index"))

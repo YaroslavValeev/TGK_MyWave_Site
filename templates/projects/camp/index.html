@@ -40,7 +40,9 @@
     {% for c in camps %}
     <article class="service-card camp-card">
       {% if c.cover_image_url %}
-      <img class="service-image" src="{{ c.cover_image_url }}" alt="{{ c.title }}" loading="lazy">
+      <div class="card-media-frame">
+        <img class="service-image" data-card-media-fit src="{{ c.cover_image_url }}" alt="{{ c.title }}" loading="lazy">
+      </div>
       {% endif %}
       <span class="camp-badge">{{ c.source_badge }}</span>
       <h2><a href="{{ url_for('projects_camp.camp_detail', slug=c.slug) }}">{{ c.title }}</a></h2>

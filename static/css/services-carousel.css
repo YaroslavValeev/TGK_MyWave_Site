@@ -307,6 +307,7 @@
 .service-card .card-body { min-height: 120px; }
 
 /* Зона медиа 16:9; альбомные фото — cover, портрет — contain (класс из card-media-fit.js) */
+.card-media-frame,
 .service-image-container,
 .product-card__image-wrap,
 .project-card .service-image-container {
@@ -316,6 +317,9 @@
   overflow: hidden;
   background: #e8ecef;
 }
+.card-media-frame > img,
+.card-media-frame > video,
+.card-media-frame > iframe,
 .service-image-container > .service-image,
 .service-image-container > img,
 .product-card__image-wrap > .service-image,
@@ -330,6 +334,9 @@
   object-position: center;
   display: block;
   border-radius: 0;
+}
+.card-media-frame > iframe {
+  border: 0;
 }
 
 /* Перебиваем legacy height:180px из style.css для карточек карусели */

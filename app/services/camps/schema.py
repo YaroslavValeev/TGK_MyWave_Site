@@ -73,3 +73,17 @@ SOURCE_BADGE_LABELS = {
     "partner": "Партнёрский",
     "mywavetour": "Из MyWaveTour",
 }
+
+CONTENT_RIGHTS_LABELS = {
+    "owned": "Права MyWave",
+    "partner_allowed": "Права условно подтверждены источником",
+    "unknown": "Права не подтверждены — требуется модерация",
+    "restricted": "Права ограничены",
+}
+
+TOUR_PUBLICATION_STATUS_LABELS = {
+    "published": "Опубликован в Tour",
+    "hidden": "Скрыт в Tour",
+    "archived": "Архив в Tour",
+    "cancelled": "Отменён в Tour (резерв)",
+}
