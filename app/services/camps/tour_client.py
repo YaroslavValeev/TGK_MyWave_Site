@@ -19,10 +19,10 @@ from app.config.camp_features import (
 
 DEFAULT_TIMEOUT = 20
 USER_AGENT = "MyWave-Site-CampSync/1.0"
-DEFAULT_PAGE_LIMIT = 100
-# Tour API currently returns empty items for sports=/audience= query params
-# (see prod probe: ?limit=5 works, ?sports=wakesurf,wakeboard returns []).
-# Filter wakesurf/wakeboard + ru audience client-side in showcase/import layers.
+# Tour prod probe: limit=5 returns items, limit=100 can return [] — keep pages small.
+DEFAULT_PAGE_LIMIT = 25
+# Tour API currently returns empty items for sports=/audience=/status= query params.
+# Filter published/wakesurf/ru audience client-side in showcase/import layers.
 DEFAULT_LIST_QUERY = {
     "limit": str(DEFAULT_PAGE_LIMIT),
 }

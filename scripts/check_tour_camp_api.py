@@ -27,6 +27,7 @@ from app.services.camps.showcase import fetch_showcase_camps, is_showcase_public
 from app.services.camps.tour_client import (  # noqa: E402
     TourCampFetchError,
     fetch_tour_camp_detail,
+    fetch_tour_camps,
     fetch_tour_camps_page,
 )
 
@@ -65,6 +66,13 @@ def main() -> int:
     print(f"OK: list items={len(items)} next_offset={next_offset}")
     public = [raw for raw in items if is_showcase_public(raw)]
     print(f"OK: showcase_public={len(public)} of {len(items)}")
+
+    try:
+        all_items = fetch_tour_camps()
+    except TourCampFetchError as exc:
+        print(f"FAIL: paginated list status={exc.status_code} kind={exc.kind} msg={exc}")
+        return 1
+    print(f"OK: fetch_tour_camps items={len(all_items)}")
 
     sample_id = "tour_camp_api_mvp_wakesurf_v1"
     try:
