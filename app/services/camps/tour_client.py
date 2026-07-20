@@ -24,7 +24,6 @@ DEFAULT_PAGE_LIMIT = 100
 # (see prod probe: ?limit=5 works, ?sports=wakesurf,wakeboard returns []).
 # Filter wakesurf/wakeboard + ru audience client-side in showcase/import layers.
 DEFAULT_LIST_QUERY = {
-    "status": "published",
     "limit": str(DEFAULT_PAGE_LIMIT),
 }
 
