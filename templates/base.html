@@ -116,6 +116,9 @@
           <li><a href="{{ url_for('services.services_list') }}">Услуги</a></li>
           <li><a href="{{ url_for('shop.shop_index') }}">Товары</a></li>
           <li><a href="{{ url_for('projects_page') }}">Проекты</a></li>
+          {% if camp_public_enabled %}
+          <li><a href="{{ url_for('camps.camps_index') }}">Кемпы</a></li>
+          {% endif %}
           <li><a href="{{ url_for('blog.blog_index') }}">Блог</a></li>
           {% if social_module_enabled %}
           <li><a href="{{ url_for('social.social_page') }}">Социальная миссия</a></li>
@@ -214,7 +217,7 @@
   {% include 'partials/product_request_modal.html' %}
 
   <!-- booking.js, modals-close.js (надёжное закрытие Camp/CoachTriper/Consulting) и формы заявок -->
-  <script defer src="{{ url_for('static', filename='js/booking.js') }}?v=boat-slots-hide-full"></script>
+  <script defer src="{{ url_for('static', filename='js/booking.js') }}?v=hero-yclients-external"></script>
   <script defer src="{{ url_for('static', filename='js/modals-close.js') }}?v=modal-hide1"></script>
   <script defer src="{{ url_for('static', filename='js/modal-lead-forms.js') }}"></script>
   <script defer src="{{ url_for('static', filename='js/product-request-form.js') }}?v=product-card-click1"></script>

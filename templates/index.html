@@ -17,7 +17,11 @@
         {{ brand_logo('turquoise', 'brand-logo--hero') }}
       </h1>
       <p class="hero-subtitle">Запишитесь на занятия и откройте для себя мир новых возможностей!</p>
-      <button class="btn-primary book-now" id="openBookingBtn" data-service="gym">Записаться</button>
+      {% if hero_booking_external_url %}
+      <a class="btn-primary book-now" id="openBookingBtn" href="{{ hero_booking_external_url }}" target="_blank" rel="noopener noreferrer" data-external-booking="1">Записаться</a>
+      {% else %}
+      <button class="btn-primary book-now" id="openBookingBtn" data-service="gym" type="button">Записаться</button>
+      {% endif %}
     </div>
   </section>
 
@@ -77,6 +81,9 @@
           <a class="btn-secondary service-card__cta" href="{{ service.page_url }}">{{ service.button_text|default('Подробнее / Записаться') }}</a>
           {% elif service.modal_id %}
           <button class="btn-secondary btn-book book-now" data-service="{{ service.service_id }}" data-modal="{{ service.modal_id }}">{{ service.button_text|default('Подробнее / Записаться') }}</button>
+          {% endif %}
+          {% if service.service_id == 'camp' and camp_public_enabled %}
+          <a class="btn btn-outline-brand service-card__cta-secondary" href="{{ url_for('camps.camps_index') }}">Все туры</a>
           {% endif %}
           </div>
         </div>

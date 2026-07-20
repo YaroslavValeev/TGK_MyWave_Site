@@ -8,6 +8,7 @@ from app.services.booking.pipeline import (
     SheetsBookingError,
     execute_web_booking,
 )
+from app.services.booking.schedule_policy import GymSeasonalRestrictionError
 
 __all__ = [
     "execute_web_booking",
@@ -16,4 +17,5 @@ __all__ = [
     "CalendarBookingError",
     "SheetsBookingError",
     "SlotUnavailableError",
+    "GymSeasonalRestrictionError",
 ]

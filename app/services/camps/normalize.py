@@ -85,6 +85,16 @@ def _map_availability(raw: Any) -> str:
     return "unknown"
 
 
+def _program_from_raw(raw: Dict[str, Any]) -> Optional[str]:
+    program = raw.get("program") or raw.get("programme") or raw.get("schedule")
+    if isinstance(program, list):
+        lines = [str(item).strip() for item in program if str(item).strip()]
+        return "\n".join(lines) if lines else None
+    if program:
+        return str(program).strip() or None
+    return None
+
+
 def _map_level(raw: Any) -> str:
     s = str(raw or "").strip().lower()
     if s in LEVELS:
@@ -187,6 +197,7 @@ def normalize_tour_camp(raw: Dict[str, Any]) -> Dict[str, Any]:
         "cover_image_url": str(raw.get("cover_image_url") or raw.get("image") or "").strip() or None,
         "gallery": gallery if isinstance(gallery, list) else None,
         "video_url": str(raw.get("video_url") or "").strip() or None,
+        "program": _program_from_raw(raw),
         "content_rights_status": _map_content_rights(raw.get("content_rights_status")),
         "availability_status": _map_availability(raw.get("availability_status")),
         "tour_publication_status": str(raw.get("publication_status") or "").strip().lower() or None,

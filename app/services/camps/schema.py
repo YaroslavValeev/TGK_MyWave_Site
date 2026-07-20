@@ -24,6 +24,14 @@ AVAILABILITY_STATUSES = frozenset({
     "unknown",
 })
 
+AVAILABILITY_LABELS = {
+    "available": "Есть места",
+    "few_spots": "Мало мест",
+    "sold_out": "Мест нет",
+    "waitlist": "Лист ожидания",
+    "unknown": "Уточняется",
+}
+
 # Fields that admin may override; sync must not overwrite non-null override keys.
 SITE_OVERRIDE_FIELDS = (
     "title",

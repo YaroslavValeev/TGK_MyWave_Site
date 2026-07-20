@@ -19,6 +19,7 @@ from app.config.booking_features import (
     is_phase2_multi_set_boat_enabled,
     is_phase2_travel_buffer_enabled,
 )
+from app.services.booking.schedule_policy import assert_gym_slot_allowed
 from app.services.booking.calendar_reader import (
     BusyInterval,
     get_timezone,
@@ -299,6 +300,7 @@ def assert_booking_available(
         return
 
     if svc == "gym":
+        assert_gym_slot_allowed(date, time)
         available, remaining = is_gym_slot_available(date, time, intervals)
         if not available:
             logger.info(

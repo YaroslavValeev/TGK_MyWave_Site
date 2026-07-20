@@ -45,6 +45,9 @@
                 {{ service.button_text|default('Подробнее / Записаться') }}
             </button>
             {% endif %}
+            {% if service.service_id == 'camp' and camp_public_enabled %}
+            <a class="btn btn-outline-brand service-card__cta-secondary" href="{{ url_for('camps.camps_index') }}">Все туры</a>
+            {% endif %}
           </div>
         </div>
         {% endfor %}

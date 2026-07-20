@@ -15,6 +15,7 @@ from app.config.booking_durations import (
     GYM_LOCATION_LABEL,
     GYM_SLOT_MINUTES,
 )
+from app.config.booking_schedule import is_operational_summary_enabled
 from app.config.booking_features import (
     is_phase2_availability_enabled,
     is_phase2_gym_location_v2_enabled,
@@ -26,6 +27,7 @@ from app.config.booking_location_constants import (
     GYM_CALENDAR_LOCATION,
 )
 from app.config.venue import MYWAVE_VENUE
+from app.services.booking.client_display import build_client_display_name
 from app.services.booking.constants import SERVICE_LOCATION_SUMMARY
 
 logger = logging.getLogger(__name__)
@@ -68,6 +70,29 @@ def build_event_summary(
     return f"Тренировка ({location_label}) — {name} {marker}"
 
 
+def build_event_summary_operational(
+    service_type: str,
+    name: str,
+    *,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+) -> str:
+    display = build_client_display_name(
+        {
+            "name": name,
+            "first_name": first_name,
+            "last_name": last_name,
+        }
+    )
+    svc = (service_type or "gym").strip().lower()
+    if svc == "gym":
+        return f"Зал MyWave — {display}"
+    if svc == "boat":
+        return f"Катер / Руза — {display}"
+    location_label = SERVICE_LOCATION_SUMMARY.get(svc, svc)
+    return f"{location_label} — {display}"
+
+
 def build_event_summary_v2(
     service_type: str,
     name: str,
@@ -102,6 +127,8 @@ def resolve_event_summary(
             telegram_user_id=telegram_user_id,
             booking_id=booking_id,
         )
+    if is_operational_summary_enabled():
+        return build_event_summary_operational(service_type, name)
     if is_phase2_summary_v2_enabled():
         return build_event_summary_v2(
             service_type,
@@ -123,18 +150,25 @@ def build_event_description(
     workout_id: str,
     service_type: str,
     booking_id: str,
+    name: str = "",
     telegram_user_id: Optional[str] = None,
     set_count: int = 1,
     duration_min: Optional[int] = None,
     start_iso: Optional[str] = None,
     end_iso: Optional[str] = None,
 ) -> str:
+    display_name = build_client_display_name({"name": name})
+    svc = (service_type or "gym").strip().lower()
     lines = [
+        f"Услуга: {'Тренировка в зале' if svc == 'gym' else 'Тренировка на катере'}",
+        f"Клиент: {display_name}",
+        f"Телефон: {phone}",
+        f"Источник: {'telegram' if telegram_user_id else 'site'}",
+        "Статус: подтверждено",
         f"phone: {phone}",
         f"telegram_id: {telegram_user_id or ''}",
         f"client_id: {client_id}",
         f"workout_id: {workout_id}",
-        "source: web" if not telegram_user_id else "telegram",
         f"service_type: {service_type}",
         f"booking_id: {booking_id}",
     ]
@@ -195,6 +229,8 @@ def build_calendar_event_body(
         "source": "web" if not telegram_user_id else "telegram",
         "service_type": service_type,
         "phone_hash": phone_hash,
+        "booking_provider": "mywave",
+        "location_code": "ruza" if (service_type or "").strip().lower() == "boat" else "gym",
     }
     if is_phase2_availability_enabled() and (service_type or "").strip().lower() == "boat":
         private_props["set_count"] = str(sc)
@@ -213,6 +249,7 @@ def build_calendar_event_body(
             workout_id="",
             service_type=service_type,
             booking_id=booking_id,
+            name=name,
             telegram_user_id=telegram_user_id,
             set_count=sc,
             duration_min=duration_min,

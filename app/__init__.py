@@ -188,6 +188,7 @@ def create_app(config_name="development"):
             projects=projects,
             blog_preview_posts=blog_preview_posts,
             competitions_ticker=competitions_ticker,
+            hero_booking_external_url=current_app.config.get("HERO_BOOKING_EXTERNAL_URL", ""),
         )
 
     @app.route('/favicon.ico')
@@ -397,6 +398,11 @@ def create_app(config_name="development"):
     app.register_blueprint(about_bp)
     app.register_blueprint(contact_bp)
     app.register_blueprint(calendar_bp)
+    try:
+        from app.routes.integrations.yclients import bp as yclients_integrations_bp
+        app.register_blueprint(yclients_integrations_bp)
+    except Exception:
+        app.logger.debug('yclients_integrations_bp not found or failed to import')
     app.register_blueprint(services_bp)
     app.register_blueprint(shop_bp)
     app.register_blueprint(booking_bp)
@@ -479,6 +485,11 @@ def create_app(config_name="development"):
     except Exception:
         app.logger.debug('admin_camp_bp not found or failed to import')
     try:
+        from app.routes.camps import camps_bp
+        app.register_blueprint(camps_bp)
+    except Exception:
+        app.logger.debug('camps_bp not found or failed to import')
+    try:
         from app.routes.projects.camp import bp as projects_camp_bp
         app.register_blueprint(projects_camp_bp)
     except Exception:
@@ -537,6 +548,11 @@ def create_app(config_name="development"):
         except Exception:
             app.logger.debug('Could not exempt safari_bp from CSRF (maybe not registered)')
         csrf.exempt(api_safari_bp)
+        try:
+            from app.routes.integrations.yclients import bp as _yclients_bp
+            csrf.exempt(_yclients_bp)
+        except Exception:
+            app.logger.debug('Could not exempt yclients_integrations_bp from CSRF')
     except Exception:
         app.logger.debug('Could not exempt blueprints from CSRF (maybe not needed)')
 
@@ -653,15 +669,15 @@ def create_app(config_name="development"):
         try:
             from app.config.camp_features import is_camp_public_enabled
             if is_camp_public_enabled():
-                urls['static'].append('/projects/camp')
-                from app.database.models import db
-                from app.database.camp_models import Camp
-                urls['camp_slugs'] = [
-                    row.slug for row in db.session.query(Camp).filter(
-                        Camp.publication_status == 'published',
-                        Camp.robots_index.is_(True),
-                    ).all()
-                ]
+                urls['static'].append('/camps')
+                try:
+                    from app.services.camps.showcase import fetch_showcase_camps
+
+                    showcase = fetch_showcase_camps()
+                    if showcase.state == "ok":
+                        urls['camp_slugs'] = [c.get("id") for c in showcase.camps if c.get("id")]
+                except Exception:
+                    pass
         except Exception:
             pass
         xml = render_template('sitemap.xml', lastmod=lastmod, urls=urls)

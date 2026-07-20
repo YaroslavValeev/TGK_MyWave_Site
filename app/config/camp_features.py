@@ -43,7 +43,11 @@ def mywave_tour_camps_api_url() -> str:
 
 
 def mywave_tour_camp_api_token() -> str:
-    return os.environ.get("MYWAVE_TOUR_CAMP_API_TOKEN", "").strip()
+    return (
+        os.environ.get("CAMP_API_TOKEN")
+        or os.environ.get("MYWAVE_TOUR_CAMP_API_TOKEN")
+        or ""
+    ).strip()
 
 
 def mywave_tour_use_api_pagination() -> bool:

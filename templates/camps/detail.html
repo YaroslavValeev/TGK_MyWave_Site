@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}{{ seo.title }}{% endblock %}
+{% block meta %}
+  <meta name="description" content="{{ seo.meta_description }}">
+  <meta name="robots" content="{{ seo.robots }}">
+  {% if seo.canonical_url %}<link rel="canonical" href="{{ seo.canonical_url }}">{% endif %}
+{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/camps.css') }}?v=1" />
+{% endblock %}
+{% block content %}
+<article class="camp-detail section camp-showcase-detail">
+  <p class="camp-detail__back"><a href="{{ url_for('camps.camps_index') }}">← Все кемпы</a></p>
+  <span class="camp-badge camp-badge--{{ 'partner' if camp.partnership_confirmed else 'neutral' }}">{{ camp.source_badge }}</span>
+  <h1>{{ camp.title }}</h1>
+  {% if camp.content_rights_notice %}
+  <p class="camp-rights-notice" role="note">{{ camp.content_rights_notice }}</p>
+  {% endif %}
+
+  <div class="card-media-frame camp-detail__cover-frame">
+    <img
+      class="camp-detail__cover"
+      data-card-media-fit
+      src="{{ camp.cover_image_url or url_for('static', filename=cover_fallback) }}"
+      alt="{{ camp.title }}"
+      loading="eager"
+      data-fallback="{{ url_for('static', filename=cover_fallback) }}"
+    >
+  </div>
+
+  <ul class="camp-detail__facts">
+    {% if camp.sport_label %}<li><strong>Спорт:</strong> {{ camp.sport_label }}</li>{% endif %}
+    {% if camp.location_label %}<li><strong>Место:</strong> {{ camp.location_label }}</li>{% endif %}
+    {% if camp.dates_label %}<li><strong>Даты:</strong> {{ camp.dates_label }}</li>{% endif %}
+    {% if camp.duration_label %}<li><strong>Длительность:</strong> {{ camp.duration_label }}</li>{% endif %}
+    {% if camp.price_label %}<li><strong>Цена:</strong> {{ camp.price_label }}</li>{% endif %}
+    <li><strong>Доступность:</strong> {{ camp.availability_label }}</li>
+  </ul>
+
+  {% if camp.short_description %}<p class="lead">{{ camp.short_description }}</p>{% endif %}
+  {% if camp.description %}<div class="camp-detail__body">{{ camp.description|safe if '<' in (camp.description or '') else camp.description }}</div>{% endif %}
+
+  {% if camp.organizer_name %}
+  <section>
+    <h2>Организатор</h2>
+    <p>{{ camp.organizer_name }}</p>
+  </section>
+  {% endif %}
+
+  {% if camp.included %}
+  <section>
+    <h2>Включено</h2>
+    <div class="camp-detail__richtext">{{ camp.included|safe if '<' in camp.included else camp.included }}</div>
+  </section>
+  {% endif %}
+
+  {% if camp.not_included %}
+  <section>
+    <h2>Не включено</h2>
+    <div class="camp-detail__richtext">{{ camp.not_included|safe if '<' in camp.not_included else camp.not_included }}</div>
+  </section>
+  {% endif %}
+
+  {% if camp.program %}
+  <section>
+    <h2>Программа</h2>
+    <div class="camp-detail__richtext">{{ camp.program|safe if '<' in camp.program else camp.program|replace('\n', '<br>')|safe }}</div>
+  </section>
+  {% endif %}
+
+  {% if camp.gallery %}
+  <section class="camp-gallery">
+    <h2>Галерея</h2>
+    <div class="camp-gallery__grid">
+      {% for image in camp.gallery %}
+      <div class="card-media-frame camp-gallery__item">
+        <img src="{{ image }}" alt="" loading="lazy" data-card-media-fit data-fallback="{{ url_for('static', filename=cover_fallback) }}">
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if camp.video_url %}
+  <section class="camp-video">
+    <h2>Видео</h2>
+    {% if 'youtube.com' in camp.video_url or 'youtu.be' in camp.video_url %}
+    <div class="camp-video__embed card-media-frame">
+      <iframe src="{{ camp.video_url }}" title="Видео о кемпе" loading="lazy" allowfullscreen></iframe>
+    </div>
+    {% else %}
+    <div class="card-media-frame camp-video__embed">
+      <video controls preload="metadata" src="{{ camp.video_url }}"></video>
+    </div>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if camp.source_url %}
+  <section>
+    <h2>Источник</h2>
+    <p><a href="{{ camp.source_url }}" target="_blank" rel="noopener noreferrer">Страница кемпа в Tour</a></p>
+  </section>
+  {% endif %}
+
+  {% if camp.booking_url %}
+  <p class="camp-detail__booking">
+    <a class="btn btn-primary" href="{{ camp.booking_url }}" target="_blank" rel="noopener noreferrer">Забронировать</a>
+  </p>
+  {% endif %}
+</article>
+{% endblock %}

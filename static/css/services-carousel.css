@@ -103,6 +103,15 @@
   box-sizing: border-box;
 }
 
+.services-carousel .service-card-actions .service-card__cta-secondary {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
 /* Товары: белая карточка, контент и кнопка внутри рамки */
 .products-carousel .product-card.product-card--unified {
   background: #ffffff;

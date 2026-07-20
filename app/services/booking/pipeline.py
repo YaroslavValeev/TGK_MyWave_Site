@@ -11,6 +11,7 @@ from app.services.booking.availability import (
     SlotUnavailableError,
     assert_booking_available,
 )
+from app.services.booking.schedule_policy import assert_gym_slot_allowed
 from app.services.booking.calendar_writer import (
     create_calendar_event,
     delete_calendar_event_best_effort,
@@ -174,6 +175,9 @@ def execute_web_booking(
         raise DuplicateBookingError("duplicate slot for phone")
 
     booking_id = generate_booking_id()
+
+    if svc == "gym":
+        assert_gym_slot_allowed(date, time_norm)
 
     if is_phase2_availability_enabled():
         try:

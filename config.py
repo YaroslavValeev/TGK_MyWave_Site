@@ -151,6 +151,11 @@ class Config:
     HOME_BOOKING_SWITCH_DATE = os.getenv("HOME_BOOKING_SWITCH_DATE", "2026-05-15")
     HOME_BOOKING_DEFAULT_SERVICE = os.getenv("HOME_BOOKING_DEFAULT_SERVICE", "gym")
     HOME_BOOKING_SWITCHED_SERVICE = os.getenv("HOME_BOOKING_SWITCHED_SERVICE", "boat")
+    # Временно: hero «Записаться» → внешний YCLIENTS (пустая строка = модалка Site)
+    HERO_BOOKING_EXTERNAL_URL = os.getenv(
+        "HERO_BOOKING_EXTERNAL_URL",
+        "https://n347190.yclients.com/company/2043174/personal/menu?o=",
+    ).strip()
 
     # MyWave Social Mission (default OFF — Social-1 data layer only)
     SOCIAL_SPREADSHEET_ID = os.getenv("SOCIAL_SPREADSHEET_ID", "")
