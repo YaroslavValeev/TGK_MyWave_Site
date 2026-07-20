@@ -180,23 +180,6 @@ def create_app(config_name="development"):
         except Exception as e:
             app.logger.warning("home: не удалось загрузить ticker соревнований: %s", e)
 
-        camp_preview = []
-        camp_home_enabled = False
-        try:
-            from app.config.camp_features import is_camp_public_enabled
-            from app.services.camps.showcase import fetch_showcase_preview
-
-            camp_home_enabled = is_camp_public_enabled()
-            if camp_home_enabled:
-                camp_preview = fetch_showcase_preview(limit=3)
-                for item in services:
-                    if item.get("service_id") == "camp":
-                        item["page_url"] = url_for("camps.camps_index")
-                        item.pop("modal_id", None)
-                        item["button_text"] = "Все кемпы"
-        except Exception as e:
-            app.logger.warning("home: не удалось загрузить превью кемпов: %s", e)
-
         return render_template(
             'index.html',
             months=months,
@@ -206,8 +189,6 @@ def create_app(config_name="development"):
             blog_preview_posts=blog_preview_posts,
             competitions_ticker=competitions_ticker,
             hero_booking_external_url=current_app.config.get("HERO_BOOKING_EXTERNAL_URL", ""),
-            camp_preview=camp_preview,
-            camp_home_enabled=camp_home_enabled,
         )
 
     @app.route('/favicon.ico')

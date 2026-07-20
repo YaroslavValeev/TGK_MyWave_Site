@@ -21,7 +21,7 @@ def test_home_nav_link_to_camps(live_server, camp_public, mocker):
     response = requests.get(live_server + "/", timeout=15)
     assert response.status_code == 200
     html = response.text
-    assert "/camps" in html or "Все кемпы" in html
+    assert "/camps" in html or "Все туры" in html
 
 
 def test_camps_page_accessible(live_server, camp_public, mocker):

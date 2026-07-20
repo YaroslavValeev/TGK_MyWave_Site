@@ -96,3 +96,14 @@ def test_projects_camp_redirects_to_camps(client, camp_public_enabled):
     response = client.get("/projects/camp", follow_redirects=False)
     assert response.status_code == 301
     assert "/camps" in response.headers["Location"]
+
+
+def test_home_camp_service_has_all_tours_link(client, camp_public_enabled):
+    response = client.get("/")
+    assert response.status_code == 200
+    body = response.get_data(as_text=True)
+    assert 'data-service="camp"' in body
+    assert 'data-modal="modalCamp"' in body
+    assert "Все туры" in body
+    assert 'id="tours-camps"' not in body
+    assert "Туры и кемпы" not in body
