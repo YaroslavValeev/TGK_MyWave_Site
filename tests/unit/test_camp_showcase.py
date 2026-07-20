@@ -102,3 +102,16 @@ def test_fetch_showcase_detail_not_found():
     ):
         result = fetch_showcase_detail("missing")
     assert result.state == "not_found"
+
+
+def test_fetch_showcase_detail_falls_back_to_list_on_404():
+    with patch(
+        "app.services.camps.showcase.fetch_tour_camp_detail",
+        side_effect=TourCampFetchError(404, "missing", kind="client"),
+    ), patch(
+        "app.services.camps.showcase.fetch_tour_camps",
+        return_value=[MVP_CAMP],
+    ):
+        result = fetch_showcase_detail(MVP_CAMP["id"])
+    assert result.state == "ok"
+    assert result.camp["id"] == MVP_CAMP["id"]

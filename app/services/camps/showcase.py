@@ -265,6 +265,19 @@ def fetch_showcase_camps() -> ShowcaseListResult:
     return ShowcaseListResult(state="ok", camps=camps)
 
 
+def _find_camp_in_showcase_list(camp_id: str) -> Optional[Dict[str, Any]]:
+    try:
+        raw_items = fetch_tour_camps()
+    except TourCampFetchError:
+        return None
+
+    for raw in raw_items:
+        raw_id = str(raw.get("id") or raw.get("external_id") or "").strip()
+        if raw_id == camp_id:
+            return raw
+    return None
+
+
 def fetch_showcase_detail(camp_id: str) -> ShowcaseDetailResult:
     camp_id = str(camp_id or "").strip()
     if not camp_id:
@@ -274,9 +287,12 @@ def fetch_showcase_detail(camp_id: str) -> ShowcaseDetailResult:
         raw = fetch_tour_camp_detail(camp_id)
     except TourCampFetchError as exc:
         if exc.status_code == 404:
-            return ShowcaseDetailResult(state="not_found", message="Кемп не найден.")
-        state = _error_state(exc)
-        return ShowcaseDetailResult(state=state, message=_error_message(state))
+            raw = _find_camp_in_showcase_list(camp_id)
+            if raw is None:
+                return ShowcaseDetailResult(state="not_found", message="Кемп не найден.")
+        else:
+            state = _error_state(exc)
+            return ShowcaseDetailResult(state=state, message=_error_message(state))
 
     if not is_showcase_public(raw):
         return ShowcaseDetailResult(state="not_found", message="Кемп недоступен для публичного просмотра.")
