@@ -1,8 +1,10 @@
 # Camp catalog — deploy-note (Owner)
 
-**Статус:** PR #98 в `main`. **Production deploy Site — STOP** до готовности Tour API.
+**Статус:** Production LIVE. Tour ↔ Site Camp API **принято** (2026-07-20/21).
 
-**Production Site (сейчас):** `eab7eb9859054024275df8ae8a5115e1d6830c89` — **оставляем**, Online Coaching OK.
+**Production Site (сейчас):** `3e7a5bf69a9188d82f6edab8a87e35b6365fcd13`  
+**Публичная витрина:** `/camps` (legacy `/projects/camp` → 301)  
+**Фильтры Site:** без прошедших; без synthetic/MVP (`tour_camp_api_mvp_wakesurf_v1` и маркеры).
 
 **Сервис:** только `mywave-site` (`/var/www/mywave`)  
 **Не трогать:** `mywave-node`, `mywave-telegram-bot`, TGbotAdmin
@@ -23,7 +25,10 @@
 
 ---
 
-## STOP — причины не деплоить сейчас
+## STOP — архив (снят 2026-07-20)
+
+Исторические причины STOP (Tour API недоступен / Docker build) **больше не актуальны**.  
+Ниже — для аудита; production showcase уже развёрнут.
 
 1. **Tour VPS:** running API-контейнер **не содержит** Camp API (`/api/v1/camps` → `Cannot GET`).
 2. **Tour delivery:** **Deploy Camp API** упал на GitHub step `Docker build API preflight` (`pnpm --filter api build`). Причина: Dockerfile API не собирает workspace-зависимости `@mywave/shared-types` и `@mywave/explore-links` перед `pnpm --filter api build`. VPS **не тронут** — workflow не дошёл до upload/SSH/token rotation; `/root/CAMP_API_TOKEN.current` на Tour VPS **не должен существовать**. Ждём fix от Tour.
@@ -31,7 +36,7 @@
 4. Нет сводки качества данных от Tour (counts: без фото / цены / booking_url / `content_rights_status=unknown`).
 5. Token rotation + передача Site приватно — после готовности Tour API.
 
-**До снятия STOP на production Site:**
+**До снятия STOP на production Site (исторически):**
 
 - **не** выполнять `git pull origin main` на prod (до отдельного owner GO);
 - **не** выполнять `flask db upgrade` под Camp;

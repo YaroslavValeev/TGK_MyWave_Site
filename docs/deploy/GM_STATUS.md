@@ -1,14 +1,14 @@
 # GM Status Board — MyWave Site + Tour Camp
 
-**Обновлено:** 2026-07-11  
+**Обновлено:** 2026-07-21  
 **Owner:** Yaroslav  
-**Критический путь:** Tour Camp API deploy → Gate → Site Camp deploy
+**Критический путь:** закрыт (Site ↔ Tour Camp API production accepted)
 
 ---
 
 ## Сводка (одна строка)
 
-**Site prod OK на `eab7eb98` (Online Coaching). Camp STOP. Блокер — Tour: Docker build preflight.**
+**Camp showcase LIVE на Site prod `3e7a5bf6`. Tour API принят. Публично: только текущие/будущие + без synthetic/MVP.**
 
 ---
 
@@ -16,10 +16,10 @@
 
 | Команда | Сейчас | Следующий шаг | Блокер |
 |---------|--------|---------------|--------|
-| **Tour** | Deploy Camp API упал на CI | Fix Dockerfile + PR #5 merge + green workflow | `pnpm --filter api build` без `@mywave/shared-types`, `@mywave/explore-links` |
-| **Site (код)** | PR #98/#99 в `main`, prod не тянем | Standby до gate | Tour endpoint |
-| **Git** | Site `main` = `cdb4e59f` | Не трогать prod pull | Owner GO |
-| **Owner** | Мониторинг prod | Health + gate checklist | — |
+| **Tour** | Camp API production smoke PASS | Обратно совместимые изменения API + повторный list/detail smoke | — |
+| **Site** | `/camps` + detail на prod | Мониторинг fallback-логов; ждать реальные будущие кемпы в Tour | — |
+| **Git** | Site `main` = `3e7a5bf6` | Следующие фичи вне Camp | — |
+| **Owner** | Интеграция принята обеими командами | Не включать camp cron / `run_camp_sync` без отдельного GO | — |
 
 ---
 
@@ -27,53 +27,35 @@
 
 | Артефакт | SHA |
 |----------|-----|
-| Site `origin/main` | `cdb4e59f248518575d1b275d1b0f7508f964d0b9` |
-| Camp contract (#98) | `75c0c792bcf3ee44b7919f29f27dcc47f4e3d96c` |
-| Booking hotfix (#99) | в `cdb4e59f` (на prod **нет**) |
-| **Site production** | `eab7eb9859054024275df8ae8a5115e1d6830c89` |
+| Site `origin/main` / **production** | `3e7a5bf69a9188d82f6edab8a87e35b6365fcd13` |
+| Camp showcase release | PR [#108](https://github.com/YaroslavValeev/TGK_MyWave_Site/pull/108) → merge `db7d3250` |
+| Hide past camps | PR [#109](https://github.com/YaroslavValeev/TGK_MyWave_Site/pull/109) |
+| Hide synthetic/test | PR [#110](https://github.com/YaroslavValeev/TGK_MyWave_Site/pull/110) → `3e7a5bf6` |
 
 ---
 
-## Gate Site deploy (все 8 пунктов)
+## Gate Site deploy — закрыт
 
-- [ ] 1. Tour PR #5 merge
-- [ ] 2. Successful **Deploy Camp API**
-- [ ] 3. `/api/v1/camps` → 200 + `{ items, next_offset }`
-- [ ] 4. Bearer auth OK
-- [ ] 5. `/tmp/mywave-camps-sample.json` с Site
-- [ ] 6. Token rotation + private handoff → Site `.env`
-- [ ] 7. Sample summary от Tour
-- [ ] 8. Owner GO → `docs/deploy/CAMP_DEPLOY.md` § Production deploy
-
----
-
-## Site production STOP (жёстко)
-
-- без `git pull origin main`
-- без `flask db upgrade` (Camp)
-- без `run_camp_sync.py`
-- без camp cron
-- `CAMP_PUBLIC_ENABLED=0`
+- [x] Tour Camp API list/detail production OK  
+- [x] Bearer auth OK  
+- [x] Site `/camps` + detail smoke OK  
+- [x] PR #108 → `main` → production  
+- [x] Past camps hidden on Site  
+- [x] Synthetic/MVP (`tour_camp_api_mvp_wakesurf_v1`) hidden on Site  
+- [x] Tour письменно принял интеграцию  
 
 ---
 
-## Tour VPS инварианты (пока CI red)
+## Production policy (актуально)
 
-- Running API **без** `/api/v1/camps`
-- `/root/CAMP_API_TOKEN.current` **не должен существовать**
-- Token rotation **не выполнялась**
-
----
-
-## Опциональное решение Owner (вне Camp gate)
-
-Hotfix #99 (booking `calendarLocation`) в `main`, но **не на prod**.  
-Если баг booking критичен для пользователей — отдельный owner GO на **изолированный** deploy только #99 **без** Camp env/миграций. Иначе ждём общий gate.
+- `CAMP_MODULE_ENABLED=1`, `CAMP_PUBLIC_ENABLED=1`
+- Витрина: только `end_date`/`start_date` ≥ сегодня; без MVP/smoke/synthetic
+- Fallback detail→list оставлен как safety net; лог: `camp_detail_fallback_list`
+- **Не включать** без отдельного owner GO: `run_camp_sync.py`, camp cron, `flask db upgrade` под Camp tables (если ещё не применяли осознанно)
 
 ---
 
 ## Ссылки
 
 - Site Camp runbook: `docs/deploy/CAMP_DEPLOY.md`
-- Site OC runbook: `docs/deploy/ONLINE_COACHING_PHASE2_SERVER.md`
-- Preflight script: `scripts/check_tour_camp_api.py`
+- Preflight: `scripts/check_tour_camp_api.py`
