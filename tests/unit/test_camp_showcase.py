@@ -1,5 +1,6 @@
 """Unit tests for Tour Camp showcase (/camps) service layer."""
 
+from datetime import date
 from unittest.mock import patch
 
 import pytest
@@ -12,6 +13,8 @@ from app.services.camps.showcase import (
 )
 from app.services.camps.tour_client import TourCampFetchError
 
+
+TODAY = date(2026, 7, 21)
 
 MVP_CAMP = {
     "id": "tour_camp_api_mvp_wakesurf_v1",
@@ -39,17 +42,29 @@ MVP_CAMP = {
 
 
 def test_is_showcase_public_filters_hidden_and_restricted():
-    assert is_showcase_public(MVP_CAMP) is True
-    assert is_showcase_public({**MVP_CAMP, "publication_status": "hidden"}) is False
-    assert is_showcase_public({**MVP_CAMP, "publication_status": "archived"}) is False
-    assert is_showcase_public({**MVP_CAMP, "content_rights_status": "restricted"}) is False
+    assert is_showcase_public(MVP_CAMP, today=TODAY) is True
+    assert is_showcase_public({**MVP_CAMP, "publication_status": "hidden"}, today=TODAY) is False
+    assert is_showcase_public({**MVP_CAMP, "publication_status": "archived"}, today=TODAY) is False
+    assert is_showcase_public({**MVP_CAMP, "content_rights_status": "restricted"}, today=TODAY) is False
 
 
 def test_is_showcase_public_filters_non_ru_audience_and_other_sports():
-    assert is_showcase_public({**MVP_CAMP, "audience_language": ["ru"]}) is True
-    assert is_showcase_public({**MVP_CAMP, "audience_language": ["en"]}) is False
-    assert is_showcase_public({**MVP_CAMP, "sport": ["wakesurf"]}) is True
-    assert is_showcase_public({**MVP_CAMP, "sport": ["ski"]}) is False
+    assert is_showcase_public({**MVP_CAMP, "audience_language": ["ru"]}, today=TODAY) is True
+    assert is_showcase_public({**MVP_CAMP, "audience_language": ["en"]}, today=TODAY) is False
+    assert is_showcase_public({**MVP_CAMP, "sport": ["wakesurf"]}, today=TODAY) is True
+    assert is_showcase_public({**MVP_CAMP, "sport": ["ski"]}, today=TODAY) is False
+
+
+def test_is_showcase_public_filters_past_camps_keeps_current_and_upcoming():
+    past = {**MVP_CAMP, "start_date": "2026-05-09", "end_date": "2026-05-17"}
+    current = {**MVP_CAMP, "start_date": "2026-07-18", "end_date": "2026-07-25"}
+    upcoming = {**MVP_CAMP, "start_date": "2026-08-31", "end_date": "2026-09-06"}
+    ended_yesterday = {**MVP_CAMP, "start_date": "2026-07-10", "end_date": "2026-07-20"}
+    assert is_showcase_public(past, today=TODAY) is False
+    assert is_showcase_public(ended_yesterday, today=TODAY) is False
+    assert is_showcase_public(current, today=TODAY) is True
+    assert is_showcase_public(upcoming, today=TODAY) is True
+    assert is_showcase_public({**MVP_CAMP, "start_date": None, "end_date": None}, today=TODAY) is True
 
 
 def test_to_showcase_view_unknown_rights_not_confirmed_partnership():

@@ -94,7 +94,33 @@ def _matches_showcase_audience(raw: Dict[str, Any]) -> bool:
     return "ru" in langs
 
 
-def is_showcase_public(raw: Dict[str, Any]) -> bool:
+def _parse_camp_date(value: Any) -> Optional[date]:
+    if not value:
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    return _parse_iso_date(str(value).strip())
+
+
+def _camp_active_until(raw: Dict[str, Any]) -> Optional[date]:
+    """Last calendar day the camp is considered current (end_date, else start_date)."""
+    end = _parse_camp_date(raw.get("end_date"))
+    if end is not None:
+        return end
+    return _parse_camp_date(raw.get("start_date"))
+
+
+def _matches_showcase_schedule(raw: Dict[str, Any], *, today: Optional[date] = None) -> bool:
+    """Hide finished camps; keep current and upcoming. No dates → keep (unknown schedule)."""
+    active_until = _camp_active_until(raw)
+    if active_until is None:
+        return True
+    return active_until >= (today or date.today())
+
+
+def is_showcase_public(raw: Dict[str, Any], *, today: Optional[date] = None) -> bool:
     pub = str(raw.get("publication_status") or raw.get("tour_publication_status") or "published").strip().lower()
     if pub in NON_PUBLIC_PUBLICATION:
         return False
@@ -105,6 +131,8 @@ def is_showcase_public(raw: Dict[str, Any]) -> bool:
     if not _matches_showcase_sport(raw):
         return False
     if not _matches_showcase_audience(raw):
+        return False
+    if not _matches_showcase_schedule(raw, today=today):
         return False
     return bool(str(raw.get("id") or raw.get("external_id") or "").strip() or str(raw.get("title") or "").strip())
 
