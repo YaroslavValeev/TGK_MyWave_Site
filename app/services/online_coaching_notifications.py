@@ -16,7 +16,12 @@ from typing import Any, Dict, Mapping, Optional, Sequence
 from flask import current_app, has_app_context
 
 from app.services.notifications import send_telegram_notification_with_keyboard
-from app.services.online_coaching_schema import PROGRESS_MONTH_MAX_SESSIONS, SERVICE_PRICES, service_display_name
+from app.services.online_coaching_schema import (
+    PROGRESS_MONTH_MAX_SESSIONS,
+    SERVICE_PRICES,
+    format_service_price,
+    service_display_name,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -257,11 +262,12 @@ def format_payment_needed_message(record: Mapping[str, Any], amount: Optional[fl
     safe = sanitize_record_for_telegram(record)
     service_type = safe["service_type"]
     price = amount if amount is not None else SERVICE_PRICES.get(service_type, 0)
+    price_label = format_service_price(service_type) if amount is None else f"{int(price)} ₽"
     return (
         "Нужно отправить ссылку Т-Банка на оплату\n\n"
         f"Клиент: {safe['name']}\n"
         f"Услуга: {_service_label(service_type)}\n"
-        f"Сумма: {int(price)} ₽\n"
+        f"Сумма: {price_label}\n"
         f"ID: {safe['online_request_id']}"
     )
 

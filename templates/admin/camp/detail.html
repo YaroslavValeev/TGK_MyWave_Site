@@ -1,29 +1,83 @@
 {% extends "admin/base.html" %}
+
 {% block title %}{{ camp.title }} — Camp{% endblock %}
-{% block content %}
-<h1>{{ camp.title }}</h1>
-<p><strong>Slug:</strong> {{ camp.slug }} · <strong>Источник:</strong> {{ camp.source_system }} · <strong>Статус Site:</strong> {{ status_labels.get(camp.publication_status, camp.publication_status) }}</p>
-<p><strong>Права на контент:</strong> {{ content_rights_labels.get(camp.content_rights_status, camp.content_rights_status) }}
-{% if camp.content_rights_status == 'unknown' %}<span class="badge bg-warning text-dark">модерация</span>{% endif %}
-</p>
-{% if tour_publication_status %}
-<p><strong>Статус Tour:</strong> {{ tour_status_labels.get(tour_publication_status, tour_publication_status) }}</p>
-{% endif %}
-<p>{% if camp.start_date %}{{ camp.start_date }}{% if camp.end_date %} — {{ camp.end_date }}{% endif %}{% endif %} · {{ camp.country or '' }} {{ camp.city or '' }}</p>
+{% block admin_title %}Camp: {{ camp.title }}{% endblock %}
 
-<form method="post" action="{{ url_for('admin_camp.publish', camp_id=camp.id) }}" style="display:inline;">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  <button type="submit" class="btn btn-primary">Опубликовать</button>
-</form>
-<form method="post" action="{{ url_for('admin_camp.hide', camp_id=camp.id) }}" style="display:inline;">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  <button type="submit" class="btn btn-secondary">Скрыть</button>
-</form>
-<a href="{{ url_for('admin_camp.index') }}" class="btn btn-link">← К списку</a>
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="admin-breadcrumbs">
+        <li><a href="{{ url_for('admin.index') }}">Главная</a></li>
+        <li><a href="{{ url_for('admin_camp.index') }}">Camp</a></li>
+        <li>{{ camp.title }}</li>
+    </ol>
+</nav>
+{% endblock %}
 
-<h2>Overrides (JSON)</h2>
-<pre>{{ camp.site_overrides | tojson(indent=2) }}</pre>
+{% block admin_content %}
+<div class="admin-card">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">{{ camp.title }}</h2>
+    </div>
+    <div class="admin-card__body">
+        <div class="admin-detail-grid">
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Slug</div>
+                <div class="admin-detail-item__value"><code>{{ camp.slug }}</code></div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Источник</div>
+                <div class="admin-detail-item__value">{{ camp.source_system }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Статус Site</div>
+                <div class="admin-detail-item__value">{{ status_labels.get(camp.publication_status, camp.publication_status) }}</div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Права на контент</div>
+                <div class="admin-detail-item__value">
+                    {{ content_rights_labels.get(camp.content_rights_status, camp.content_rights_status) }}
+                    {% if camp.content_rights_status == 'unknown' %}<span class="badge bg-warning text-dark">модерация</span>{% endif %}
+                </div>
+            </div>
+            {% if tour_publication_status %}
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Статус Tour</div>
+                <div class="admin-detail-item__value">{{ tour_status_labels.get(tour_publication_status, tour_publication_status) }}</div>
+            </div>
+            {% endif %}
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Даты</div>
+                <div class="admin-detail-item__value">
+                    {% if camp.start_date %}{{ camp.start_date }}{% if camp.end_date %} — {{ camp.end_date }}{% endif %}{% else %}—{% endif %}
+                </div>
+            </div>
+            <div class="admin-detail-item">
+                <div class="admin-detail-item__label">Локация</div>
+                <div class="admin-detail-item__value">{{ camp.country or '' }} {{ camp.city or '' }}</div>
+            </div>
+        </div>
 
-<h2>Source payload (фрагмент)</h2>
-<pre>{{ (camp.source_payload or {}) | tojson(indent=2) }}</pre>
+        <div class="admin-form-inline" style="margin-top:1rem;gap:0.5rem;">
+            <form method="post" action="{{ url_for('admin_camp.publish', camp_id=camp.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="admin-btn admin-btn--primary admin-btn--sm">Опубликовать</button>
+            </form>
+            <form method="post" action="{{ url_for('admin_camp.hide', camp_id=camp.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="admin-btn admin-btn--secondary admin-btn--sm">Скрыть</button>
+            </form>
+            <a href="{{ url_for('admin_camp.index') }}" class="admin-btn admin-btn--secondary admin-btn--sm">← К списку</a>
+        </div>
+    </div>
+</div>
+
+<div class="admin-card" style="margin-top:1rem;">
+    <div class="admin-card__header"><h2 class="admin-card__title">Overrides (JSON)</h2></div>
+    <div class="admin-card__body"><pre>{{ camp.site_overrides | tojson(indent=2) }}</pre></div>
+</div>
+
+<div class="admin-card" style="margin-top:1rem;">
+    <div class="admin-card__header"><h2 class="admin-card__title">Source payload</h2></div>
+    <div class="admin-card__body"><pre>{{ (camp.source_payload or {}) | tojson(indent=2) }}</pre></div>
+</div>
 {% endblock %}

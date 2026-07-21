@@ -16,6 +16,62 @@ function getMyWaveVenueFromBody() {
     label: body.getAttribute('data-mw-venue-label') || ''
   };
 }
+
+/** S3: service venues from body JSON (injected by Flask context processor). */
+function getBookingClientVenues() {
+  try {
+    const raw = document.body && document.body.getAttribute('data-mw-booking-venues');
+    if (!raw) return {};
+    return JSON.parse(raw);
+  } catch (e) {
+    return {};
+  }
+}
+
+function getClientVenueForService(serviceType) {
+  const key = String(serviceType || '').trim().toLowerCase();
+  const fromJson = getBookingClientVenues()[key];
+  if (fromJson && typeof fromJson === 'object') {
+    return {
+      mapUrl: fromJson.map_url || '',
+      name: fromJson.service_label || '',
+      label: fromJson.location || '',
+      serviceLabel: fromJson.service_label || ''
+    };
+  }
+  const legacy = getMyWaveVenueFromBody();
+  const fallbackLabel =
+    key === 'gym' ? 'Зал MyWave' : key === 'boat' ? 'Катер MyWave' : 'MyWave';
+  return {
+    mapUrl: legacy.mapUrl || '',
+    name: legacy.name || 'MyWave Wake',
+    label: legacy.label || '',
+    serviceLabel: fallbackLabel
+  };
+}
+
+function normalizeClientName(name) {
+  const cleaned = String(name || '').trim().replace(/\s+/g, ' ');
+  return cleaned || 'Клиент';
+}
+
+/** Human ICS/GCal SUMMARY — без технических boat/gym токенов. */
+function clientCalendarSummary(serviceType, clientName) {
+  const venue = getClientVenueForService(serviceType);
+  const label = venue.serviceLabel || 'MyWave';
+  return `${label} — ${normalizeClientName(clientName)}`;
+}
+
+function clientCalendarDurationMinutes(serviceType, setCount) {
+  const key = String(serviceType || '').trim().toLowerCase();
+  if (key === 'gym') return 90;
+  if (key === 'boat') {
+    const n = Math.max(1, Math.min(8, parseInt(setCount, 10) || 1));
+    return BOAT_SET_MINUTES * n;
+  }
+  if (key === 'camp') return 120;
+  return 60;
+}
 window.bookingStatus = { loaded: true, initialized: false, error: null };
 
 // Получение свежего CSRF-токена с сервера
@@ -993,8 +1049,8 @@ function initializeBooking() {
         try {
           // Человеко-понятные названия услуг
           const serviceLabels = {
-            boat: 'Катер',
-            gym: 'Зал',
+            boat: 'Катер MyWave',
+            gym: 'Зал MyWave',
             camp: 'Camp',
             coach_triper: 'CoachTriper',
             consulting: 'Consulting'
@@ -1010,9 +1066,10 @@ function initializeBooking() {
               : 'Запись успешно создана!';
 
           const msg = result.message || defaultMsg;
-          const venue = getMyWaveVenueFromBody();
+          const venue = getClientVenueForService(payload.service_type);
           const isBoat = payload.service_type === 'boat';
-          const locationBlock = isBoat && venue.label
+          const showVenue = (isBoat || payload.service_type === 'gym') && venue.label;
+          const locationBlock = showVenue
             ? `<p class="booking-venue">Место: <strong>${venue.label}</strong>${
                 venue.mapUrl
                   ? ` — <a href="${venue.mapUrl}" target="_blank" rel="noopener noreferrer">Яндекс.Карты</a>`
@@ -1040,7 +1097,7 @@ function initializeBooking() {
               ${locationBlock}
               <div class="success-ctas">
                 <button class="btn btn-primary" data-action="add-calendar">Добавить в календарь</button>
-                ${isBoat && venue.mapUrl ? `<a class="btn btn-secondary" href="${venue.mapUrl}" target="_blank" rel="noopener noreferrer">Маршрут на карте</a>` : ''}
+                ${showVenue && venue.mapUrl ? `<a class="btn btn-secondary" href="${venue.mapUrl}" target="_blank" rel="noopener noreferrer">Маршрут на карте</a>` : ''}
                 <button class="btn btn-secondary" data-action="close">Закрыть</button>
               </div>
             </div>
@@ -1057,24 +1114,25 @@ function initializeBooking() {
           }
           function _createICS(payload) {
             const start = new Date(payload.date + 'T' + payload.time + ':00');
-            // Duration by service (minutes). Default 60. gym -> 90 minutes
-            const durations = {
-              gym: 90,
-              boat: payload.service_type === 'boat'
-                ? BOAT_SET_MINUTES * (selectedBoatSetCount || 1)
-                : 30,
-              camp: 120
-            };
-            const durMin = durations[payload.service_type] || 60;
+            const setCount =
+              payload.set_count != null ? payload.set_count : (selectedBoatSetCount || 1);
+            const durMin = clientCalendarDurationMinutes(payload.service_type, setCount);
             const end = new Date(start.getTime() + (durMin * 60 * 1000));
             const uid = 'mywave-' + Date.now();
             const dtstamp = _formatForICS(new Date());
             const dtstart = _formatForICS(start);
             const dtend = _formatForICS(end);
-            const title = `Запись в MyWave: ${payload.service_type}`;
-            const venueForCal = getMyWaveVenueFromBody();
-            const calendarLocation = venueForCal.mapUrl || venueForCal.label || '';
-            const description = `Запись в MyWave\nУслуга: ${payload.service_type}\nТелефон: ${payload.phone}\nСсылка: ${calendarLocation}`;
+            const title = clientCalendarSummary(payload.service_type, payload.name);
+            const venueForCal = getClientVenueForService(payload.service_type);
+            const locationText = venueForCal.label || '';
+            const mapUrl = venueForCal.mapUrl || '';
+            const serviceLabel = venueForCal.serviceLabel || payload.service_type || 'MyWave';
+            const descriptionLines = [
+              `Услуга: ${serviceLabel}`,
+              `Телефон: ${payload.phone || '—'}`,
+            ];
+            if (mapUrl) descriptionLines.push(`Карта: ${mapUrl}`);
+            const description = descriptionLines.join('\\n');
             const ics = [
               'BEGIN:VCALENDAR',
               'VERSION:2.0',
@@ -1086,6 +1144,7 @@ function initializeBooking() {
               `DTSTART:${dtstart}`,
               `DTEND:${dtend}`,
               `SUMMARY:${title}`,
+              `LOCATION:${locationText}`,
               `DESCRIPTION:${description}`,
               'END:VEVENT',
               'END:VCALENDAR'
@@ -1094,20 +1153,24 @@ function initializeBooking() {
           }
           function _openGoogleCalendar(payload) {
               const start = new Date(payload.date + 'T' + payload.time + ':00');
-              // duration minutes match ICS logic
-              const durations = { gym: 90, boat: BOAT_SET_MINUTES * (selectedBoatSetCount || 1), camp: 120 };
-              const durMin = durations[payload.service_type] || 60;
+              const setCount =
+                payload.set_count != null ? payload.set_count : (selectedBoatSetCount || 1);
+              const durMin = clientCalendarDurationMinutes(payload.service_type, setCount);
               const end = new Date(start.getTime() + (durMin * 60 * 1000));
               const fmt = (d)=>{
                 const pad=(n)=>String(n).padStart(2,'0');
                 return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+'T'+pad(d.getUTCHours())+pad(d.getUTCMinutes())+'00Z';
               };
               const dates = fmt(start)+'/'+fmt(end);
-              const title = encodeURIComponent(`Запись в MyWave: ${payload.service_type}`);
-              const details = encodeURIComponent(`Телефон: ${payload.phone}`);
-              const venueForCal = getMyWaveVenueFromBody();
-              const calendarLocation = venueForCal.mapUrl || venueForCal.label || '';
-              const location = encodeURIComponent(calendarLocation);
+              const title = encodeURIComponent(
+                clientCalendarSummary(payload.service_type, payload.name)
+              );
+              const venueForCal = getClientVenueForService(payload.service_type);
+              const serviceLabel = venueForCal.serviceLabel || payload.service_type || 'MyWave';
+              const detailsParts = [`Услуга: ${serviceLabel}`, `Телефон: ${payload.phone || '—'}`];
+              if (venueForCal.mapUrl) detailsParts.push(`Карта: ${venueForCal.mapUrl}`);
+              const details = encodeURIComponent(detailsParts.join('\n'));
+              const location = encodeURIComponent(venueForCal.label || '');
               const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`;
               window.open(url, '_blank');
           }
@@ -1127,7 +1190,12 @@ function initializeBooking() {
                     date: payload.date,
                     time: payload.time,
                     service_type: payload.service_type,
-                    phone: payload.phone
+                    phone: payload.phone,
+                    name: payload.name || '',
+                    set_count:
+                      payload.service_type === 'boat'
+                        ? (selectedBoatSetCount || payload.set_count || 1)
+                        : 1
                   };
                   // Download ICS
                   const ics = _createICS(payloadForCal);
@@ -1556,9 +1624,9 @@ function initializeBooking() {
               : '';
           const nameVal = UI.bookingName ? UI.bookingName.value : '';
           const phoneVal = UI.bookingPhone ? UI.bookingPhone.value : '';
-          const venueConfirm = getMyWaveVenueFromBody();
+          const venueConfirm = getClientVenueForService(currentService);
           const venueConfirmHtml =
-            currentService === 'boat' && venueConfirm.label
+            (currentService === 'boat' || currentService === 'gym') && venueConfirm.label
               ? `<p><strong>Место:</strong> ${venueConfirm.label}${
                   venueConfirm.mapUrl
                     ? ` — <a href="${venueConfirm.mapUrl}" target="_blank" rel="noopener noreferrer">Яндекс.Карты</a>`

@@ -118,6 +118,19 @@ def create_app(config_name="development"):
     def inject_csrf_token():
         return dict(csrf_token=generate_csrf())
 
+    # Client Calendar / ICS (S3): venues for booking.js data-mw-* without hardcoded maps
+    @app.context_processor
+    def inject_booking_client_venues():
+        from app.config.venue import MYWAVE_VENUE
+        from app.services.booking.client_calendar import build_client_venues_payload
+
+        return {
+            "booking_client_venues": build_client_venues_payload(),
+            "mywave_venue_name": MYWAVE_VENUE.get("name") or "MyWave Wake",
+            "mywave_venue_label": MYWAVE_VENUE.get("location_label") or "",
+            "mywave_venue_map_url": MYWAVE_VENUE.get("yandex_maps_url") or "",
+        }
+
     # Системная роль для публичного чата (см. docs/CHAT_RUNTIME_AND_RELEASE.md):
     # - CHAT_BACKEND=completions или отсутствие ASSISTANT_ID → Chat Completions + CHAT_SYSTEM_PROMPT
     #   (ниже: файл assistant_prompt.md, если не задано в env).
@@ -283,6 +296,9 @@ def create_app(config_name="development"):
         app.logger.debug('CSRF disabled for testing environment')
     # Затем остальные расширения (в т.ч. csrf.init_app)
     init_extensions(app, db)
+    from app.services.rate_limit import apply_proxy_fix
+
+    apply_proxy_fix(app)
     init_websocket(app)
     
     # Инициализация кэширования
@@ -500,6 +516,12 @@ def create_app(config_name="development"):
     except Exception:
         app.logger.debug('api_camps_bp not found or failed to import')
     app.register_blueprint(health_bp)
+    try:
+        from app.extensions import limiter as _site_limiter
+        if _site_limiter is not None:
+            _site_limiter.exempt(health_bp)
+    except Exception:
+        app.logger.debug("health_bp rate-limit exempt skipped")
     
     # Payment API blueprint
     try:

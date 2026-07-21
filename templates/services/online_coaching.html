@@ -4,11 +4,11 @@
 {% block meta_description %}Онлайн-тренировки MyWave: разбор видео, эффективный месяц и прямая связь по вейкборду и вейксерфингу.{% endblock %}
 
 {% block extra_head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/online-coaching.css') }}?v=1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/online-coaching.css') }}?v=2" />
 {% endblock %}
 
 {% block content %}
-<section class="mw-section mw-surface oc-page">
+<section class="mw-section mw-surface oc-page oc-page--chat-safe">
   <div class="mw-container">
 
     <header class="oc-hero" id="oc-top">
@@ -16,9 +16,6 @@
       <h1>Онлайн-тренировки MyWave</h1>
       <p class="oc-hero__lead">
         Разбор техники, задания и сопровождение прогресса в вейкборде и вейксерфинге — онлайн, между тренировками и сезонами.
-      </p>
-      <p class="oc-muted">
-        Прогресс в катании не заканчивается после сета. Отправь видео тренировки, получи разбор техники, понятные задания и план следующего шага.
       </p>
       <div class="oc-hero__actions">
         <a href="#oc-apply" class="btn-primary" data-service-type="video_check">Отправить видео на разбор</a>
@@ -51,7 +48,7 @@
             <li>До 3 роликов по 60–90 сек после каждой тренировки</li>
             <li>Ответ до 48 часов</li>
           </ul>
-          <p class="oc-price">12 000 ₽ / сет</p>
+          <p class="oc-price">12 000 ₽ / месяц</p>
           <p class="oc-price-note">Оплата при покупке</p>
           <button type="button" class="btn-primary oc-service-card__cta" data-service-type="progress_month">Выбрать «Эффективный месяц»</button>
         </article>
@@ -71,24 +68,6 @@
       </div>
     </section>
 
-    <section id="oc-audience" class="mw-card oc-card oc-section" aria-labelledby="oc-audience-title">
-      <h2 id="oc-audience-title">Кому подходит</h2>
-      <div class="oc-grid">
-        <article>
-          <h3>Разбор видео</h3>
-          <p class="oc-muted">Разовый разбор техники: перед сезоном, после паузы или когда нужен свежий взгляд тренера на конкретный элемент.</p>
-        </article>
-        <article>
-          <h3>Эффективный месяц</h3>
-          <p class="oc-muted">Райдерам, которые тренируются регулярно и хотят разбор каждой тренировки, задания и дневник прогресса в течение месяца.</p>
-        </article>
-        <article>
-          <h3>Прямая связь</h3>
-          <p class="oc-muted">Для работы на суше (баланс, ОФП, батут) или безопасной онлайн-подсказки на воде — до попытки, после или между сетами.</p>
-        </article>
-      </div>
-    </section>
-
     <section id="oc-how" class="mw-card oc-card oc-section" aria-labelledby="oc-how-title">
       <h2 id="oc-how-title">Как это работает</h2>
       <ol class="oc-steps">
@@ -102,7 +81,7 @@
 
     <section id="oc-included" class="oc-section" aria-labelledby="oc-included-title">
       <h2 id="oc-included-title">Что входит в каждый формат</h2>
-      <div class="mw-card oc-card">
+      <div class="mw-card oc-card oc-included-desktop">
         <table class="oc-included-table">
           <thead>
             <tr>
@@ -122,25 +101,36 @@
           </tbody>
         </table>
       </div>
-    </section>
-
-    <section id="oc-prices" class="oc-section" aria-labelledby="oc-prices-title">
-      <h2 id="oc-prices-title">Цены</h2>
-      <div class="oc-grid">
+      <div class="oc-included-mobile" aria-label="Состав форматов">
         <article class="mw-card oc-card">
           <h3>Разбор видео</h3>
-          <p class="oc-price">1 500 ₽ / сет</p>
-          <p class="oc-muted">Разовый разбор, оплата после получения разбора.</p>
+          <ul>
+            <li>Анкета / цель</li>
+            <li>Видеоразбор — 1 раз</li>
+            <li>Задания на воде / суше — 2–4</li>
+            <li>ОФП — по необходимости</li>
+            <li>Дневник — краткий</li>
+          </ul>
         </article>
         <article class="mw-card oc-card oc-card--highlight">
           <h3>Эффективный месяц</h3>
-          <p class="oc-price">12 000 ₽ / сет</p>
-          <p class="oc-muted">До 10 тренировок в месяц, оплата при старте подписки.</p>
+          <ul>
+            <li>Анкета / цель</li>
+            <li>Видеоразбор каждой тренировки</li>
+            <li>Задания регулярно</li>
+            <li>ОФП / смежные дисциплины</li>
+            <li>Полный дневник прогресса</li>
+          </ul>
         </article>
         <article class="mw-card oc-card">
           <h3>Прямая связь</h3>
-          <p class="oc-price">3 500 ₽ — 60 мин (суша / вода)</p>
-          <p class="oc-muted">Разовое занятие — оплата после. Пакеты — по запросу.</p>
+          <ul>
+            <li>Анкета / цель</li>
+            <li>Задания в сессии</li>
+            <li>ОФП — по формату</li>
+            <li>Заметки</li>
+            <li>Live видеосвязь</li>
+          </ul>
         </article>
       </div>
     </section>
@@ -148,9 +138,8 @@
     <section id="oc-film" class="mw-card oc-card oc-section" aria-labelledby="oc-film-title">
       <h2 id="oc-film-title">Как снять видео</h2>
       <ul>
-        <li>Снимайте сбоку или сзади — видно позу, работу ног и доску.</li>
+        <li>Из катера снимать на 1х.</li>
         <li>Длительность 60–90 секунд на один ролик (для «Эффективного месяца» — до 3 роликов).</li>
-        <li>Стабильная камера или штатив, хорошее освещение.</li>
         <li>Безопасность: не снимайте себя во время опасных манёвров на воде.</li>
         <li>Загрузите на Google Drive, Яндекс.Диск или отправьте в Telegram — вставьте ссылку в форму.</li>
       </ul>
@@ -194,7 +183,7 @@
         </details>
         <details>
           <summary>Как связаться с тренером?</summary>
-          <p>Выберите канал в форме: Telegram, WhatsApp, MAX, телефон или email. В MVP автоматические уведомления — в Telegram.</p>
+          <p>В форме укажите удобный канал. В MVP приоритет — Telegram: уведомления и приём видео идут через Telegram.</p>
         </details>
       </div>
     </section>

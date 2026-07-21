@@ -118,6 +118,19 @@ class Config:
     CHAT_USE_ASSISTANT = os.getenv("CHAT_USE_ASSISTANT", "").strip().lower() in ("1", "true", "yes")
     # Flask-Limiter: memory:// (локально), production — redis://host:6379/0
     RATELIMIT_STORAGE_URI = os.getenv("RATELIMIT_STORAGE_URI", "memory://")
+    RATELIMIT_DEFAULT_LIMITS = []
+    RATELIMIT_ENABLED = True
+    RATELIMIT_TRUST_PROXY = os.getenv("TRUST_PROXY", "1").strip().lower() in ("1", "true", "yes", "on")
+    RATELIMIT_PROXY_X_FOR = int(os.getenv("PROXY_X_FOR", "1") or "1")
+    RATELIMIT_PROXY_X_PROTO = int(os.getenv("PROXY_X_PROTO", "1") or "1")
+    RATELIMIT_PROXY_X_HOST = int(os.getenv("PROXY_X_HOST", "1") or "1")
+    RATELIMIT_AUTH_LOGIN = os.getenv("RATELIMIT_AUTH_LOGIN", "5 per minute")
+    RATELIMIT_ADMIN_LOGIN = os.getenv("RATELIMIT_ADMIN_LOGIN", "5 per minute")
+    RATELIMIT_BOOKING_CREATE = os.getenv("RATELIMIT_BOOKING_CREATE", "10 per minute")
+    RATELIMIT_BOOKING_API = os.getenv("RATELIMIT_BOOKING_API", "60 per minute")
+    RATELIMIT_FORM_SUBMIT = os.getenv("RATELIMIT_FORM_SUBMIT", "5 per minute")
+    RATELIMIT_CHAT_API = os.getenv("RATELIMIT_CHAT_API", "40 per minute")
+    RATELIMIT_PAYMENT = os.getenv("RATELIMIT_PAYMENT", "5 per minute")
 
     # Настройки для Telegram
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -316,6 +329,7 @@ class ProductionConfig(Config):
     SECRET_KEY = _secret
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or _default_production_database_url()
     SQLALCHEMY_ECHO = False  # Отключаем вывод SQL-запросов в продакшн
+    RATELIMIT_STORAGE_URI = os.getenv("RATELIMIT_STORAGE_URI", "redis://127.0.0.1:6379/0")
 
     # Публичная аналитика: по умолчанию следует ENABLE_ANALYTICS; отключить FORCE: ENABLE_PUBLIC_ANALYTICS=0
     ENABLE_PUBLIC_ANALYTICS = Config.ENABLE_ANALYTICS and os.getenv(

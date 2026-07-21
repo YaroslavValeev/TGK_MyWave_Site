@@ -4,7 +4,8 @@ from app.services.booking_orchestrator import orchestrate
 from app.routes.calendar_routes import get_available_slots
 from app.services.analytics_service import log_booking_event
 from app.extensions import limiter
-from flask_limiter.util import get_remote_address
+from app.config.rate_limit_config import RateLimitConfig
+from app.services.rate_limit import limit_by_config
 
 
 booking_api_bp = Blueprint('booking_api', __name__, url_prefix='/api')
@@ -13,7 +14,7 @@ booking_api_bp = Blueprint('booking_api', __name__, url_prefix='/api')
 def _booking_rate_limit(f):
     if limiter is None:
         return f
-    return limiter.limit("60 per minute", key_func=get_remote_address)(f)
+    return limit_by_config(limiter, RateLimitConfig.BOOKING_API, methods=["POST"])(f)
 
 
 @booking_api_bp.route('/booking', methods=['POST'])

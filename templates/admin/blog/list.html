@@ -1,0 +1,62 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Блог — админка{% endblock %}
+{% block admin_title %}Блог{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="admin-breadcrumbs">
+        <li><a href="{{ url_for('admin.index') }}">Главная</a></li>
+        <li>Блог</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Публикации</h2>
+        <span class="admin-muted">Всего: {{ total }} · источник: {{ source_label }}</span>
+    </div>
+    <div class="admin-card__body">
+        <p class="admin-muted" style="margin-bottom:1rem;">
+            Просмотр витрины блога. Полный editorial workflow (S7–S9) — отдельно.
+            <a href="/blog" target="_blank" rel="noopener">Открыть /blog</a>
+        </p>
+        {% if posts %}
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Заголовок</th>
+                        <th>Slug</th>
+                        <th>Статус</th>
+                        <th>Дата</th>
+                        <th>Источник</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in posts %}
+                    <tr>
+                        <td>{{ post.title or '—' }}</td>
+                        <td><code>{{ post.slug or '—' }}</code></td>
+                        <td><span class="admin-badge">{{ post.status or '—' }}</span></td>
+                        <td>{{ post.published_at or post.created_at or '—' }}</td>
+                        <td>{{ post.source_name or post.source_type or '—' }}</td>
+                        <td>
+                            {% if post.slug %}
+                            <a class="admin-btn admin-btn--secondary admin-btn--sm" href="/blog/{{ post.slug }}" target="_blank" rel="noopener">На сайте</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="admin-muted">Публикаций пока нет. Проверьте PARSER_NEWS_SPREADSHEET_ID / таблицу raw_feed или локальную БД BlogPost.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

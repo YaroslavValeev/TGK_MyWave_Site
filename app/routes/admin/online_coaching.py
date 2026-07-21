@@ -22,7 +22,13 @@ from app.services.online_coaching_notifications import (
 )
 from app.services.online_coaching_payments import mark_paid, record_manual_payment_url
 from app.services.online_coaching_tbank import init_tbank_payment, is_tbank_configured
-from app.services.online_coaching_schema import REQUEST_STATUSES, SERVICE_TYPES, STATUSES_BY_SERVICE, service_display_name
+from app.services.online_coaching_schema import (
+    REQUEST_STATUSES,
+    SERVICE_TYPES,
+    STATUSES_BY_SERVICE,
+    service_display_name,
+    status_display_name,
+)
 from app.services.online_coaching_store import (
     append_diary_entry,
     append_followup,
@@ -43,6 +49,7 @@ def _inject_oc_service_labels():
     return {
         "oc_service_label": service_display_name,
         "oc_service_labels": SERVICE_DISPLAY_NAMES,
+        "oc_status_label": status_display_name,
     }
 
 
@@ -64,13 +71,14 @@ _QUICK_ACTIONS = {
 _STATUS_LABELS = {
     "all": "Все",
     "new": "Новые",
-    "waiting_video": "Ждём видео",
-    "waiting_payment": "Ждём оплату",
+    "waiting_video": "Ожидает видео",
+    "waiting_payment": "Ожидает оплату",
     "paid": "Оплачено",
     "subscription_active": "Подписка активна",
-    "in_review": "В разборе",
+    "in_review": "На разборе",
     "review_ready": "Разбор готов",
     "completed": "Завершено",
+    "video_received": "Видео получено",
 }
 
 

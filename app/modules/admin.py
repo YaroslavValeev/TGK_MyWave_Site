@@ -1,6 +1,9 @@
 import os
 from flask import Blueprint, request, redirect, url_for, render_template, flash
 from flask_login import UserMixin, login_user, logout_user, login_required, current_user
+from app.extensions import limiter
+from app.config.rate_limit_config import RateLimitConfig
+from app.services.rate_limit import limit_by_config
 
 # Регистрируем Blueprint с именем 'admin_panel' и указываем папку шаблонов для админ-панели
 admin_bp = Blueprint('admin_panel', __name__, template_folder='../templates/admin')
@@ -13,6 +16,7 @@ class User(UserMixin):
 
 # Страница входа
 @admin_bp.route('/login', methods=['GET', 'POST'])
+@limit_by_config(limiter, RateLimitConfig.ADMIN_LOGIN, methods=['POST'])
 def login():
     admin_username = os.environ.get('ADMIN_USERNAME')
     admin_password = os.environ.get('ADMIN_PASSWORD')

@@ -3,12 +3,16 @@ from app.forms.contact_form import ContactForm
 from app.database.models import db
 from app.modules.sheets import append_row
 from app.database.models import Contact
+from app.extensions import limiter
+from app.config.rate_limit_config import RateLimitConfig
+from app.services.rate_limit import limit_by_config
 import re
 
 contact_bp = Blueprint('contact', __name__, template_folder='../templates')
 
 
 @contact_bp.route('/contact', methods=['GET', 'POST'])
+@limit_by_config(limiter, RateLimitConfig.FORM_SUBMIT, methods=['POST'])
 def contact():
     form = ContactForm()
 

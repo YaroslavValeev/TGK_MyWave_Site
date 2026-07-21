@@ -45,7 +45,7 @@
                     {% for req in requests %}
                     <tr>
                         <td><code>{{ req.online_request_id }}</code></td>
-                        <td><span class="admin-badge">{{ req.request_status or '—' }}</span></td>
+                        <td><span class="admin-badge">{{ oc_status_label(req.request_status) }}</span></td>
                         <td>{{ oc_service_label(req.service_type) }}</td>
                         <td>{{ req.name or '—' }}</td>
                         <td>{{ req.preferred_channel or '—' }}</td>
@@ -70,7 +70,7 @@
             </div>
             <div class="admin-mobile-card__row">
                 <strong>Статус</strong>
-                <span>{{ req.request_status or '—' }}</span>
+                <span>{{ oc_status_label(req.request_status) }}</span>
             </div>
             <div class="admin-mobile-card__row">
                 <strong>Услуга</strong>

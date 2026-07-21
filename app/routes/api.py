@@ -1,5 +1,8 @@
 from flask import Blueprint, request, jsonify, render_template, current_app
 from app.extensions import csrf
+from app.extensions import limiter
+from app.config.rate_limit_config import RateLimitConfig
+from app.services.rate_limit import limit_by_config
 import io
 import os
 import hmac
@@ -249,6 +252,7 @@ def api_register():
 
 
 @api_bp.route('/auth/login', methods=['POST'])
+@limit_by_config(limiter, RateLimitConfig.AUTH_LOGIN, methods=['POST'])
 def api_login():
     data = request.get_json(silent=True) or {}
     email = data.get('email')

@@ -9,6 +9,10 @@ from flask_restx import Api, Resource, fields, Namespace
 import logging
 from datetime import datetime
 
+from app.extensions import limiter
+from app.config.rate_limit_config import RateLimitConfig
+from app.services.rate_limit import limit_by_config
+
 from app.services.payment_service import (
     YooKassaPaymentProcessor, 
     handle_payment_webhook,
@@ -68,6 +72,7 @@ class PaymentCreate(Resource):
         'user_id': fields.Integer(description='Customer user ID')
     }))
     @api.marshal_with(payment_model)
+    @limit_by_config(limiter, RateLimitConfig.PAYMENT, methods=["POST"])
     def post(self):
         """Create a payment order in YooKassa."""
         try:
@@ -126,6 +131,7 @@ class PaymentRefund(Resource):
         'amount': fields.Float(description='Optional partial refund amount')
     }))
     @api.marshal_with(refund_model)
+    @limit_by_config(limiter, RateLimitConfig.PAYMENT, methods=["POST"])
     def post(self):
         """Refund a payment in YooKassa."""
         try:

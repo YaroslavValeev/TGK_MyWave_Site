@@ -4,7 +4,8 @@ from app.database.models import ChatMessage, db  # ChatMessage должен бы
 from app.services.openai_service import ask
 from app.services.google_sheets_analytics import log_analytics_event
 from app.extensions import limiter
-from flask_limiter.util import get_remote_address
+from app.config.rate_limit_config import RateLimitConfig
+from app.services.rate_limit import limit_by_config
 from flask_limiter.errors import RateLimitExceeded
 from openai import OpenAIError
 
@@ -90,7 +91,7 @@ def _save_chat_turn(client_id: str, user_text: str, assistant_text: str | None) 
 def _chat_rate_limit_decorator(f):
     if limiter is None:
         return f
-    return limiter.limit("40 per minute", key_func=get_remote_address)(f)
+    return limit_by_config(limiter, RateLimitConfig.CHAT_API, methods=["POST"])(f)
 
 _CHAT_OFFLINE_WELCOME = (
     "Я могу подсказать про тренировки в зале и на катере, проекты WakeSurf Safari и кемп на Рузе, "

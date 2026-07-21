@@ -24,6 +24,11 @@ from app.modules.calendar_integration import create_workout_if_not_exists
 from app.services.site_analytics import log_site_booking_event
 from app.services.google_sheets_analytics import log_analytics_event
 
+from app.extensions import limiter
+from app.config.rate_limit_config import RateLimitConfig
+from app.services.rate_limit import limit_by_config
+
+
 calendar_bp = Blueprint("calendar", __name__)
 
 MAX_PER_SLOT = 2  # Зал: максимум записей на один слот
@@ -799,6 +804,7 @@ def update_workout_capacity(row_idx, new_capacity):
 
 
 @calendar_bp.route("/api/calendar/book", methods=["POST"])
+@limit_by_config(limiter, RateLimitConfig.BOOKING_CREATE, methods=["POST"])
 def book_slot():
     """
     Бронирование слота тренировки.

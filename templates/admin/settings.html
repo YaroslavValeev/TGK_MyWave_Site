@@ -1,0 +1,55 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Настройки — админка{% endblock %}
+{% block admin_title %}Настройки{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="admin-breadcrumbs">
+        <li><a href="{{ url_for('admin.index') }}">Главная</a></li>
+        <li>Настройки</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Статус модулей</h2>
+    </div>
+    <div class="admin-card__body">
+        <p class="admin-muted" style="margin-bottom:1rem;">
+            Read-only snapshot feature flags. Изменение — только через `.env` на сервере (не из UI).
+        </p>
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Модуль / флаг</th>
+                        <th>Значение</th>
+                        <th>Примечание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in flag_rows %}
+                    <tr>
+                        <td><code>{{ row.key }}</code></td>
+                        <td>
+                            {% if row.value %}
+                            <span class="admin-badge">ON</span>
+                            {% else %}
+                            <span class="admin-muted">OFF</span>
+                            {% endif %}
+                        </td>
+                        <td class="admin-muted">{{ row.note }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="admin-muted" style="margin-top:1rem;">
+            Версия приложения: <code>{{ app_version }}</code>
+        </p>
+    </div>
+</div>
+{% endblock %}
