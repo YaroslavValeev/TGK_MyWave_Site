@@ -150,6 +150,44 @@
   background: rgba(53, 192, 205, 0.08);
 }
 
+.oc-step-panel {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--mw-border, rgba(0, 0, 0, 0.08));
+}
+
+.oc-step-panel h3 {
+  margin: 0 0 0.75rem;
+}
+
+/* Floating chat must not cover CTAs / last content rows on OC page */
+.oc-page--chat-safe {
+  padding-bottom: 5.5rem;
+}
+
+.oc-page--chat-safe .oc-service-card,
+.oc-page--chat-safe .oc-final-cta,
+.oc-page--chat-safe .oc-apply-card {
+  padding-bottom: 0.25rem;
+}
+
+.oc-page--chat-safe .oc-service-card__cta,
+.oc-page--chat-safe .oc-final-cta .btn-primary,
+.oc-page--chat-safe .oc-final-cta .btn-secondary,
+.oc-page--chat-safe .oc-form .btn-primary {
+  position: relative;
+  z-index: 1;
+}
+
+.oc-included-mobile {
+  display: none;
+  gap: 0.85rem;
+}
+
+.oc-included-mobile .oc-card ul {
+  margin-top: 0.5rem;
+}
+
 @media (max-width: 700px) {
   .oc-page .oc-grid,
   .oc-page .oc-grid--services {
@@ -165,23 +203,26 @@
   .oc-hero__actions .btn-primary,
   .oc-hero__actions .btn-secondary,
   .oc-form .btn-primary,
-  .oc-final-cta .btn-primary {
+  .oc-final-cta .btn-primary,
+  .oc-final-cta .btn-secondary {
     width: 100%;
   }
 
-  .oc-included-table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
+  .oc-included-desktop {
+    display: none;
   }
-}
 
-.oc-step-panel {
-  margin-top: 1.25rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--mw-border, rgba(0, 0, 0, 0.08));
-}
+  .oc-included-mobile {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
 
-.oc-step-panel h3 {
-  margin: 0 0 0.75rem;
+  .oc-page--chat-safe {
+    padding-bottom: 6.5rem;
+  }
+
+  .oc-page--chat-safe .oc-final-cta,
+  .oc-page--chat-safe .oc-apply-card {
+    margin-bottom: 0.5rem;
+  }
 }

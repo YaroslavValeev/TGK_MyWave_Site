@@ -103,7 +103,12 @@
   {% block head %}{% endblock %}
 </head>
 
-<body{% block body_attrs %}{% endblock %}>
+<body
+  data-mw-booking-venues='{{ booking_client_venues|tojson }}'
+  data-mw-venue-name="{{ mywave_venue_name }}"
+  data-mw-venue-label="{{ mywave_venue_label }}"
+  data-mw-yandex-map="{{ mywave_venue_map_url }}"
+{% block body_attrs %}{% endblock %}>
   {% from 'partials/brand_logo.html' import brand_logo %}
   <!-- Шапка -->
   <header class="site-header" id="site-header">
@@ -217,7 +222,7 @@
   {% include 'partials/product_request_modal.html' %}
 
   <!-- booking.js, modals-close.js (надёжное закрытие Camp/CoachTriper/Consulting) и формы заявок -->
-  <script defer src="{{ url_for('static', filename='js/booking.js') }}?v=hero-yclients-external"></script>
+  <script defer src="{{ url_for('static', filename='js/booking.js') }}?v=oc-s1-s3-calendar"></script>
   <script defer src="{{ url_for('static', filename='js/modals-close.js') }}?v=modal-hide1"></script>
   <script defer src="{{ url_for('static', filename='js/modal-lead-forms.js') }}"></script>
   <script defer src="{{ url_for('static', filename='js/product-request-form.js') }}?v=product-card-click1"></script>

@@ -16,7 +16,7 @@ from flask import current_app, has_app_context
 
 from app.modules.logger import get_logger
 from app.services.online_coaching_payments import mark_paid, record_manual_payment_url
-from app.services.online_coaching_schema import SERVICE_PRICES, service_display_name
+from app.services.online_coaching_schema import SERVICE_PRICES, format_service_price, service_display_name
 from app.services.online_coaching_store import find_request_by_id
 
 logger = get_logger(__name__)
@@ -101,7 +101,10 @@ def init_tbank_payment(
     if amount_kopecks <= 0:
         raise ValueError("invalid_amount")
 
-    description = f"MyWave Online Coaching — {service_display_name(service_type)}"
+    description = (
+        f"MyWave Online Coaching — {service_display_name(service_type)} "
+        f"({format_service_price(service_type)})"
+    )
     payload: Dict[str, Any] = {
         "TerminalKey": tbank_terminal_key(),
         "Amount": amount_kopecks,

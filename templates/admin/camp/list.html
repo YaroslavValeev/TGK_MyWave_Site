@@ -1,58 +1,102 @@
 {% extends "admin/base.html" %}
+
 {% block title %}Camp — админка{% endblock %}
-{% block content %}
-<h1>Camp catalog</h1>
-{% if import_enabled %}
-<form method="post" action="{{ url_for('admin_camp.sync_now') }}" style="margin-bottom:1rem;">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  <button type="submit" class="btn btn-primary">Синхронизировать MyWaveTour</button>
-</form>
-{% endif %}
+{% block admin_title %}Camp{% endblock %}
 
-<form method="get" class="admin-filters">
-  <select name="status" onchange="this.form.submit()">
-    <option value="all" {% if status == 'all' %}selected{% endif %}>Все статусы</option>
-    {% for key, label in status_labels.items() %}
-    <option value="{{ key }}" {% if status == key %}selected{% endif %}>{{ label }}</option>
-    {% endfor %}
-  </select>
-</form>
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="admin-breadcrumbs">
+        <li><a href="{{ url_for('admin.index') }}">Главная</a></li>
+        <li>Camp</li>
+    </ol>
+</nav>
+{% endblock %}
 
-<table class="admin-table">
-  <thead>
-    <tr><th>ID</th><th>Название</th><th>Источник</th><th>Статус</th><th>Даты</th><th></th></tr>
-  </thead>
-  <tbody>
-    {% for c in camps %}
-    <tr>
-      <td>{{ c.id }}</td>
-      <td>{{ c.title }}</td>
-      <td>{{ c.source_system }}</td>
-      <td>{{ status_labels.get(c.publication_status, c.publication_status) }}</td>
-      <td>{% if c.start_date %}{{ c.start_date }}{% endif %}</td>
-      <td><a href="{{ url_for('admin_camp.detail', camp_id=c.id) }}">Открыть</a></td>
-    </tr>
-    {% else %}
-    <tr><td colspan="6">Кемпов пока нет. Запустите синхронизацию или создайте вручную (MVP: через БД/CLI).</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+{% block admin_content %}
+<div class="admin-card">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Каталог кемпов</h2>
+        <span class="admin-muted">Локальная модерация Site · public OFF до Owner GO</span>
+    </div>
+    <div class="admin-card__body">
+        {% if import_enabled %}
+        <form method="post" action="{{ url_for('admin_camp.sync_now') }}" style="margin-bottom:1rem;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="admin-btn admin-btn--primary">Синхронизировать MyWaveTour</button>
+        </form>
+        {% else %}
+        <p class="admin-muted" style="margin-bottom:1rem;">
+            Импорт Tour выключен (<code>CAMP_IMPORT_ENABLED=0</code>). Список показывает локальные записи БД.
+        </p>
+        {% endif %}
 
-<h2>Import log</h2>
-<table class="admin-table">
-  <thead><tr><th>ID</th><th>Старт</th><th>Статус</th><th>Fetched</th><th>Created</th><th>Updated</th><th>Errors</th></tr></thead>
-  <tbody>
-    {% for log in logs %}
-    <tr>
-      <td>{{ log.id }}</td>
-      <td>{{ log.started_at }}</td>
-      <td>{{ log.status }}</td>
-      <td>{{ log.fetched_count }}</td>
-      <td>{{ log.created_count }}</td>
-      <td>{{ log.updated_count }}</td>
-      <td>{{ log.error_count }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+        <form method="get" class="admin-form-inline" style="margin-bottom:1rem;">
+            <select name="status" class="admin-input" onchange="this.form.submit()">
+                <option value="all" {% if status == 'all' %}selected{% endif %}>Все статусы</option>
+                {% for key, label in status_labels.items() %}
+                <option value="{{ key }}" {% if status == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </form>
+
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr><th>ID</th><th>Название</th><th>Источник</th><th>Статус</th><th>Даты</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for c in camps %}
+                    <tr>
+                        <td>{{ c.id }}</td>
+                        <td>{{ c.title }}</td>
+                        <td>{{ c.source_system }}</td>
+                        <td>{{ status_labels.get(c.publication_status, c.publication_status) }}</td>
+                        <td>{% if c.start_date %}{{ c.start_date }}{% endif %}</td>
+                        <td>
+                            <a href="{{ url_for('admin_camp.detail', camp_id=c.id) }}"
+                               class="admin-btn admin-btn--secondary admin-btn--sm">Открыть</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="admin-muted">
+                            Кемпов пока нет. До Tour API GO синхронизация не включается. Записи появятся после импорта или seed.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="admin-card" style="margin-top:1rem;">
+    <div class="admin-card__header">
+        <h2 class="admin-card__title">Import log</h2>
+    </div>
+    <div class="admin-card__body">
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr><th>ID</th><th>Старт</th><th>Статус</th><th>Fetched</th><th>Created</th><th>Updated</th><th>Errors</th></tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.id }}</td>
+                        <td>{{ log.started_at }}</td>
+                        <td>{{ log.status }}</td>
+                        <td>{{ log.fetched_count }}</td>
+                        <td>{{ log.created_count }}</td>
+                        <td>{{ log.updated_count }}</td>
+                        <td>{{ log.error_count }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="admin-muted">Лог пуст — импортов ещё не было.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

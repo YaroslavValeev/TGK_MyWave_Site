@@ -13,8 +13,10 @@ from app.services.online_coaching_schema import (
     ONLINE_REQUESTS_SHEET,
     ONLINE_REVIEWS_SHEET,
     SERVICE_PRICES,
+    SERVICE_PRICE_UNITS,
     SERVICE_TYPES,
     col_letter,
+    format_service_price,
     payment_timing_for_service,
     validate_sheet_headers,
 )
@@ -65,6 +67,22 @@ class TestSchema:
     def test_payment_timing_mapping(self):
         assert payment_timing_for_service("progress_month") == "upfront"
         assert payment_timing_for_service("video_check") == "after_service"
+
+    def test_progress_month_price_unit_is_month(self):
+        assert SERVICE_PRICE_UNITS["progress_month"] == "месяц"
+        assert format_service_price("progress_month") == "12 000 ₽ / месяц"
+        assert "сет" not in format_service_price("progress_month")
+
+    def test_video_check_price_unit_is_set(self):
+        assert format_service_price("video_check") == "1 500 ₽ / сет"
+
+    def test_status_display_names_ru(self):
+        from app.services.online_coaching_schema import status_display_name
+
+        assert status_display_name("waiting_payment") == "Ожидает оплату"
+        assert status_display_name("video_received") == "Видео получено"
+        assert status_display_name("in_review") == "На разборе"
+        assert status_display_name("completed") == "Завершено"
 
     def test_all_contract_sheets_known(self):
         for sheet in (

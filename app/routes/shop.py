@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, abort, url_for, request, jsonify, current_app
 
 from app.extensions import csrf, limiter
+from app.config.rate_limit_config import RateLimitConfig
+from app.services.rate_limit import limit_by_config
 from app.modules.logger import get_logger
 from app.services.application_notifications import notify_new_application
 from app.services.images_resolver import resolve_card_images, FALLBACK as FALLBACK_IMG
@@ -98,8 +100,7 @@ def product(slug):
 def _product_request_rate_limit():
     if limiter is None:
         return lambda f: f
-    from flask_limiter.util import get_remote_address
-    return limiter.limit("10 per minute", key_func=get_remote_address)
+    return limit_by_config(limiter, RateLimitConfig.SHOP_FORM, methods=["POST"])
 
 
 @shop_bp.route('/api/product-request', methods=['POST'])
