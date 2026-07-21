@@ -28,6 +28,31 @@ NON_PUBLIC_PUBLICATION = frozenset({
 
 _SHOWCASE_SPORTS = frozenset({"wakesurf", "wakeboard", "mixed"})
 
+# Synthetic / contract-smoke records that must not appear on the public site.
+_SYNTHETIC_CAMP_IDS = frozenset({
+    "tour_camp_api_mvp_wakesurf_v1",
+})
+_SYNTHETIC_ID_MARKERS = (
+    "_mvp_",
+    "mvp_",
+    "_test_",
+    "test_camp",
+    "synthetic",
+    "_sample_",
+    "sample_",
+    "_demo_",
+    "demo_",
+)
+_SYNTHETIC_TITLE_MARKERS = (
+    "пилотный",
+    "mvp",
+    "тестовый",
+    "synthetic",
+    "синтетич",
+    "demo camp",
+    "smoke",
+)
+
 
 @dataclass
 class ShowcaseListResult:
@@ -120,6 +145,19 @@ def _matches_showcase_schedule(raw: Dict[str, Any], *, today: Optional[date] = N
     return active_until >= (today or date.today())
 
 
+def _is_synthetic_or_test_camp(raw: Dict[str, Any]) -> bool:
+    """True for Tour MVP/smoke/synthetic fixtures that must not be public."""
+    camp_id = str(raw.get("id") or raw.get("external_id") or "").strip().lower()
+    title = str(raw.get("title") or "").strip().lower()
+    if camp_id in _SYNTHETIC_CAMP_IDS:
+        return True
+    if camp_id and any(marker in camp_id for marker in _SYNTHETIC_ID_MARKERS):
+        return True
+    if title and any(marker in title for marker in _SYNTHETIC_TITLE_MARKERS):
+        return True
+    return False
+
+
 def is_showcase_public(raw: Dict[str, Any], *, today: Optional[date] = None) -> bool:
     pub = str(raw.get("publication_status") or raw.get("tour_publication_status") or "published").strip().lower()
     if pub in NON_PUBLIC_PUBLICATION:
@@ -127,6 +165,8 @@ def is_showcase_public(raw: Dict[str, Any], *, today: Optional[date] = None) -> 
     if pub and pub != "published":
         return False
     if _map_content_rights(raw.get("content_rights_status")) == "restricted":
+        return False
+    if _is_synthetic_or_test_camp(raw):
         return False
     if not _matches_showcase_sport(raw):
         return False
