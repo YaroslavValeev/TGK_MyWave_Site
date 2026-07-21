@@ -17,8 +17,8 @@ from app.services.camps.tour_client import TourCampFetchError
 TODAY = date(2026, 7, 21)
 
 MVP_CAMP = {
-    "id": "tour_camp_api_mvp_wakesurf_v1",
-    "title": "MVP Wakesurf Camp",
+    "id": "tour_real_wakesurf_partner_v1",
+    "title": "Partner Wakesurf Camp",
     "publication_status": "published",
     "content_rights_status": "unknown",
     "sport": "wakesurf",
@@ -37,7 +37,14 @@ MVP_CAMP = {
     "not_included": "Перелёт",
     "program": ["День 1", "День 2"],
     "booking_url": "https://booking.example/camp",
-    "source_url": "https://mywavetour.ru/camp/mvp",
+    "source_url": "https://mywavetour.ru/camp/partner",
+}
+
+SYNTHETIC_CAMP = {
+    **MVP_CAMP,
+    "id": "tour_camp_api_mvp_wakesurf_v1",
+    "title": "Пилотный вейксерф-кемп MyWave Tour",
+    "source_url": "https://mywavetour.ru/program/camp_api_mvp_wakesurf_v1",
 }
 
 
@@ -67,9 +74,16 @@ def test_is_showcase_public_filters_past_camps_keeps_current_and_upcoming():
     assert is_showcase_public({**MVP_CAMP, "start_date": None, "end_date": None}, today=TODAY) is True
 
 
+def test_is_showcase_public_filters_synthetic_and_test_camps():
+    assert is_showcase_public(SYNTHETIC_CAMP, today=TODAY) is False
+    assert is_showcase_public({**MVP_CAMP, "id": "tour_demo_camp_1", "title": "Real title"}, today=TODAY) is False
+    assert is_showcase_public({**MVP_CAMP, "title": "Тестовый кемп для smoke"}, today=TODAY) is False
+    assert is_showcase_public(MVP_CAMP, today=TODAY) is True
+
+
 def test_to_showcase_view_unknown_rights_not_confirmed_partnership():
     view = to_showcase_view(MVP_CAMP)
-    assert view["id"] == "tour_camp_api_mvp_wakesurf_v1"
+    assert view["id"] == "tour_real_wakesurf_partner_v1"
     assert view["partnership_confirmed"] is False
     assert view["source_badge"] == "Из MyWaveTour"
     assert view["content_rights_notice"]
@@ -105,9 +119,15 @@ def test_fetch_showcase_camps_server_error():
 
 def test_fetch_showcase_detail_ok():
     with patch("app.services.camps.showcase.fetch_tour_camp_detail", return_value=MVP_CAMP):
-        result = fetch_showcase_detail("tour_camp_api_mvp_wakesurf_v1")
+        result = fetch_showcase_detail(MVP_CAMP["id"])
     assert result.state == "ok"
-    assert result.camp["title"] == "MVP Wakesurf Camp"
+    assert result.camp["title"] == "Partner Wakesurf Camp"
+
+
+def test_fetch_showcase_detail_hides_synthetic_camp():
+    with patch("app.services.camps.showcase.fetch_tour_camp_detail", return_value=SYNTHETIC_CAMP):
+        result = fetch_showcase_detail(SYNTHETIC_CAMP["id"])
+    assert result.state == "not_found"
 
 
 def test_fetch_showcase_detail_not_found():

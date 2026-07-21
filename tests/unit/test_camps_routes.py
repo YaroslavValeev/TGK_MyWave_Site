@@ -28,7 +28,7 @@ def test_camps_index_lists_mvp_camp(client, camp_public_enabled, mocker):
     response = client.get("/camps")
     assert response.status_code == 200
     assert MVP_CAMP["id"] in response.get_data(as_text=True)
-    assert "Кемпы" not in response.get_data(as_text=True) or "MVP Wakesurf Camp" in response.get_data(as_text=True)
+    assert MVP_CAMP["title"] in response.get_data(as_text=True)
 
 
 def test_camps_index_api_error_not_empty_state(client, camp_public_enabled, mocker):
