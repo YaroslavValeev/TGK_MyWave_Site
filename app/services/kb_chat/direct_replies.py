@@ -10,6 +10,7 @@ from app.services.kb_chat.routing import (
     detect_service_location,
     is_booking_how_question,
     is_price_question,
+    is_purpose_question,
     is_what_to_bring_question,
     needs_booking_disambiguation,
 )
@@ -34,6 +35,28 @@ def _reply_from_doc(doc, *, include_cta: bool = True) -> DirectReply:
             text = f"{text} {doc.cta_text}".strip()
     cta = doc.cta_type if doc.cta_type and doc.cta_type != "none" else None
     return DirectReply(text=text, cta_type=cta)
+
+
+def _try_gym_why(text_lc: str, mw_ctx: dict | None) -> DirectReply | None:
+    """Purpose/benefits of gym — must win over what_to_bring matcher noise."""
+    if not is_purpose_question(text_lc):
+        return None
+    loc = detect_service_location(text_lc, mw_ctx)
+    if loc != "gym" and not any(m in text_lc for m in ("зал", "зале", "gym")):
+        return None
+    doc = get_by_stem("gym", "why_train")
+    if doc:
+        return _reply_from_doc(doc)
+    doc = get_by_stem("gym", "training_format")
+    if doc:
+        return _reply_from_doc(doc)
+    return DirectReply(
+        text=(
+            "Занятия в зале развивают баланс, координацию и биомеханику для вейксерфа — "
+            "так проще прогрессировать на воде. Тренировка длится 1,5 часа."
+        ),
+        cta_type=CTA_BOOKING_GYM,
+    )
 
 
 def _try_what_to_bring(text_lc: str, mw_ctx: dict | None) -> DirectReply | None:
@@ -148,8 +171,14 @@ def try_direct_kb_reply(
     text_lc: str,
     mw_chat_context: dict | None = None,
 ) -> DirectReply | None:
-    """Unified direct reply: what_to_bring, prices, booking, then generic matcher."""
-    for handler in (_try_what_to_bring, _try_price, _try_booking_topic, _try_booking_how):
+    """Unified direct reply: purpose, what_to_bring, prices, booking, then generic matcher."""
+    for handler in (
+        _try_gym_why,
+        _try_what_to_bring,
+        _try_price,
+        _try_booking_topic,
+        _try_booking_how,
+    ):
         result = handler(text_lc, mw_chat_context)
         if result:
             return result

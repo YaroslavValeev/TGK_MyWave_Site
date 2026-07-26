@@ -66,9 +66,33 @@ KB_ANSWER_CASES = [
         id="12_gym_duration",
     ),
     pytest.param(
+        "Для чего мне занятия в зале?",
+        {
+            "must_contain": ["баланс"],
+            "must_not_contain": ["полотенц", "возьмите", "одежд", "docs/", "booking_"],
+        },
+        id="13b_gym_why_train",
+    ),
+    pytest.param(
         "Чем зал помогает вейксерфу?",
         {"must_contain": ["баланс", "координ"], "must_not_contain": []},
         id="13_gym_wakesurf_help",
+    ),
+    pytest.param(
+        "Для чего мне занятия в зале?",
+        {
+            "must_contain": ["баланс"],
+            "must_not_contain": ["полотенц", "спортивн"],
+        },
+        id="13b_gym_why_train",
+    ),
+    pytest.param(
+        "Как делать олли?",
+        {
+            "must_contain": ["олли"],
+            "must_not_contain": ["отмен", "booking", "docs/"],
+        },
+        id="13c_boat_ollie",
     ),
     pytest.param(
         "Можно без опыта в зале?",
@@ -82,12 +106,24 @@ KB_ANSWER_CASES = [
     ),
     pytest.param(
         "Как отменить запись?",
-        {"must_contain": ["отмен", "менеджер"], "must_not_contain": []},
+        {
+            "must_contain": ["отмен", "менеджер"],
+            "must_not_contain": [
+                "docs/",
+                "booking_",
+                "не выдумываем",
+                "репозитор",
+                "cancelled",
+            ],
+        },
         id="16_booking_cancel",
     ),
     pytest.param(
         "Как оплатить занятие?",
-        {"must_contain": ["оплат", "менеджер"], "must_not_contain": []},
+        {
+            "must_contain": ["оплат", "менеджер"],
+            "must_not_contain": ["configs/", "репозитор", "services.yaml"],
+        },
         id="17_booking_payment",
     ),
     pytest.param(

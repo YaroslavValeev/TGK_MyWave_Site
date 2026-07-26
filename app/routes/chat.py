@@ -139,6 +139,23 @@ def _clean_assistant_text(text: str) -> str:
         for pat in patterns:
             import re
             cleaned = re.sub(pat, "", cleaned, flags=re.IGNORECASE)
+        # Strip internal/ops sentences that must never reach clients.
+        import re
+        internal_sentence_patterns = [
+            r"[^.!?\n]*\bdocs/[^\s.!?]*[^.!?\n]*[.!?]?",
+            r"[^.!?\n]*\bBOOKING_[^\s.!?]*[^.!?\n]*[.!?]?",
+            r"[^.!?\n]*\bconfigs/[^\s.!?]*[^.!?\n]*[.!?]?",
+            r"[^.!?\n]*\btemplates/[^\s.!?]*[^.!?\n]*[.!?]?",
+            r"[^.!?\n]*в\s+чате\s+правила\s+не\s+выдумываем[^.!?\n]*[.!?]?",
+            r"[^.!?\n]*в\s+репозитории[^.!?\n]*[.!?]?",
+            r"[^.!?\n]*не\s+опубликован[^.!?\n]*[.!?]?",
+            r"[^.!?\n]*не\s+цитируем[^.!?\n]*[.!?]?",
+            r"[^.!?\n]*технические\s+статусы\s+`?cancelled`?[^.!?\n]*[.!?]?",
+            r"[^.!?\n]*без\s+отдельного\s+подтверждения\s+Owner[^.!?\n]*[.!?]?",
+            r"[^.!?\n]*не\s+описываем\s+(их\s+)?от\s+себя[^.!?\n]*[.!?]?",
+        ]
+        for pat in internal_sentence_patterns:
+            cleaned = re.sub(pat, " ", cleaned, flags=re.IGNORECASE)
         # Remove markdown artifacts that look unnatural in chat bubbles.
         cleaned = re.sub(r"\*\*(.*?)\*\*", r"\1", cleaned, flags=re.DOTALL)
         cleaned = re.sub(r"^#{1,6}\s*", "", cleaned, flags=re.MULTILINE)
@@ -154,7 +171,8 @@ def _clean_assistant_text(text: str) -> str:
         )
         # Remove leading bullets
         cleaned = re.sub(r"^[\-•]\s*", "", cleaned, flags=re.MULTILINE)
-        # Collapse excess blank lines
+        # Collapse excess blank lines / spaces
+        cleaned = re.sub(r"[ \t]{2,}", " ", cleaned)
         cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
         return cleaned.strip()
     except Exception:
@@ -290,12 +308,13 @@ def chat_handler():
 
         direct_kb = try_direct_kb_reply(text_lc, mw_ctx)
         if direct_kb:
-            payload = {"response": direct_kb.text, "status": "success"}
+            reply = _clean_assistant_text(direct_kb.text)
+            payload = {"response": reply, "status": "success"}
             if direct_kb.cta_type:
                 payload["cta_type"] = direct_kb.cta_type
             if direct_kb.suggestions:
                 payload["suggestions"] = direct_kb.suggestions
-            _save_chat_turn(client_id, message, direct_kb.text)
+            _save_chat_turn(client_id, message, reply)
             return jsonify(payload)
 
         if _needs_location_disambiguation(text_lc, mw_ctx):
