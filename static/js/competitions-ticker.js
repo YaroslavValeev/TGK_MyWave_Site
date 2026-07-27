@@ -3,8 +3,9 @@
  * - source of truth: viewport.scrollLeft;
  * - mobile: native horizontal scroll + browser inertia;
  * - desktop: mouse drag + custom momentum;
- * - autoplay: requestAnimationFrame;
- * - loop: cycleWidth normalization on duplicated content.
+ * - autoplay: requestAnimationFrame + fractional scrollCarry (Chromium);
+ * - loop: cycleWidth normalization on duplicated content;
+ * - wide desktop: keep cloning until track overflows (иначе maxScroll=0 и строка стоит).
  */
 (function () {
   var AUTO_SPEED_PX_PER_SEC = 18;
@@ -13,7 +14,8 @@
   var MOMENTUM_FRICTION = 0.94;
   var MOMENTUM_MIN_VELOCITY = 0.02;
   var MOMENTUM_MAX_VELOCITY = 3.2;
-  var CLONE_SETS = 2;
+  var MIN_CLONE_SETS = 2;
+  var MAX_CLONE_SETS = 8;
 
   function prefersReducedMotion() {
     return (
@@ -35,18 +37,39 @@
     }
 
     var children = Array.from(track.children);
-    for (var cloneIndex = 0; cloneIndex < CLONE_SETS; cloneIndex += 1) {
+    var cloneSets = 0;
+
+    function appendCloneSet() {
       children.forEach(function (node) {
         var dup = node.cloneNode(true);
         dup.setAttribute("aria-hidden", "true");
         track.appendChild(dup);
       });
+      cloneSets += 1;
     }
 
+    function ensureOverflow() {
+      var guard = 0;
+      while (
+        track.scrollWidth <= viewport.clientWidth * 2 &&
+        cloneSets < MAX_CLONE_SETS &&
+        guard < MAX_CLONE_SETS
+      ) {
+        appendCloneSet();
+        guard += 1;
+      }
+      while (cloneSets < MIN_CLONE_SETS) {
+        appendCloneSet();
+      }
+    }
+
+    ensureOverflow();
+
     track.dataset.tickerReady = "1";
-    viewport.classList.add("is-native-scroll");
+    viewport.classList.add("is-native-scroll", "is-autoplay");
 
     if (prefersReducedMotion()) {
+      viewport.classList.remove("is-autoplay");
       viewport.classList.add("is-manual-only");
       return;
     }
@@ -55,17 +78,20 @@
     var autoplayPaused = false;
     var autoplayFrame = null;
     var lastFrameTime = 0;
+    var scrollCarry = 0;
     var resumeTimer = null;
     var dragState = null;
     var momentumFrame = null;
 
     function measureCycleWidth() {
-      cycleWidth = track.scrollWidth / (CLONE_SETS + 1);
+      var sets = cloneSets + 1;
+      cycleWidth = sets > 0 ? track.scrollWidth / sets : 0;
       return cycleWidth;
     }
 
     function normalizeScroll() {
-      if (!cycleWidth) {
+      var maxScroll = viewport.scrollWidth - viewport.clientWidth;
+      if (!cycleWidth || maxScroll <= 0) {
         return;
       }
       while (viewport.scrollLeft >= cycleWidth * 2) {
@@ -112,8 +138,14 @@
         }
         var dt = now - lastFrameTime;
         lastFrameTime = now;
-        viewport.scrollLeft += AUTO_SPEED_PX_PER_SEC * dt / 1000;
-        normalizeScroll();
+        // Accumulate fractional px: Chromium often truncates subpixel scrollLeft.
+        scrollCarry += (AUTO_SPEED_PX_PER_SEC * dt) / 1000;
+        var delta = scrollCarry | 0;
+        if (delta) {
+          scrollCarry -= delta;
+          viewport.scrollLeft += delta;
+          normalizeScroll();
+        }
         autoplayFrame = window.requestAnimationFrame(step);
       }
 
@@ -254,12 +286,7 @@
     viewport.addEventListener("pointerup", onPointerUp);
     viewport.addEventListener("pointercancel", onPointerUp);
 
-    root.addEventListener("mouseenter", pauseAutoplay);
-    root.addEventListener("mouseleave", function () {
-      if (!dragState && !momentumFrame) {
-        scheduleResume(250);
-      }
-    });
+    // Do not pause on plain hover — desktop users often keep the cursor over the strip.
     root.addEventListener("focusin", pauseAutoplay);
     root.addEventListener("focusout", function () {
       if (!dragState && !momentumFrame) {
@@ -267,12 +294,30 @@
       }
     });
 
-    measureCycleWidth();
-    viewport.scrollLeft = cycleWidth;
-    normalizeScroll();
-    startAutoplay();
+    function bootAutoplay() {
+      ensureOverflow();
+      measureCycleWidth();
+      if (cycleWidth > 0 && viewport.scrollWidth > viewport.clientWidth) {
+        viewport.scrollLeft = cycleWidth;
+      }
+      normalizeScroll();
+      startAutoplay();
+    }
+
+    bootAutoplay();
+
+    // Remeasure after fonts/layout — иначе cycleWidth на десктопе может быть занижен.
+    window.requestAnimationFrame(function () {
+      bootAutoplay();
+    });
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () {
+        bootAutoplay();
+      }).catch(function () { /* ignore */ });
+    }
 
     window.addEventListener("resize", function () {
+      ensureOverflow();
       measureCycleWidth();
       normalizeScroll();
     });

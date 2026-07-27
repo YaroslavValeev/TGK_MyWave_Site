@@ -130,6 +130,20 @@ def test_try_direct_kb_reply_booking_disambiguation(app):
         assert reply.suggestions == ["Катер", "Зал"]
 
 
+def test_try_direct_gym_why_not_packing_list(app):
+    with app.app_context():
+        from app.services.kb_chat.direct_replies import try_direct_kb_reply
+        from app.services.kb_chat.loader import clear_cache
+
+        clear_cache()
+        reply = try_direct_kb_reply("для чего мне занятия в зале?")
+        assert reply is not None
+        text = reply.text.lower()
+        assert "баланс" in text or "координ" in text or "биомехан" in text
+        assert "полотенц" not in text
+        assert "возьмите" not in text
+
+
 def test_try_direct_what_to_bring_boat(app):
     with app.app_context():
         from app.services.kb_chat.direct_replies import try_direct_what_to_bring_reply
@@ -158,6 +172,48 @@ def test_collect_chat_kb_snippets(app):
         assert snippets
         joined = " ".join(snippets).lower()
         assert "10 000" in joined or "10000" in joined.replace(" ", "")
+
+
+def test_try_direct_kb_reply_gym_why_not_what_to_bring(app):
+    with app.app_context():
+        from app.services.kb_chat.direct_replies import try_direct_kb_reply
+        from app.services.kb_chat.loader import clear_cache
+
+        clear_cache()
+        reply = try_direct_kb_reply("для чего мне занятия в зале?")
+        assert reply is not None
+        text = reply.text.lower()
+        assert "баланс" in text or "координ" in text or "биомехан" in text
+        assert "полотенц" not in text
+        assert "спортивн" not in text or "одежд" not in text
+
+
+def test_try_direct_kb_reply_ollie_not_cancellation(app):
+    with app.app_context():
+        from app.services.kb_chat.direct_replies import try_direct_kb_reply
+        from app.services.kb_chat.loader import clear_cache
+
+        clear_cache()
+        reply = try_direct_kb_reply("как делать олли?")
+        assert reply is not None
+        text = reply.text.lower()
+        assert "олли" in text or "прыж" in text or "хвост" in text
+        assert "отмен" not in text
+        assert "booking" not in text
+        assert "docs/" not in text
+
+
+def test_collect_snippets_ollie_excludes_cancellation(app):
+    with app.app_context():
+        from app.services.kb_chat.loader import clear_cache
+        from app.services.kb_chat.snippets import collect_chat_kb_snippets
+
+        clear_cache()
+        snippets = collect_chat_kb_snippets("как делать олли?")
+        joined = " ".join(snippets).lower()
+        assert "отмен" not in joined
+        assert "docs/integration" not in joined
+        assert snippets, "ожидаем релевантный сниппет по олли"
 
 
 def test_fallback_what_to_bring_without_md(app, tmp_path, monkeypatch):

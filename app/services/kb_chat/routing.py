@@ -47,6 +47,19 @@ _PRICE_TRIGGERS = (
     "прайс",
 )
 
+_PURPOSE_TRIGGERS = (
+    "для чего",
+    "зачем",
+    "какая польза",
+    "в чем польза",
+    "в чём польза",
+    "чем полез",
+    "зачем нужн",
+    "для чего нужн",
+    "смысл занят",
+    "зачем занят",
+)
+
 _BOOKING_TRIGGERS = (
     "как записаться",
     "как записат",
@@ -89,6 +102,13 @@ def is_what_to_bring_question(text_lc: str) -> bool:
 
 def is_price_question(text_lc: str) -> bool:
     return any(t in text_lc for t in _PRICE_TRIGGERS)
+
+
+def is_purpose_question(text_lc: str) -> bool:
+    """Why / benefits intent (not packing list, not price)."""
+    if is_what_to_bring_question(text_lc) or is_price_question(text_lc):
+        return False
+    return any(t in text_lc for t in _PURPOSE_TRIGGERS)
 
 
 def is_booking_how_question(text_lc: str) -> bool:
