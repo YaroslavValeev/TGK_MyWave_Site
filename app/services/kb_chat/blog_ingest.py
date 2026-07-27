@@ -309,6 +309,7 @@ def ingest_blog_post_into_chat_kb(post, *, logger=None, force: bool = False) -> 
         return {"skipped": "BLOG_KB_INGEST_ENABLED=0"}
 
     max_sections = _env_int("BLOG_KB_INGEST_MAX_SECTIONS", 3)
+    max_section_chars = _env_int("BLOG_KB_INGEST_MAX_SECTION_CHARS", 3500)
     category = "blog"
     priority = "low"
 
@@ -329,6 +330,7 @@ def ingest_blog_post_into_chat_kb(post, *, logger=None, force: bool = False) -> 
     ingested = 0
 
     for i, (section_title, section_body) in enumerate(sections):
+        section_body = (section_body or "")[:max_section_chars]
         doc_id = f"blog_{post_id}_{i}"
         out_path = kb_root / f"{doc_id}.md"
 
