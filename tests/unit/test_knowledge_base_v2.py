@@ -130,6 +130,33 @@ def test_try_direct_kb_reply_booking_disambiguation(app):
         assert reply.suggestions == ["Катер", "Зал"]
 
 
+def test_try_direct_external_championship_not_wake_challenge(app):
+    with app.app_context():
+        from app.services.kb_chat.direct_replies import try_direct_kb_reply
+        from app.services.kb_chat.loader import clear_cache
+
+        clear_cache()
+        reply = try_direct_kb_reply(
+            "как мне принять участие в чемпионате россии в 2026 году"
+        )
+        assert reply is not None
+        text = reply.text.lower()
+        assert "чемпионат" in text or "федерац" in text or "организатор" in text
+        assert "wake challenge" not in text
+        assert "форма на странице проекта" not in text
+
+
+def test_championship_does_not_select_wake_challenge_project(app):
+    with app.app_context():
+        from app.services.responses_api import _collect_knowledge_snippets, _detect_project_keys
+
+        q = "как мне принять участие в чемпионате россии в 2026 году"
+        assert "wake_challenge" not in _detect_project_keys(q)
+        joined = " ".join(_collect_knowledge_snippets(q)).lower()
+        assert "wake challenge — соревновательный проект" not in joined
+        assert "форма на странице проекта" not in joined
+
+
 def test_try_direct_gym_why_not_packing_list(app):
     with app.app_context():
         from app.services.kb_chat.direct_replies import try_direct_kb_reply

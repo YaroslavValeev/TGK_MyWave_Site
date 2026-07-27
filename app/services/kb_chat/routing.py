@@ -74,6 +74,24 @@ _BOOKING_TRIGGERS = (
 _BOOKING_EXPLICIT_BOAT = ("на катер", "катер", "катере", "на воде", "сет")
 _BOOKING_EXPLICIT_GYM = ("в зал", "зал", "зале", "тренировк")
 
+_WAKE_CHALLENGE_MARKERS = (
+    "wake challenge",
+    "wakesurf challenge",
+    "вейк челлендж",
+    "вейкчеллендж",
+    "челлендж mywave",
+    "wsc2025",
+    "wsc 2025",
+)
+
+_EXTERNAL_CHAMPIONSHIP_MARKERS = (
+    "чемпионат россии",
+    "чемпионат рф",
+    "чемпионате россии",
+    "чемпионате рф",
+    "на чемпионат",
+)
+
 
 def detect_service_location(text_lc: str, mw_chat_context: dict | None = None) -> str | None:
     """Return 'boat', 'gym', or None."""
@@ -109,6 +127,22 @@ def is_purpose_question(text_lc: str) -> bool:
     if is_what_to_bring_question(text_lc) or is_price_question(text_lc):
         return False
     return any(t in text_lc for t in _PURPOSE_TRIGGERS)
+
+
+def is_wake_challenge_question(text_lc: str) -> bool:
+    return any(m in text_lc for m in _WAKE_CHALLENGE_MARKERS)
+
+
+def is_external_championship_question(text_lc: str) -> bool:
+    """Official championship / federation starts — not Wake Challenge."""
+    if is_wake_challenge_question(text_lc):
+        return False
+    if any(m in text_lc for m in _EXTERNAL_CHAMPIONSHIP_MARKERS):
+        return True
+    # Generic «чемпионат» without MyWave challenge wording.
+    if "чемпионат" in text_lc:
+        return True
+    return False
 
 
 def is_booking_how_question(text_lc: str) -> bool:

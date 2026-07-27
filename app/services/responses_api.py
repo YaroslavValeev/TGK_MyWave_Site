@@ -41,11 +41,11 @@ _PROJECT_SIGNALS: tuple[tuple[str, tuple[str, ...]], ...] = (
             "wake surf challenge",
             "wake challenge",
             "вейк челлендж",
-            "челлендж",
-            "challenge",
-            "чемпионат",
-            "соревнован",
-            "турнир",
+            "вейкчеллендж",
+            "челлендж mywave",
+            "challenge mywave",
+            "wsc2025",
+            "wsc 2025",
         ),
     ),
     (
@@ -172,12 +172,12 @@ def _collect_project_snippets(
             out.extend(_read_project_paragraphs(key))
         return out[:max_snippets]
 
-    # Общий вопрос про проекты — ранжируем все файлы, не берём «первый с диска»
+    # Общий вопрос про проекты — ранжируем только по реальному score сигналов.
     ranked: list[tuple[int, str]] = []
     for project_key in _PROJECT_KB_FILES:
         for para in _read_project_paragraphs(project_key):
             sc = _score_project_paragraph(prompt_lower, project_key, para)
-            if sc > 0 or any(k in prompt_lower for k in ("проект", "попасть", "участ")):
+            if sc > 0:
                 ranked.append((sc, para))
     ranked.sort(key=lambda x: x[0], reverse=True)
     if ranked:
@@ -239,6 +239,24 @@ def _collect_knowledge_snippets(
     out: list[str] = []
     for knowledge_type in relevant_types:
         if knowledge_type == "projects":
+            # Официальный чемпионат ≠ Wake Challenge: не подмешиваем все projects/*.txt
+            if any(
+                m in prompt_lower
+                for m in (
+                    "чемпионат россии",
+                    "чемпионат рф",
+                    "чемпионате россии",
+                    "чемпионате рф",
+                )
+            ) and not any(
+                m in prompt_lower
+                for m in (
+                    "wake challenge",
+                    "вейк челлендж",
+                    "wakesurf challenge",
+                )
+            ):
+                continue
             project_bits = _collect_project_snippets(
                 prompt_lower,
                 mw_chat_context=mw_chat_context,
@@ -246,6 +264,9 @@ def _collect_knowledge_snippets(
             )
             if project_bits:
                 out.extend(project_bits)
+                continue
+            # Не дампить весь каталог projects по слабому ключу «чемпионат/соревнован».
+            if any(k in prompt_lower for k in ("чемпионат", "соревнован", "турнир")):
                 continue
         response = get_knowledge(knowledge_type)
         items = _knowledge_items_from_response(response)
