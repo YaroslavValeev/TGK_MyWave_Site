@@ -1068,6 +1068,17 @@ def publish_ready_posts(db_session, logger=None) -> Dict[str, int]:
                     stats["published"] += 1
                     successful_acks += 1
                     logger.info(f"[blog-publish] Пост {sheet_id} опубликован (строка {row_number})")
+
+                    # Best-effort: строим KB v2 карточки по опубликованному посту для чата.
+                    try:
+                        from app.services.kb_chat.blog_ingest import ingest_blog_post_into_chat_kb
+
+                        ingest_blog_post_into_chat_kb(post, logger=logger)
+                    except Exception as exc:
+                        logger.warning(
+                            "[blog-kb-ingest] failed",
+                            extra={"sheet_id": sheet_id, "row_number": row_number, "exc": str(exc)},
+                        )
                 else:
                     # Если ack не удался, но БД обновлена - всё равно считаем успехом
                     # но записываем предупреждение
