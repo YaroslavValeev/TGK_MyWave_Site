@@ -141,6 +141,18 @@ KB_ANSWER_CASES = [
         {"must_contain": ["telegram", "телефон"], "must_not_contain": []},
         id="20_contacts_manager",
     ),
+    pytest.param(
+        "Как мне принять участие в Чемпионате России в 2026 году?",
+        {
+            "must_contain": ["менеджер"],
+            "must_not_contain": [
+                "wake challenge —",
+                "форма на странице проекта",
+                "docs/",
+            ],
+        },
+        id="21_championship_russia_not_wake_challenge",
+    ),
 ]
 
 

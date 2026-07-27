@@ -7,8 +7,10 @@ from app.services.kb_chat.routing import (
     CTA_BOOKING_BOAT,
     CTA_BOOKING_CHOOSE,
     CTA_BOOKING_GYM,
+    CTA_CONTACTS,
     detect_service_location,
     is_booking_how_question,
+    is_external_championship_question,
     is_price_question,
     is_purpose_question,
     is_what_to_bring_question,
@@ -35,6 +37,23 @@ def _reply_from_doc(doc, *, include_cta: bool = True) -> DirectReply:
             text = f"{text} {doc.cta_text}".strip()
     cta = doc.cta_type if doc.cta_type and doc.cta_type != "none" else None
     return DirectReply(text=text, cta_type=cta)
+
+
+def _try_external_championship(text_lc: str, mw_ctx: dict | None) -> DirectReply | None:
+    if not is_external_championship_question(text_lc):
+        return None
+    doc = get_by_stem("brand", "competitions")
+    if doc:
+        return _reply_from_doc(doc)
+    return DirectReply(
+        text=(
+            "Официальный Чемпионат России и старты федерации — отдельные события, "
+            "не событие MyWave. Регистрацию смотрите у организатора; анонсы у нас — "
+            "в бегущей строке на главной. Подготовка — через тренировки MyWave; "
+            "детали уточните у менеджера: +7 916 011 71 79."
+        ),
+        cta_type=CTA_CONTACTS,
+    )
 
 
 def _try_gym_why(text_lc: str, mw_ctx: dict | None) -> DirectReply | None:
@@ -171,8 +190,9 @@ def try_direct_kb_reply(
     text_lc: str,
     mw_chat_context: dict | None = None,
 ) -> DirectReply | None:
-    """Unified direct reply: purpose, what_to_bring, prices, booking, then generic matcher."""
+    """Unified direct reply: championship, purpose, what_to_bring, prices, booking, matcher."""
     for handler in (
+        _try_external_championship,
         _try_gym_why,
         _try_what_to_bring,
         _try_price,
