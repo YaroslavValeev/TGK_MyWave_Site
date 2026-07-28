@@ -101,6 +101,9 @@
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  min-height: 36px;
+  padding: 6px 10px;
+  font-size: 0.875rem;
 }
 
 .services-carousel .service-card-actions .service-card__cta-secondary {
@@ -165,6 +168,16 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
+  min-height: 36px;
+  padding: 6px 10px;
+  font-size: 0.875rem;
+}
+
+.projects-carousel .project-card__actions .btn,
+.projects-carousel .service-card-actions .btn {
+  min-height: 36px;
+  padding: 6px 10px;
+  font-size: 0.875rem;
 }
 
 /* Проекты: как «Товары» (белая карточка, скругления), тень сильнее витрины товаров */

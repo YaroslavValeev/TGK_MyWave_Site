@@ -49,7 +49,7 @@
   --mw-cta-text: #1f1f1f;
   --mw-cta-bg: #ffffff;
   --mw-cta-hover-bg: rgba(0, 188, 212, 0.08);
-  --mw-cta-radius: 10px;
+  --mw-cta-radius: 8px;
 
   /* Backward-compat with existing vars used across the project */
   --primary-color: var(--mw-brand);
@@ -188,17 +188,19 @@ a.btn-outline-brand,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 12px 18px;
+  gap: 8px;
+  min-height: 38px;
+  padding: 7px 14px;
   border-radius: var(--mw-cta-radius) !important;
+  font-size: 0.9375rem;
+  line-height: 1.25;
   font-weight: 600;
   letter-spacing: 0.01em;
   text-decoration: none;
   cursor: pointer;
   background: var(--mw-cta-bg) !important;
   color: var(--mw-cta-text) !important;
-  border: 1.5px solid var(--mw-cta-border) !important;
+  border: 1px solid var(--mw-cta-border) !important;
   box-shadow: none !important;
   transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
 }
@@ -232,7 +234,7 @@ a.btn-outline-brand,
 /* Ghost helper — same outline family, slightly softer fill */
 .btn-ghost{
   background: rgba(255,255,255,0.85) !important;
-  border: 1.5px solid var(--mw-cta-border) !important;
+  border: 1px solid var(--mw-cta-border) !important;
   color: var(--mw-cta-text) !important;
 }
 :root[data-theme="dark"] .btn-ghost{
@@ -248,8 +250,8 @@ a.btn-primary:focus-visible,
 a.btn-secondary:focus-visible,
 button.btn-primary:focus-visible,
 button.btn-secondary:focus-visible{
-  outline: 3px solid rgba(0, 188, 212, 0.35);
-  outline-offset: 3px;
+  outline: 2px solid rgba(0, 188, 212, 0.35);
+  outline-offset: 2px;
 }
 
 /* Non-CTA controls — keep native UI shapes */
@@ -505,8 +507,8 @@ button.btn-secondary:focus-visible{
 /* Header CTA button */
 .header-cta{
   margin-left: 14px;
-  padding: 10px 14px !important;
-  min-height: 40px !important;
+  padding: 7px 12px !important;
+  min-height: 36px !important;
   font-size: 14px;
   white-space: nowrap;
 }

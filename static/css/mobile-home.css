@@ -233,7 +233,7 @@
   .services-carousel .service-card .service-card-actions,
   .services-carousel .service-card .service-card__cta {
     width: 100%;
-    min-height: 44px;
+    min-height: 36px;
     margin-top: auto;
     box-sizing: border-box;
     flex-shrink: 0;
