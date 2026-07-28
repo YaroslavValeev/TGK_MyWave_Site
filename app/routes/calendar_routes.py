@@ -408,14 +408,40 @@ def _validate_and_consume_service_token(
 # === ВСТАВИТЬ СРАЗУ ПОСЛЕ _get_available_slots_internal ===
 def get_boat_slots(date_str: str):
     """
-    Генерация 30-минутных слотов для услуги 'boat' (катер)
-    с 07:00 до 19:30 включительно, с учётом записей из Client_Workouts.
+    Генерация слотов для услуги 'boat' (катер).
+
+    При BOAT_PROVIDER=yclients + YCLIENTS read: слоты из YCLIENTS SoT.
+    Иначе legacy: Phase2 Calendar или Sheets grid 07:00–19:30.
 
     Вместимость: BOAT_MAX_PER_SLOT (1 ученик на сет).
     В ответ попадают только свободные слоты (занятые не возвращаются).
-    Формат: [{ "time": "06:30", "available": True }, ...]
+    Формат: [{ "time": "HH:MM", "available": True }, ...]
     """
     from app.config.booking_features import is_phase2_availability_enabled
+    from app.config.booking_schedule import boat_provider
+    from app.config.yclients_config import is_yclients_read_enabled
+
+    if boat_provider() == "yclients" and is_yclients_read_enabled():
+        try:
+            from app.services.booking.providers.yclients import get_yclients_provider
+
+            provider = get_yclients_provider()
+            yc_slots = provider.fetch_available_slots(date_str)
+            slots = [
+                {"time": s.start_time, "available": True}
+                for s in yc_slots
+                if s.available and s.start_time
+            ]
+            current_app.logger.info(
+                "[boat] YCLIENTS slots for %s: %s", date_str, len(slots)
+            )
+            return slots
+        except Exception as exc:
+            current_app.logger.error(
+                "[boat] YCLIENTS slots failed for %s: %s — fallback legacy",
+                date_str,
+                type(exc).__name__,
+            )
 
     if is_phase2_availability_enabled():
         from app.services.booking.availability import build_boat_slots_from_calendar
