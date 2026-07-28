@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Блог MyWave{% endblock %}
-{% block meta_description %}Новости и статьи MyWave{% endblock %}
+{% block title %}Блог MyWave — новости и статьи{% endblock %}
+{% block meta_description %}Новости, события и статьи MyWave: вейксёрфинг, тренировки, проекты и индустрия.{% endblock %}
+{% block extra_head %}
+  <link rel="canonical" href="{{ url_for('blog.blog_index', _external=True) }}">
+  <meta property="og:title" content="Блог MyWave — новости и статьи">
+  <meta property="og:description" content="Новости, события и статьи MyWave: вейксёрфинг, тренировки, проекты и индустрия.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ url_for('blog.blog_index', _external=True) }}">
+{% endblock %}
 
 {% block content %}
 <section class="mw-section mw-surface">

@@ -115,6 +115,10 @@ def blog_index():
             has_prev=has_prev,
             tag=tag,
             q=query,
+            meta_description=(
+                "Новости, события и статьи MyWave: "
+                "вейксёрфинг, тренировки, проекты и индустрия."
+            ),
         )
     except Exception as render_err:
         logger.error("blog: ошибка рендера index: %s", render_err)
@@ -128,6 +132,10 @@ def blog_index():
             has_prev=False,
             tag=tag,
             q=query,
+            meta_description=(
+                "Новости, события и статьи MyWave: "
+                "вейксёрфинг, тренировки, проекты и индустрия."
+            ),
         )
 
 
@@ -143,7 +151,13 @@ def blog_post(slug: str):
         abort(404)
 
     tags = post.get("tags", [])
-    return render_template("blog/post.html", post=post, tags=tags)
+    excerpt = (post.get("excerpt") or post.get("title") or "").strip()
+    return render_template(
+        "blog/post.html",
+        post=post,
+        tags=tags,
+        meta_description=excerpt[:300] if excerpt else None,
+    )
 
 
 @blog_bp.get("/api/blog/latest")

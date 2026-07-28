@@ -18,32 +18,91 @@ curl -sS "https://mywavewake.ru/api/calendar/slots/$(date -d '+3 days' +%F)?serv
 
 ---
 
-## Blog — диагностика (шаг 1)
+## Blog diagnose — PASS (Owner 2026-07-29)
 
-```bash
-cd /var/www/mywave
-source venv/bin/activate
-set -a; source .env; set +a
+Проверено на prod:
 
-# публичная витрина
-curl -sS -o /dev/null -w "%{http_code}\n" https://mywavewake.ru/blog
-curl -sS "https://mywavewake.ru/api/blog/latest" | python3 -m json.tool | head -40
-curl -sS "https://mywavewake.ru/api/blog/posts?limit=5" | python3 -m json.tool | head -60
+| Check | Result |
+|-------|--------|
+| Site SHA | diagnose на `07a3369f`; SEO — следующий commit на main |
+| `/blog` | **200** |
+| `/api/blog/latest` | JSON OK |
+| `/api/blog/posts?limit=5` | JSON OK, items есть |
 
-# канон/доки (локально на сервере после pull)
-ls docs/BLOG_CONTRACT_v1.md docs/BLOG_EDITORIAL_CHECKLIST.md docs/migration/BLOG_BACKLOG_PLAN.md
-```
-
-**PASS:** `/blog` = 200, latest/posts JSON без 500.
+**Качество контента (editorial, не 500):** кириллические/длинные slug, emoji в title, пустые tags, fallback `Place1Logo.png`, `video_url: null`. Это B1/checklist + ParserNews, не блокер витрины.
 
 ---
 
-## Blog — волны (после diagnose)
+## B2 backlog — статус кода
+
+| Пункт backlog | Статус |
+|---------------|--------|
+| Latest / preview на главной | **DONE** (`blog_preview_posts` в `index.html`) |
+| Поиск `?q=` + пагинация | **DONE** (`templates/blog/index.html` + `blog.py`) |
+| Категории (legacy) | **нет UI** — только теги `#tag` |
+| SEO list/post canonical+OG | **в main** (этот commit; нужен pull+restart) |
+
+---
+
+## Деплой SEO-патча (после push в main)
+
+**Проект:** Site MyWave  
+**Сервер:** `4169037-ep26382`  
+**cwd:** `/var/www/mywave`  
+**Сервисы:** только `mywave-site`  
+**Не трогать:** `mywave-node`, bot, Camp cron
+
+```bash
+cd /var/www/mywave
+git fetch origin
+git log -1 --oneline
+git pull --ff-only origin main
+git log -1 --oneline
+# ожидаемо: новый SHA с SEO blog templates
+
+sudo systemctl restart mywave-site
+systemctl is-active mywave-site
+# ожидаемо: active
+```
+
+**Rollback:**
+
+```bash
+cd /var/www/mywave
+git checkout <SHA_ДО_SEO>
+sudo systemctl restart mywave-site
+```
+
+---
+
+## Проверка после SEO-деплоя
+
+```bash
+# list: canonical + og
+curl -sS https://mywavewake.ru/blog | grep -E 'rel="canonical"|og:title|og:url' | head -10
+
+# поиск
+curl -sS -o /dev/null -w "%{http_code}\n" "https://mywavewake.ru/blog?q=foil"
+curl -sS "https://mywavewake.ru/blog?q=foil" | grep -E 'Поиск:|blog-card-title|Пока нет' | head -15
+
+# post: canonical не request.url с мусором
+SLUG=$(curl -sS https://mywavewake.ru/api/blog/latest | python3 -c 'import sys,json; print(json.load(sys.stdin)["slug"])')
+curl -sS "https://mywavewake.ru/blog/$SLUG" | grep -E 'rel="canonical"|og:url' | head -5
+
+# главная: блок блога
+curl -sS https://mywavewake.ru/ | grep -E 'blog-section|blog-home-card|Все публикации' | head -10
+```
+
+**PASS:** `/blog` отдаёт `<link rel="canonical" …/blog>`, поиск 200, главная с карточками.
+
+---
+
+## Blog — волны дальше
 
 | # | Scope | Док |
 |---|-------|-----|
 | B1 | Editorial checklist + ParserNews contract (процесс) | `docs/BLOG_EDITORIAL_CHECKLIST.md`, `docs/BLOG_CONTRACT_v1.md` |
-| B2 | Backlog UX/SEO (latest на главной, поиск, категории) | `docs/migration/BLOG_BACKLOG_PLAN.md` |
+| B2 | Backlog UX/SEO | DONE после pull SEO commit |
 | B3 | Video + CSP | `docs/architecture/BLOG_RUNTIME_CANON.md` |
 | B4 | Admin Blog write workflow | Site Admin |
 | S11 | Final Site audit | после B1–B4 |
