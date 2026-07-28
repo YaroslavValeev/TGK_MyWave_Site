@@ -84,12 +84,30 @@ def _stable_checksum(row: Dict[str, Any]) -> str:
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()
 
 
-def _slugify(title: str, post_id: str) -> str:
-    """Генерирует безопасный slug."""
-    t = (title or "").strip().lower()
-    t = t.replace("ё", "е")
-    t = "".join(ch if ch.isalnum() or ch in ("-", "_") else "-" for ch in t)
+# Минимальная транслитерация RU→ASCII для новых slug (без зависимости от unidecode).
+_RU_TRANSLIT = {
+    "а": "a", "б": "b", "в": "v", "г": "g", "д": "d", "е": "e", "ё": "e",
+    "ж": "zh", "з": "z", "и": "i", "й": "y", "к": "k", "л": "l", "м": "m",
+    "н": "n", "о": "o", "п": "p", "р": "r", "с": "s", "т": "t", "у": "u",
+    "ф": "f", "х": "h", "ц": "ts", "ч": "ch", "ш": "sh", "щ": "sch",
+    "ъ": "", "ы": "y", "ь": "", "э": "e", "ю": "yu", "я": "ya",
+}
+
+
+def _slugify(title: str, post_id: str, max_stem: int = 50) -> str:
+    """
+    Генерирует ASCII-slug для новых постов (когда в Sheets нет готового slug).
+    Кириллический slug из Sheets уважается как есть (не ломаем уже опубликованные URL).
+    """
+    t = plain_title_for_display(title, max_len=0).lower().replace("ё", "е")
+    t = "".join(_RU_TRANSLIT.get(ch, ch) for ch in t)
+    t = "".join(
+        ch if (ch.isascii() and (ch.isalnum() or ch in "-_")) else "-"
+        for ch in t
+    )
     t = "-".join([p for p in t.split("-") if p])
+    if max_stem and len(t) > max_stem:
+        t = t[:max_stem].rstrip("-")
     if not t:
         t = "post"
     short = hashlib.md5((post_id or "").encode("utf-8")).hexdigest()[:6]

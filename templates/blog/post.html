@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}{{ post.title }} | Блог MyWave{% endblock %}
+{% block og_title %}{{ post.title }}{% endblock %}
+{% block twitter_title %}{{ post.title }}{% endblock %}
 {% block meta_description %}{{ post.excerpt or post.title }}{% endblock %}
 {% block extra_head %}
   <link rel="canonical" href="{{ post.canonical_url or url_for('blog.blog_post', slug=post.slug, _external=True) }}">
-  <meta property="og:title" content="{{ post.title }}">
   <meta property="og:description" content="{{ post.excerpt or post.title }}">
   {% if post.video_poster_url or post.cover_image_url %}
     <meta property="og:image" content="{{ post.video_poster_url or post.cover_image_url }}">

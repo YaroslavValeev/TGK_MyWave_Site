@@ -13,7 +13,15 @@ from app.services.blog.display_text import plain_title_for_display
         ("[текст](https://x) и ещё", "текст и ещё"),
         ("`код` в заголовке", "код в заголовке"),
         ("Материал abc-123", "Материал abc-123"),
+        ("🏄 АЛЬФА-БАНК СЕРФ", "АЛЬФА-БАНК СЕРФ"),
     ],
 )
 def test_plain_title_for_display(raw: str, expected: str) -> None:
     assert plain_title_for_display(raw) == expected
+
+
+def test_plain_title_truncates_long() -> None:
+    raw = " ".join(["слово"] * 40)
+    out = plain_title_for_display(raw, max_len=40)
+    assert len(out) <= 42  # +ellipsis
+    assert out.endswith("…")

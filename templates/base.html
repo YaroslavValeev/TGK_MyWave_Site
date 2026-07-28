@@ -13,12 +13,12 @@
   
   <!-- SEO -->
   <meta name="description" content="{{ meta_description|default('MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.') }}">
-  <meta property="og:title" content="{{ title|default('MyWave') }}">
+  <meta property="og:title" content="{% block og_title %}{{ title|default('MyWave') }}{% endblock %}">
   <meta property="og:description" content="{{ meta_description|default('MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.') }}">
   <meta property="og:image" content="{{ og_image|default(url_for('static', filename='images/og-image.jpg')) }}">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{{ title|default('MyWave') }}">
+  <meta name="twitter:title" content="{% block twitter_title %}{{ title|default('MyWave') }}{% endblock %}">
   <meta name="twitter:description" content="{{ meta_description|default('MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.') }}">
   <meta name="twitter:image" content="{{ og_image|default(url_for('static', filename='images/og-image.jpg')) }}">
 

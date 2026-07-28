@@ -297,7 +297,18 @@ class DevelopmentConfig(Config):
             "https://www.youtube.com",
             "https://www.youtube-nocookie.com",
             "https://*.youtube.com",
-            "https://player.vimeo.com"
+            "https://player.vimeo.com",
+            # Blog video embeds (см. app/services/blog/video_embed.py allowlist)
+            "https://vk.com",
+            "https://*.vk.com",
+            "https://vkvideo.ru",
+            "https://*.vkvideo.ru",
+            "https://rutube.ru",
+            "https://*.rutube.ru",
+            "https://ok.ru",
+            "https://*.ok.ru",
+            "https://kinescope.io",
+            "https://*.kinescope.io",
         ],
         'object-src': ["'none'"],
         'base-uri': ["'self'"],
@@ -305,7 +316,8 @@ class DevelopmentConfig(Config):
         'frame-ancestors': ["'none'"],
         'upgrade-insecure-requests': [],
         'manifest-src': ["'self'"],
-        'media-src': ["'self'", "blob:"],
+        # Прямые mp4/webm обложки блога с внешних CDN (как img-src: https:)
+        'media-src': ["'self'", "blob:", "https:", "http:"],
     }
 
 class TestingConfig(Config):
@@ -390,9 +402,20 @@ class ProductionConfig(Config):
             "https://www.youtube.com",
             "https://www.youtube-nocookie.com",
             "https://*.youtube.com",
-            "https://player.vimeo.com"
+            "https://player.vimeo.com",
+            # Blog video embeds (см. app/services/blog/video_embed.py allowlist)
+            "https://vk.com",
+            "https://*.vk.com",
+            "https://vkvideo.ru",
+            "https://*.vkvideo.ru",
+            "https://rutube.ru",
+            "https://*.rutube.ru",
+            "https://ok.ru",
+            "https://*.ok.ru",
+            "https://kinescope.io",
+            "https://*.kinescope.io",
         ],
-        'media-src': ["'self'", "blob:", "https://*.googlevideo.com"],
+        'media-src': ["'self'", "blob:", "https:", "http:"],
         'object-src': ["'none'"],
         'base-uri': ["'self'"],
         'form-action': ["'self'"],

@@ -45,8 +45,8 @@ def _api_item_payload(p: dict) -> dict:
     cover = p.get("cover_image_url")
     card = p.get("card_image_url") or cover
     return {
-        "title": p["title"],
-        "lead": p.get("excerpt"),
+        "title": plain_title_for_display(p.get("title")),
+        "lead": plain_excerpt_for_display(p.get("excerpt")),
         "slug": p["slug"],
         "published_at": p["published_at"].isoformat() if p.get("published_at") else None,
         "tags": p.get("tags", []),
