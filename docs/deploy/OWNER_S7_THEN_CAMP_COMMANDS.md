@@ -7,6 +7,16 @@ Restart OK: только `mywave-site.service`
 
 Код S7 уже в `main` (GCal mirror + smoke script). На сервере: флаги → smoke → cron → затем Camp diagnose.
 
+## Prod status (2026-07-28/29 Owner run)
+
+| Gate | Result |
+|------|--------|
+| **S7 GCal** | **PASS** — `SMOKE GCAL PASS 1872374232`, mirror=inserted→deleted, reconcile synced=1, cron `mywave-yclients-gcal` |
+| **Camp flags** | MODULE/PUBLIC/ADMIN/IMPORT = **1** (уже было) |
+| **Tour API** | **PASS** — list items=4 |
+| **Showcase** | empty (`showcase_public=0`) — фильтр past + MVP/synthetic (ожидаемо) |
+| **`/camps`** | HTTP **200** |
+
 ---
 
 ## S7 — Google Calendar mirror
