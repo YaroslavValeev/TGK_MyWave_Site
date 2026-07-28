@@ -62,10 +62,19 @@ def boat_provider() -> str:
 
 
 def boat_slot_duration_minutes() -> int:
+    """Календарный слот / шаг сетки: 30 мин = 25 катание + 5 тех. (пирс)."""
     try:
         return max(1, int(os.environ.get("BOAT_SLOT_DURATION_MINUTES", "30")))
     except (TypeError, ValueError):
         return 30
+
+
+def boat_seance_minutes() -> int:
+    """Чистое катание в YCLIENTS seance_length (минуты). Default 25."""
+    try:
+        return max(1, int(os.environ.get("BOAT_SEANCE_MINUTES", "25")))
+    except (TypeError, ValueError):
+        return 25
 
 
 def boat_capacity() -> int:

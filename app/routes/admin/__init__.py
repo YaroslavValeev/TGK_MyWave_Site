@@ -94,7 +94,13 @@ def _settings_flag_rows():
     rows.append({
         "key": "YCLIENTS_ENABLED",
         "value": yclients,
-        "note": "YClients boat only — OFF until S5/S6",
+        "note": "YClients boat SoT — OFF until S5 smoke",
+    })
+    yclients_write = str(os.getenv("YCLIENTS_WRITE_ENABLED", "0")).strip().lower() in ("1", "true", "yes", "on")
+    rows.append({
+        "key": "YCLIENTS_WRITE_ENABLED",
+        "value": yclients_write,
+        "note": "S6 controlled writes — keep OFF until Owner GO",
     })
     return rows
 

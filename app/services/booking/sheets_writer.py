@@ -74,6 +74,53 @@ def compensate_workout_row(workout_id: str) -> bool:
         return False
 
 
+def mark_client_workouts_cancelled(workout_id: str) -> int:
+    """Mark Client_Workouts rows for workout_id as отменено. Returns updated count."""
+    wid = (workout_id or "").strip()
+    if not wid:
+        return 0
+    updated = 0
+    try:
+        from flask import current_app
+
+        from app.modules.sheets_access import get_google_sheet
+        from app.services.google_sheets_service import update_record
+
+        sheet = get_google_sheet("Client_Workouts")
+        matches = sheet.find_rows(workout_id=wid)
+        if not matches:
+            return 0
+        headers = sheet.values[0]
+        if "status" not in headers:
+            return 0
+        sid = current_app.config["SPREADSHEET_ID"]
+        col = _column_letter(headers.index("status"))
+        for row_idx, _row in matches:
+            update_record(sid, "Client_Workouts", f"{col}{row_idx}", ["отменено"])
+            updated += 1
+        logger.info(
+            "client_workouts_cancelled",
+            extra={"workout_id_tail": wid[-8:], "rows": updated},
+        )
+    except Exception as exc:
+        logger.error(
+            "client_workouts_cancel_failed",
+            extra={"workout_id_tail": wid[-8:], "error": type(exc).__name__},
+        )
+    return updated
+
+
+def mark_yclients_journal_cancelled(record_id: str) -> dict:
+    """Cancel Sheets journal for yc-{record_id} (Workouts + Client_Workouts)."""
+    rid = str(record_id or "").strip()
+    wid = rid if rid.startswith("yc-") else f"yc-{rid}"
+    return {
+        "workout_id": wid,
+        "workouts": compensate_workout_row(wid),
+        "client_workouts": mark_client_workouts_cancelled(wid),
+    }
+
+
 def write_workout_row(
     *,
     workout_id: str,

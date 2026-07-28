@@ -28,6 +28,9 @@ for _phase2_flag in (
 ):
     os.environ[_phase2_flag] = '0'
 
+# Prod may enable seasonal gym rules; keep unit pipeline tests deterministic.
+os.environ['BOOKING_SEASONAL_RULES_ENABLED'] = '0'
+
 for _social_flag in (
     'SOCIAL_MODULE_ENABLED',
     'SOCIAL_WIDGET_ENABLED',
@@ -37,6 +40,16 @@ for _social_flag in (
     'SOCIAL_BOOKING_ENABLED',
 ):
     os.environ[_social_flag] = '0'
+
+# Prod .env may enable YCLIENTS; unit tests default to legacy Calendar/Sheets boat path.
+for _yc_flag in (
+    'YCLIENTS_ENABLED',
+    'YCLIENTS_READ_ONLY_ENABLED',
+    'YCLIENTS_WRITE_ENABLED',
+    'YCLIENTS_GCAL_MIRROR_ENABLED',
+):
+    os.environ[_yc_flag] = '0'
+os.environ['BOAT_PROVIDER'] = 'calendar'
 
 from app import create_app
 import unittest.mock as umock
