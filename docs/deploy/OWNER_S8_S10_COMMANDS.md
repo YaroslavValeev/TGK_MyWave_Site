@@ -4,23 +4,22 @@
 **Camp:** public ON, cron OFF, Tour отладка — **не трогаем** до реальных кемпов.  
 **S7 GCal:** PASS (уже).
 
+## Prod status (2026-07-28/29) — CLOSED
+
+| Волна | Результат |
+|-------|-----------|
+| S5 read | PASS |
+| S6 write | PASS |
+| S7 GCal mirror | PASS + cron |
+| S8 TGbot gateway | PASS · PR [#16](https://github.com/YaroslavValeev/TGK_MyWave/pull/16) MERGED |
+| S9 Site boat + phone | PASS · Site PR [#117](https://github.com/YaroslavValeev/TGK_MyWave_Site/pull/117) MERGED |
+| S10 cancel/reschedule | PASS (TG E2E create→reschedule→cancel) |
+
+**Канон:** boat SoT = YClients · Site+TG → gateway · GCal mirror · Sheets `yc-{id}` · slot 25+5=30 · gym = legacy.
+
 Сервер Site: `/var/www/mywave` · `mywave-site`  
 Бот: `/opt/mywave-bot` · `mywave-telegram-bot`  
 **Не трогать:** `mywave-node`
-
-Код S8–S10 уже в Site `main`. Нужна **проверка на проде** + S9 env (hero CTA → модалка) + S10 smoke.
-
----
-
-## Карта волн
-
-| Волна | Суть | Статус кода | Что сделать Owner |
-|-------|------|-------------|-------------------|
-| **S8** | TGbot → Site gateway → YClients | PASS (док) | Verify bot env + gateway health + E2E TG |
-| **S9** | Site boat UI → YClients; TG phone | ready | Clear `HERO_BOOKING_EXTERNAL_URL`; smoke slots/book |
-| **S10** | cancel / reschedule via gateway | ready | Smoke create→patch→cancel |
-| Blog | editorial / video / admin | later | после S10 PASS |
-| S11 | final audit | later | после Blog |
 
 ---
 
