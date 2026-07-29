@@ -678,9 +678,38 @@ class YclientsProvider(BookingProvider):
         )
 
     def cancel_booking(self, external_id: str) -> bool:
-        """Mark cancelled via attendance=-1 (Клиент не пришел)."""
+        """Mark cancelled via attendance=-1. Already gone/cancelled → success."""
         self._require_write()
-        self.update_booking(external_id, attendance=ATTENDANCE_CANCELLED)
+        rid = str(external_id).strip()
+        try:
+            current = self.get_record(rid)
+        except YclientsApiError as exc:
+            if exc.status == 404:
+                logger.info("yclients_cancel_already_missing record_id=%s", rid)
+                return True
+            raise
+
+        if not current:
+            return True
+        life = parse_attendance_status(
+            current.get("attendance"),
+            deleted=bool(current.get("deleted")),
+        )
+        if life in ("cancelled", "deleted") or bool(current.get("deleted")):
+            logger.info(
+                "yclients_cancel_idempotent record_id=%s lifecycle=%s",
+                rid,
+                life,
+            )
+            return True
+
+        try:
+            self.update_booking(rid, attendance=ATTENDANCE_CANCELLED)
+        except YclientsApiError as exc:
+            if exc.status == 404:
+                logger.info("yclients_cancel_race_missing record_id=%s", rid)
+                return True
+            raise
         return True
 
     def delete_booking(self, external_id: str) -> bool:
