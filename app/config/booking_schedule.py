@@ -70,7 +70,7 @@ def boat_slot_duration_minutes() -> int:
 
 
 def boat_seance_minutes() -> int:
-    """Чистое катание в YCLIENTS seance_length (минуты). Default 25."""
+    """Чистое катание (мин). Journal occupancy uses boat_slot_duration_minutes."""
     try:
         return max(1, int(os.environ.get("BOAT_SEANCE_MINUTES", "25")))
     except (TypeError, ValueError):

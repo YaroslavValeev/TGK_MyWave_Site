@@ -100,7 +100,8 @@ def yclients_slot_duration_minutes() -> int:
 
 
 def yclients_seance_minutes() -> int:
-    """YCLIENTS seance_length per set (ride only, default 25)."""
+    """Ride-only minutes (default 25). Prefer yclients_slot_duration_minutes for
+    journal seance_length so YC blocks 25+5 tech slot."""
     from app.config.booking_schedule import boat_seance_minutes
 
     return boat_seance_minutes()

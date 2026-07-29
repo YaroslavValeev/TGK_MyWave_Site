@@ -408,14 +408,16 @@ class YclientsProvider(BookingProvider):
     ) -> ProviderBookingResult:
         """Create boat booking.
 
-        Multi-set: one journal record with seance_length = set_count * BOAT_SEANCE
-        (default 25 min ride). Calendar occupancy is BOAT_SLOT (30) via GCal mirror.
+        Multi-set: one journal record.
+        - seance_length = set_count * BOAT_SLOT (30 min = 25 ride + 5 tech) so YC
+          blocks the full partner slot, not ride-only 25.
+        - services[].amount = set_count so YC shows N× «сет 25 мин» line.
         """
         self._require_write()
         sets = max(1, int(set_count or 1))
-        from app.config.yclients_config import yclients_seance_minutes
+        from app.config.yclients_config import yclients_slot_duration_minutes
 
-        duration_sec = sets * yclients_seance_minutes() * 60
+        duration_sec = sets * yclients_slot_duration_minutes() * 60
         comment = build_source_comment(
             source=source,
             internal_id=internal_id,
@@ -438,6 +440,7 @@ class YclientsProvider(BookingProvider):
                 service_id=int(svc_id),
                 datetime_str=dt,
                 seance_length=duration_sec,
+                service_amount=sets,
                 client_name=client_name,
                 client_phone=phone,
                 client_email=client_email or "noreply@mywavewake.ru",
@@ -530,11 +533,13 @@ class YclientsProvider(BookingProvider):
         comment: str,
         internal_id: str,
         custom_fields: Optional[Dict[str, Any]],
+        service_amount: int = 1,
     ) -> ProviderBookingResult:
         company_id = yclients_company_id()
+        amount = max(1, int(service_amount or 1))
         body: Dict[str, Any] = {
             "staff_id": staff_id,
-            "services": [{"id": service_id}],
+            "services": [{"id": service_id, "amount": amount}],
             "client": {
                 "phone": client_phone,
                 "name": client_name,
@@ -617,11 +622,17 @@ class YclientsProvider(BookingProvider):
         if custom_fields is not None:
             body["custom_fields"] = custom_fields
 
-        # Normalize services to [{id: ...}] if API returned richer objects
+        # Normalize services; keep amount (qty of ride sets) when present
         norm_services = []
         for svc in body.get("services") or []:
             if isinstance(svc, dict) and svc.get("id") is not None:
-                norm_services.append({"id": svc["id"]})
+                entry: Dict[str, Any] = {"id": svc["id"]}
+                if svc.get("amount") is not None:
+                    try:
+                        entry["amount"] = max(1, int(svc["amount"]))
+                    except (TypeError, ValueError):
+                        entry["amount"] = 1
+                norm_services.append(entry)
             elif isinstance(svc, int):
                 norm_services.append({"id": svc})
         if norm_services:

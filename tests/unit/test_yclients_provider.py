@@ -137,8 +137,9 @@ def test_create_journal_multi_set(monkeypatch):
     assert result.external_id == "999"
     assert captured["method"] == "POST"
     assert captured["path"] == "/records/2043174"
-    # 2 sets × 25 min seance (ride); slot occupancy 30 is for GCal/UI
-    assert captured["body"]["seance_length"] == 3000
+    # 2 sets × 30 min slot (25 ride + 5 tech) closes 60 min in YC
+    assert captured["body"]["seance_length"] == 3600
+    assert captured["body"]["services"] == [{"id": 77, "amount": 2}]
     assert "mw_source=telegram" in captured["body"]["comment"]
     assert captured["body"]["api_id"] == "mw-1"
     assert captured["body"]["client"]["phone"] == "79160117179"
