@@ -11,7 +11,7 @@
 | Journal | только наши `/health` curl — нет боевого трафика |
 | Disk tree | `/var/www/mywave-staging` ~1.9G (**не удалять**) |
 
-**Решение:** `stop` + `disable` unit → освободить RAM. Дерево и nginx config оставить (на случай будущего E2E + починки DNS).
+**Решение (GO Owner wave):** `stop` + `disable` unit → RAM. Дерево `/var/www/mywave-staging` и nginx vhost **оставить**. Prod `:5000` / node `:5001` / parser **не трогать**.
 
 ## E — parser downloads: purge HOLD
 
