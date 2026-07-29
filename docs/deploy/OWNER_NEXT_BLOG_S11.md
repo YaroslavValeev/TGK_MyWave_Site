@@ -1,12 +1,14 @@
-# Owner — статус волн (Blog → S11)
+# Owner — статус волн (Blog → S11 → Camp → YC)
 
 **YClients S5–S10:** CLOSED  
-**Blog B2 / B1 / B3:** CLOSED  
-**Blog B4.1 + B4.1b:** CLOSED на prod (`74fafb0e` / `397e663a`)  
-**Blog B4.2 body/video:** CLOSED (prod `9b8e22f1`) — UI save OK, flash с `final_posts`+video  
-**S11 light:** PASS  
-**S11 full:** CLOSED (`6940a81f`+; boat `list 22`)  
-**Camp:** GO Phase 2–3 — sync OK · cron `run_camp_sync.py` active  
-**YClients hotfix:** prod `0dd09368` (N×30 + amount) · smoke: `scripts/yclients_smoke_write.py --sets N`  
+**YClients slot30/amount:** CLOSED (`c7729014`) — smoke 1×1800+amt1 · 3×5400+amt3 PASS  
+**Blog B1–B4.2:** CLOSED  
+**S11 light + full:** CLOSED  
+**Camp:** CLOSED — sync OK · cron `run_camp_sync.py` active (`0 */6`)  
 
-Чеклист: `docs/deploy/S11_AUDIT_CHECKLIST.md`
+**YC визуал (smoke --keep):** record `1873794372` · 2026-08-06 19:30 · 90 мин / qty 3  
+**Ручная правка:** старая бронь 01.08 15:00–16:15 → end 16:30 + qty 3  
+
+Чеклист: `docs/deploy/S11_AUDIT_CHECKLIST.md`  
+Camp: `docs/deploy/OWNER_CAMP_GO_COMMANDS.md`  
+YC hotfix: `docs/deploy/OWNER_YC_SLOT30_AMOUNT_COMMANDS.md`  
