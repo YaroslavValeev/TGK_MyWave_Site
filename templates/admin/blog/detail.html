@@ -38,6 +38,19 @@
     max-width: 220px; max-height: 120px; object-fit: cover;
     border-radius: 8px; border: 1px solid var(--admin-border); margin-top: .5rem;
   }
+  .blog-seo-box {
+    border-radius: 10px; padding: .85rem 1rem; margin-bottom: 1rem;
+    border: 1px solid var(--admin-border); background: #fff;
+  }
+  .blog-seo-box__score { font-weight: 700; font-size: 1.05rem; margin-bottom: .35rem; }
+  .blog-seo-box ul { margin: .4rem 0 0; padding-left: 1.1rem; }
+  .blog-seo-box li { margin: .2rem 0; font-size: .9rem; }
+  .blog-seo-ok { color: #166534; }
+  .blog-seo-warn { color: #92400e; }
+  .blog-seo-fail { color: #991b1b; }
+  .blog-seo-box--fail { border-color: #fecaca; background: #fef2f2; }
+  .blog-seo-box--warn { border-color: #fde68a; background: #fffbeb; }
+  .blog-seo-box--ok { border-color: #bbf7d0; background: #f0fdf4; }
 </style>
 {% endblock %}
 
@@ -61,11 +74,27 @@
 
     <div class="blog-admin-help">
       <strong>Что здесь:</strong> карточка витрины и SEO (excerpt, теги, обложка, meta/OG, статус).<br>
-      <strong>Чего нет (пока):</strong> редактор текста статьи, загрузка фото/видео — тело в Parser / Sheets (<code>final_posts</code>).
+      <strong>Чего нет (пока):</strong> редактор текста статьи, загрузка фото/видео — тело в Parser / Sheets (<code>final_posts</code>).<br>
+      <strong>SEO:</strong> чеклист ниже — ориентир редактора (не замена SEO-специалиста). Цель: уникальный title ~60, meta 70–160, ≥2 тега, нормальная обложка.
       {% if suggested_filled %}
-      <br><strong>Автозаполнение:</strong> пустые поля подставлены из текста поста и тематики MyWave (услуги, события, катер, лагерь…).
+      <br><strong>Автозаполнение:</strong> пустые поля подставлены из текста + услуг MyWave (катер, онлайн-коучинг, лагерь, Social…).
       {% endif %}
     </div>
+
+    {% set seo = seo_checklist or {} %}
+    {% if seo %}
+    <div class="blog-seo-box {% if seo.fails %}blog-seo-box--fail{% elif seo.warns %}blog-seo-box--warn{% else %}blog-seo-box--ok{% endif %}">
+      <div class="blog-seo-box__score">SEO-оценка карточки: {{ seo.score }}/100 — {{ seo.label }}</div>
+      <ul>
+        {% for c in seo.checks %}
+          <li class="blog-seo-{{ c.level }}">
+            {% if c.level == 'ok' %}✓{% elif c.level == 'warn' %}!{% else %}✕{% endif %}
+            {{ c.message }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
 
     <p class="blog-admin-actions" style="margin-top:0;">
       {% if post.slug %}
@@ -143,8 +172,12 @@
 
       <div class="blog-admin-actions">
         {% if write_enabled %}
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.9rem;color:var(--admin-text-muted);">
+          <input type="checkbox" name="force_save" value="1">
+          Сохранить несмотря на критичные SEO-замечания
+        </label>
         <button type="submit" class="admin-btn admin-btn--primary">Сохранить в raw_feed</button>
-        <span class="admin-muted">Пустые поля при сохранении тоже подставятся автоматически.</span>
+        <span class="admin-muted">Пустые поля при сохранении подставятся автоматически. При fail-замечаниях нужен чекбокс выше.</span>
         {% else %}
         <p class="admin-muted">Включите <code>BLOG_ADMIN_WRITE_ENABLED=1</code> и перезапустите site.</p>
         {% endif %}

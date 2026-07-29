@@ -176,6 +176,7 @@ def _blog_form_values_from_post(post: dict) -> dict:
 def blog_detail(slug: str):
     from app.config.blog_features import is_blog_admin_write_enabled
     from app.services.blog.store import get_post_by_slug
+    from app.services.blog.suggest_card import seo_checklist_for_template
 
     post = get_post_by_slug(slug, prefer_sheets=True)
     if not post:
@@ -188,6 +189,7 @@ def blog_detail(slug: str):
         tags_str=form_values["raw_tags"],
         form_values=form_values,
         suggested_filled=False,
+        seo_checklist=seo_checklist_for_template(form_values),
     )
 
 
@@ -198,7 +200,11 @@ def blog_autofill(slug: str):
     """Подставить пустые SEO/теги/excerpt из текста поста (без записи в Sheets)."""
     from app.config.blog_features import is_blog_admin_write_enabled
     from app.services.blog.store import get_post_by_slug
-    from app.services.blog.suggest_card import build_card_suggestions, merge_empty_with_suggestions
+    from app.services.blog.suggest_card import (
+        build_card_suggestions,
+        merge_empty_with_suggestions,
+        seo_checklist_for_template,
+    )
 
     if not is_blog_admin_write_enabled():
         flash("Запись отключена: BLOG_ADMIN_WRITE_ENABLED=0", "error")
@@ -212,8 +218,10 @@ def blog_autofill(slug: str):
     suggestions = build_card_suggestions(post)
     form_values = merge_empty_with_suggestions(current, suggestions)
     form_values["status"] = current.get("status") or post.get("status") or "PUBLISHED"
+    checklist = seo_checklist_for_template(form_values)
     flash(
-        "Пустые поля заполнены из текста. Проверьте и нажмите «Сохранить в raw_feed».",
+        f"Пустые поля заполнены. SEO-оценка: {checklist['score']}/100 — "
+        f"{checklist['label']}. Проверьте и сохраните.",
         "success",
     )
     return render_template(
@@ -223,6 +231,7 @@ def blog_autofill(slug: str):
         tags_str=form_values.get("raw_tags") or "",
         form_values=form_values,
         suggested_filled=True,
+        seo_checklist=checklist,
     )
 
 
@@ -233,7 +242,11 @@ def blog_save(slug: str):
     from app.config.blog_features import is_blog_admin_write_enabled
     from app.services.blog.admin_writeback import write_admin_fields
     from app.services.blog.store import get_post_by_slug
-    from app.services.blog.suggest_card import build_card_suggestions, merge_empty_with_suggestions
+    from app.services.blog.suggest_card import (
+        build_card_suggestions,
+        merge_empty_with_suggestions,
+        seo_checklist_for_template,
+    )
 
     if not is_blog_admin_write_enabled():
         flash("Запись отключена: BLOG_ADMIN_WRITE_ENABLED=0", "error")
@@ -262,9 +275,28 @@ def blog_save(slug: str):
         "og_description": request.form.get("og_description"),
         "slug": request.form.get("slug"),
     }
-    # Пустые поля не пишем пустыми — подставляем эвристики из текста поста.
     fields = merge_empty_with_suggestions(raw_fields, build_card_suggestions(post))
     status = (request.form.get("status") or "").strip() or None
+    force_save = request.form.get("force_save") == "1"
+    checklist = seo_checklist_for_template({**fields, "status": status or ""})
+
+    if checklist["fails"] and not force_save:
+        flash(
+            f"SEO-чеклист: {checklist['fails']} критичных замечаний "
+            f"(оценка {checklist['score']}/100). Исправьте поля или отметьте "
+            f"«Сохранить несмотря на замечания».",
+            "error",
+        )
+        form_values = {**fields, "status": status or post.get("status") or ""}
+        return render_template(
+            "admin/blog/detail.html",
+            post=post,
+            write_enabled=True,
+            tags_str=form_values.get("raw_tags") or "",
+            form_values=form_values,
+            suggested_filled=False,
+            seo_checklist=checklist,
+        )
 
     ok, message, written = write_admin_fields(
         sheet_id=sheet_id,
@@ -273,7 +305,11 @@ def blog_save(slug: str):
         status=status,
     )
     if ok:
-        flash(f"Сохранено в raw_feed: {', '.join(written)}", "success")
+        flash(
+            f"Сохранено в raw_feed: {', '.join(written)}. "
+            f"SEO {checklist['score']}/100 ({checklist['label']}).",
+            "success",
+        )
         new_slug = (fields.get("slug") or slug).strip() or slug
         return redirect(url_for("admin.blog_detail", slug=new_slug))
 
