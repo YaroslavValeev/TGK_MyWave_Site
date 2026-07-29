@@ -649,6 +649,14 @@ def _extract_video_urls_from_row(row: Dict) -> Tuple[str, str, str]:
     return video_url, embed_url, poster
 
 
+def _safe_row_number(raw: object) -> Optional[int]:
+    try:
+        n = int(str(raw or "").strip())
+    except Exception:
+        return None
+    return n if n >= 2 else None
+
+
 def _normalize_row_from_sheets(row: Dict) -> Optional[Dict]:
     """Нормализует строку из Sheets в формат поста."""
     if not is_publishable_row(row):
@@ -749,6 +757,12 @@ def _normalize_row_from_sheets(row: Dict) -> Optional[Dict]:
         "source_url": str(row.get("source_url") or "").strip() or None,
         "status": str(row.get("status") or "").strip() or None,
         "author": str(row.get("author") or "").strip() or None,
+        "row_number": _safe_row_number(row.get("row_number")),
+        "seo_title": str(row.get("seo_title") or "").strip() or None,
+        "meta_description": str(row.get("meta_description") or "").strip() or None,
+        "og_title": str(row.get("og_title") or "").strip() or None,
+        "og_description": str(row.get("og_description") or "").strip() or None,
+        "canonical_url": str(row.get("canonical_url") or "").strip() or None,
     }
     attach_video_display_fields(result)
     return result

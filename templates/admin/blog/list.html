@@ -20,7 +20,7 @@
     </div>
     <div class="admin-card__body">
         <p class="admin-muted" style="margin-bottom:1rem;">
-            Просмотр витрины блога. Полный editorial workflow (S7–S9) — отдельно.
+            Список витрины (Sheets → DB fallback). B4: правка SEO/карточки в карточке поста.
             <a href="/blog" target="_blank" rel="noopener">Открыть /blog</a>
         </p>
         {% if posts %}
@@ -46,6 +46,7 @@
                         <td>{{ post.source_name or post.source_type or '—' }}</td>
                         <td>
                             {% if post.slug %}
+                            <a class="admin-btn admin-btn--secondary admin-btn--sm" href="{{ url_for('admin.blog_detail', slug=post.slug) }}">Карточка</a>
                             <a class="admin-btn admin-btn--secondary admin-btn--sm" href="/blog/{{ post.slug }}" target="_blank" rel="noopener">На сайте</a>
                             {% endif %}
                         </td>

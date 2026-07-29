@@ -1,0 +1,101 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ post.title }} — Блог{% endblock %}
+{% block admin_title %}Пост: {{ post.title }}{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="admin-breadcrumbs">
+        <li><a href="{{ url_for('admin.index') }}">Главная</a></li>
+        <li><a href="{{ url_for('admin.blog') }}">Блог</a></li>
+        <li>{{ post.slug }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card">
+  <div class="admin-card__header">
+    <h2 class="admin-card__title">Карточка / SEO (B4-MVP)</h2>
+    <span class="admin-muted">
+      write:
+      {% if write_enabled %}<strong>ON</strong>{% else %}<strong>OFF</strong> (BLOG_ADMIN_WRITE_ENABLED){% endif %}
+      · id={{ post.id or '—' }} · row={{ post.row_number or '—' }}
+    </span>
+  </div>
+  <div class="admin-card__body">
+    <p class="admin-muted">
+      Тело статьи (<code>final_posts</code>) правится в Parser / Sheets.
+      Здесь — excerpt, теги, обложка, SEO, статус витрины. Ownership: site → raw_feed.
+    </p>
+
+    <p style="margin:0 0 1rem;">
+      {% if post.slug %}
+      <a class="admin-btn admin-btn--secondary admin-btn--sm" href="/blog/{{ post.slug }}" target="_blank" rel="noopener">Открыть на сайте</a>
+      {% endif %}
+      <form method="post" action="{{ url_for('admin.blog_invalidate_cache', slug=post.slug) }}" style="display:inline;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="admin-btn admin-btn--secondary admin-btn--sm">Сбросить кэш блога</button>
+      </form>
+    </p>
+
+    <form method="post" action="{{ url_for('admin.blog_save', slug=post.slug) }}" class="admin-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <label>Slug (ASCII)
+        <input name="slug" value="{{ post.slug or '' }}" {% if not write_enabled %}disabled{% endif %}>
+      </label>
+
+      <label>Статус
+        <select name="status" {% if not write_enabled %}disabled{% endif %}>
+          {% set st = (post.status or '')|upper %}
+          <option value="PUBLISHED" {% if st == 'PUBLISHED' %}selected{% endif %}>PUBLISHED</option>
+          <option value="READY_TO_PUBLISH" {% if st == 'READY_TO_PUBLISH' %}selected{% endif %}>READY_TO_PUBLISH</option>
+          <option value="ARCHIVED" {% if st == 'ARCHIVED' %}selected{% endif %}>ARCHIVED</option>
+        </select>
+      </label>
+
+      <label>Excerpt / summary
+        <textarea name="excerpt" rows="4" {% if not write_enabled %}disabled{% endif %}>{{ post.excerpt or '' }}</textarea>
+      </label>
+
+      <label>Теги (через запятую → raw_tags)
+        <input name="raw_tags" value="{{ tags_str }}" {% if not write_enabled %}disabled{% endif %}>
+      </label>
+
+      <label>Cover image URL
+        <input name="cover_image_url" value="{{ post.cover_image_url or '' }}" {% if not write_enabled %}disabled{% endif %}>
+      </label>
+
+      <label>seo_title
+        <input name="seo_title" value="{{ post.seo_title or '' }}" {% if not write_enabled %}disabled{% endif %}>
+      </label>
+
+      <label>meta_description
+        <textarea name="meta_description" rows="2" {% if not write_enabled %}disabled{% endif %}>{{ post.meta_description or '' }}</textarea>
+      </label>
+
+      <label>og_title
+        <input name="og_title" value="{{ post.og_title or '' }}" {% if not write_enabled %}disabled{% endif %}>
+      </label>
+
+      <label>og_description
+        <textarea name="og_description" rows="2" {% if not write_enabled %}disabled{% endif %}>{{ post.og_description or '' }}</textarea>
+      </label>
+
+      {% if write_enabled %}
+      <button type="submit" class="admin-btn admin-btn--primary">Сохранить в raw_feed</button>
+      {% else %}
+      <p class="admin-muted">Чтобы включить запись: в `.env` поставьте <code>BLOG_ADMIN_WRITE_ENABLED=1</code> и перезапустите <code>mywave-site</code>.</p>
+      {% endif %}
+    </form>
+
+    <hr style="margin:1.5rem 0; opacity:.2;">
+    <h3>Источник / превью</h3>
+    <p class="admin-muted">Источник: {{ post.source_name or '—' }} ·
+      {% if post.source_url %}<a href="{{ post.source_url }}" target="_blank" rel="noopener">ссылка</a>{% endif %}
+    </p>
+    <pre style="white-space:pre-wrap; max-height:240px; overflow:auto; background:#f6f7f9; padding:12px; border-radius:8px;">{{ (post.content_md or '')[:4000] }}</pre>
+  </div>
+</div>
+{% endblock %}
