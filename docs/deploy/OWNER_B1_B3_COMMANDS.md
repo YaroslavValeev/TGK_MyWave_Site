@@ -1,105 +1,39 @@
-# Owner — Blog B1/B3 deploy + verify (после YClients CLOSED)
+# Owner — Blog B1/B3 deploy + verify
 
-**Дата:** 2026-07-29  
-**Prod cwd:** `/var/www/mywave`  
-**Сервис:** только `mywave-site`  
-**Не трогать:** `mywave-node`, bot, Camp cron, YClients write
+**Статус prod:** **CLOSED / PASS** (2026-07-29, SHA `d1fe85ed`)
 
-**Уже CLOSED на prod:** YClients S5–S10 · Blog diagnose · B2 SEO (`c70b13f6`)
+| Check | Result |
+|-------|--------|
+| SHA | `d1fe85ed` |
+| `/blog` | HTTP 200 |
+| `og:title` count | **1** (`Блог MyWave — новости и статьи`) |
+| canonical | `https://mywavewake.ru/blog` |
+| `?q=foil` | 200 |
+| API latest slug | ASCII (`1-avgusta-v-klube-…-fc2213`) |
+| CSP `frame-src` | youtube + vk + rutube + ok + kinescope |
+| CSP `media-src` | `'self' blob: https: http:` |
 
-**Этот релиз:** B1 display/slug hygiene + dual og:title fix + B3 CSP video hosts/media-src + editorial checklist
+**Ожидаемо из Sheets (не баг сайта):** `tags: []`, `video_url: null` — править в Parser/`raw_feed` по `docs/BLOG_EDITORIAL_CHECKLIST.md`.
 
 ---
 
-## 1) Pull + restart
-
-```bash
-cd /var/www/mywave
-git fetch origin
-git log -1 --oneline
-git pull --ff-only origin main
-git log -1 --oneline
-# ожидаемо: новый SHA (B1/B3), не c70b13f6
-
-sudo systemctl restart mywave-site
-systemctl is-active mywave-site
-# ожидаемо: active
-```
-
-**Rollback:**
+## Rollback (если понадобится)
 
 ```bash
 cd /var/www/mywave
 git checkout c70b13f6
 sudo systemctl restart mywave-site
-systemctl is-active mywave-site
 ```
 
 ---
 
-## 2) Verify SEO (один og:title) + search + home
-
-```bash
-echo "=== SEO /blog ==="
-curl -sS -o /tmp/blog.html -w "HTTP %{http_code}\n" https://mywavewake.ru/blog
-grep -c 'property="og:title"' /tmp/blog.html
-grep -E 'rel="canonical"|property="og:title"|property="og:url"' /tmp/blog.html | head -10
-# PASS: HTTP 200; count og:title == 1; canonical + blog og:title
-
-echo "=== SEARCH ==="
-curl -sS -o /dev/null -w "%{http_code}\n" "https://mywavewake.ru/blog?q=foil"
-# PASS: 200
-
-echo "=== HOME ==="
-curl -sS https://mywavewake.ru/ | grep -E 'id="blog"|blog-home-card|Все публикации' | head -8
-# PASS: section + cards
-```
-
----
-
-## 3) Verify title hygiene (API) + CSP video
-
-```bash
-echo "=== LATEST TITLE ==="
-curl -sS https://mywavewake.ru/api/blog/latest | python3 -m json.tool | head -25
-# PASS: title без ведущего emoji (если был); slug может остаться кириллическим у СТАРЫХ строк из Sheets
-
-echo "=== CSP frame/media ==="
-curl -sSI https://mywavewake.ru/blog | tr -d '\r' | grep -i content-security-policy | head -1
-# PASS: в CSP есть youtube + rutube/vk (или kinescope) и media-src допускает https:
-```
-
----
-
-## 4) Что остаётся Owner/Parser (не код сайта)
-
-В Sheets (`raw_feed`) для **новых** строк перед `READY_TO_PUBLISH`:
-
-- короткий **ASCII slug**
-- обложка (не Place1Logo)
-- 1–4 тега
-- video_url/embed при наличии видео
-
-Чеклист: `docs/BLOG_EDITORIAL_CHECKLIST.md`
-
----
-
-## 5) Дальше по дорожной карте
+## Дальше
 
 | Волна | Статус |
 |-------|--------|
-| B1 editorial+hygiene | этот релиз (код) + процесс в Sheets |
-| B2 UX/SEO | CLOSED |
-| B3 video CSP | этот релиз (allowlist) |
-| B4 Admin write | следующий код-эпик (нужен GO) |
-| S11 Final audit | после B4 или по GO |
+| YClients S5–S10 | CLOSED |
+| Blog B2 SEO | CLOSED |
+| Blog B1 + B3 | **CLOSED** |
+| B4 Admin write | pending GO |
+| S11 Final audit | after B4 / GO |
 | Camp | HOLD |
-
----
-
-## Не делать без GO
-
-- Camp import/cron enable
-- YClients write off
-- Restart `mywave-node`
-- Массовый rewrite уже опубликованных slug в Sheets (ломает URL)
