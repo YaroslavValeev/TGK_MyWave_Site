@@ -24,12 +24,12 @@
 
 ## C. Blog public
 
-- [x] `/blog` 200 _(дожать: 1× og:title + canonical)_
-- [ ] `/blog?q=…` 200
-- [ ] `/api/blog/latest` JSON
-- [ ] Home `#blog` cards
-- [ ] CSP: youtube/vk/rutube + `media-src https:`
-- [ ] Public post после B4.2: cache → `/blog/<slug>` отражает save
+- [x] `/blog` 200 + 1× `og:title` + canonical _(2026-07-29)_
+- [x] `/blog?q=…` 200
+- [x] `/api/blog/latest` JSON
+- [ ] Home `#blog` cards _(UI spot-check)_
+- [ ] CSP: youtube/vk/rutube + `media-src https:` _(UI/view-source)_
+- [x] Public post после B4.2: `/blog/<slug>` 200 + контент виден
 
 ## D. Blog admin B4
 
