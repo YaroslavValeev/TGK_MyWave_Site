@@ -5,10 +5,11 @@
 **Blog B1–B4.2:** CLOSED  
 **S11 light + full:** CLOSED  
 **Camp:** CLOSED — sync OK · cron `run_camp_sync.py` active (`0 */6`)  
-
-**YC визуал (smoke --keep):** record `1873794372` · 2026-08-06 19:30 · 90 мин / qty 3  
-**Ручная правка:** старая бронь 01.08 15:00–16:15 → end 16:30 + qty 3  
+**D staging:** CLOSED — `stop`+`disable` (DNS NXDOMAIN); tree kept  
+**E parser downloads:** diagnose CLOSED · purge HOLD (~3.33G dup-like; нужен ACK Parser)  
+**Disk:** 71% / 15G free  
 
 Чеклист: `docs/deploy/S11_AUDIT_CHECKLIST.md`  
+D+E: `docs/deploy/OWNER_DE_STAGING_PARSER_COMMANDS.md`  
 Camp: `docs/deploy/OWNER_CAMP_GO_COMMANDS.md`  
 YC hotfix: `docs/deploy/OWNER_YC_SLOT30_AMOUNT_COMMANDS.md`  
