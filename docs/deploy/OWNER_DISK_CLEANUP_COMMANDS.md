@@ -1,9 +1,9 @@
 # Owner — диск prod (диагностика → safe clean)
 
-**Сервер:** 4169037-ep26382 · `/` ~89% (44G/50G)  
-**Цель:** освободить место **без** поломки Site / bot / Camp  
+**Сервер:** 4169037-ep26382 · было ~89% → после pre-git/journal/builder ~**78% / 12G free**  
+**Цель:** освободить место **без** поломки Site / bot / Camp / ai-team docker  
 
-**Не трогать без отдельного GO:** `/opt/bot3`, `/opt/bot2`, `/opt/mywave-bot`, `/var/backups`, `mywave-node`, live DB/uploads.
+**Не трогать:** live `/opt/bot3/parser-new-bot`, `/opt/mywave-bot`, docker **volumes**, `mywave-node`, live downloads.
 
 ---
 
