@@ -1,13 +1,14 @@
 """
-Admin writeback в raw_feed: только разрешённые site/SEO поля (B4-MVP).
+Admin writeback в raw_feed: site/SEO/карточка + тело/видео (B4.2).
 
-Не пишет: final_posts, raw_content, ingest/process/parse, approval.
-Parser владеет телом статьи; сайт — витринные/SEO/карточка.
+Не пишет: raw_content, ingest/process/parse, approval.
+final_posts / video_* — явное site editorial override в Sheets (осторожно с Parser).
 """
 from __future__ import annotations
 
 import re
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import urlparse
 
 from app.modules.logger import get_logger
 from app.services.blog.display_text import plain_excerpt_for_display, plain_title_for_display
@@ -23,7 +24,7 @@ from app.services.google import read_sheet
 
 logger = get_logger(__name__)
 
-# Колонки, которые Site Admin имеет право писать в B4-MVP.
+# B4.2: витрина/SEO + тело статьи + video URLs.
 ADMIN_WRITABLE_COLUMNS = (
     "excerpt",
     "summary",
@@ -34,15 +35,21 @@ ADMIN_WRITABLE_COLUMNS = (
     "og_title",
     "og_description",
     "slug",
+    "final_posts",
+    "video_url",
+    "embed_url",
+    "video_embed_url",
+    "video_preview_image_url",
 )
 
-# Статус — отдельное узкое действие (не full body rewrite).
 ADMIN_STATUS_VALUES = frozenset({"PUBLISHED", "READY_TO_PUBLISH", "ARCHIVED"})
+
+# Google Sheets cell soft limit ~50k; оставляем запас.
+_MAX_FINAL_POSTS_CHARS = 48000
 
 
 def _norm_tags(raw: str) -> str:
     parts = [p.strip() for p in re.split(r"[,;]", raw or "") if p.strip()]
-    # uniq, preserve order
     out: List[str] = []
     seen = set()
     for p in parts:
@@ -58,12 +65,28 @@ def _safe_slug(value: str, fallback_id: str) -> str:
     s = (value or "").strip().lower()
     if not s:
         return ""
-    # если уже ascii — лёгкая чистка; иначе транслит через _slugify без хвоста hash отдельно
     if not s.isascii():
         return _slugify(s, fallback_id)
     cleaned = "".join(ch if (ch.isalnum() or ch in "-_") else "-" for ch in s)
     cleaned = "-".join(p for p in cleaned.split("-") if p)
     return cleaned[:80]
+
+
+def _safe_https_url(value: str) -> str:
+    s = (value or "").strip()
+    if not s:
+        return ""
+    if s.startswith("//"):
+        s = "https:" + s
+    if s.startswith("/"):
+        return s  # relative site path ok for cover/poster
+    try:
+        p = urlparse(s)
+    except Exception:
+        return ""
+    if p.scheme.lower() not in ("http", "https"):
+        return ""
+    return s
 
 
 def write_admin_fields(
@@ -121,7 +144,7 @@ def write_admin_fields(
         payload["excerpt"] = excerpt
         payload["summary"] = excerpt
     if "cover_image_url" in fields and fields.get("cover_image_url") is not None:
-        payload["cover_image_url"] = str(fields.get("cover_image_url") or "").strip()
+        payload["cover_image_url"] = _safe_https_url(str(fields.get("cover_image_url") or ""))
     if "raw_tags" in fields and fields.get("raw_tags") is not None:
         payload["raw_tags"] = _norm_tags(str(fields.get("raw_tags") or ""))
     if "seo_title" in fields and fields.get("seo_title") is not None:
@@ -140,6 +163,24 @@ def write_admin_fields(
         new_slug = _safe_slug(str(fields.get("slug") or ""), sheet_id)
         if new_slug:
             payload["slug"] = new_slug
+
+    # B4.2 body / media
+    if "final_posts" in fields and fields.get("final_posts") is not None:
+        body = str(fields.get("final_posts") or "")
+        if len(body) > _MAX_FINAL_POSTS_CHARS:
+            body = body[:_MAX_FINAL_POSTS_CHARS]
+        payload["final_posts"] = body
+    if "video_url" in fields and fields.get("video_url") is not None:
+        payload["video_url"] = _safe_https_url(str(fields.get("video_url") or ""))
+    if "embed_url" in fields and fields.get("embed_url") is not None:
+        emb = _safe_https_url(str(fields.get("embed_url") or ""))
+        payload["embed_url"] = emb
+        # дублируем в video_embed_url, если колонка есть
+        payload["video_embed_url"] = emb
+    if "video_preview_image_url" in fields and fields.get("video_preview_image_url") is not None:
+        payload["video_preview_image_url"] = _safe_https_url(
+            str(fields.get("video_preview_image_url") or "")
+        )
 
     for col_name, value in payload.items():
         if col_name not in ADMIN_WRITABLE_COLUMNS:

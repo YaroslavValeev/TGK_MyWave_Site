@@ -167,6 +167,10 @@ def _blog_form_values_from_post(post: dict) -> dict:
         "meta_description": post.get("meta_description") or "",
         "og_title": post.get("og_title") or "",
         "og_description": post.get("og_description") or "",
+        "final_posts": post.get("content_md") or "",
+        "video_url": post.get("video_url") or "",
+        "embed_url": post.get("embed_url") or "",
+        "video_preview_image_url": post.get("video_poster_url") or "",
     }
 
 
@@ -276,8 +280,39 @@ def blog_save(slug: str):
         "slug": request.form.get("slug"),
     }
     fields = merge_empty_with_suggestions(raw_fields, build_card_suggestions(post))
+    # Тело/видео не участвуют в autofill SEO — всегда из формы (B4.2).
+    fields["final_posts"] = request.form.get("final_posts") if request.form.get("final_posts") is not None else (post.get("content_md") or "")
+    fields["video_url"] = request.form.get("video_url") or ""
+    fields["embed_url"] = request.form.get("embed_url") or ""
+    fields["video_preview_image_url"] = request.form.get("video_preview_image_url") or ""
+
     status = (request.form.get("status") or "").strip() or None
     force_save = request.form.get("force_save") == "1"
+    confirm_body = request.form.get("confirm_body_write") == "1"
+    original_body = (post.get("content_md") or "").strip()
+    new_body = (fields.get("final_posts") or "").strip()
+    body_changed = new_body != original_body
+    if body_changed and not confirm_body:
+        flash(
+            "Текст статьи изменён: отметьте «Подтверждаю запись final_posts в Sheets» "
+            "(это перезапишет поле Parser).",
+            "error",
+        )
+        form_values = {
+            **fields,
+            "status": status or post.get("status") or "",
+        }
+        checklist = seo_checklist_for_template({**fields, "status": status or ""})
+        return render_template(
+            "admin/blog/detail.html",
+            post=post,
+            write_enabled=True,
+            tags_str=form_values.get("raw_tags") or "",
+            form_values=form_values,
+            suggested_filled=False,
+            seo_checklist=checklist,
+        )
+
     checklist = seo_checklist_for_template({**fields, "status": status or ""})
 
     if checklist["fails"] and not force_save:

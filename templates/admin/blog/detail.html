@@ -73,11 +73,11 @@
     </div>
 
     <div class="blog-admin-help">
-      <strong>Что здесь:</strong> карточка витрины и SEO (excerpt, теги, обложка, meta/OG, статус).<br>
-      <strong>Чего нет (пока):</strong> редактор текста статьи, загрузка фото/видео — тело в Parser / Sheets (<code>final_posts</code>).<br>
-      <strong>SEO:</strong> чеклист ниже — ориентир редактора (не замена SEO-специалиста). Цель: уникальный title ~60, meta 70–160, ≥2 тега, нормальная обложка.
+      <strong>Что здесь:</strong> карточка/SEO + <strong>текст статьи (Markdown)</strong> и URL видео.<br>
+      Запись <code>final_posts</code> в Sheets — site override поверх Parser; при изменении текста нужен чекбокс подтверждения.<br>
+      <strong>SEO:</strong> оценка 0–100 — ориентир редактора, не замена SEO-специалиста.
       {% if suggested_filled %}
-      <br><strong>Автозаполнение:</strong> пустые поля подставлены из текста + услуг MyWave (катер, онлайн-коучинг, лагерь, Social…).
+      <br><strong>Автозаполнение:</strong> пустые SEO/теги из текста + услуг MyWave (тело статьи autofill не трогает).
       {% endif %}
     </div>
 
@@ -170,26 +170,50 @@
         <textarea class="admin-form-control" id="og_description" name="og_description" rows="2" {% if not write_enabled %}disabled{% endif %}>{{ f.get('og_description', '') }}</textarea>
       </div>
 
+      <h3 style="margin:1.25rem 0 .5rem; font-size:1rem;">Текст статьи (final_posts, Markdown)</h3>
+      <div class="admin-form-group">
+        <label for="final_posts">Содержимое поста</label>
+        <textarea class="admin-form-control" id="final_posts" name="final_posts" rows="14" style="font-family:ui-monospace,monospace;font-size:.9rem;" {% if not write_enabled %}disabled{% endif %}>{{ f.get('final_posts', '') }}</textarea>
+      </div>
+
+      <h3 style="margin:1.25rem 0 .5rem; font-size:1rem;">Видео (URL, без upload файла)</h3>
+      <div class="blog-admin-grid blog-admin-grid--2">
+        <div class="admin-form-group">
+          <label for="video_url">video_url (mp4 / ссылка)</label>
+          <input class="admin-form-control" id="video_url" name="video_url" value="{{ f.get('video_url', '') }}" {% if not write_enabled %}disabled{% endif %}>
+        </div>
+        <div class="admin-form-group">
+          <label for="embed_url">embed_url (YouTube/VK/…)</label>
+          <input class="admin-form-control" id="embed_url" name="embed_url" value="{{ f.get('embed_url', '') }}" {% if not write_enabled %}disabled{% endif %}>
+        </div>
+      </div>
+      <div class="admin-form-group">
+        <label for="video_preview_image_url">Постер видео (URL картинки)</label>
+        <input class="admin-form-control" id="video_preview_image_url" name="video_preview_image_url" value="{{ f.get('video_preview_image_url', '') }}" {% if not write_enabled %}disabled{% endif %}>
+      </div>
+
       <div class="blog-admin-actions">
         {% if write_enabled %}
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.9rem;color:var(--admin-text-muted);">
+          <input type="checkbox" name="confirm_body_write" value="1">
+          Подтверждаю запись final_posts в Sheets (перезапись Parser)
+        </label>
         <label style="display:flex;align-items:center;gap:.4rem;font-size:.9rem;color:var(--admin-text-muted);">
           <input type="checkbox" name="force_save" value="1">
           Сохранить несмотря на критичные SEO-замечания
         </label>
         <button type="submit" class="admin-btn admin-btn--primary">Сохранить в raw_feed</button>
-        <span class="admin-muted">Пустые поля при сохранении подставятся автоматически. При fail-замечаниях нужен чекбокс выше.</span>
+        <span class="admin-muted">SEO-поля: пустые подставятся. Текст/видео: только если подтвердили изменение тела.</span>
         {% else %}
         <p class="admin-muted">Включите <code>BLOG_ADMIN_WRITE_ENABLED=1</code> и перезапустите site.</p>
         {% endif %}
       </div>
     </form>
 
-    <hr style="margin:1.5rem 0; opacity:.15;">
-    <h3 style="font-size:1rem;">Превью текста статьи (только чтение)</h3>
-    <p class="admin-muted">Источник: {{ post.source_name or '—' }}
+    <p class="admin-muted" style="margin-top:1rem;">
+      Источник: {{ post.source_name or '—' }}
       {% if post.source_url %} · <a href="{{ post.source_url }}" target="_blank" rel="noopener">ссылка</a>{% endif %}
     </p>
-    <div class="blog-admin-preview">{{ (post.content_md or '— нет content_md —')[:2500] }}</div>
   </div>
 </div>
 {% endblock %}
