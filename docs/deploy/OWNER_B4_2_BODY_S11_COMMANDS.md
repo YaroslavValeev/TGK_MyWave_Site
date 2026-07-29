@@ -1,6 +1,6 @@
 # Owner — B4.2 body/video edit + S11 light
 
-**SHA ожидаемый:** commit B4.2 (final_posts + video URLs в админке)  
+**SHA ожидаемый:** `2fa65118` (B4.2 final_posts + video URLs в админке)  
 **Сервис:** только `mywave-site`  
 **Флаг:** `BLOG_ADMIN_WRITE_ENABLED=1`
 
