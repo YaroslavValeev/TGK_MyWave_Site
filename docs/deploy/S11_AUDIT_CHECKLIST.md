@@ -19,8 +19,8 @@
 
 ## B. Booking boat (YClients path)
 
-- [x] `/api/calendar/slots/<+3d>?service=boat` → HTTP 200 _(дожать: JSON — OWNER_S11_FULL)_
-- [ ] Bot booking create/reschedule/cancel не регрессировал (Owner spot-check)
+- [x] `/api/calendar/slots/<+3d>?service=boat` → JSON slots (`list 22`, 2026-07-29)
+- [ ] Bot booking create/reschedule/cancel не регрессировал (Owner spot-check, optional)
 
 ## C. Blog public
 
@@ -56,4 +56,4 @@
 
 ## Критерий «S11 full DONE» (без Camp)
 
-Блоки 0–3 и 5 в `OWNER_S11_FULL_COMMANDS.md` PASS.
+Блоки 0–3 и 5 в `OWNER_S11_FULL_COMMANDS.md` PASS. **CLOSED 2026-07-29** (boat `list 22`).
