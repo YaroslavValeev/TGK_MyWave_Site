@@ -1,101 +1,162 @@
 {% extends "admin/base.html" %}
 
 {% block title %}{{ post.title }} — Блог{% endblock %}
-{% block admin_title %}Пост: {{ post.title }}{% endblock %}
+{% block admin_title %}Карточка поста{% endblock %}
 
 {% block breadcrumbs %}
 <nav aria-label="breadcrumb">
     <ol class="admin-breadcrumbs">
         <li><a href="{{ url_for('admin.index') }}">Главная</a></li>
         <li><a href="{{ url_for('admin.blog') }}">Блог</a></li>
-        <li>{{ post.slug }}</li>
+        <li>Карточка</li>
     </ol>
 </nav>
 {% endblock %}
 
+{% block extra_head %}
+<style>
+  .blog-admin-steps { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0 0 1rem; }
+  .blog-admin-step {
+    background: #ecfeff; border: 1px solid #a5f3fc; color: #0e7490;
+    border-radius: 999px; padding: .35rem .75rem; font-size: .85rem; font-weight: 600;
+  }
+  .blog-admin-help {
+    background: #f8fafc; border: 1px solid var(--admin-border); border-radius: 10px;
+    padding: .85rem 1rem; margin-bottom: 1rem; color: var(--admin-text-muted); font-size: .9rem;
+  }
+  .blog-admin-grid { display: grid; gap: 1rem; }
+  @media (min-width: 900px) {
+    .blog-admin-grid--2 { grid-template-columns: 1fr 1fr; }
+  }
+  .blog-admin-preview {
+    max-height: 180px; overflow: auto; white-space: pre-wrap;
+    background: #f8fafc; border: 1px solid var(--admin-border);
+    border-radius: 8px; padding: .75rem; font-size: .85rem;
+  }
+  .blog-admin-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; align-items: center; }
+  .blog-admin-cover-preview {
+    max-width: 220px; max-height: 120px; object-fit: cover;
+    border-radius: 8px; border: 1px solid var(--admin-border); margin-top: .5rem;
+  }
+</style>
+{% endblock %}
+
 {% block admin_content %}
+{% set f = form_values or {} %}
 <div class="admin-card">
   <div class="admin-card__header">
-    <h2 class="admin-card__title">Карточка / SEO (B4-MVP)</h2>
+    <h2 class="admin-card__title">{{ post.title }}</h2>
     <span class="admin-muted">
-      write:
-      {% if write_enabled %}<strong>ON</strong>{% else %}<strong>OFF</strong> (BLOG_ADMIN_WRITE_ENABLED){% endif %}
-      · id={{ post.id or '—' }} · row={{ post.row_number or '—' }}
+      {% if write_enabled %}<span class="admin-badge" style="background:#dcfce7;color:#166534;">запись ON</span>
+      {% else %}<span class="admin-badge">запись OFF</span>{% endif %}
+      · id {{ post.id or '—' }} · строка {{ post.row_number or '—' }}
     </span>
   </div>
   <div class="admin-card__body">
-    <p class="admin-muted">
-      Тело статьи (<code>final_posts</code>) правится в Parser / Sheets.
-      Здесь — excerpt, теги, обложка, SEO, статус витрины. Ownership: site → raw_feed.
-    </p>
+    <div class="blog-admin-steps" aria-label="Шаги">
+      <span class="blog-admin-step">1. Заполнить пустые</span>
+      <span class="blog-admin-step">2. Проверить</span>
+      <span class="blog-admin-step">3. Сохранить</span>
+    </div>
 
-    <p style="margin:0 0 1rem;">
+    <div class="blog-admin-help">
+      <strong>Что здесь:</strong> карточка витрины и SEO (excerpt, теги, обложка, meta/OG, статус).<br>
+      <strong>Чего нет (пока):</strong> редактор текста статьи, загрузка фото/видео — тело в Parser / Sheets (<code>final_posts</code>).
+      {% if suggested_filled %}
+      <br><strong>Автозаполнение:</strong> пустые поля подставлены из текста поста и тематики MyWave (услуги, события, катер, лагерь…).
+      {% endif %}
+    </div>
+
+    <p class="blog-admin-actions" style="margin-top:0;">
       {% if post.slug %}
       <a class="admin-btn admin-btn--secondary admin-btn--sm" href="/blog/{{ post.slug }}" target="_blank" rel="noopener">Открыть на сайте</a>
       {% endif %}
       <form method="post" action="{{ url_for('admin.blog_invalidate_cache', slug=post.slug) }}" style="display:inline;">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="admin-btn admin-btn--secondary admin-btn--sm">Сбросить кэш блога</button>
+        <button type="submit" class="admin-btn admin-btn--secondary admin-btn--sm">Сбросить кэш</button>
       </form>
+      {% if write_enabled %}
+      <form method="post" action="{{ url_for('admin.blog_autofill', slug=post.slug) }}" style="display:inline;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="admin-btn admin-btn--secondary admin-btn--sm">Заполнить пустые из текста</button>
+      </form>
+      {% endif %}
     </p>
 
     <form method="post" action="{{ url_for('admin.blog_save', slug=post.slug) }}" class="admin-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-      <label>Slug (ASCII)
-        <input name="slug" value="{{ post.slug or '' }}" {% if not write_enabled %}disabled{% endif %}>
-      </label>
+      <div class="blog-admin-grid blog-admin-grid--2">
+        <div class="admin-form-group">
+          <label for="status">Статус на витрине</label>
+          <select class="admin-form-control" id="status" name="status" {% if not write_enabled %}disabled{% endif %}>
+            {% set st = (f.get('status') or post.status or '')|upper %}
+            <option value="PUBLISHED" {% if st == 'PUBLISHED' %}selected{% endif %}>PUBLISHED — видно на сайте</option>
+            <option value="READY_TO_PUBLISH" {% if st == 'READY_TO_PUBLISH' %}selected{% endif %}>READY_TO_PUBLISH</option>
+            <option value="ARCHIVED" {% if st == 'ARCHIVED' %}selected{% endif %}>ARCHIVED — скрыть</option>
+          </select>
+        </div>
+        <div class="admin-form-group">
+          <label for="slug">URL-slug (латиница)</label>
+          <input class="admin-form-control" id="slug" name="slug" value="{{ f.get('slug', '') }}" {% if not write_enabled %}disabled{% endif %}>
+        </div>
+      </div>
 
-      <label>Статус
-        <select name="status" {% if not write_enabled %}disabled{% endif %}>
-          {% set st = (post.status or '')|upper %}
-          <option value="PUBLISHED" {% if st == 'PUBLISHED' %}selected{% endif %}>PUBLISHED</option>
-          <option value="READY_TO_PUBLISH" {% if st == 'READY_TO_PUBLISH' %}selected{% endif %}>READY_TO_PUBLISH</option>
-          <option value="ARCHIVED" {% if st == 'ARCHIVED' %}selected{% endif %}>ARCHIVED</option>
-        </select>
-      </label>
+      <div class="admin-form-group">
+        <label for="excerpt">Короткий текст карточки (excerpt)</label>
+        <textarea class="admin-form-control" id="excerpt" name="excerpt" rows="3" {% if not write_enabled %}disabled{% endif %}>{{ f.get('excerpt', '') }}</textarea>
+      </div>
 
-      <label>Excerpt / summary
-        <textarea name="excerpt" rows="4" {% if not write_enabled %}disabled{% endif %}>{{ post.excerpt or '' }}</textarea>
-      </label>
+      <div class="admin-form-group">
+        <label for="raw_tags">Теги (через запятую)</label>
+        <input class="admin-form-control" id="raw_tags" name="raw_tags" value="{{ f.get('raw_tags', '') }}" placeholder="вейксёрфинг, события, катер" {% if not write_enabled %}disabled{% endif %}>
+      </div>
 
-      <label>Теги (через запятую → raw_tags)
-        <input name="raw_tags" value="{{ tags_str }}" {% if not write_enabled %}disabled{% endif %}>
-      </label>
+      <div class="admin-form-group">
+        <label for="cover_image_url">Обложка (полный URL картинки)</label>
+        <input class="admin-form-control" id="cover_image_url" name="cover_image_url" value="{{ f.get('cover_image_url', '') }}" {% if not write_enabled %}disabled{% endif %}>
+        {% set cover_preview = f.get('cover_image_url', '') %}
+        {% if cover_preview and 'place1logo' not in cover_preview|lower %}
+        <img class="blog-admin-cover-preview" src="{{ cover_preview }}" alt="">
+        {% endif %}
+      </div>
 
-      <label>Cover image URL
-        <input name="cover_image_url" value="{{ post.cover_image_url or '' }}" {% if not write_enabled %}disabled{% endif %}>
-      </label>
+      <h3 style="margin:1.25rem 0 .5rem; font-size:1rem;">SEO и соцсети</h3>
+      <div class="blog-admin-grid blog-admin-grid--2">
+        <div class="admin-form-group">
+          <label for="seo_title">seo_title (вкладка браузера)</label>
+          <input class="admin-form-control" id="seo_title" name="seo_title" value="{{ f.get('seo_title', '') }}" {% if not write_enabled %}disabled{% endif %}>
+        </div>
+        <div class="admin-form-group">
+          <label for="og_title">og_title (превью в мессенджерах)</label>
+          <input class="admin-form-control" id="og_title" name="og_title" value="{{ f.get('og_title', '') }}" {% if not write_enabled %}disabled{% endif %}>
+        </div>
+      </div>
+      <div class="admin-form-group">
+        <label for="meta_description">meta_description</label>
+        <textarea class="admin-form-control" id="meta_description" name="meta_description" rows="2" {% if not write_enabled %}disabled{% endif %}>{{ f.get('meta_description', '') }}</textarea>
+      </div>
+      <div class="admin-form-group">
+        <label for="og_description">og_description</label>
+        <textarea class="admin-form-control" id="og_description" name="og_description" rows="2" {% if not write_enabled %}disabled{% endif %}>{{ f.get('og_description', '') }}</textarea>
+      </div>
 
-      <label>seo_title
-        <input name="seo_title" value="{{ post.seo_title or '' }}" {% if not write_enabled %}disabled{% endif %}>
-      </label>
-
-      <label>meta_description
-        <textarea name="meta_description" rows="2" {% if not write_enabled %}disabled{% endif %}>{{ post.meta_description or '' }}</textarea>
-      </label>
-
-      <label>og_title
-        <input name="og_title" value="{{ post.og_title or '' }}" {% if not write_enabled %}disabled{% endif %}>
-      </label>
-
-      <label>og_description
-        <textarea name="og_description" rows="2" {% if not write_enabled %}disabled{% endif %}>{{ post.og_description or '' }}</textarea>
-      </label>
-
-      {% if write_enabled %}
-      <button type="submit" class="admin-btn admin-btn--primary">Сохранить в raw_feed</button>
-      {% else %}
-      <p class="admin-muted">Чтобы включить запись: в `.env` поставьте <code>BLOG_ADMIN_WRITE_ENABLED=1</code> и перезапустите <code>mywave-site</code>.</p>
-      {% endif %}
+      <div class="blog-admin-actions">
+        {% if write_enabled %}
+        <button type="submit" class="admin-btn admin-btn--primary">Сохранить в raw_feed</button>
+        <span class="admin-muted">Пустые поля при сохранении тоже подставятся автоматически.</span>
+        {% else %}
+        <p class="admin-muted">Включите <code>BLOG_ADMIN_WRITE_ENABLED=1</code> и перезапустите site.</p>
+        {% endif %}
+      </div>
     </form>
 
-    <hr style="margin:1.5rem 0; opacity:.2;">
-    <h3>Источник / превью</h3>
-    <p class="admin-muted">Источник: {{ post.source_name or '—' }} ·
-      {% if post.source_url %}<a href="{{ post.source_url }}" target="_blank" rel="noopener">ссылка</a>{% endif %}
+    <hr style="margin:1.5rem 0; opacity:.15;">
+    <h3 style="font-size:1rem;">Превью текста статьи (только чтение)</h3>
+    <p class="admin-muted">Источник: {{ post.source_name or '—' }}
+      {% if post.source_url %} · <a href="{{ post.source_url }}" target="_blank" rel="noopener">ссылка</a>{% endif %}
     </p>
-    <pre style="white-space:pre-wrap; max-height:240px; overflow:auto; background:#f6f7f9; padding:12px; border-radius:8px;">{{ (post.content_md or '')[:4000] }}</pre>
+    <div class="blog-admin-preview">{{ (post.content_md or '— нет content_md —')[:2500] }}</div>
   </div>
 </div>
 {% endblock %}

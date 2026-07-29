@@ -156,6 +156,20 @@ def blog():
     )
 
 
+def _blog_form_values_from_post(post: dict) -> dict:
+    return {
+        "slug": post.get("slug") or "",
+        "status": (post.get("status") or "") or "",
+        "excerpt": post.get("excerpt") or "",
+        "raw_tags": ", ".join(post.get("tags") or []),
+        "cover_image_url": post.get("cover_image_url") or "",
+        "seo_title": post.get("seo_title") or "",
+        "meta_description": post.get("meta_description") or "",
+        "og_title": post.get("og_title") or "",
+        "og_description": post.get("og_description") or "",
+    }
+
+
 @bp.route('/blog/<path:slug>', methods=['GET'])
 @login_required
 @admin_required
@@ -166,11 +180,49 @@ def blog_detail(slug: str):
     post = get_post_by_slug(slug, prefer_sheets=True)
     if not post:
         abort(404)
+    form_values = _blog_form_values_from_post(post)
     return render_template(
         "admin/blog/detail.html",
         post=post,
         write_enabled=is_blog_admin_write_enabled(),
-        tags_str=", ".join(post.get("tags") or []),
+        tags_str=form_values["raw_tags"],
+        form_values=form_values,
+        suggested_filled=False,
+    )
+
+
+@bp.route('/blog/<path:slug>/autofill', methods=['POST'])
+@login_required
+@admin_required
+def blog_autofill(slug: str):
+    """Подставить пустые SEO/теги/excerpt из текста поста (без записи в Sheets)."""
+    from app.config.blog_features import is_blog_admin_write_enabled
+    from app.services.blog.store import get_post_by_slug
+    from app.services.blog.suggest_card import build_card_suggestions, merge_empty_with_suggestions
+
+    if not is_blog_admin_write_enabled():
+        flash("Запись отключена: BLOG_ADMIN_WRITE_ENABLED=0", "error")
+        return redirect(url_for("admin.blog_detail", slug=slug))
+
+    post = get_post_by_slug(slug, prefer_sheets=True)
+    if not post:
+        abort(404)
+
+    current = _blog_form_values_from_post(post)
+    suggestions = build_card_suggestions(post)
+    form_values = merge_empty_with_suggestions(current, suggestions)
+    form_values["status"] = current.get("status") or post.get("status") or "PUBLISHED"
+    flash(
+        "Пустые поля заполнены из текста. Проверьте и нажмите «Сохранить в raw_feed».",
+        "success",
+    )
+    return render_template(
+        "admin/blog/detail.html",
+        post=post,
+        write_enabled=True,
+        tags_str=form_values.get("raw_tags") or "",
+        form_values=form_values,
+        suggested_filled=True,
     )
 
 
@@ -181,6 +233,7 @@ def blog_save(slug: str):
     from app.config.blog_features import is_blog_admin_write_enabled
     from app.services.blog.admin_writeback import write_admin_fields
     from app.services.blog.store import get_post_by_slug
+    from app.services.blog.suggest_card import build_card_suggestions, merge_empty_with_suggestions
 
     if not is_blog_admin_write_enabled():
         flash("Запись отключена: BLOG_ADMIN_WRITE_ENABLED=0", "error")
@@ -199,7 +252,7 @@ def blog_save(slug: str):
         )
         return redirect(url_for("admin.blog_detail", slug=slug))
 
-    fields = {
+    raw_fields = {
         "excerpt": request.form.get("excerpt"),
         "cover_image_url": request.form.get("cover_image_url"),
         "raw_tags": request.form.get("raw_tags"),
@@ -209,6 +262,8 @@ def blog_save(slug: str):
         "og_description": request.form.get("og_description"),
         "slug": request.form.get("slug"),
     }
+    # Пустые поля не пишем пустыми — подставляем эвристики из текста поста.
+    fields = merge_empty_with_suggestions(raw_fields, build_card_suggestions(post))
     status = (request.form.get("status") or "").strip() or None
 
     ok, message, written = write_admin_fields(
@@ -219,7 +274,7 @@ def blog_save(slug: str):
     )
     if ok:
         flash(f"Сохранено в raw_feed: {', '.join(written)}", "success")
-        new_slug = (request.form.get("slug") or slug).strip() or slug
+        new_slug = (fields.get("slug") or slug).strip() or slug
         return redirect(url_for("admin.blog_detail", slug=new_slug))
 
     flash(f"Ошибка записи: {message}", "error")
