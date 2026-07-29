@@ -9,30 +9,26 @@
 | site / telegram-bot / node / parser | active |
 | health / blog | ok / 200 |
 | Tree `/var/www/mywave-staging` | **kept** (~1.9G) |
-| Nginx vhost | kept (DNS NXDOMAIN) |
+| Nginx vhost | **disabled** 2026-07-29: removed `sites-enabled` symlink; `sites-available` kept |
 
-**Rollback:** `sudo systemctl enable --now mywave-staging`
+**Rollback unit:** `sudo systemctl enable --now mywave-staging`  
+**Rollback vhost:** `sudo ln -s /etc/nginx/sites-available/staging.mywavewake.ru /etc/nginx/sites-enabled/staging.mywavewake.ru && sudo nginx -t && sudo systemctl reload nginx`
 
-## E — downloads diagnose · PASS / purge HOLD
+## E — downloads purge · CLOSED PASS (2026-07-29 20:18)
 
-| Metric | Value |
-|--------|-------|
-| `downloads` | **4.3G** |
-| `review_media/` | 364K |
-| dup-like `* (N).*` | **2398 files · ~3.33G** |
-| Disk `/` | 71% · 15G free |
+| Metric | Before → After |
+|--------|----------------|
+| `downloads` | **4.3G → 920M** |
+| zero-byte deleted | **1770** |
+| dup `* (N).*` deleted | **909 · ~3.33G** |
+| Disk `/` | **71%/15G → 64%/19G** |
+| services / health | all active · `ok` |
+| Logs | `/root/parser_dl_cleanup_20260729_201829.{zero,dups}` |
 
-**Не удалять** без ACK Parser-команды.
+**Note:** ранее «2398» включало zero + dups; sized-dups оказались **909**.  
+**Purge runbook:** `docs/deploy/OWNER_PARSER_DL_CLEANUP_COMMANDS.md`
 
-Подозрение: `/opt/bot3/parser-new-bot` может быть symlink (`du /opt/bot3` = 4K). Проверка:
+## Текст Parser (после purge)
 
-```bash
-ls -la /opt/bot3
-readlink -f /opt/bot3/parser-new-bot
-```
-
-## Текст Parser (копипаст)
-
-> На prod `downloads` ≈ 4.3G, из них ~3.33G в дублях вида `IMG_xxxx (1).MOV`.  
-> Предлагаем policy: удалять только `* ([0-9]*).*` старше 14d после вашего GO (оригиналы без `(N)` не трогаем).  
-> Нужен ACK / запрет.
+> На prod сняли дубли `IMG_xxxx (1).MOV` (~3.3G). Оригиналы без `(N)` оставили.  
+> Просьба: в коде сохранения media не создавать `(1)/(2)` при повторном скачивании — overwrite или skip по checksum.
