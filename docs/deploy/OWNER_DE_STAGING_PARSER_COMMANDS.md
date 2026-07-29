@@ -1,96 +1,69 @@
-# Owner — D+E: staging + parser downloads
+# Owner — D+E результат (2026-07-29)
 
-**Дата:** 2026-07-29  
-**D:** `mywave-staging` inspect → optional stop (tree не удалять)  
-**E:** `/opt/bot3/parser-new-bot/downloads` diagnose only (без `rm`)  
-**Не трогать:** `mywave-site` · `mywave-node` · `mywave-telegram-bot` · live parser WD · docker volumes  
+## D — staging: KEEP
+
+| Факт | Значение |
+|------|----------|
+| Unit | `active` + `enabled` |
+| Path | `/var/www/mywave-staging` (~1.9G) |
+| Bind | `127.0.0.1:5002` |
+| Nginx | `staging.mywavewake.ru` → `:5002` (**sites-enabled**) |
+
+**Решение:** **не stop / не disable** — публичный staging URL живой. Stop → 502 на subdomain, RAM↑ мало, диск **не** освободится (дерево останется).
+
+Удаление `/var/www/mywave-staging` — только отдельный GO + отключение nginx vhost.
+
+## E — parser downloads: diagnose DONE, purge HOLD
+
+| Факт | Значение |
+|------|----------|
+| WD | `/opt/bot3/parser-new-bot` (live) |
+| bot3 total | ~4.7G |
+| `downloads/tmp` | нет |
+| files mtime>7d | 2880 |
+| files mtime>14d/30d | 1153 |
+| files mtime>90d | 302 |
+| Крупные | дубли `IMG_*.MOV/(N)` и `IMG_9147*.mp4` ~40–90MB |
+
+**Решение:** **не `rm`**. Кандидат на будущее (Parser GO): дубликаты имени `file (N).ext`.
 
 ---
 
-## D1 — Staging inspect
+## Команды — добор (сейчас)
 
 ```bash
-systemctl is-active mywave-staging
-systemctl is-enabled mywave-staging
-systemctl cat mywave-staging.service | sed -n '1,50p'
-
-sudo du -sh /var/www/mywave-staging 2>/dev/null || echo 'no staging tree'
+# D — добить health/ports/journal
 ss -lntp | grep -E ':5002|:5000|:5001' || true
-curl -fsS -m 5 http://127.0.0.1:5002/health 2>&1 || echo 'staging_health_fail'
-
+curl -fsS -m 5 http://127.0.0.1:5002/health || echo 'staging_health_fail'
+curl -fsS -m 5 -o /dev/null -w "staging_dns %{http_code}\n" https://staging.mywavewake.ru/health || echo 'staging_public_fail'
 sudo journalctl -u mywave-staging -n 30 --no-pager -o short-iso
-sudo grep -RInE '5002|staging\.mywave|mywave-staging' /etc/nginx 2>/dev/null | head -20 || echo 'no_nginx_hits'
+
+systemctl is-active mywave-site mywave-staging mywave-telegram-bot mywave-node parser-news-bot
 ```
 
-**STOP-OK если:** нет плана E2E на неделе · в journal тишина · nginx без upstream на `:5002`.
-
----
-
-## D2 — Optional stop (только после STOP-OK)
-
 ```bash
-sudo systemctl stop mywave-staging
-# автозапуск после reboot выключить (по желанию):
-# sudo systemctl disable mywave-staging
-
-systemctl is-active mywave-staging || true
-ss -lntp | grep 5002 || echo '5002_closed'
-curl -fsS https://mywavewake.ru/health | python3 -c 'import sys,json; print(json.load(sys.stdin).get("status"))'
-systemctl is-active mywave-site mywave-telegram-bot mywave-node
-```
-
-**Rollback:**
-```bash
-sudo systemctl start mywave-staging
-# sudo systemctl enable mywave-staging
-systemctl is-active mywave-staging
-curl -fsS -m 5 http://127.0.0.1:5002/health || true
-```
-
-**Не делать:** `rm -rf /var/www/mywave-staging` в этой волне.
-
----
-
-## E1 — Parser downloads (только чтение)
-
-```bash
+# E — размеры + оценка дублей (БЕЗ удаления)
 PARSER_WD=/opt/bot3/parser-new-bot
 DL=$PARSER_WD/downloads
 
-systemctl is-active parser-news-bot
-systemctl cat parser-news-bot.service | grep -E 'WorkingDirectory|ExecStart'
-
-df -h /
-sudo du -sh /opt/bot3 "$PARSER_WD" "$DL" 2>/dev/null
-sudo ls -lah /opt/bot3
-
-echo '=== downloads depth1 ==='
+sudo du -sh "$DL" "$PARSER_WD" /opt/bot3
 sudo du -xh "$DL" --max-depth=1 2>/dev/null | sort -h | tail -20
 
-echo '=== age buckets ==='
-for d in 7 14 30 90; do
-  n=$(sudo find "$DL" -xdev -type f -mtime +$d 2>/dev/null | wc -l)
-  echo "files_mtime_gt_${d}d=$n"
-done
+# сколько места в именах " (N)." — только подсчёт
+sudo find "$DL" -xdev -type f -name '* ([0-9]*).*' -printf '%s\n' 2>/dev/null \
+  | awk '{s+=$1; n++} END {printf "dup_like_files=%d bytes=%d ~%.2fG\n", n+0, s+0, s/1024/1024/1024}'
 
-echo '=== largest 20 ==='
-sudo find "$DL" -xdev -type f -printf '%s\t%TY-%Tm-%Td\t%p\n' 2>/dev/null | sort -n | tail -20
-
-echo '=== tmp/cache candidates (list) ==='
-sudo find "$PARSER_WD" -xdev -maxdepth 3 \( -iname '*tmp*' -o -iname '*.tmp' -o -iname '*cache*' \) 2>/dev/null | head -50
-sudo test -d "$DL/tmp" && sudo du -sh "$DL/tmp" && sudo find "$DL/tmp" -type f -mtime +14 | head -30 || echo 'no downloads/tmp'
+# список 30 крупнейших дубль-подобных (для Parser)
+sudo find "$DL" -xdev -type f -name '* ([0-9]*).*' -printf '%s\t%TY-%Tm-%Td\t%p\n' 2>/dev/null \
+  | sort -n | tail -30
 ```
 
-**Не удалять** `downloads` / `review_media` без GO Parser-команды.
+## Опционально позже (GO)
 
----
+```bash
+# D — stop staging (сломает staging.mywavewake.ru):
+# sudo systemctl stop mywave-staging && sudo systemctl disable mywave-staging
 
-## PASS
-
-| Блок | PASS |
-|------|------|
-| D1 | status/size/port/nginx/journal получены |
-| D2 | staging inactive · prod health ok · site/bot/node active |
-| E1 | размеры + age + largest без `rm` |
-
-Пришлите вывод D1 + E1 → решим stop staging и есть ли safe tmp-цели.  
+# E — удаление дублей ТОЛЬКО после ACK Parser:
+# НЕ запускать без списка и бэкапа
+```
