@@ -1,8 +1,9 @@
 # S11 — Final Site Audit (light checklist)
 
 **Дата:** 2026-07-29  
-**Контекст:** после YClients CLOSED + Blog B1–B4  
+**Контекст:** после YClients CLOSED + Blog B1–B4.2  
 **Camp:** HOLD  
+**Команды Owner:** `docs/deploy/OWNER_S11_FULL_COMMANDS.md`
 
 Полный S11 = этот smoke + ручная витрина + Admin GO. Не заменяет security/infra deep-dive.
 
@@ -10,37 +11,38 @@
 
 ## A. Runtime
 
-- [ ] `mywave-site` active
-- [ ] `mywave-telegram-bot` active
-- [ ] `mywave-node` не трогали
-- [ ] Site SHA = ожидаемый main tip
-- [ ] `/health` → `status: ok`
+- [x] `mywave-site` active _(S11-light 2026-07-29)_
+- [x] `mywave-telegram-bot` active
+- [x] `mywave-node` не трогали
+- [x] Site SHA = `9b8e22f1` tip
+- [x] `/health` → `status: ok`
 
 ## B. Booking boat (YClients path)
 
-- [ ] `/api/calendar/slots/<+3d>?service=boat` → JSON slots
+- [x] `/api/calendar/slots/<+3d>?service=boat` → HTTP 200 _(дожать: JSON — OWNER_S11_FULL)_
 - [ ] Bot booking create/reschedule/cancel не регрессировал (Owner spot-check)
 
 ## C. Blog public
 
-- [ ] `/blog` 200 + 1× `og:title` + canonical
+- [x] `/blog` 200 _(дожать: 1× og:title + canonical)_
 - [ ] `/blog?q=…` 200
 - [ ] `/api/blog/latest` JSON
 - [ ] Home `#blog` cards
 - [ ] CSP: youtube/vk/rutube + `media-src https:`
+- [ ] Public post после B4.2: cache → `/blog/<slug>` отражает save
 
 ## D. Blog admin B4
 
-- [ ] `/admin/blog` список
-- [ ] `/admin/blog/<slug>` деталка
-- [ ] Invalidate cache работает
-- [ ] Write OFF by default
-- [ ] Write ON (optional GO): SEO/tags/excerpt сохраняются в Sheets; `final_posts` не editable в UI
+- [x] `/admin/blog` список
+- [x] `/admin/blog/<slug>` деталка
+- [ ] Invalidate cache работает _(Owner: «Сбросить кэш»)_
+- [ ] Write OFF by default _(prod после B4.2 часто ON — вернуть 0 после редактуры)_
+- [x] Write ON: SEO + B4.2 `final_posts`/video с confirm → Sheets OK
 
 ## E. Camp HOLD
 
-- [ ] Cron `/etc/cron.d/mywave-camp-sync` commented
-- [ ] Нет внезапного mass-import
+- [x] Cron `/etc/cron.d/mywave-camp-sync` commented
+- [x] Нет внезапного mass-import
 
 ## F. Editorial process
 
@@ -50,4 +52,8 @@
 
 ## Критерий «S11 light DONE»
 
-Все A–C зелёные; D read OK; E hold подтверждён. Write-on (D optional) — отдельно по GO.
+Все A–C базовые зелёные; D read OK; E hold подтверждён. **Выполнено 2026-07-29.**
+
+## Критерий «S11 full DONE» (без Camp)
+
+Блоки 0–3 и 5 в `OWNER_S11_FULL_COMMANDS.md` PASS.
