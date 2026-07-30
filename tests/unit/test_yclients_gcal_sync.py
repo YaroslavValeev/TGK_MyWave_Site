@@ -17,6 +17,9 @@ def test_parse_source_and_mw_id():
     assert parse_source_from_comment(comment) == "telegram"
     assert parse_mw_id_from_comment(comment) == "abc-1"
     assert parse_source_from_comment("") == "yclients"
+    assert parse_source_from_comment("через сайт | mw_id=bk_1") == "site"
+    assert parse_source_from_comment("через ТГ | mw_id=x") == "telegram"
+    assert parse_mw_id_from_comment("через сайт | mw_id=bk_1") == "bk_1"
 
 
 def test_parse_yclients_datetime_formats():

@@ -26,8 +26,15 @@ from app.services.booking.providers.yclients import (
 logger = logging.getLogger(__name__)
 
 _WEBHOOK_AUDIT = Path("/var/www/mywave/instance/yclients_webhook_events.jsonl")
-_SOURCE_RE = re.compile(r"mw_source=([^\s|]+)")
-_MW_ID_RE = re.compile(r"mw_id=([^\s|]+)")
+_SOURCE_RE = re.compile(r"mw_source=([^\s|]+)", re.IGNORECASE)
+_MW_ID_RE = re.compile(r"mw_id=([^\s|]+)", re.IGNORECASE)
+# New human labels in comment (and legacy mw_source= still supported).
+_HUMAN_SOURCE_PATTERNS = (
+    (re.compile(r"через\s*тг|через\s*telegram|через\s*бот", re.IGNORECASE), "telegram"),
+    (re.compile(r"через\s*сайт|через\s*site", re.IGNORECASE), "site"),
+    (re.compile(r"через\s*виджет|через\s*widget", re.IGNORECASE), "widget"),
+    (re.compile(r"через\s*админ", re.IGNORECASE), "admin"),
+)
 
 
 def _append_webhook_audit(entry: Dict[str, Any]) -> None:
@@ -92,8 +99,14 @@ def normalize_webhook_record(payload: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def parse_source_from_comment(comment: str) -> str:
-    match = _SOURCE_RE.search(comment or "")
-    return match.group(1) if match else "yclients"
+    text = comment or ""
+    match = _SOURCE_RE.search(text)
+    if match:
+        return match.group(1).strip().lower() or "yclients"
+    for pattern, source in _HUMAN_SOURCE_PATTERNS:
+        if pattern.search(text):
+            return source
+    return "yclients"
 
 
 def parse_mw_id_from_comment(comment: str) -> str:

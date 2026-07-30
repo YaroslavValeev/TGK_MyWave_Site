@@ -45,6 +45,14 @@ USER_AGENT = "MyWave-Site-YCLIENTS/1.1"
 DEFAULT_TIMEOUT = 20
 SOURCE_COMMENT_PREFIX = "mw_source="
 
+# Human-readable channel labels for YClients comment (staff UI).
+SOURCE_HUMAN_LABELS = {
+    "site": "через сайт",
+    "telegram": "через ТГ",
+    "widget": "через виджет",
+    "admin": "через админку",
+}
+
 # attendance: 2 confirmed, 1 came, 0 waiting, -1 no-show / cancelled-via-status
 ATTENDANCE_CANCELLED = -1
 
@@ -84,14 +92,21 @@ class _RateLimiter:
 _rate_limiter = _RateLimiter()
 
 
+def source_human_label(source: str) -> str:
+    """Russian label for booking channel (shown in YClients comment)."""
+    key = (source or "").strip().lower() or "unknown"
+    return SOURCE_HUMAN_LABELS.get(key, f"через {key}")
+
+
 def build_source_comment(
     *,
     source: str,
     internal_id: str = "",
     extra: str = "",
 ) -> str:
-    """Encode channel + internal id in comment (native source field unsupported)."""
-    parts = [f"{SOURCE_COMMENT_PREFIX}{source.strip() or 'unknown'}"]
+    """Human channel label + mw_id for staff UI (native source unsupported)."""
+    src = (source or "").strip() or "unknown"
+    parts = [source_human_label(src)]
     if internal_id:
         parts.append(f"mw_id={internal_id.strip()}")
     if extra:

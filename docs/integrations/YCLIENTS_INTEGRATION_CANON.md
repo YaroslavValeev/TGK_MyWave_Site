@@ -74,7 +74,7 @@ Base: https://api.yclients.com/api/v1/
 
 Нативный «source» передать нельзя. Канон MyWave:
 
-- `comment`: `mw_source=site|telegram|widget|admin | mw_id=<internal>`
+- `comment`: `через сайт|через ТГ|… | mw_id=<internal>` (человекочитаемо; legacy `mw_source=` ещё парсится)
 - `api_id`: внутренний ID
 - `custom_fields`: опционально (после создания полей в ЛК YCLIENTS)
 

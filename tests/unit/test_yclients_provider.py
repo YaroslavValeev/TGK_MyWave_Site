@@ -59,7 +59,13 @@ def test_auth_header_combines_tokens(monkeypatch):
 
 
 def test_source_comment_and_attendance():
-    assert "mw_source=telegram" in build_source_comment(source="telegram", internal_id="abc")
+    comment_tg = build_source_comment(source="telegram", internal_id="abc")
+    assert comment_tg.startswith("через ТГ")
+    assert "mw_id=abc" in comment_tg
+    assert "mw_source=" not in comment_tg
+    comment_site = build_source_comment(source="site", internal_id="bk_1")
+    assert comment_site.startswith("через сайт")
+    assert "mw_id=bk_1" in comment_site
     assert parse_attendance_status(-1) == "cancelled"
     assert parse_attendance_status(0) == "waiting"
     assert parse_attendance_status(1, deleted=True) == "deleted"
@@ -140,7 +146,9 @@ def test_create_journal_multi_set(monkeypatch):
     # 2 sets × 30 min slot (25 ride + 5 tech) closes 60 min in YC
     assert captured["body"]["seance_length"] == 3600
     assert captured["body"]["services"] == [{"id": 77, "amount": 2}]
-    assert "mw_source=telegram" in captured["body"]["comment"]
+    assert "через ТГ" in captured["body"]["comment"]
+    assert "mw_id=mw-1" in captured["body"]["comment"]
+    assert "mw_source=" not in captured["body"]["comment"]
     assert captured["body"]["api_id"] == "mw-1"
     assert captured["body"]["client"]["phone"] == "79160117179"
 
