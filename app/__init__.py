@@ -861,6 +861,13 @@ def create_app(config_name="development"):
     except Exception as exc:
         app.logger.warning("camp_sync CLI not registered: %s", exc)
 
+    try:
+        from app.cli.migrate_blog import migrate_blog_command
+
+        app.cli.add_command(migrate_blog_command)
+    except Exception as exc:
+        app.logger.warning("migrate_blog CLI not registered: %s", exc)
+
     return app
 
 

@@ -1,8 +1,10 @@
 # Owner — deploy YC human comment labels
 
-**SHA target:** после push (commit `feat(yclients): human-readable source comment`)  
+**SHA target:** `68ea9666` · **deployed prod 2026-07-31** · site active · health ok  
 **Host:** `4169037-ep26382` · `/var/www/mywave`  
 **Сервис:** только `mywave-site` · **не** трогать `mywave-node`
+
+**Status:** CLOSED PASS (pull + restart)
 
 Новый comment: `через сайт | mw_id=…` · `через ТГ | mw_id=…`  
 Старые записи в YC **не** обновляются автоматически.
