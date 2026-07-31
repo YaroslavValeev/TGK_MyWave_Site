@@ -1,9 +1,15 @@
 # Owner — remaining ops (Site) after YC human comment
 
-**Prod HEAD:** `68ea9666` (human comment) · health ok  
-**Не трогать:** `mywave-node` · Tour autopublish (команда Tour) · Parser code (их репо)
+**Prod HEAD:** `2eda1f13` · health ok · human labels True  
+**Verify A–E 2026-07-31 01:09:** **CLOSED PASS**  
+- downloads **924M** · `(N)` sized dups **0**  
+- staging tree **1.9G** kept · unit inactive/disabled  
+- camp `{archived:3, published:1}`  
 
-Порядок ниже: verify → опционально staging tree → YC 01.08 check → Parser ack reminder.
+**Не трогать:** `mywave-node` · Tour autopublish (команда Tour)  
+**CLOSED:** Parser no-`(N)` code fix 2026-07-31 (prod patched · VERIFY_OK)  
+**OPEN вне Site:** YC 01.08 UI · Tour autopublish · optional `rm` staging tree
+
 
 ---
 

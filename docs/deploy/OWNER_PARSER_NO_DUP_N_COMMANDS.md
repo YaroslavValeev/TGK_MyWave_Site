@@ -1,10 +1,15 @@
 # Owner — Parser fix: stop minting `file (N).ext`
 
-**Не вставляйте большой python heredoc в SSH** (ломается paste).  
-Используйте скрипт с GitHub.
+**Status 2026-07-31:** **CLOSED PASS** on `/opt/bot3/parser-new-bot`  
+- patched: `utils/media_utils.py`, `utils/helpers.py`  
+- `collectors/telegram_parser.py` → `download_media_helper` from helpers (no local dir-mode)  
+- paths: `tg_{chat}_{mid}` overwrite · sized `(N)` count **0** · parser `active`
 
-**Prod:** `/opt/bot3/parser-new-bot`  
-**Script:** `docs/deploy/scripts/patch_parser_no_dup_n.py` (в Site repo)
+**Root cause:** Telethon `download_media(file="downloads/")` (directory) kept original names → `IMG_… (1).MOV`.
+
+**Script:** `docs/deploy/scripts/patch_parser_no_dup_n.py`  
+**Не вставляйте большой python heredoc в SSH** — только curl + python3.
+
 
 ---
 
