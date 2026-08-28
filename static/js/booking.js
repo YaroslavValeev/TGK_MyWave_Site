@@ -1076,6 +1076,17 @@ function initializeBooking() {
                   : ''
               }</p>`
             : '';
+          const bringHint = isBoat
+            ? 'Что взять: полотенце, вода, сменная одежда, солнцезащитный крем.'
+            : (payload.service_type === 'gym'
+              ? 'Что взять: спортивная одежда, сменная обувь, полотенце, вода.'
+              : '');
+          const bringBlock = bringHint ? `<p>${bringHint}</p>` : '';
+          const contactBlock = `
+              <p>Мы получили вашу запись. Если нужно уточнить детали — напишите или позвоните.</p>
+              <p>Телефон: <a href="tel:+79160117179">+7 (916) 011-71-79</a></p>
+              <p>Telegram: <a href="https://t.me/MyW23" target="_blank" rel="noopener">@MyW23</a></p>
+          `;
           const containerId = 'success-modal';
           let container = document.getElementById(containerId);
           if (!container) {
@@ -1095,6 +1106,8 @@ function initializeBooking() {
               <p>Время: <strong>${payload.time}</strong></p>
               <p>Услуга: <strong>${humanService}</strong></p>
               ${locationBlock}
+              ${bringBlock}
+              ${contactBlock}
               <div class="success-ctas">
                 <button class="btn btn-primary" data-action="add-calendar">Добавить в календарь</button>
                 ${showVenue && venue.mapUrl ? `<a class="btn btn-secondary" href="${venue.mapUrl}" target="_blank" rel="noopener noreferrer">Маршрут на карте</a>` : ''}

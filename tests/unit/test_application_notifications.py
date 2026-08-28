@@ -43,3 +43,43 @@ def test_notify_new_application_best_effort(mock_send):
 def test_notify_failure_does_not_raise(mock_send):
     ok = notify_new_application("product", {"name": "Test", "phone": "+79990001122"})
     assert ok is False
+
+
+def test_format_web_booking_message():
+    from app.services.application_notifications import format_web_booking_telegram_message
+
+    text = format_web_booking_telegram_message(
+        {
+            "name": "Анна",
+            "phone": "+79160001122",
+            "service_type": "boat",
+            "date": "2026-08-30",
+            "time": "10:00",
+            "booking_id": "bk_test1",
+            "workout_id": "yc-123",
+        }
+    )
+    assert "Новая запись с сайта: Катер" in text
+    assert "Анна" in text
+    assert "2026-08-30" in text
+    assert "10:00" in text
+    assert "bk_test1" in text
+
+
+@patch("app.services.application_notifications.send_telegram_notification", return_value=True)
+def test_notify_web_booking_uses_web_booking_type(mock_send):
+    from app.services.application_notifications import notify_web_booking
+
+    ok = notify_web_booking(
+        {
+            "name": "Анна",
+            "phone": "+79160001122",
+            "service_type": "gym",
+            "date": "2026-08-30",
+            "time": "18:00",
+        }
+    )
+    assert ok is True
+    mock_send.assert_called_once()
+    message = mock_send.call_args[0][2]
+    assert "Новая запись с сайта: Зал" in message

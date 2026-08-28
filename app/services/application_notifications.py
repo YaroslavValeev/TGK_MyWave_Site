@@ -23,6 +23,15 @@ APPLICATION_TYPE_LABELS: dict[str, str] = {
     "consulting": "Консультация",
     "social": "MyWave Social",
     "generic_project": "Проектная заявка",
+    "web_booking": "Запись с сайта",
+}
+
+WEB_BOOKING_SERVICE_LABELS: dict[str, str] = {
+    "boat": "Катер",
+    "gym": "Зал",
+    "camp": "Camp",
+    "coach_triper": "Тренер на выезде",
+    "consulting": "Консалтинг",
 }
 
 
@@ -162,10 +171,45 @@ def notify_social_session_scheduled(payload: Mapping[str, Any]) -> bool:
         return False
 
 
+def format_web_booking_telegram_message(payload: Mapping[str, Any]) -> str:
+    """Admin Telegram after a confirmed site booking (boat/gym/camp)."""
+    svc_raw = _sanitize_notify_value(payload.get("service_type")) or "gym"
+    svc = WEB_BOOKING_SERVICE_LABELS.get(svc_raw.lower(), svc_raw)
+    name = _sanitize_notify_value(_pick(payload, "name")) or "—"
+    phone = _sanitize_notify_value(_pick(payload, "phone")) or "—"
+    date = _sanitize_notify_value(payload.get("date")) or "—"
+    time = _sanitize_notify_value(payload.get("time")) or "—"
+    booking_id = _sanitize_notify_value(payload.get("booking_id"))
+    workout_id = _sanitize_notify_value(payload.get("workout_id"))
+
+    lines = [
+        f"Новая запись с сайта: {svc}",
+        "",
+        f"Имя: {name}",
+        f"Телефон: {phone}",
+        f"Дата: {date}",
+        f"Время: {time}",
+        f"Услуга: {svc}",
+    ]
+    if booking_id:
+        lines.append(f"booking_id: {booking_id}")
+    if workout_id:
+        lines.append(f"workout_id: {workout_id}")
+    lines.append("Источник: site")
+    return "\n".join(lines)
+
+
+def notify_web_booking(payload: Mapping[str, Any]) -> bool:
+    """Best-effort Telegram after successful web booking. Never raises."""
+    return notify_new_application("web_booking", payload)
+
+
 def format_application_telegram_message(application_type: str, payload: Mapping[str, Any]) -> str:
     """Build admin Telegram text from normalized payload."""
     if application_type == "social":
         return format_social_telegram_message(payload)
+    if application_type == "web_booking":
+        return format_web_booking_telegram_message(payload)
 
     title = APPLICATION_TYPE_LABELS.get(application_type, application_type)
     name = _sanitize_notify_value(_pick(payload, "name", "parent_name", "full_name")) or "—"

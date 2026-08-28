@@ -4,7 +4,7 @@
  * Socket.IO на странице — только для индикатора соединения (socket-status.js), не для текста чата.
  */
 const CHAT_API_URL = '/chat/api';
-const CHAT_WELCOME_STORAGE_KEY = 'mw_chat_welcome_v1';
+const CHAT_WELCOME_STORAGE_KEY = 'mw_chat_welcome_v2';
 
 /**
  * Синхронизирует сессию Flask с подписанным CSRF-токеном (meta).
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (localStorage.getItem(CHAT_WELCOME_STORAGE_KEY)) return;
             appendChatBubble(
                 chatMessages,
-                'Задайте вопрос про вейксерф, тренировки или запись — подскажу и при необходимости проведу через запись на слот.',
+                'Могу ответить по базе знаний MyWave: тренировки, запись на слот, что взять с собой. Для живого ответа напишите в Telegram @MyW23 или нажмите «Записаться» на сайте.',
                 'bot'
             );
             localStorage.setItem(CHAT_WELCOME_STORAGE_KEY, '1');

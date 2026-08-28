@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block body_attrs %} data-mw-chat-context='{{ {"entry":"shop","kind":"section","title":"Онлайн-магазин"}|tojson }}'{% endblock %}
+{% block body_attrs %} data-mw-chat-context='{{ {"entry":"shop","kind":"section","title":"Товары на заказ"}|tojson }}'{% endblock %}
 
 {% block content %}
 <section id="shop" class="store-section">
-  <h2>Онлайн-магазин</h2>
+  <h2>Товары на заказ</h2>
 
   <div class="store-filters">
     <button class="filter-btn active" data-category="all">Все</button>
@@ -43,11 +43,11 @@
           <p class="service-description service-description--short">{{ product.description }}</p>
           <p class="price">{{ product.price }}</p>
           {% if product.buy_url %}
-          <a class="btn btn-primary-lg product-card__buy" data-product-buy-trigger href="{{ product.buy_url }}" target="_blank" rel="noopener noreferrer">Купить</a>
+          <a class="btn btn-primary-lg product-card__buy" data-product-buy-trigger href="{{ product.buy_url }}" target="_blank" rel="noopener noreferrer">Оставить заявку</a>
           {% else %}
           <button type="button" class="btn btn-primary-lg product-card__buy" data-product-buy-trigger data-product-request
                   data-product-id="{{ slug }}"
-                  data-product-title="{{ product.title }}">Купить</button>
+                  data-product-title="{{ product.title }}">Оставить заявку</button>
           {% endif %}
         </div>
       </div>

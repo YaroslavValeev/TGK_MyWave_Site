@@ -1,12 +1,14 @@
 {% extends "base.html" %}
-{% block body_attrs %} data-mw-chat-context='{{ {"entry":"home","kind":"section","title":"Чат с экспертом"}|tojson }}'{% endblock %}
-{% block title %}Чат с экспертом — MyWave{% endblock %}
+{% block body_attrs %} data-mw-chat-context='{{ {"entry":"home","kind":"section","title":"Помощник MyWave"}|tojson }}'{% endblock %}
+{% block title %}Помощник MyWave — частые вопросы{% endblock %}
 {% block content %}
 <section class="chat-landing" style="min-height: 45vh; padding: 2rem 1.25rem; max-width: 42rem; margin: 0 auto;">
-  <h1 style="margin-bottom: 0.75rem;">Чат с экспертом по вейку</h1>
+  <h1 style="margin-bottom: 0.75rem;">Помощник MyWave</h1>
   <p style="line-height: 1.5; color: var(--text-muted, #555);">
-    Окно чата открыто справа внизу. Если его не видно — нажмите круглую кнопку с иконкой сообщений.
-    Здесь можно спросить про тренировки, трюки и запись на занятие.
+    Окно помощника открыто справа внизу. Он отвечает по базе знаний сайта: услуги, запись, что взять с собой.
+    Живой тренер здесь не сидит — для этого напишите в
+    <a href="https://t.me/MyW23" target="_blank" rel="noopener">Telegram @MyW23</a>
+    или нажмите «Записаться» на главной.
   </p>
 </section>
 {% endblock %}

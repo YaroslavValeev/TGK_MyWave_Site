@@ -119,7 +119,7 @@
       <nav class="site-nav" id="site-nav">
         <ul>
           <li><a href="{{ url_for('services.services_list') }}">Услуги</a></li>
-          <li><a href="{{ url_for('shop.shop_index') }}">Товары</a></li>
+          <li><a href="{{ url_for('shop.shop_index') }}">Товары на заказ</a></li>
           <li><a href="{{ url_for('projects_page') }}">Проекты</a></li>
           {% if camp_public_enabled %}
           <li><a href="{{ url_for('camps.camps_index') }}">Кемпы</a></li>
@@ -156,7 +156,7 @@
     
     <div class="chat-widget hidden" id="chat-widget">
       <div class="chat-header">
-        <h4>Чат с экспертом по вейку</h4>
+        <h4>Помощник MyWave</h4>
         <button class="close-chat" id="close-chat" aria-label="Закрыть чат">
           <i class="fas fa-times"></i>
         </button>
@@ -189,7 +189,7 @@
   <!-- Подключение socket.io и клиентских скриптов -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
   <script src="{{ url_for('static', filename='js/socket-client.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/chat.js') }}?v=helper1"></script>
   <script src="{{ url_for('static', filename='js/storeFilter.js') }}"></script>
   <script type="module" nonce="{{ g.csp_nonce }}">
     import { SocketStatus } from '/static/js/socket-status.js';
@@ -222,7 +222,7 @@
   {% include 'partials/product_request_modal.html' %}
 
   <!-- booking.js, modals-close.js (надёжное закрытие Camp/CoachTriper/Consulting) и формы заявок -->
-  <script defer src="{{ url_for('static', filename='js/booking.js') }}?v=oc-s1-s3-calendar"></script>
+  <script defer src="{{ url_for('static', filename='js/booking.js') }}?v=oc-s1-s3-contacts1"></script>
   <script defer src="{{ url_for('static', filename='js/modals-close.js') }}?v=modal-hide1"></script>
   <script defer src="{{ url_for('static', filename='js/modal-lead-forms.js') }}"></script>
   <script defer src="{{ url_for('static', filename='js/product-request-form.js') }}?v=product-card-click1"></script>

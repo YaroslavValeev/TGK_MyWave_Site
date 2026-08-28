@@ -19,7 +19,7 @@ def test_boat_context_allows_water_items():
 
 
 def test_shop_entry():
-    block = format_mw_chat_context_for_prompt({"entry": "shop", "kind": "section", "title": "Онлайн-магазин"})
+    block = format_mw_chat_context_for_prompt({"entry": "shop", "kind": "section", "title": "Товары на заказ"})
     assert "Товары" in block or "товар" in block.lower()
 
 

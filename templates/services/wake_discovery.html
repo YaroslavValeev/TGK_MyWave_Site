@@ -13,7 +13,10 @@
     <li>Мини‑разбор ошибок и рекомендации</li>
   </ul>
   <p class="price">Цена: 2500 рублей</p>
-  <a class="btn btn-ghost" href="{{ url_for('calculator_page') }}">Открыть калькулятор тура Wake Discovery</a>
+  <button class="btn btn-primary-lg book-now" data-service="boat" type="button">Записаться</button>
+  <p style="margin-top: 0.75rem;">
+    Или напишите в <a href="https://t.me/MyW23" target="_blank" rel="noopener">Telegram @MyW23</a>
+  </p>
 </section>
 {% include 'partials/booking_modals.html' %}
 {% endblock %}

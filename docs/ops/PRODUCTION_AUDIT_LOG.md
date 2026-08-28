@@ -11,7 +11,11 @@
 
 | Date | Change | Release Type | Commit | Result | Notes |
 |------|--------|--------------|--------|--------|-------|
-| 2026-05 | Timeweb production baseline | ops | `68b46537` | PASS | initial prod deploy |
+| 2026-08-28 | v1 hygiene: admin Telegram after web-booking, honest shop/chat/success copy | frontend | — | pending deploy | no payment; notify best-effort; Mobile QA 4-device still OPEN |
+| 2026-07-31 | Remaining ops closed (YC human labels, Camp published:1, Parser no-N) | ops | `2eda1f13` | PASS | [OWNER_REMAINING_OPS](../deploy/OWNER_REMAINING_OPS_COMMANDS.md); Tour autopublish HOLD |
+| 2026-07-29 | **S11 full CLOSED** (без Camp на момент аудита) | ops | `9b8e22f1` | PASS | boat slots list 22; Blog B4; Camp HOLD then LIVE 20–21.07 |
+| 2026-07-21 | Camp showcase LIVE `/camps` | frontend | `3e7a5bf6` | PASS | CAMP_PUBLIC_ENABLED=1; sync/cron still Owner GO |
+| 2026-07-07 | **PR97** public CTA unify + product card click | frontend | `43dc7ca2` | PASS | Owner QA PASS; rollback `beb5c8ad`; [release](../releases/2026-07-07-frontend-public-cta-product-card-click.md) |
 | 2026-05 | Post-deploy pack (health, mobile v1) | mixed→split | `8ee0ca40` | PASS | pre-freeze era |
 | 2026-05 | **Runtime freeze** — blog/health P0 | runtime | `3de56f8c` | PASS | **FROZEN baseline** |
 | 2026-05 | Frontend mobile v3 + smoke scripts | frontend | `48dc9c64` | PASS | active UX baseline |
@@ -45,7 +49,6 @@
 | 2026-05-17 | Remove accidental PNG from checklist folder | content | `c8101ae2` | PASS | cleanup after art commit |
 | 2026-06-28 | **PR56 Social manual assign** — Phase A/B, PR66 auth, alignment | runtime | `3b70a038` | PASS | manual assign ENABLED; evidence [pr56](../evidence/pr56/README.md) |
 | 2026-06-29 | **PR56 post-release monitoring** D0–D2 closure | ops/docs | `df24a4d9` | PASS | CLOSED/PASS; no prod deploy; [QA log](../evidence/pr56/QA_MONITORING_LOG.md) |
-| 2026-07-07 | **PR97** public CTA unify + product card click | frontend | `43dc7ca2` | PASS | Owner QA PASS; rollback `beb5c8ad`; [release](../releases/2026-07-07-frontend-public-cta-product-card-click.md) |
 
 ---
 

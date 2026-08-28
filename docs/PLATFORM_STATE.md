@@ -17,24 +17,30 @@
 
 ## Production status
 
-Production **operational**.
+Production **operational**. Snapshot обновлён **2026-08-28** (майский «mobile CSS v3 blocker» больше не канон).
 
 | Компонент | Статус |
 |-----------|--------|
 | Flask/Gunicorn runtime | operational |
 | Redis | operational |
 | Google integrations | operational |
-| Booking slots | operational |
+| Booking boat (YClients SoT) | operational (S9+, S11 boat slots PASS) |
+| Booking gym (Calendar/Sheets) | operational |
+| Camp `/camps` | LIVE (`CAMP_PUBLIC_ENABLED=1`); sync/cron без Owner GO |
+| Online Coaching | operational (анкета + admin; авто-оплата **не** в этом релизе) |
+| Blog public + admin B4 | operational (S11) |
 | Socket.IO | operational |
 | Node proxy | operational |
-| systemd services | operational |
-| Nginx | operational |
-| SSL | operational |
+| systemd / Nginx / SSL | operational |
 | Health endpoints | operational |
-| Google Sheets validation | operational |
-| Telegram notifications | operational |
+| Telegram notifications | operational — **включая запись с сайта** (best-effort) |
+| Online payment катер/зал/магазин | **не трогаем** (вне v1 hygiene) |
 
 Runtime Foundation стабилен = **production infrastructure foundation** (`3de56f8c` FROZEN).
+
+**Закрыто по Site (июль 2026):** S1–S3a, YClients boat S5–S10, S11 full 2026-07-29, Camp showcase 2026-07-21, remaining ops 2026-07-31.
+
+**Открыто:** Mobile QA A1/A2/I1/T1 sign-off в матрице; Tour autopublish HOLD; клиентская SMS/email YClients выключены сознательно.
 
 ---
 
@@ -146,26 +152,30 @@ Rollback обязателен при: health unhealthy · booking failure · res
 
 ## Stabilization execution (текущая работа)
 
-### Текущий приоритет (Phase 1 — BLOCKER)
+### Канон 2026-08-28 — v1 hygiene (без оплаты)
 
-**Status:** `IN PROGRESS — BLOCKER` · [PHASE1_MOBILE_QA_STATUS.md](qa/PHASE1_MOBILE_QA_STATUS.md)
+**Status:** `IN REPO` — deploy только после smoke + Owner GO.
 
-1. **Step 0:** frontend deploy — prod `mobile-home.css?v=2` → нужен `?v=3` (не runtime)  
-2. **Step 1:** manual device QA (A1/A2/I1/T1) после подтверждения `?v=3`  
+Сделано в коде (этот snapshot):
 
-Precheck `000a7100`: smoke PASS · HTML version FAIL
+1. Telegram админу после `POST /api/calendar/book` (best-effort).
+2. Success-экран: контакты телефона/Telegram, без сумм и реквизитов.
+3. Витрина: «Товары на заказ» / «Оставить заявку», не «Купить».
+4. Чат: «Помощник MyWave» (KB), не «живой тренер».
+5. Главная CTA: Записаться + Написать в Telegram.
 
-### P1 (после QA)
+**Не делаем в этом контуре:** Т-Банк, YClients SMS/email, MAX/WhatsApp, Notifications v2, Camp cron.
 
-- Checklist visuals  
-- Reviews/static polish  
-- Blog visibility  
+### Исторический Phase 1 (май 2026) — больше не blocker платформы
 
-### P2
+Step 0 (`mobile-home.css?v=3`) **CLOSED**.  
+Manual device QA A1/A2/I1/T1 в [PHASE1_MOBILE_QA_STATUS.md](qa/PHASE1_MOBILE_QA_STATUS.md) формально **PENDING** (A1 катера после PR76 = PASS на проде). Это QA-долг, не runtime-блокер.
 
-- Hardening  
-- Observability  
-- CI/CD discipline  
+### P1 / P2 (после device sign-off)
+
+- Checklist visuals (часть webp всё ещё placeholder)
+- Home `#blog` зависит от publishable строк Sheets
+- Hardening / observability / CI cadence
 
 **До stabilization exit:** никаких runtime refactor.
 
@@ -186,12 +196,13 @@ Release note: [releases/2026-05-15-operational-pack-ownership-qa.md](releases/20
 
 **Зрелость платформы сейчас:** deploy discipline · quality gates · audit traceability · ownership clarity · rollback readiness · execution consistency.
 
-### Следующие практические шаги (blocking)
+### Следующие практические шаги
 
-1. **Mobile QA execution** — A1/A2/I1/T1 на https://mywavewake.ru → screenshots → PASS/FAIL → sign-off YES  
-2. Заменить temporary roles в [OWNERSHIP_MATRIX.md](ops/OWNERSHIP_MATRIX.md)  
-3. P2 hardening на сервере  
+1. Deploy v1 hygiene на prod (этот diff) → `production_smoke.sh` → Owner spot-check записи катер/зал + Telegram админу  
+2. Mobile QA A1/A2/I1/T1 — QA-долг, не runtime freeze  
+3. Заменить temporary roles в [OWNERSHIP_MATRIX.md](ops/OWNERSHIP_MATRIX.md)  
 4. Audit log + release notes на каждый deploy  
+5. Оплату не включать, пока нет отдельного Owner GO  
 
 ---
 

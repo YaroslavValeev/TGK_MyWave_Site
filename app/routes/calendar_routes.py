@@ -35,6 +35,39 @@ MAX_PER_SLOT = 2  # Зал: максимум записей на один сло
 BOAT_MAX_PER_SLOT = 1  # Катер: один ученик на сет (30 мин)
 
 
+def _notify_web_booking_best_effort(
+    *,
+    name: str,
+    phone: str,
+    service_type: str,
+    date: str,
+    time: str,
+    booking_id: str = "",
+    workout_id: str = "",
+) -> None:
+    """Telegram админу после записи. Ошибка notify не должна ломать 201."""
+    try:
+        from app.services.application_notifications import notify_web_booking
+
+        notify_web_booking(
+            {
+                "name": name,
+                "phone": phone,
+                "service_type": service_type,
+                "date": date,
+                "time": time,
+                "booking_id": booking_id,
+                "workout_id": str(workout_id or ""),
+                "source": "site",
+            }
+        )
+    except Exception as exc:
+        current_app.logger.warning(
+            "web_booking_notify_failed error=%s",
+            str(exc)[:200],
+        )
+
+
 def _masked_config_id(key: str) -> str:
     raw = str(current_app.config.get(key) or "").strip()
     if not raw:
@@ -1198,10 +1231,24 @@ def _book_slot_internal():
             except Exception as e:
                 current_app.logger.warning(f"analytics booking_created: {e}")
 
+            _notify_web_booking_best_effort(
+                name=data.get("name") or "",
+                phone=data.get("phone") or "",
+                service_type=svc,
+                date=data.get("date") or "",
+                time=data.get("time") or "",
+                booking_id=getattr(booking_result, "booking_id", "") or "",
+                workout_id=str(workout_id or ""),
+            )
+
             try:
-                success_view = url_for("booking.booking_success_view", _external=False)
+                success_view = url_for(
+                    "booking.booking_success_view",
+                    type=svc,
+                    _external=False,
+                )
             except Exception:
-                success_view = "/booking/success-view"
+                success_view = f"/booking/success-view?type={svc}"
 
             return (
                 jsonify(
@@ -1377,9 +1424,22 @@ def _book_slot_internal():
 
         # 10. Ссылка на success-view для фронтенда
         try:
-            success_view = url_for("booking.booking_success_view", _external=False)
+            success_view = url_for(
+                "booking.booking_success_view",
+                type="camp",
+                _external=False,
+            )
         except Exception:
-            success_view = "/booking/success-view"
+            success_view = "/booking/success-view?type=camp"
+
+        _notify_web_booking_best_effort(
+            name=data.get("name") or "",
+            phone=data.get("phone") or "",
+            service_type="camp",
+            date=data.get("date") or "",
+            time=data.get("time") or "",
+            workout_id=str(workout_id or ""),
+        )
 
         return (
             jsonify(

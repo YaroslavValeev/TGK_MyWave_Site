@@ -90,12 +90,22 @@ def booking_success_view():
     }
     
     # Получаем контент для нужного типа услуги
-    SUCCESS_VIEW_CONTENT = CONTENT_MAPPING.get(service_type, CONTENT_MAPPING['boat'])
+    SUCCESS_VIEW_CONTENT = dict(
+        CONTENT_MAPPING.get(service_type, CONTENT_MAPPING['boat'])
+    )
     
     # Добавляем общие кнопки действий
     SUCCESS_VIEW_CONTENT["cta"] = {
         "primary": {"text": "Готово", "action": "close"},
         "secondary": {"text": "Поделиться", "action": "share"}
+    }
+    SUCCESS_VIEW_CONTENT["next_steps"] = {
+        "h": "Что дальше",
+        "p": "Мы получили вашу запись. Если нужно уточнить детали — напишите или позвоните.",
+        "phone": "+7 (916) 011-71-79",
+        "phone_href": "tel:+79160117179",
+        "telegram": "@MyW23",
+        "telegram_href": "https://t.me/MyW23",
     }
     html = render_template('book_success.html', content=SUCCESS_VIEW_CONTENT)
     resp = make_response(html, 200)

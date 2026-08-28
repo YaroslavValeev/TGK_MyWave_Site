@@ -1,36 +1,54 @@
 {% extends "base.html" %}
-{% block title %}Запись подтверждена — MyWave{% endblock %}
+{% block title %}{{ content.title if content else 'Запись подтверждена' }} — MyWave{% endblock %}
 
 {% block content %}
 <section class="section-padding">
   <div class="container">
     <div class="success-card">
       <div class="success-icon">
-        <!-- Можно подключить свою SVG-иконку успеха -->
         <span>✅</span>
       </div>
-      <h1 class="section-title">Запись успешно оформлена</h1>
-      <p class="section-subtitle">
-        Мы получили вашу заявку и свяжемся с вами для подтверждения деталей.
-      </p>
-
+      <h1 class="section-title">{{ content.title if content else 'Запись успешно оформлена' }}</h1>
+      {% if content and content.sections %}
+      {% for block in content.sections %}
       <div class="success-details">
+        <h2>{{ block.h }}</h2>
+        <p>{{ block.p }}</p>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p class="section-subtitle">
+        Мы получили вашу запись и свяжемся, если нужно уточнить детали.
+      </p>
+      {% endif %}
+
+      {% if content and content.next_steps %}
+      <div class="success-details">
+        <h2>{{ content.next_steps.h }}</h2>
+        <p>{{ content.next_steps.p }}</p>
         <p>
-          Если вы бронировали участие в <strong>WakeSurf Safari</strong> или
-          <strong>Wake Challenge</strong>, проверьте, пожалуйста, свою почту и
-          Telegram — там будут инструкции по подготовке, сборам и времени встречи.
+          Телефон:
+          <a href="{{ content.next_steps.phone_href }}">{{ content.next_steps.phone }}</a>
         </p>
         <p>
-          Вы также можете вернуться на сайт, чтобы посмотреть другие программы,
-          мероприятия и товары MyWave.
+          Telegram:
+          <a href="{{ content.next_steps.telegram_href }}" target="_blank" rel="noopener">{{ content.next_steps.telegram }}</a>
         </p>
       </div>
+      {% else %}
+      <div class="success-details">
+        <p>
+          Телефон: <a href="tel:+79160117179">+7 (916) 011-71-79</a>.
+          Telegram: <a href="https://t.me/MyW23" target="_blank" rel="noopener">@MyW23</a>.
+        </p>
+      </div>
+      {% endif %}
 
       <div class="success-actions">
-        <a href="{{ url_for('main.index') }}" class="btn-primary">
+        <a href="{{ url_for('index') }}" class="btn-primary">
           Вернуться на главную
         </a>
-        <a href="{{ url_for('main.services') }}" class="btn-secondary">
+        <a href="{{ url_for('services.services_list') }}" class="btn-secondary">
           Посмотреть все услуги
         </a>
       </div>

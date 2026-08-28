@@ -119,7 +119,7 @@
             <p class="service-description service-description--short">{{ product.description }}</p>
             <p class="price">{{ product.price }}</p>
             {% set buy_href = product.buy_url if product.buy_url else url_for('shop.product', slug=slug) %}
-            <a class="btn btn-secondary product-card__buy" data-product-buy-trigger href="{{ buy_href }}"{% if product.buy_url %} target="_blank" rel="noopener noreferrer"{% endif %}>Купить</a>
+            <a class="btn btn-secondary product-card__buy" data-product-buy-trigger href="{{ buy_href }}"{% if product.buy_url %} target="_blank" rel="noopener noreferrer"{% endif %}>Оставить заявку</a>
           </div>
         </div>
         {% endfor %}
@@ -276,7 +276,7 @@
     </div>
   </section>
 
-  <a href="{{ url_for('chat.chat_page') }}" class="btn-secondary chat-margin">Чат с тренером</a>
+  <a href="https://t.me/MyW23" class="btn-secondary chat-margin" target="_blank" rel="noopener">Написать в Telegram</a>
 {% endblock %}
 
 {% block scripts %}
