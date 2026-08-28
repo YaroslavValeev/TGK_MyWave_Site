@@ -14,6 +14,8 @@ env:
   PYTHON_VERSION: '3.11'
   FLASK_APP: 'app:create_app'
   FLASK_ENV: 'production'
+  # CI-only: ProductionConfig is evaluated at import. Server deploy uses server .env.
+  SECRET_KEY: 'ci-github-actions-placeholder-key'
   DATABASE_URL: 'sqlite:///deploy-check.db'
 
 jobs:
