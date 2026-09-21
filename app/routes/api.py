@@ -26,6 +26,8 @@ from app.services.google import get_google_services, add_event_to_calendar
 from app.schemas import BookingSchema
 from werkzeug.utils import secure_filename
 
+from app.config.club_box import is_club_box_mode
+
 api_bp = Blueprint('api', __name__)
 logger = logging.getLogger(__name__)
 
@@ -140,11 +142,19 @@ def _build_public_media_url(filename: str) -> str:
     return relative_path
 
 
+_IMAGE_UPLOAD_MIMES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+_VIDEO_UPLOAD_MIMES = {"video/mp4", "video/webm", "video/quicktime"}
+_IMAGE_UPLOAD_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+_VIDEO_UPLOAD_EXTS = {".mp4", ".webm", ".mov", ".m4v"}
+_DEFAULT_IMAGE_MAX_BYTES = 10485760
+_DEFAULT_VIDEO_MAX_BYTES = 52428800
+
+
 @api_bp.route("/media/upload", methods=["POST"])
 @api_bp.route("/blog/media/upload", methods=["POST"])
 @csrf.exempt
 def media_upload():
-    """Upload image for blog covers and return public URL."""
+    """Upload image or video for blog and return public URL."""
     expected_token = (current_app.config.get("MEDIA_UPLOAD_TOKEN") or "").strip()
     if not expected_token:
         return jsonify(error="media upload is not configured"), 503
@@ -157,18 +167,31 @@ def media_upload():
     if not media_file:
         return jsonify(error="file is required"), 400
 
-    mime = (media_file.mimetype or "").lower()
-    if mime not in {"image/jpeg", "image/png", "image/webp", "image/gif"}:
-        return jsonify(error="unsupported file type"), 415
-
     original_name = secure_filename(media_file.filename or "upload")
     _, ext = os.path.splitext(original_name)
     ext = ext.lower()
-    if ext not in {".jpg", ".jpeg", ".png", ".webp", ".gif"}:
-        ext = ".jpg"
+    mime = (media_file.mimetype or "").lower()
+
+    if mime in _IMAGE_UPLOAD_MIMES or ext in _IMAGE_UPLOAD_EXTS:
+        media_kind = "image"
+        if ext not in _IMAGE_UPLOAD_EXTS:
+            ext = ".jpg"
+        max_bytes = int(current_app.config.get("MEDIA_UPLOAD_MAX_BYTES") or _DEFAULT_IMAGE_MAX_BYTES)
+    elif mime in _VIDEO_UPLOAD_MIMES or ext in _VIDEO_UPLOAD_EXTS:
+        media_kind = "video"
+        if ext not in _VIDEO_UPLOAD_EXTS:
+            ext = ".mp4"
+        max_bytes = int(
+            current_app.config.get("MEDIA_UPLOAD_VIDEO_MAX_BYTES")
+            or current_app.config.get("MEDIA_UPLOAD_MAX_BYTES")
+            or _DEFAULT_VIDEO_MAX_BYTES
+        )
+        if not current_app.config.get("MEDIA_UPLOAD_VIDEO_MAX_BYTES"):
+            max_bytes = max(max_bytes, _DEFAULT_VIDEO_MAX_BYTES)
+    else:
+        return jsonify(error="unsupported file type"), 415
 
     size = _media_upload_file_size(media_file)
-    max_bytes = int(current_app.config.get("MEDIA_UPLOAD_MAX_BYTES") or 10485760)
     if size > max_bytes:
         return jsonify(error=f"file too large (>{max_bytes} bytes)"), 413
 
@@ -198,16 +221,28 @@ def media_upload():
         current_app.logger.warning("Failed to create legacy media copy for %s", filename, exc_info=True)
 
     public_url = _build_public_media_url(filename)
-    return jsonify(
-        ok=True,
-        public_url=public_url,
-        # Алиасы для Parser/клиентов, ожидающих разные имена поля
-        url=public_url,
-        cover_image_url=public_url,
-        image_url=public_url,
-        filename=filename,
-        bytes=size,
-    ), 201
+    payload = {
+        "ok": True,
+        "public_url": public_url,
+        "url": public_url,
+        "filename": filename,
+        "bytes": size,
+        "media_kind": media_kind,
+    }
+    if media_kind == "image":
+        payload["cover_image_url"] = public_url
+        payload["image_url"] = public_url
+    else:
+        payload["video_url"] = public_url
+
+    try:
+        from app.services.blog.store import invalidate_blog_sheets_cache
+
+        invalidate_blog_sheets_cache()
+    except Exception:
+        current_app.logger.debug("blog cache invalidate after media upload skipped", exc_info=True)
+
+    return jsonify(payload), 201
 
 
 # Minimal JSON API for authentication to satisfy smoke tests
@@ -412,7 +447,20 @@ def api_bookings_create():
     - 201 Created при успехе
     - 400 при ошибке валидации
     - 500 при ошибке сервера
+    - 410 when CLUB_BOX_MODE=1 (use canonical booking pipeline / gateway)
     """
+    if is_club_box_mode():
+        current_app.logger.info("legacy_api_bookings_blocked club_box_mode=1")
+        return jsonify(
+            {
+                "error": "legacy_booking_endpoint_disabled",
+                "message": (
+                    "POST /api/bookings is disabled in Club Box mode. "
+                    "Use the canonical web booking flow (internal gateway)."
+                ),
+            }
+        ), 410
+
     if not request.is_json:
         return jsonify({'error': 'Ожидается JSON'}), 400
     

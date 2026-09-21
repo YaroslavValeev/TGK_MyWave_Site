@@ -1,4 +1,4 @@
-from flask import Blueprint, abort, current_app, jsonify, render_template, request
+from flask import Blueprint, abort, current_app, jsonify, redirect, render_template, request
 
 from app.extensions import csrf
 from app.modules.logger import get_logger
@@ -10,6 +10,10 @@ from app.services.blog.store import (
     invalidate_blog_sheets_cache,
     _load_from_sheets,
     _load_from_db,
+)
+from app.services.blog.telegram_preview import (
+    fetch_telegram_og_image,
+    post_url_from_preview_request,
 )
 
 logger = get_logger(__name__)
@@ -58,6 +62,25 @@ def _api_item_payload(p: dict) -> dict:
         "embed_url": p.get("embed_url"),
         "video_poster_url": p.get("video_poster_url"),
     }
+
+
+_PLACEHOLDER_COVER = "/static/images/Place1Logo.png"
+
+
+@blog_bp.get("/blog/media/telegram-preview")
+def blog_telegram_preview():
+    """
+    Ленивая обложка: браузер запрашивает og:image публичного t.me-поста.
+    Список /blog не ходит в Telegram на сервере — только этот img-запрос.
+    """
+    post_url = post_url_from_preview_request(request.args.get("u"))
+    if not post_url:
+        return redirect(_PLACEHOLDER_COVER, code=302)
+    image = fetch_telegram_og_image(post_url)
+    target = image or _PLACEHOLDER_COVER
+    response = redirect(target, code=302)
+    response.headers["Cache-Control"] = "public, max-age=600"
+    return response
 
 
 @blog_bp.get("/blog")

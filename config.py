@@ -198,6 +198,7 @@ class Config:
     COMPETITIONS_CACHE_INVALIDATE_TOKEN = os.getenv("COMPETITIONS_CACHE_INVALIDATE_TOKEN", "")
     MEDIA_UPLOAD_SUBDIR = os.getenv("MEDIA_UPLOAD_SUBDIR", "uploads/review_media")
     MEDIA_UPLOAD_MAX_BYTES = int(os.getenv("MEDIA_UPLOAD_MAX_BYTES", "10485760"))
+    MEDIA_UPLOAD_VIDEO_MAX_BYTES = int(os.getenv("MEDIA_UPLOAD_VIDEO_MAX_BYTES", "52428800"))
     # Optional absolute root for uploaded media (tests/local override).
     # If empty, uploads go to <static_folder>/<MEDIA_UPLOAD_SUBDIR>.
     MEDIA_UPLOAD_ROOT = os.getenv("MEDIA_UPLOAD_ROOT", "")

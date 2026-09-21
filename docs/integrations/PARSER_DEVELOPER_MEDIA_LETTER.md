@@ -86,9 +86,23 @@
 | JSON в `raw_media` с `url` / `thumbnail_url` | Только `file_id` без публичного URL |
 | Публичный CDN/статик | `downloads/...` без HTTP |
 | Пусто, если картинки нет | Любой не-HTTP путь, видимый только Parser-машине |
+| `video_url` = публичный mp4 / YouTube | `t.me/...` как единственное «видео» без загрузки файла |
+
+### Видео (обязательно для автопоказа на сайте)
+
+Сайт **не умеет** встроить файл из Telegram, пока он живёт только внутри TG. Канон:
+
+1. Скачать видео на машине Parser.
+2. `POST /api/media/upload` с `video/mp4` (лимит по умолчанию 50 МБ, `MEDIA_UPLOAD_VIDEO_MAX_BYTES`).
+3. Записать ответ `public_url` / `video_url` в колонки `video_url` и в `media_json` (`type: video`, `url: public_url`).
+4. Для обложки по-прежнему нужен **image** URL (кадр или фото) — не класть mp4 в `cover_image_url`.
+5. После записи в Sheet: `POST /api/blog/cache/invalidate` с `MEDIA_UPLOAD_TOKEN`, чтобы витрина не ждала TTL ~120 с.
+
+Если файл на сайт не загружен, витрина покажет превью `og:image` публичного t.me-поста и/или кнопку «Смотреть видео» на пост в Telegram — это запасной путь, не полноценный плеер на сайте.
 
 ## Связь с кодом сайта
 
-- Нормализация строки Sheets: `app/services/blog/store._normalize_row_from_sheets`, `_extract_cover_image`
+- Нормализация строки Sheets: `app/services/blog/store._normalize_row_from_sheets`, `_extract_cover_image`, `_extract_video_urls_from_row`
+- Ленивая обложка t.me: `GET /blog/media/telegram-preview?u=https://t.me/...`
 - API списка постов: `GET /api/blog/posts` (поле `image_url` = нормализованная обложка)
-- Ручная регенера кэша Sheets: см. `invalidate_blog_sheets_cache()` (после массового обновления Sheet имеет смысл перезапустить воркер/подождать TTL кэша)
+- Ручная регенера кэша Sheets: `POST /api/blog/cache/invalidate` (`invalidate_blog_sheets_cache()`)

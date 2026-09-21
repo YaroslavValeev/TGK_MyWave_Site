@@ -73,6 +73,48 @@ def _is_probably_video_file_url(url: str) -> bool:
     return bool(_RE_VID_FILE.search(u))
 
 
+def looks_like_watchable_video(url: str) -> bool:
+    """Прямой файл, YouTube/Vimeo/Rutube/VK video — то, что витрина умеет показать."""
+    u = _norm_url(url)
+    if not u:
+        return False
+    if _is_probably_video_file_url(u):
+        return True
+    try:
+        p = urlparse(u)
+    except Exception:
+        return False
+    host = (p.netloc or "").lower()
+    if host.startswith("www."):
+        host = host[4:]
+    path = p.path or ""
+    if host in ("youtube.com", "m.youtube.com", "youtu.be") or host.endswith(".youtube.com"):
+        embed = _youtube_watch_to_embed(u)
+        return bool(embed) and is_safe_iframe_embed_url(embed)
+    if "vimeo.com" in host:
+        return True
+    if host == "rutube.ru" or host.endswith(".rutube.ru"):
+        return "/video/" in path or "/play/embed/" in path
+    if host in ("vk.com", "vkvideo.ru") or host.endswith(".vk.com"):
+        return "/video" in path or "video_ext.php" in path
+    return False
+
+
+_RE_HTTP_URL = re.compile(r"https?://[^\s<>\"')\]]+", re.IGNORECASE)
+
+
+def first_video_url_in_text(text: object) -> str:
+    """Первая watchable-ссылка в тексте поста / source_url."""
+    raw = str(text or "")
+    if not raw:
+        return ""
+    for match in _RE_HTTP_URL.finditer(raw):
+        candidate = _norm_url(match.group(0).rstrip(".,;"))
+        if looks_like_watchable_video(candidate):
+            return candidate
+    return ""
+
+
 def attach_video_display_fields(d: dict) -> None:
     """
     Добавляет в словарь поста поля для шаблона: video_iframe_src, video_direct_file_url, video_open_url.

@@ -33,7 +33,15 @@ from app.services.blog.publishability import (
     is_publishable_blog_post_record,
     is_publishable_row,
 )
-from app.services.blog.video_embed import attach_video_display_fields
+from app.services.blog.telegram_preview import (
+    is_public_telegram_post_url,
+    telegram_preview_img_src,
+)
+from app.services.blog.video_embed import (
+    attach_video_display_fields,
+    first_video_url_in_text,
+    looks_like_watchable_video,
+)
 
 logger = get_logger(__name__)
 
@@ -407,11 +415,35 @@ def _normalize_media_url(value: object) -> str:
     return s
 
 
+_RE_VIDEO_FILE = re.compile(r"\.(mp4|webm|m4v|ogv|mov)(?:$|[?#])", re.IGNORECASE)
+_TELEGRAM_IMAGE_CDN_SUFFIXES = (
+    "telegram-cdn.org",
+    "cdn.telegram.org",
+    "telesco.pe",
+)
+
+
+def _is_video_file_url(url: str) -> bool:
+    return bool(_RE_VIDEO_FILE.search(_normalize_media_url(url)))
+
+
+def _is_telegram_cdn_image_host(host: str) -> bool:
+    h = (host or "").lower()
+    if h.startswith("www."):
+        h = h[4:]
+    return any(h == suffix or h.endswith("." + suffix) for suffix in _TELEGRAM_IMAGE_CDN_SUFFIXES)
+
+
 def _is_image_like_url(url: str) -> bool:
     s = _normalize_media_url(url)
     if not s:
         return False
+    if _is_video_file_url(s):
+        return False
     if s.startswith("/"):
+        # Наш telegram-preview — валидный src для <img>, не заглушка.
+        if s.startswith("/blog/media/telegram-preview"):
+            return True
         return True
     if s.startswith("data:image/") or s.startswith("blob:"):
         return True
@@ -427,11 +459,13 @@ def _is_image_like_url(url: str) -> bool:
 
     # Ссылки на Telegram-посты (t.me/channel/123) — это HTML-страницы, не image asset.
     if host in ("t.me", "telegram.me", "www.t.me", "www.telegram.me"):
-        parts = [part for part in path.split("/") if part]
-        if len(parts) == 2 and parts[1].isdigit():
-            return False
+        return False
 
     if re.search(r"\.(png|jpe?g|webp|gif|avif|bmp|svg)$", path_lower):
+        return True
+
+    # CDN Telegram часто без расширения файла.
+    if _is_telegram_cdn_image_host(host):
         return True
 
     # Для CDN/resize-ссылок без расширения допускаем известные media/path-маркеры.
@@ -499,10 +533,11 @@ def _parse_media_json_items(raw: object) -> List[object]:
     return [text]
 
 
-def _embed_media_from_json(raw: object, exclude_url: str = "") -> str:
+def _embed_media_from_json(raw: object, exclude_url: str = "", extra_exclude: object = ()) -> str:
     """
     HTML дополнительных медиа для тела поста из media_json.
     exclude_url — обложка, чтобы не дублировать hero-картинку.
+    extra_exclude — video_url героя, чтобы не дублировать плеер.
     """
     from markupsafe import escape
 
@@ -515,6 +550,10 @@ def _embed_media_from_json(raw: object, exclude_url: str = "") -> str:
     seen: set[str] = set()
     if exclude:
         seen.add(exclude)
+    for extra in extra_exclude or ():
+        extra_n = _normalize_media_url(extra)
+        if extra_n:
+            seen.add(extra_n)
 
     for item in items:
         media_type = ""
@@ -533,11 +572,8 @@ def _embed_media_from_json(raw: object, exclude_url: str = "") -> str:
             continue
         seen.add(url)
 
-        is_video = media_type == "video" or (
-            not _is_image_like_url(url)
-            and bool(re.search(r"\.(mp4|webm|mov)(\?|$)", url, re.IGNORECASE))
-        )
-        if is_video:
+        # t.me/youtube в <video src> не играют — только прямой файл.
+        if _is_video_file_url(url):
             parts.append(
                 '<figure class="blog-post-embedded-media">'
                 f'<video controls playsinline preload="metadata" src="{escape(url)}"></video>'
@@ -612,7 +648,59 @@ def _extract_cover_image(row: Dict) -> str:
             if candidate and _is_image_like_url(candidate):
                 return candidate
 
+    preview = telegram_preview_img_src(_telegram_post_url_from_row(row))
+    if preview:
+        return preview
+
     return "/static/images/Place1Logo.png"
+
+
+def _telegram_post_url_from_row(row: Dict) -> str:
+    """Публичная ссылка t.me/.../id из source/canonical или media_json."""
+    for key in ("source_url", "canonical_url", "cover_image_url", "image_url"):
+        candidate = _normalize_media_url(row.get(key))
+        if is_public_telegram_post_url(candidate):
+            return candidate
+
+    for raw_key in ("media_json", "raw_media"):
+        for item in _parse_media_json_items(row.get(raw_key)):
+            if isinstance(item, dict):
+                for key in ("post_url", "url", "src", "canonical_url"):
+                    candidate = _normalize_media_url(item.get(key))
+                    if is_public_telegram_post_url(candidate):
+                        return candidate
+            elif isinstance(item, str) and is_public_telegram_post_url(item):
+                return _normalize_media_url(item)
+    return ""
+
+
+def _video_ref_from_media_item(item: object) -> str:
+    if isinstance(item, str):
+        url = _normalize_media_url(item)
+        if looks_like_watchable_video(url) or _is_video_file_url(url):
+            return url
+        return ""
+    if not isinstance(item, dict):
+        return ""
+    media_type = str(item.get("type") or item.get("kind") or "").lower()
+    for key in ("url", "src", "file_url", "video_url", "embed_url", "post_url"):
+        url = _normalize_media_url(item.get(key))
+        if not url:
+            continue
+        if looks_like_watchable_video(url) or _is_video_file_url(url):
+            return url
+        if media_type in ("video", "animation", "youtube") and (
+            looks_like_watchable_video(url) or is_public_telegram_post_url(url)
+        ):
+            return url
+        if media_type in ("video", "animation") and is_public_telegram_post_url(url):
+            return url
+    if media_type in ("video", "animation"):
+        for key in ("post_url", "url"):
+            url = _normalize_media_url(item.get(key))
+            if is_public_telegram_post_url(url):
+                return url
+    return ""
 
 
 def _extract_video_urls_from_row(row: Dict) -> Tuple[str, str, str]:
@@ -646,6 +734,27 @@ def _extract_video_urls_from_row(row: Dict) -> Tuple[str, str, str]:
         if c and _is_image_like_url(c):
             poster = c
             break
+
+    if not video_url and not embed_url:
+        for raw_key in ("media_json", "raw_media", "media", "attachments"):
+            for item in _parse_media_json_items(row.get(raw_key)):
+                found = _video_ref_from_media_item(item)
+                if found:
+                    video_url = found
+                    break
+            if video_url:
+                break
+
+    if not video_url and not embed_url:
+        cover_as_video = _normalize_media_url(row.get("cover_image_url") or row.get("image_url") or "")
+        if _is_video_file_url(cover_as_video):
+            video_url = cover_as_video
+
+    if not video_url and not embed_url:
+        video_url = first_video_url_in_text(row.get("source_url")) or first_video_url_in_text(
+            row.get("final_posts") or row.get("text") or row.get("raw_content") or ""
+        )
+
     return video_url, embed_url, poster
 
 
@@ -714,6 +823,15 @@ def _normalize_row_from_sheets(row: Dict) -> Optional[Dict]:
     cover = _extract_cover_image(row)
     video_url, embed_url, video_poster = _extract_video_urls_from_row(row)
     card_image = video_poster or cover
+
+    # Доп. фото/mp4 из media_json — тот же путь, что и при sync в БД (publish.py).
+    media_html = _embed_media_from_json(
+        row.get("media_json") or row.get("raw_media"),
+        exclude_url=cover,
+        extra_exclude=(video_url, embed_url),
+    )
+    if media_html:
+        content_html = f"{content_html}\n{media_html}" if content_html else media_html
 
     if _blog_excerpt_trace_enabled():
         logger.info(

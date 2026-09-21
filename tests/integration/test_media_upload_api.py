@@ -140,7 +140,23 @@ def test_media_upload_oversized_file_returns_413_json(client, tmp_path):
     assert "file too large" in rv.get_json().get("error", "")
 
 
-def test_media_upload_unsupported_mime_returns_415_json(client, tmp_path):
+def test_media_upload_accepts_mp4_and_returns_video_url(client, tmp_path):
+    _media_upload_config(client.application, tmp_path)
+    body = b"\x00\x00\x00\x18ftypmp42" + b"\x00" * 32
+    rv = client.post(
+        "/api/media/upload",
+        headers={"Authorization": "Bearer test-token"},
+        data={"file": (io.BytesIO(body), "clip.mp4", "video/mp4")},
+        content_type="multipart/form-data",
+    )
+    assert rv.status_code == 201
+    payload = rv.get_json()
+    assert payload["ok"] is True
+    assert payload["media_kind"] == "video"
+    assert payload["video_url"].endswith(".mp4")
+    assert "cover_image_url" not in payload
+    saved = list((tmp_path / "uploads" / "review_media").glob("review_*.mp4"))
+    assert len(saved) == 1
     _media_upload_config(client.application, tmp_path)
     rv = client.post(
         "/api/blog/media/upload",
