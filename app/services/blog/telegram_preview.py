@@ -30,12 +30,23 @@ _RE_OG_IMAGE_SWAP = re.compile(
     r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+(?:property|name)=["\']og:image["\']',
     re.IGNORECASE,
 )
+_RE_CDN_IMAGE = re.compile(
+    r'https://cdn\d*\.(?:telegram-cdn\.org|telesco\.pe)/file/[A-Za-z0-9_\-.=?&]+(?:\.(?:jpg|jpeg|png|webp))?',
+    re.IGNORECASE,
+)
 
 # post_url -> (ts, og_image_or_empty)
 _og_cache: Dict[str, Tuple[float, str]] = {}
-_OG_CACHE_TTL_SEC = 6 * 60 * 60
+_OG_CACHE_TTL_OK_SEC = 6 * 60 * 60
+_OG_CACHE_TTL_EMPTY_SEC = 5 * 60
 
 PREVIEW_PATH = "/blog/media/telegram-preview"
+
+_BROWSER_UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/120.0.0.0 Safari/537.36"
+)
 
 
 def is_public_telegram_post_url(value: object) -> bool:
@@ -87,6 +98,9 @@ def _is_allowed_preview_image_url(url: str) -> bool:
     host = (p.netloc or "").lower()
     if host.startswith("www."):
         host = host[4:]
+    path = (p.path or "").lower()
+    if path.endswith(".mp4") or ".mp4?" in path:
+        return False
     return any(host == suffix or host.endswith("." + suffix) for suffix in _PREVIEW_IMAGE_HOST_SUFFIXES)
 
 
@@ -103,44 +117,72 @@ def _parse_og_image(html: str) -> str:
     return ""
 
 
-def fetch_telegram_og_image(post_url: str, *, timeout: float = 2.5) -> str:
+def _parse_cdn_image_fallback(html: str) -> str:
+    """Если meta og:image нет (embed), берём первый jpg/png с CDN Telegram."""
+    for match in _RE_CDN_IMAGE.finditer(html or ""):
+        candidate = match.group(0)
+        lower = candidate.lower()
+        if ".mp4" in lower:
+            continue
+        if _is_allowed_preview_image_url(candidate):
+            return candidate
+    return ""
+
+
+def _fetch_html(url: str, *, timeout: float) -> str:
+    req = Request(
+        url,
+        headers={
+            "User-Agent": _BROWSER_UA,
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+        },
+        method="GET",
+    )
+    with urlopen(req, timeout=timeout) as resp:  # nosec B310 — host allowlist выше
+        final_host = (urlparse(resp.geturl()).netloc or "").lower()
+        if final_host.startswith("www."):
+            final_host = final_host[4:]
+        if final_host not in _TELEGRAM_POST_HOSTS and not final_host.endswith("telegram.org"):
+            return ""
+        raw = resp.read(250_000)
+        return raw.decode("utf-8", errors="ignore")
+
+
+def fetch_telegram_og_image(post_url: str, *, timeout: float = 8.0) -> str:
     """
     Скачивает HTML публичного t.me-поста и возвращает og:image на CDN Telegram.
-    Результат кэшируется, в том числе пустой (чтобы не долбить t.me при ошибке).
+    Успех кэшируется надолго; пустой ответ — коротко, чтобы ретраи сработали после сетевых сбоев.
     """
     canonical = canonical_telegram_post_url(post_url)
     if not canonical:
         return ""
     now = time.time()
     cached = _og_cache.get(canonical)
-    if cached and (now - cached[0]) < _OG_CACHE_TTL_SEC:
-        return cached[1]
+    if cached:
+        age = now - cached[0]
+        ttl = _OG_CACHE_TTL_OK_SEC if cached[1] else _OG_CACHE_TTL_EMPTY_SEC
+        if age < ttl:
+            return cached[1]
 
-    req = Request(
-        canonical,
-        headers={
-            "User-Agent": "Mozilla/5.0 (compatible; MyWaveBlog/1.0; +https://mywavewake.ru/)",
-            "Accept": "text/html,application/xhtml+xml",
-        },
-        method="GET",
-    )
     image = ""
     try:
-        with urlopen(req, timeout=timeout) as resp:  # nosec B310 — host allowlist выше
-            final_host = (urlparse(resp.geturl()).netloc or "").lower()
-            if final_host.startswith("www."):
-                final_host = final_host[4:]
-            if final_host not in _TELEGRAM_POST_HOSTS and not final_host.endswith("telegram.org"):
-                image = ""
-            else:
-                raw = resp.read(180_000)
-                html = raw.decode("utf-8", errors="ignore")
-                image = _parse_og_image(html)
+        html = _fetch_html(canonical, timeout=timeout)
+        image = _parse_og_image(html) or _parse_cdn_image_fallback(html)
+        if not image:
+            # embed-страница часто содержит прямые jpg без og:image
+            html_embed = _fetch_html(f"{canonical}?embed=1", timeout=timeout)
+            image = _parse_og_image(html_embed) or _parse_cdn_image_fallback(html_embed)
     except Exception:
         image = ""
 
     _og_cache[canonical] = (now, image)
     return image
+
+
+def clear_telegram_og_cache() -> None:
+    """Сброс in-process кэша (после рестарта воркера и так пусто)."""
+    _og_cache.clear()
 
 
 def post_url_from_preview_request(query_u: object) -> str:

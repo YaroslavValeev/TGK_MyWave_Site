@@ -107,3 +107,20 @@ def test_first_video_url_in_text_finds_youtube():
     assert looks_like_watchable_video("https://youtu.be/dQw4w9WgXcQ")
     found = first_video_url_in_text("Смотри https://youtu.be/dQw4w9WgXcQ сегодня")
     assert found == "https://youtu.be/dQw4w9WgXcQ"
+
+
+def test_parse_og_and_cdn_fallback_from_html():
+    from app.services.blog.telegram_preview import _parse_cdn_image_fallback, _parse_og_image
+
+    html = (
+        '<meta property="og:image" content="https://cdn4.telesco.pe/file/abc123">'
+        '<img src="https://cdn4.telesco.pe/file/extra.jpg">'
+    )
+    assert _parse_og_image(html).startswith("https://cdn4.telesco.pe/")
+    embed = (
+        '<a class="tgme_widget_message_photo_wrap" '
+        'style="background-image:url(\'https://cdn4.telesco.pe/file/photo.jpg\')"></a>'
+        '<video src="https://cdn4.telesco.pe/file/clip.mp4">'
+    )
+    assert _parse_cdn_image_fallback(embed).endswith("photo.jpg")
+    assert ".mp4" not in _parse_cdn_image_fallback(embed)
