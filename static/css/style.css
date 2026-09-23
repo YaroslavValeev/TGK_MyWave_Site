@@ -3280,6 +3280,21 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
   border: 0;
 }
 
+.blog-post-telegram-cta {
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.blog-post-telegram-cta__text {
+  margin: 0 0 0.75rem;
+  color: #334155;
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
 .blog-post-video-element {
   display: block;
   width: 100%;

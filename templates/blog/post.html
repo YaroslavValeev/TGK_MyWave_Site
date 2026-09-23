@@ -57,6 +57,10 @@
         </div>
       {% endif %}
 
+      {% set _cover = post.cover_image_url or '' %}
+      {% set _has_real_cover = _cover and ('Place1Logo' not in _cover) and (not _cover.startswith('/blog/media/telegram-preview')) %}
+      {% set _has_inline_media = post.video_iframe_src or post.video_direct_file_url or _has_real_cover %}
+
       {% if post.video_iframe_src %}
         <div class="blog-post-video-embed">
           <iframe
@@ -80,19 +84,9 @@
             {% if post.video_poster_url %}poster="{{ post.video_poster_url }}"{% endif %}
           ></video>
         </div>
-      {% elif post.telegram_embed_url %}
-        <div class="blog-post-telegram-embed">
-          <iframe
-            class="blog-post-telegram-iframe"
-            src="{{ post.telegram_embed_url }}"
-            title="{{ post.title|e }}"
-            loading="lazy"
-            referrerpolicy="strict-origin-when-cross-origin"
-          ></iframe>
-        </div>
-      {% elif post.video_open_url %}
+      {% elif post.video_open_url and not (post.telegram_embed_url and not _has_inline_media) %}
         <div class="blog-post-video-link">
-          {% if post.video_poster_url %}
+          {% if post.video_poster_url and _has_real_cover %}
             <a href="{{ post.video_open_url }}" target="_blank" rel="noopener noreferrer" class="blog-post-video-poster-link">
               <img src="{{ post.video_poster_url }}" alt="" class="blog-post-cover">
             </a>
@@ -101,10 +95,22 @@
             <a class="btn btn-outline-brand" href="{{ post.video_open_url }}" target="_blank" rel="noopener noreferrer">Смотреть видео</a>
           </p>
         </div>
-      {% elif post.cover_image_url %}
+      {% elif _has_real_cover %}
         <figure class="blog-post-cover-wrap">
           <img src="{{ post.cover_image_url }}" alt="" class="blog-post-cover">
         </figure>
+      {% endif %}
+
+      {% if not _has_inline_media and (post.telegram_embed_url or (post.source_url and 't.me/' in (post.source_url or ''))) %}
+        <div class="blog-post-telegram-cta">
+          <p class="blog-post-telegram-cta__text">Фото/видео этого поста пока только в Telegram: с сервера сайта до t.me нет доступа, поэтому файл нужно загрузить через Parser на сайт.</p>
+          <a
+            class="btn btn-outline-brand"
+            href="{{ post.source_url or (post.telegram_embed_url|replace('?embed=1', '')) }}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Открыть пост в Telegram</a>
+        </div>
       {% endif %}
 
       <div class="blog-post-content">

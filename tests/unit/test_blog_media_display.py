@@ -30,15 +30,13 @@ def test_telegram_cdn_without_extension_is_image():
     assert not _is_image_like_url("/static/uploads/review_media/clip.mp4")
 
 
-def test_cover_uses_lazy_telegram_preview_when_only_tme_link():
+def test_cover_falls_back_to_logo_when_only_tme_link():
     row = {
         "image_url": "https://t.me/wakedivision/520",
         "source_url": "https://t.me/wakedivision/520",
         "media_json": '{"type":"telegram_post","post_url":"https://t.me/wakedivision/520"}',
     }
-    cover = _extract_cover_image(row)
-    assert cover.startswith("/blog/media/telegram-preview?u=")
-    assert "t.me" in cover
+    assert _extract_cover_image(row) == "/static/images/Place1Logo.png"
 
 
 def test_normalize_row_extracts_youtube_from_source_and_media_json_mp4():
@@ -58,7 +56,7 @@ def test_normalize_row_extracts_youtube_from_source_and_media_json_mp4():
     assert "clip.mp4" not in (mp4["content_html"] or "")
 
 
-def test_normalize_row_telegram_video_opens_as_link():
+def test_normalize_row_telegram_sets_embed_and_logo_cover():
     out = _normalize_row_from_sheets(
         _publishable_row(
             source_url="https://t.me/wakedivision/777",
@@ -67,7 +65,7 @@ def test_normalize_row_telegram_video_opens_as_link():
     )
     assert out is not None
     assert out["video_open_url"] == "https://t.me/wakedivision/777"
-    assert out["cover_image_url"].startswith("/blog/media/telegram-preview")
+    assert out["cover_image_url"] == "/static/images/Place1Logo.png"
     assert out["telegram_embed_url"] == "https://t.me/wakedivision/777?embed=1"
 
 

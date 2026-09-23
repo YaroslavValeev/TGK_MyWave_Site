@@ -36,7 +36,6 @@ from app.services.blog.publishability import (
 from app.services.blog.telegram_preview import (
     is_public_telegram_post_url,
     telegram_embed_iframe_src,
-    telegram_preview_img_src,
 )
 from app.services.blog.video_embed import (
     attach_video_display_fields,
@@ -649,10 +648,9 @@ def _extract_cover_image(row: Dict) -> str:
             if candidate and _is_image_like_url(candidate):
                 return candidate
 
-    preview = telegram_preview_img_src(_telegram_post_url_from_row(row))
-    if preview:
-        return preview
-
+    # t.me HTML нельзя показать как <img>. С этого VPS до t.me нет маршрута
+    # (curl timeout), поэтому preview-endpoint только тормозит карточки.
+    # Оставляем заглушку; на странице поста — CTA «Открыть в Telegram».
     return "/static/images/Place1Logo.png"
 
 
