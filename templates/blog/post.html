@@ -80,6 +80,16 @@
             {% if post.video_poster_url %}poster="{{ post.video_poster_url }}"{% endif %}
           ></video>
         </div>
+      {% elif post.telegram_embed_url %}
+        <div class="blog-post-telegram-embed">
+          <iframe
+            class="blog-post-telegram-iframe"
+            src="{{ post.telegram_embed_url }}"
+            title="{{ post.title|e }}"
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+          ></iframe>
+        </div>
       {% elif post.video_open_url %}
         <div class="blog-post-video-link">
           {% if post.video_poster_url %}

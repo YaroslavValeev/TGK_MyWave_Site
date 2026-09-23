@@ -310,6 +310,10 @@ class DevelopmentConfig(Config):
             "https://*.ok.ru",
             "https://kinescope.io",
             "https://*.kinescope.io",
+            # Telegram post embed (?embed=1) для блога, когда VPS не тянет og:image
+            "https://t.me",
+            "https://telegram.me",
+            "https://www.t.me",
         ],
         'object-src': ["'none'"],
         'base-uri': ["'self'"],
@@ -415,6 +419,10 @@ class ProductionConfig(Config):
             "https://*.ok.ru",
             "https://kinescope.io",
             "https://*.kinescope.io",
+            # Telegram post embed (?embed=1) для блога
+            "https://t.me",
+            "https://telegram.me",
+            "https://www.t.me",
         ],
         'media-src': ["'self'", "blob:", "https:", "http:"],
         'object-src': ["'none'"],

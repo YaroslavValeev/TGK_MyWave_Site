@@ -68,6 +68,7 @@ def test_normalize_row_telegram_video_opens_as_link():
     assert out is not None
     assert out["video_open_url"] == "https://t.me/wakedivision/777"
     assert out["cover_image_url"].startswith("/blog/media/telegram-preview")
+    assert out["telegram_embed_url"] == "https://t.me/wakedivision/777?embed=1"
 
 
 def test_embed_media_skips_telegram_page_as_video_tag():

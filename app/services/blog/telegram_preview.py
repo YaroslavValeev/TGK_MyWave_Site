@@ -7,12 +7,16 @@
 """
 from __future__ import annotations
 
+import logging
 import re
+import subprocess
 import time
 from typing import Dict, Tuple
 from urllib.parse import parse_qs, quote, urlparse, urlunparse
 
 import requests
+
+logger = logging.getLogger(__name__)
 
 _TELEGRAM_POST_HOSTS = {"t.me", "www.t.me", "telegram.me", "www.telegram.me"}
 _PREVIEW_IMAGE_HOST_SUFFIXES = (
@@ -87,6 +91,17 @@ def telegram_preview_img_src(post_url: object) -> str:
     return f"{PREVIEW_PATH}?u={quote(canonical, safe='')}"
 
 
+def telegram_embed_iframe_src(post_url: object) -> str:
+    """
+    Публичный embed поста Telegram для iframe на странице блога.
+    Грузится в браузере пользователя — работает даже если VPS не достучится до t.me.
+    """
+    canonical = canonical_telegram_post_url(post_url)
+    if not canonical:
+        return ""
+    return f"{canonical}?embed=1"
+
+
 def _is_allowed_preview_image_url(url: str) -> bool:
     try:
         p = urlparse(url)
@@ -130,8 +145,14 @@ def _parse_cdn_image_fallback(html: str) -> str:
     return ""
 
 
-def _fetch_html(url: str, *, timeout: float) -> str:
-    # requests надёжнее urllib под gunicorn+eventlet (monkey-patched sockets).
+def _host_allowed_for_fetch(final_url: str) -> bool:
+    final_host = (urlparse(final_url).netloc or "").lower()
+    if final_host.startswith("www."):
+        final_host = final_host[4:]
+    return final_host in _TELEGRAM_POST_HOSTS or final_host.endswith("telegram.org")
+
+
+def _fetch_html_via_requests(url: str, *, timeout: float) -> str:
     resp = requests.get(
         url,
         headers={
@@ -143,12 +164,53 @@ def _fetch_html(url: str, *, timeout: float) -> str:
         allow_redirects=True,
     )
     resp.raise_for_status()
-    final_host = (urlparse(resp.url).netloc or "").lower()
-    if final_host.startswith("www."):
-        final_host = final_host[4:]
-    if final_host not in _TELEGRAM_POST_HOSTS and not final_host.endswith("telegram.org"):
+    if not _host_allowed_for_fetch(resp.url):
         return ""
     return (resp.text or "")[:250_000]
+
+
+def _fetch_html_via_curl(url: str, *, timeout: float) -> str:
+    """Запасной путь: системный curl вне monkey-patch eventlet."""
+    try:
+        proc = subprocess.run(
+            [
+                "curl",
+                "-fsSL",
+                "--max-time",
+                str(max(1, int(timeout))),
+                "-A",
+                _BROWSER_UA,
+                "-H",
+                "Accept: text/html,application/xhtml+xml",
+                url,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=timeout + 2,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        logger.info("telegram_preview_curl_failed error=%s", type(exc).__name__)
+        return ""
+    if proc.returncode != 0:
+        logger.info(
+            "telegram_preview_curl_nonzero code=%s err=%s",
+            proc.returncode,
+            (proc.stderr or "")[:160],
+        )
+        return ""
+    return (proc.stdout or "")[:250_000]
+
+
+def _fetch_html(url: str, *, timeout: float) -> str:
+    # 1) requests (обычно ок), 2) curl CLI — если Python-сокеты под eventlet ломаются / t.me режет.
+    try:
+        html = _fetch_html_via_requests(url, timeout=timeout)
+        if html:
+            return html
+    except Exception as exc:
+        logger.info("telegram_preview_requests_failed error=%s", type(exc).__name__)
+    return _fetch_html_via_curl(url, timeout=timeout)
 
 
 def fetch_telegram_og_image(post_url: str, *, timeout: float = 8.0) -> str:
@@ -169,13 +231,21 @@ def fetch_telegram_og_image(post_url: str, *, timeout: float = 8.0) -> str:
 
     image = ""
     try:
-        html = _fetch_html(canonical, timeout=timeout)
-        image = _parse_og_image(html) or _parse_cdn_image_fallback(html)
-        if not image:
-            # embed-страница часто содержит прямые jpg без og:image
-            html_embed = _fetch_html(f"{canonical}?embed=1", timeout=timeout)
-            image = _parse_og_image(html_embed) or _parse_cdn_image_fallback(html_embed)
-    except Exception:
+        candidates = [canonical, f"{canonical}?embed=1"]
+        # /s/channel/id иногда отдаёт полный HTML с og:image
+        path = urlparse(canonical).path or ""
+        m = _RE_USERNAME_POST.match(path)
+        if m:
+            candidates.append(f"https://t.me/s/{m.group(1)}/{m.group(2)}")
+        for candidate_url in candidates:
+            html = _fetch_html(candidate_url, timeout=timeout)
+            if not html:
+                continue
+            image = _parse_og_image(html) or _parse_cdn_image_fallback(html)
+            if image:
+                break
+    except Exception as exc:
+        logger.info("telegram_preview_fetch_failed error=%s", type(exc).__name__)
         image = ""
 
     _og_cache[canonical] = (now, image)

@@ -35,6 +35,7 @@ from app.services.blog.publishability import (
 )
 from app.services.blog.telegram_preview import (
     is_public_telegram_post_url,
+    telegram_embed_iframe_src,
     telegram_preview_img_src,
 )
 from app.services.blog.video_embed import (
@@ -881,6 +882,7 @@ def _normalize_row_from_sheets(row: Dict) -> Optional[Dict]:
         "og_title": str(row.get("og_title") or "").strip() or None,
         "og_description": str(row.get("og_description") or "").strip() or None,
         "canonical_url": str(row.get("canonical_url") or "").strip() or None,
+        "telegram_embed_url": telegram_embed_iframe_src(_telegram_post_url_from_row(row)) or None,
     }
     attach_video_display_fields(result)
     return result

@@ -3265,6 +3265,21 @@ button:focus, .btn-primary:focus, .btn-secondary:focus, .send-button:focus, .cha
   border: 0;
 }
 
+.blog-post-telegram-embed {
+  margin: 0 0 1.25rem;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0f172a;
+  min-height: 420px;
+}
+
+.blog-post-telegram-iframe {
+  display: block;
+  width: 100%;
+  min-height: 420px;
+  border: 0;
+}
+
 .blog-post-video-element {
   display: block;
   width: 100%;
