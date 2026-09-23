@@ -124,3 +124,21 @@ def test_parse_og_and_cdn_fallback_from_html():
     )
     assert _parse_cdn_image_fallback(embed).endswith("photo.jpg")
     assert ".mp4" not in _parse_cdn_image_fallback(embed)
+
+
+def test_fetch_telegram_og_image_uses_requests(monkeypatch):
+    from app.services.blog import telegram_preview as mod
+
+    mod.clear_telegram_og_cache()
+    html = '<meta property="og:image" content="https://cdn4.telesco.pe/file/ok.jpg">'
+
+    class _Resp:
+        url = "https://t.me/wakeflot/2934"
+        text = html
+        def raise_for_status(self):
+            return None
+
+    monkeypatch.setattr(mod.requests, "get", lambda *a, **k: _Resp())
+    assert mod.fetch_telegram_og_image("https://t.me/wakeflot/2934") == (
+        "https://cdn4.telesco.pe/file/ok.jpg"
+    )

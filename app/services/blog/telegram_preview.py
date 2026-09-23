@@ -11,7 +11,8 @@ import re
 import time
 from typing import Dict, Tuple
 from urllib.parse import parse_qs, quote, urlparse, urlunparse
-from urllib.request import Request, urlopen
+
+import requests
 
 _TELEGRAM_POST_HOSTS = {"t.me", "www.t.me", "telegram.me", "www.telegram.me"}
 _PREVIEW_IMAGE_HOST_SUFFIXES = (
@@ -130,23 +131,24 @@ def _parse_cdn_image_fallback(html: str) -> str:
 
 
 def _fetch_html(url: str, *, timeout: float) -> str:
-    req = Request(
+    # requests надёжнее urllib под gunicorn+eventlet (monkey-patched sockets).
+    resp = requests.get(
         url,
         headers={
             "User-Agent": _BROWSER_UA,
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
         },
-        method="GET",
+        timeout=timeout,
+        allow_redirects=True,
     )
-    with urlopen(req, timeout=timeout) as resp:  # nosec B310 — host allowlist выше
-        final_host = (urlparse(resp.geturl()).netloc or "").lower()
-        if final_host.startswith("www."):
-            final_host = final_host[4:]
-        if final_host not in _TELEGRAM_POST_HOSTS and not final_host.endswith("telegram.org"):
-            return ""
-        raw = resp.read(250_000)
-        return raw.decode("utf-8", errors="ignore")
+    resp.raise_for_status()
+    final_host = (urlparse(resp.url).netloc or "").lower()
+    if final_host.startswith("www."):
+        final_host = final_host[4:]
+    if final_host not in _TELEGRAM_POST_HOSTS and not final_host.endswith("telegram.org"):
+        return ""
+    return (resp.text or "")[:250_000]
 
 
 def fetch_telegram_og_image(post_url: str, *, timeout: float = 8.0) -> str:
