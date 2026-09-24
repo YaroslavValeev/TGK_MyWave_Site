@@ -226,7 +226,11 @@ def api_blog_diagnostics():
     """
     Read-only: откуда читается блог и сколько постов в Sheets vs SQLite.
     Не раскрывает полные ID таблиц и содержимое постов.
+    Требует MEDIA_UPLOAD_TOKEN (как invalidate) — не публичный endpoint.
     """
+    if not _blog_cache_invalidate_token_ok():
+        return jsonify({"error": "forbidden"}), 403
+
     resolve_error = None
     parser_spreadsheet_tail = None
     parser_worksheet = None

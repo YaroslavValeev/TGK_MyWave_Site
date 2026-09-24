@@ -22,8 +22,14 @@
   <meta name="twitter:description" content="{{ meta_description|default('MyWave — обучение вейксерфингу, бронирование, блог и чат с AI-инструктором.') }}">
   <meta name="twitter:image" content="{{ og_image|default(url_for('static', filename='images/og-image.jpg')) }}">
 
-  <title>{% block title %}{{ title|default('MyWave') }}{% endblock %}</title>
+  <title>{% block title %}{{ title|default(club_brand_name or 'MyWave') }}{% endblock %}</title>
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="manifest" href="{{ url_for('pwa.web_manifest') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='pwa/icon-192.png') }}">
+  <meta name="theme-color" content="{{ (club_config.branding.primary_color if club_config and club_config.branding else none) or '#35C0CD' }}">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -232,6 +238,14 @@
   <div id="success-modal" class="hidden" aria-hidden="true" role="dialog"></div>
 
   <div id="toast" class="toast hidden" aria-live="polite" aria-label="Уведомление"></div>
+
+  <script nonce="{{ g.csp_nonce }}">
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("{{ url_for('pwa.service_worker') }}").catch(function () {});
+      });
+    }
+  </script>
 
   <footer class="site-footer">
     <div class="site-footer__inner">

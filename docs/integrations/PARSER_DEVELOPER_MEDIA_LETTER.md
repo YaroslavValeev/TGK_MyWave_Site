@@ -1,76 +1,107 @@
-# Письмо разработчику парсера: медиа и обложки для сайта MyWave
+# Письмо команде Parser: медиа для блога MyWave (prod)
 
-Документ можно переслать целиком или вставить тело письма из раздела ниже.  
-Канон витрины блога: [BLOG_CANONICAL_MAPPING.md](../architecture/BLOG_CANONICAL_MAPPING.md), контракт publishable: [BLOG_CONTRACT_v1.md](../BLOG_CONTRACT_v1.md).
+Документ можно переслать целиком.  
+Связанные каноны: [BLOG_CANONICAL_MAPPING.md](../architecture/BLOG_CANONICAL_MAPPING.md), [MEDIA_UPLOAD_SETUP.md](MEDIA_UPLOAD_SETUP.md), [BLOG_CONTRACT_v1.md](../BLOG_CONTRACT_v1.md).
 
 ---
 
-## Письмо (тело письма)
+## Письмо (тело)
 
-**Тема:** Google Sheets / raw_feed: для сайта нужен прямой URL изображения в `cover_image_url` / `raw_media` / `media_json`
+**Тема:** Обязательная загрузка фото/видео на сайт при публикации в блог — VPS не достучится до t.me
 
 Привет!
 
-Мы с сайта MyWave подтянули нормализацию обложек и фронт, но витрина блога по-прежнему не может показать оригинальные картинки из части материалов, потому что в таблицу (лист `raw_feed` / соответствующие колонки) попадает **не URL файла изображения**, а ссылка на **страницу поста** в Telegram или внутренний путь.
+### Контекст (проверено на проде 2026-09-23)
 
-### Почему это критично
-
-Сайт рендерит обложку как обычный `<img src="...">` в браузере пользователя.  
-Браузер умеет грузить только:
-
-- публичный `https://...` (или `http://...`) на **файл изображения**;
-- либо путь с нашего же домена, например `/static/...`.
-
-Он **не** умеет:
-
-- «открыть» `https://t.me/channel/123` как картинку (это HTML-страница);
-- читать `downloads/review_media/...`, `F:\...`, `file_id:...` с машины, где крутится Parser (у пользователя этих путей нет).
-
-### Ожидаемое поведение парсера / записи в Sheet
-
-1. **Поле `cover_image_url` (предпочтительно)**  
-   Содержит **один** прямой URL изображения, например:
-   - `https://cdn.example.com/.../photo.webp`
-   - `https://.../file/.../image.jpg`
-
-2. **Поле `image_url`**  
-   Либо дублирует обложку, либо пустое.  
-   **Не кладём** сюда `https://t.me/username/123` как «картинку».
-
-3. **`raw_media` / `media_json`**  
-   Допустимы JSON-массивы объектов, у image-элементов должны быть реальные ссылки, например:
-   ```json
-   [
-     {
-       "type": "image",
-       "url": "https://.../full.jpg",
-       "thumbnail_url": "https://.../thumb.jpg"
-     }
-   ]
+1. Сайт `https://mywavewake.ru` читает витрину блога из Google Sheets `raw_feed`.
+2. С **VPS сайта** (Timeweb) до `https://t.me/...` **нет сети**:
+   ```text
+   curl t.me → Connection timed out
    ```
-   Сайт умеет вытаскивать `url`, `thumbnail_url`, `src`, `file_url`, `secure_url` и др. (см. `store._extract_media_candidate`).
+   Поэтому сайт **не может** сам скачать обложку/видео из Telegram и показать их в `<img>` / `<video>`.
+3. Endpoint загрузки на сайт **работает** (smoke Owner):
+   ```text
+   POST https://mywavewake.ru/api/media/upload
+   → HTTP 201
+   → public_url = https://mywavewake.ru/static/uploads/review_media/review_....jpg
+   ```
+4. Сейчас в `raw_feed` часто попадает `https://t.me/<channel>/<id>` (страница поста) или локальный путь Parser. Браузер это как картинку не открывает → на `/blog` логотип-заглушка.
 
-4. **Если прямой URL на публичный CDN получить нельзя**  
-   Тогда варианты на стороне инфраструктуры (отдельное согласование):
-   - выкладывать файл в **публично доступное** хранилище и писать этот URL в Sheet;
-   - либо отдать на сайт отдельный endpoint-прокси (это уже не «просто парсер в Sheet»).
+В группе Telegram медиа видно — это ожидаемо: туда бот шлёт файл. На сайт нужен **публичный URL файла на домене сайта** (или внешний CDN).
 
-5. **Плохие значения (пожалуйста, не писать в `cover_image_url` / `image_url` как «картинку»)**
+### Нужно ли менять код Parser?
 
-   - `https://t.me/<channel>/<post_id>` — страница поста, не asset;
-   - `downloads/review_media/...` — локальный путь Parser-машины;
-   - `F:\...` — Windows-путь;
-   - Telegram `file_id` без публичного URL;
-   - внутренние пути без HTTP.
+**Да.** Либо доработать publish-flow, либо гарантированно включить уже имеющийся client (`upload_cover_image` / `prepare_item_media_for_raw_feed` / `maybe_autoupload_local_cover_and_sync_sheet`), если он есть в репо, но **не вызывается** при «Owner: опубликовать» / sync в Sheet.
 
-### Как быстро проверить после фикса
+Одной настройки Sheet недостаточно: без upload в `cover_image_url` останется `t.me/...`.
 
-1. В Sheet у проблемной строки: `cover_image_url` или `media_json[0].thumbnail_url` — открывается в браузере **напрямую** как картинка (вкладка показывает только изображение, не HTML).
-2. На стороне сайта: `GET /api/blog/posts` — в `items[].image_url` (это нормализованная обложка) **не** должно быть `t.me/.../число` в качестве единственного варианта, если есть реальное медиа.
+### Обязательный сценарий при публикации материала на сайт
 
-### Контакт
+На машине Parser (там, где Telethon/бот **достучится** до Telegram):
 
-Если нужен точный список полей, которые читает `app/services/blog/store.py` (`_extract_cover_image`, `_IMAGE_FIELD_KEYS`), напиши — пришлём ссылку на ревью или краткую таблицу полей.
+1. **Скачать** фото/видео вложения на диск (не только `post_url` / `file_id`).
+2. **Загрузить** файл на сайт:
+   ```http
+   POST https://mywavewake.ru/api/media/upload
+   Authorization: Bearer <MEDIA_UPLOAD_TOKEN>
+   Content-Type: multipart/form-data
+   file=<binary>
+   ```
+   Алиас: `/api/blog/media/upload` (тот же контракт).
+3. Из ответа 201 взять `public_url` (также в JSON: `url`, `cover_image_url`, `image_url`; для видео — ещё `video_url`).
+4. **Записать в raw_feed**:
+   - фото → `cover_image_url` = `public_url` (и дублировать в `image_url` / `media_json` при необходимости);
+   - видео → `video_url` = `public_url` + элемент в `media_json`: `{"type":"video","url":"<public_url>"}`;
+   - **не** писать `t.me/...` в `cover_image_url` / `image_url` как «картинку»;
+   - **не** писать локальные пути `downloads/...`, `F:\...`, `file_id:...`.
+5. После записи:  
+   `POST https://mywavewake.ru/api/blog/cache/invalidate`  
+   с тем же Bearer-токеном (иначе витрина может ждать TTL ~120 с).
+
+### Конфиг Parser (env)
+
+Сверить с `.env` сайта (токен уже есть на проде, длина 64):
+
+```env
+MEDIA_UPLOAD_URL=https://mywavewake.ru/api/media/upload
+# или MEDIA_UPLOAD_ENDPOINT + base URL — как у вас принято в config
+MEDIA_UPLOAD_TOKEN=<тот же, что на сайте>
+MEDIA_UPLOAD_MAX_BYTES=10485760
+# для видео (сайт принимает mp4/webm до 50 МБ):
+MEDIA_UPLOAD_VIDEO_MAX_BYTES=52428800
+```
+
+Важно: upload должен ходить на **публичный** `https://mywavewake.ru`, не на `127.0.0.1` сайта (если Parser на другой машине).
+
+### Когда вызывать
+
+Минимум — в момент, когда материал становится видимым на сайте (статус `READY_TO_PUBLISH` / `PUBLISHED` / ваш Owner «опубликовать»), **до или вместе** с записью витринных полей в Sheet.
+
+Если медиа нет — оставить `cover_image_url` пустым (сайт покажет логотип). Лучше пусто, чем `t.me/...`.
+
+### Критерий приёмки (DoD)
+
+1. После публикации тестового поста с фото в Sheet:  
+   `cover_image_url` открывается в браузере **как картинка** (URL вида  
+   `https://mywavewake.ru/static/uploads/review_media/review_....jpg`).
+2. `GET https://mywavewake.ru/api/blog/posts?limit=5` — у этого slug  
+   `image_url` / `cover_image_url` = тот же URL, **не** `Place1Logo`, **не** `t.me/...`.
+3. Страница `/blog/<slug>` показывает фото без ручной правки админки.
+4. Для ролика: на странице есть `<video>` или iframe (YouTube и т.п.), не только ссылка «в Telegram».
+5. В логах Parser при publish: успех upload (`status 201`) или явная ошибка с `item_id` / `row_number` (без секретов и без полного raw_content).
+
+### Чего сайт делать не будет
+
+- Проксировать/скачивать `t.me` с VPS (сети нет).
+- Встраивать iframe Telegram как основной показ (у части клиентов тоже timeout).
+- Угадывать картинку из `file_id` без upload.
+
+### Контакты по контракту сайта
+
+- Upload: `POST /api/media/upload` → 201 + `public_url`
+- Invalidate: `POST /api/blog/cache/invalidate`
+- Read model: `GET /api/blog/posts`
+- Нормализация на сайте: `app/services/blog/store.py` (`_extract_cover_image`, `_extract_video_urls_from_row`)
 
 Спасибо!
 
@@ -78,43 +109,11 @@
 
 ---
 
-## Приложение: кратко Do / Don’t
+## Кратко Do / Don’t
 
 | Do | Don’t |
 |----|--------|
-| `https://host/path/image.jpg` (200, `Content-Type: image/*`) | `https://t.me/c/.../N` как единственный «url картинки» |
-| JSON в `raw_media` с `url` / `thumbnail_url` | Только `file_id` без публичного URL |
-| Публичный CDN/статик | `downloads/...` без HTTP |
-| Пусто, если картинки нет | Любой не-HTTP путь, видимый только Parser-машине |
-| `video_url` = публичный mp4 / YouTube | `t.me/...` как единственное «видео» без загрузки файла |
-
-### Важно для prod VPS Timeweb
-
-С сервера сайта (`mywavewake.ru`) **нет сетевого доступа к `t.me`** (`curl` → Connection timed out).  
-Поэтому сайт **не может** сам скачать обложку/видео из Telegram. Единственный рабочий путь — Parser:
-
-1. Скачать медиа на машине Parser (там, где Telethon/бот достучится до Telegram).
-2. `POST https://mywavewake.ru/api/media/upload` с токеном.
-3. Записать `public_url` в `cover_image_url` (фото) и/или `video_url` (mp4).
-4. `POST /api/blog/cache/invalidate`.
-
-Без этого на витрине будет логотип + кнопка «Открыть в Telegram».
-
-### Видео (обязательно для автопоказа на сайте)
-
-Сайт **не умеет** встроить файл из Telegram, пока он живёт только внутри TG. Канон:
-
-1. Скачать видео на машине Parser.
-2. `POST /api/media/upload` с `video/mp4` (лимит по умолчанию 50 МБ, `MEDIA_UPLOAD_VIDEO_MAX_BYTES`).
-3. Записать ответ `public_url` / `video_url` в колонки `video_url` и в `media_json` (`type: video`, `url: public_url`).
-4. Для обложки по-прежнему нужен **image** URL (кадр или фото) — не класть mp4 в `cover_image_url`.
-5. После записи в Sheet: `POST /api/blog/cache/invalidate` с `MEDIA_UPLOAD_TOKEN`, чтобы витрина не ждала TTL ~120 с.
-
-Если файл на сайт не загружен, витрина покажет превью `og:image` публичного t.me-поста и/или кнопку «Смотреть видео» на пост в Telegram — это запасной путь, не полноценный плеер на сайте.
-
-## Связь с кодом сайта
-
-- Нормализация строки Sheets: `app/services/blog/store._normalize_row_from_sheets`, `_extract_cover_image`, `_extract_video_urls_from_row`
-- Ленивая обложка t.me: `GET /blog/media/telegram-preview?u=https://t.me/...`
-- API списка постов: `GET /api/blog/posts` (поле `image_url` = нормализованная обложка)
-- Ручная регенера кэша Sheets: `POST /api/blog/cache/invalidate` (`invalidate_blog_sheets_cache()`)
+| Скачать файл → upload на сайт → `public_url` в Sheet | Только `https://t.me/channel/123` в `cover_image_url` |
+| `video_url` = публичный mp4/webm с сайта или YouTube | Локальный `downloads/...` / Windows-путь |
+| Invalidate кэша после записи | Ждать, что сайт «сам подтянет» из Telegram |
+| Логировать `item_id` + результат upload | Класть mp4 в `cover_image_url` |

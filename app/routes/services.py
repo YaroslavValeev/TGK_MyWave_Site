@@ -122,8 +122,13 @@ def services_list():
     """Страница списка всех услуг. P0-1: images[]/cover/fallback из скана папки."""
     try:
         from app.services.service_cards import build_services_list
+        from app.config.club_config import filter_services_config
+        from flask import current_app
 
-        services = build_services_list(_load_services_config(), url_for)
+        services = build_services_list(
+            filter_services_config(_load_services_config(), current_app.config.get("CLUB")),
+            url_for,
+        )
         for s in services:
             s['image_url'] = s.get('cover')
         return render_template("services.html", services=services)

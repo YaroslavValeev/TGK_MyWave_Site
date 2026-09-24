@@ -67,6 +67,7 @@ if os.getenv("DISABLE_TELEGRAM") != "1":
         logging.getLogger(__name__).exception('Failed to import telegram_bp; continuing without telegram support')
 from app.routes.content_calendar import bp as content_bp, get_events_by_month
 from app.routes.health import health_bp
+from app.routes.pwa import pwa_bp
 from app.jinja_filters import register_jinja_filters
 
 # Создаем экземпляры расширений
@@ -157,7 +158,12 @@ def create_app(config_name="development"):
 
         try:
             from app.routes.services import _load_services_config
-            services_config = _load_services_config()
+            from app.config.club_config import filter_services_config
+
+            services_config = filter_services_config(
+                _load_services_config(),
+                current_app.config.get("CLUB"),
+            )
         except ImportError:
             app.logger.warning("Fallback: using inline services config")
             services_config = [
@@ -221,6 +227,28 @@ def create_app(config_name="development"):
         "testing": "config.TestingConfig",
         "production": "config.ProductionConfig"
     }.get(config_name.lower(), "config.DevelopmentConfig"))
+
+    try:
+        from app.config.club_config import load_club_config_into_app, register_club_module_guards
+
+        load_club_config_into_app(app)
+        register_club_module_guards(app)
+    except Exception as exc:
+        # Без явного CLUB_CONFIG_PATH — MyWave default, guards не обязательны.
+        # С явным путём — fail-closed: все gated-модули выключены, guards всё равно ставим.
+        explicit = bool((os.environ.get("CLUB_CONFIG_PATH") or "").strip())
+        if explicit:
+            app.logger.error("club_config init failed (fail-closed): %s", exc)
+            try:
+                from app.config.club_config import MODULE_KEYS, register_club_module_guards
+
+                app.config["CLUB"] = {"modules": {key: False for key in MODULE_KEYS}}
+                app.config["CLUB_CONFIG_ERROR"] = "init_exception"
+                register_club_module_guards(app)
+            except Exception as inner:
+                app.logger.error("club_config fail-closed fallback failed: %s", inner)
+        else:
+            app.logger.warning("club_config init skipped: %s", exc)
 
     # Configure logging levels: INFO in production, DEBUG otherwise.
     import logging as _logging
@@ -516,6 +544,7 @@ def create_app(config_name="development"):
     except Exception:
         app.logger.debug('api_camps_bp not found or failed to import')
     app.register_blueprint(health_bp)
+    app.register_blueprint(pwa_bp)
     try:
         from app.extensions import limiter as _site_limiter
         if _site_limiter is not None:
