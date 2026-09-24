@@ -16,6 +16,8 @@ from app.services.blog.telegram_preview import (
     post_url_from_preview_request,
 )
 
+import hmac
+
 logger = get_logger(__name__)
 
 blog_bp = Blueprint("blog", __name__, template_folder="../templates")
@@ -40,9 +42,9 @@ def _blog_cache_invalidate_token_ok() -> bool:
     if not token:
         token = (request.headers.get("X-Media-Upload-Token") or "").strip()
     expected = (current_app.config.get("MEDIA_UPLOAD_TOKEN") or "").strip()
-    if not expected:
+    if not expected or not token:
         return False
-    return token == expected
+    return hmac.compare_digest(token, expected)
 
 
 def _api_item_payload(p: dict) -> dict:

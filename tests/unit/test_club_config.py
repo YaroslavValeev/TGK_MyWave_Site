@@ -58,6 +58,7 @@ def test_path_blocked_covers_booking_and_blog_api():
     }
     assert path_blocked_by_disabled_module("/booking/book", club)
     assert path_blocked_by_disabled_module("/calendar", club)
+    assert path_blocked_by_disabled_module("/schedule", club)
     assert path_blocked_by_disabled_module("/api/calendar/book", club)
     assert path_blocked_by_disabled_module("/api/booking", club)
     assert path_blocked_by_disabled_module("/api/bookings", club)
@@ -97,6 +98,7 @@ def test_booking_and_blog_api_404_when_modules_disabled(client, app):
             }
         }
         assert client.get("/calendar").status_code == 404
+        assert client.get("/schedule").status_code == 404
         assert client.get("/api/blog/posts").status_code == 404
         assert client.post("/api/calendar/book", json={}).status_code == 404
     finally:

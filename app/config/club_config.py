@@ -22,6 +22,7 @@ MODULE_ROUTE_PREFIXES: dict[str, tuple[str, ...]] = {
         "/book",
         "/booking",
         "/calendar",
+        "/schedule",
         "/api/calendar",
         "/api/booking",
         "/api/bookings",
