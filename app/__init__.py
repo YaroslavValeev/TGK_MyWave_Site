@@ -156,14 +156,13 @@ def create_app(config_name="development"):
         from app.services.service_cards import build_services_list
         from app.routes.shop import _products_with_resolved_images
 
+        from app.config.club_config import filter_services_config, is_module_enabled
+
+        club = current_app.config.get("CLUB")
         try:
             from app.routes.services import _load_services_config
-            from app.config.club_config import filter_services_config
 
-            services_config = filter_services_config(
-                _load_services_config(),
-                current_app.config.get("CLUB"),
-            )
+            services_config = filter_services_config(_load_services_config(), club)
         except ImportError:
             app.logger.warning("Fallback: using inline services config")
             services_config = [
@@ -175,7 +174,8 @@ def create_app(config_name="development"):
             ]
 
         services = build_services_list(services_config, url_for)
-        products = _products_with_resolved_images()
+        # Club Box: не отдавать карусель магазина, если /shop заблокирован guards.
+        products = _products_with_resolved_images() if is_module_enabled("shop", club) else {}
         try:
             projects = get_project_cards()
         except Exception as e:
@@ -183,13 +183,14 @@ def create_app(config_name="development"):
             projects = []
 
         blog_preview_posts = []
-        try:
-            from app.services.blog.store import get_posts
+        if is_module_enabled("blog", club):
+            try:
+                from app.services.blog.store import get_posts
 
-            items, _ = get_posts(page=1, limit=4, prefer_sheets=True)
-            blog_preview_posts = items or []
-        except Exception as e:
-            app.logger.warning("home: не удалось загрузить превью блога: %s", e)
+                items, _ = get_posts(page=1, limit=4, prefer_sheets=True)
+                blog_preview_posts = items or []
+            except Exception as e:
+                app.logger.warning("home: не удалось загрузить превью блога: %s", e)
 
         competitions_ticker = []
         try:

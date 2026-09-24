@@ -94,6 +94,7 @@
   </section>
 
   <!-- Товары (карусель как Услуги) -->
+  {% if products %}
   <section id="store" class="store-section">
     <h2>Товары</h2>
     <div class="products-carousel">
@@ -127,6 +128,7 @@
       <button class="carousel-next" aria-label="Следующие товары">▶</button>
     </div>
   </section>
+  {% endif %}
 
   <!-- Проекты (карусель как Услуги) -->
   <section id="projects" class="projects-section">
@@ -183,6 +185,7 @@
   {% endif %}
 
   <!-- Блог: 4 последние публикации -->
+  {% if club_modules is none or club_modules.blog %}
   <section id="blog" class="blog-section">
     <h2>Блог</h2>
     {% set blog_cover_fallback = url_for('static', filename='images/Place1Logo.png') %}
@@ -219,6 +222,7 @@
     <p class="projects-cta"><a href="{{ url_for('blog.blog_index') }}" class="btn btn-outline-brand">Перейти в блог</a></p>
     {% endif %}
   </section>
+  {% endif %}
 
   {% include 'partials/social_mission_widget.html' %}
 

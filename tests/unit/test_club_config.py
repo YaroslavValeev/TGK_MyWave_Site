@@ -108,6 +108,29 @@ def test_booking_and_blog_api_404_when_modules_disabled(client, app):
             app.config["CLUB"] = previous
 
 
+def test_home_hides_store_when_shop_disabled(client, app):
+    previous = app.config.get("CLUB")
+    try:
+        app.config["CLUB"] = {
+            "modules": {
+                "booking_boat": True,
+                "shop": False,
+                "blog": True,
+                "reviews": True,
+                "contacts": True,
+            }
+        }
+        rv = client.get("/")
+        assert rv.status_code == 200
+        assert b'id="store"' not in rv.data
+        assert b"product-card__buy" not in rv.data
+    finally:
+        if previous is None:
+            app.config.pop("CLUB", None)
+        else:
+            app.config["CLUB"] = previous
+
+
 def test_explicit_missing_club_yaml_fail_closed(monkeypatch, tmp_path):
     missing = tmp_path / "no-such-club.yaml"
     monkeypatch.setenv("CLUB_CONFIG_PATH", str(missing))
