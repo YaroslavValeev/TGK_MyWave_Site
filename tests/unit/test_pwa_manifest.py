@@ -19,12 +19,22 @@ def test_service_worker_ok(client):
     assert b"service worker" in resp.data.lower() or b"skipWaiting" in resp.data
 
 
-def test_manifest_booking_boat_uses_calendar_start_url():
+def test_manifest_booking_boat_uses_booking_start_url():
     data = build_pwa_manifest(
         club={"modules": {"booking_boat": True}, "branding": {"brand_name": "Demo"}},
         static_icon_url="/static/pwa/icon-512.png",
     )
-    assert data["start_url"] == "/calendar"
+    assert data["start_url"] == "/#services"
+
+
+def test_legacy_booking_page_renders(client):
+    assert client.get("/booking/?service=boat").status_code == 200
+
+
+def test_legacy_calendar_redirects_to_home_services(client):
+    rv = client.get("/calendar")
+    assert rv.status_code == 302
+    assert rv.headers["Location"].endswith("/#services")
 
 
 def test_manifest_uses_club_branding(monkeypatch):

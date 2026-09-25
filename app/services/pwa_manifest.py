@@ -14,8 +14,8 @@ def build_pwa_manifest(*, club: dict[str, Any] | None, static_icon_url: str, sta
     theme = (branding.get("primary_color") or "#35C0CD").strip()
     modules = club.get("modules") or {}
     if modules.get("booking_boat"):
-        # Канонический UI записи (не /book — такого GET нет).
-        start_url = "/calendar" if start_url == "/" else start_url
+        # Запись идёт через модалку в секции услуг на главной (/calendar и /book форму не рендерят).
+        start_url = "/#services" if start_url == "/" else start_url
 
     return {
         "name": name,

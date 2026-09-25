@@ -800,7 +800,8 @@ def deprecated_redirect():
 
 @calendar_bp.route("/calendar")
 def calendar_page():
-    return render_template("calendar.html")
+    # calendar.html was removed; booking runs in the homepage services modal.
+    return redirect(url_for("index") + "#services", code=302)
 
 
 def find_or_create_client(phone, name):
