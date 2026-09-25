@@ -68,6 +68,7 @@ if os.getenv("DISABLE_TELEGRAM") != "1":
 from app.routes.content_calendar import bp as content_bp, get_events_by_month
 from app.routes.health import health_bp
 from app.routes.pwa import pwa_bp
+from app.routes.media_proxy import media_proxy_bp
 from app.jinja_filters import register_jinja_filters
 
 # Создаем экземпляры расширений
@@ -546,6 +547,7 @@ def create_app(config_name="development"):
         app.logger.debug('api_camps_bp not found or failed to import')
     app.register_blueprint(health_bp)
     app.register_blueprint(pwa_bp)
+    app.register_blueprint(media_proxy_bp)
     try:
         from app.extensions import limiter as _site_limiter
         if _site_limiter is not None:

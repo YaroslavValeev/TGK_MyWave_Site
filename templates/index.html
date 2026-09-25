@@ -196,7 +196,7 @@
         {% for post in blog_preview_posts %}
         <a href="{{ url_for('blog.blog_post', slug=post.slug) }}" class="service-card blog-home-card">
           <div class="service-image-container">
-            <img class="service-image" src="{{ post.card_image_url or post.cover_image_url or blog_cover_fallback }}" alt="" loading="lazy" decoding="async" data-fallback="{{ blog_cover_fallback }}">
+            <img class="service-image" src="{{ (post.card_image_url or post.cover_image_url or blog_cover_fallback)|mw_img }}" alt="" loading="lazy" decoding="async" data-fallback="{{ blog_cover_fallback }}">
           </div>
           <h4>{{ post.title }}</h4>
           {% if post.excerpt %}

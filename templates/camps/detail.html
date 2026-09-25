@@ -6,7 +6,7 @@
   {% if seo.canonical_url %}<link rel="canonical" href="{{ seo.canonical_url }}">{% endif %}
 {% endblock %}
 {% block extra_head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/camps.css') }}?v=1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/camps.css') }}?v=2" />
 {% endblock %}
 {% block content %}
 <article class="camp-detail section camp-showcase-detail">
@@ -21,7 +21,7 @@
     <img
       class="camp-detail__cover"
       data-card-media-fit
-      src="{{ camp.cover_image_url or url_for('static', filename=cover_fallback) }}"
+      src="{{ (camp.cover_image_url or url_for('static', filename=cover_fallback))|mw_img }}"
       alt="{{ camp.title }}"
       loading="eager"
       data-fallback="{{ url_for('static', filename=cover_fallback) }}"
@@ -74,7 +74,7 @@
     <div class="camp-gallery__grid">
       {% for image in camp.gallery %}
       <div class="card-media-frame camp-gallery__item">
-        <img src="{{ image }}" alt="" loading="lazy" data-card-media-fit data-fallback="{{ url_for('static', filename=cover_fallback) }}">
+        <img src="{{ image|mw_img }}" alt="" loading="lazy" data-card-media-fit data-fallback="{{ url_for('static', filename=cover_fallback) }}">
       </div>
       {% endfor %}
     </div>

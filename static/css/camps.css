@@ -1,12 +1,36 @@
 .camp-showcase-hero {
   text-align: center;
-  padding-top: 2rem;
+  padding-top: 0;
+}
+
+/* Общий .section даёт 60px сверху и снизу — на витрине это слишком много воздуха. */
+.camp-showcase-hero.section {
+  margin: 24px auto 12px;
+}
+
+.camp-showcase-hero h1 {
+  margin: 0 0 0.35rem;
+}
+
+.camp-showcase-hero p {
+  margin: 0;
+}
+
+.camp-showcase-list.section,
+.camp-showcase-state.section {
+  margin: 12px auto 40px;
+  padding: 0 16px;
+  max-width: 1200px;
 }
 
 .camp-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.camp-showcase-card.service-card {
+  padding: 12px;
 }
 
 .camp-showcase-card {

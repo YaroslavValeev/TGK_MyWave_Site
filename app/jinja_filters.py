@@ -4,6 +4,7 @@ from __future__ import annotations
 from flask import Flask
 
 from app.services.blog.display_text import plain_excerpt_for_display, plain_title_for_display
+from app.services.media_proxy import proxied_image_url
 
 
 def register_jinja_filters(app: Flask) -> None:
@@ -20,3 +21,4 @@ def register_jinja_filters(app: Flask) -> None:
     # Дублируем в filters dict (совместимость с прямым доступом jinja_env.filters)
     app.jinja_env.filters["mw_plain_title"] = plain_title_for_display
     app.jinja_env.filters["mw_plain_excerpt"] = plain_excerpt_for_display
+    app.jinja_env.filters["mw_img"] = proxied_image_url

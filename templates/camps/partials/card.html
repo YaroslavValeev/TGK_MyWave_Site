@@ -4,7 +4,7 @@
     <img
       class="service-image"
       data-card-media-fit
-      src="{{ c.cover_image_url or url_for('static', filename=fallback_path) }}"
+      src="{{ (c.cover_image_url or url_for('static', filename=fallback_path))|mw_img }}"
       alt="{{ c.title }}"
       loading="lazy"
       data-fallback="{{ url_for('static', filename=fallback_path) }}"

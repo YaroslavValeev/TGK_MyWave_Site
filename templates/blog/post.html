@@ -88,7 +88,7 @@
         <div class="blog-post-video-link">
           {% if post.video_poster_url and _has_real_cover %}
             <a href="{{ post.video_open_url }}" target="_blank" rel="noopener noreferrer" class="blog-post-video-poster-link">
-              <img src="{{ post.video_poster_url }}" alt="" class="blog-post-cover">
+              <img src="{{ post.video_poster_url|mw_img }}" alt="" class="blog-post-cover">
             </a>
           {% endif %}
           <p>
@@ -97,7 +97,7 @@
         </div>
       {% elif _has_real_cover %}
         <figure class="blog-post-cover-wrap">
-          <img src="{{ post.cover_image_url }}" alt="" class="blog-post-cover">
+          <img src="{{ post.cover_image_url|mw_img }}" alt="" class="blog-post-cover">
         </figure>
       {% endif %}
 

@@ -48,7 +48,7 @@
             <article class="mw-card blog-card blog-card--listing">
               <a class="blog-card-link" href="{{ url_for('blog.blog_post', slug=p.slug) }}">
                 <div class="service-image-container blog-card-cover">
-                  <img class="service-image" src="{{ (p.card_image_url or p.cover_image_url or p.image_url or p.cover or blog_cover_fallback)|trim }}" alt="" loading="lazy" decoding="async" data-fallback="{{ blog_cover_fallback }}">
+                  <img class="service-image" src="{{ (p.card_image_url or p.cover_image_url or p.image_url or p.cover or blog_cover_fallback)|trim|mw_img }}" alt="" loading="lazy" decoding="async" data-fallback="{{ blog_cover_fallback }}">
                 </div>
                 <h3 class="blog-card-title">{{ p.title }}</h3>
                 <p class="blog-card-excerpt">{{ p.excerpt }}</p>
