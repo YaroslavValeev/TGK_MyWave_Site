@@ -21,7 +21,7 @@ def _public_base_url() -> str:
             return base.rstrip("/")
     except RuntimeError:
         pass
-    return "https://mywavetreaning.ru"
+    return "https://mywavewake.ru"
 
 
 def camp_canonical_url(slug: str) -> str:
