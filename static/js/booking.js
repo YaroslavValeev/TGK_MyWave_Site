@@ -81,8 +81,12 @@ async function getFreshCsrfToken() {
   return data.csrf_token;
 }
 
-/** С этой даты (включительно) hero «Записаться» → катер (по дате визита, не по «сегодня»). */
-const HERO_BOAT_SEASON_START = '2026-06-01';
+/**
+ * Окно сезона катера для hero «Записаться» (по дате визита, границы включительно).
+ * null — сезон закрыт, hero всегда ведёт в зал; карточка «Катер» в услугах работает всегда.
+ * Пример на следующий сезон: { start: '2027-06-01', end: '2027-09-15' }
+ */
+const HERO_BOAT_SEASON = null;
 
 function toIsoDateLocal(d) {
   if (!(d instanceof Date) || Number.isNaN(d.getTime())) return '';
@@ -93,8 +97,8 @@ function toIsoDateLocal(d) {
 }
 
 function isHeroBoatSeasonForDate(isoDate) {
-  if (!isoDate || typeof isoDate !== 'string') return false;
-  return isoDate >= HERO_BOAT_SEASON_START;
+  if (!HERO_BOAT_SEASON || !isoDate || typeof isoDate !== 'string') return false;
+  return isoDate >= HERO_BOAT_SEASON.start && isoDate <= HERO_BOAT_SEASON.end;
 }
 
 /** @param {string|Date|undefined} appointmentDate — дата визита YYYY-MM-DD; без даты — сегодня */
