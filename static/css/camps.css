@@ -40,9 +40,38 @@
 }
 
 .camp-card__media {
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   border-radius: 12px;
+}
+
+/*
+ * Фото кемпов из Tour почти всегда вертикальные (Telegram/Instagram).
+ * Общий card-media-fit.js вписывает портрет через contain — получается узкая полоса
+ * на сером фоне. На витрине кемпов всегда заполняем рамку, фокус чуть выше центра.
+ * image-effects.js может обернуть img в .service-image-container — растягиваем и его.
+ */
+.camp-card__media .service-image-container,
+.camp-detail__cover-frame .service-image-container,
+.camp-gallery__item .service-image-container {
+  aspect-ratio: auto;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.camp-card__media img.service-image,
+.camp-card__media img.card-media--contain,
+.camp-detail__cover-frame img,
+.camp-detail__cover-frame img.card-media--contain,
+.camp-gallery__item img,
+.camp-gallery__item img.card-media--contain {
+  width: 100%;
+  height: 100%;
+  /* !important: общий .service-image-container > .service-image.card-media--contain специфичнее */
+  object-fit: cover !important;
+  object-position: center 35% !important;
 }
 
 .camp-card__media img,
@@ -133,7 +162,9 @@
 }
 
 .camp-detail__cover-frame {
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 4 / 3;
+  max-height: 70vh;
+  max-width: 720px;
   border-radius: 12px;
   overflow: hidden;
   margin: 1rem 0;
@@ -154,7 +185,7 @@
 }
 
 .camp-gallery__item {
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 4 / 5;
   border-radius: 8px;
   overflow: hidden;
 }
