@@ -19,7 +19,8 @@ from app.config.camp_features import (
 
 DEFAULT_TIMEOUT = 20
 USER_AGENT = "MyWave-Site-CampSync/1.0"
-# Tour prod probe: limit=5 returns items, limit=100 can return [] — keep pages small.
+# Tour: a page may hold fewer than `limit` items (even 0) while next_offset is non-null;
+# keep paging until next_offset is null.
 DEFAULT_PAGE_LIMIT = 25
 # Tour API historically returned empty for sports=/audience=/status= query params.
 # Prefer minimal query; filter published/wakesurf/ru client-side in showcase.
