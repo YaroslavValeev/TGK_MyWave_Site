@@ -40,7 +40,7 @@
 }
 
 .camp-card__media {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 4 / 5;
   overflow: hidden;
   border-radius: 12px;
 }
@@ -57,7 +57,18 @@
   background: #1e293b;
 }
 
-.camp-media > img.camp-media__backdrop {
+/* Обёртки от общих скриптов (.img-wrapper, .service-image-container) растягиваем на рамку */
+.camp-media .img-wrapper {
+  position: static;
+  width: 100%;
+  height: 100%;
+}
+
+.camp-media img.fade-in {
+  opacity: 1;
+}
+
+.camp-media img.camp-media__backdrop {
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -69,8 +80,8 @@
   pointer-events: none;
 }
 
-.camp-media > .service-image-container,
-.camp-media > img:not(.camp-media__backdrop) {
+.camp-media .service-image-container,
+.camp-media img:not(.camp-media__backdrop) {
   position: relative;
   z-index: 1;
 }

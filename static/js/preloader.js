@@ -30,9 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(hidePreloader, MAX_WAIT_MS);
     }
 
-    // Lazy preloader: не трогаем карусели и обложки блога (свой fade / card-gallery)
+    // Lazy preloader: не трогаем карусели, обложки блога и кемпов (своя вёрстка рамки)
     const images = document.querySelectorAll(
-        'img[loading="lazy"]:not(.project-card__cover):not(.card-media-carousel img):not(.blog-card-cover img)'
+        'img[loading="lazy"]:not(.project-card__cover):not(.card-media-carousel img):not(.blog-card-cover img):not(.camp-media img)'
     );
 
     const imageObserver = new IntersectionObserver((entries, observer) => {
