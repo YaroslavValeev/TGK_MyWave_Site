@@ -98,13 +98,13 @@ def test_tour_camp_fetch_error_attrs():
     assert "forbidden" in str(err)
 
 
-def test_build_list_url_includes_mvp_query_params():
+def test_build_list_url_uses_minimal_query():
+    # Tour возвращал пусто на sports=/audience=/status= — фильтруем на стороне витрины.
     url = _build_list_url(base_url="https://api.mywavetour.ru/api/v1/camps", offset=0)
-    assert "status=published" in url
-    assert "sports=wakesurf" in url
-    assert "audience=ru" in url
-    assert "limit=100" in url
+    assert "limit=25" in url
     assert "offset=0" in url
+    for param in ("status=", "sports=", "audience="):
+        assert param not in url
 
 
 @patch("app.services.camps.tour_client.mywave_tour_camp_api_token", return_value="secret-token")

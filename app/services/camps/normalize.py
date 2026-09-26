@@ -95,6 +95,14 @@ def _program_from_raw(raw: Dict[str, Any]) -> Optional[str]:
     return None
 
 
+def _text_or_list(value: Any) -> Optional[str]:
+    """Tour отдаёт included/not_included то строкой, то списком — список склеиваем построчно."""
+    if isinstance(value, (list, tuple)):
+        lines = [str(item).strip() for item in value if str(item).strip()]
+        return "\n".join(lines) or None
+    return str(value or "").strip() or None
+
+
 def _map_level(raw: Any) -> str:
     s = str(raw or "").strip().lower()
     if s in LEVELS:
@@ -188,8 +196,8 @@ def normalize_tour_camp(raw: Dict[str, Any]) -> Dict[str, Any]:
         "price_to": price_to,
         "currency": str(raw.get("currency") or "RUB").strip()[:8],
         "price_note": str(raw.get("price_note") or "").strip() or None,
-        "included": str(raw.get("included") or "").strip() or None,
-        "not_included": str(raw.get("not_included") or "").strip() or None,
+        "included": _text_or_list(raw.get("included")),
+        "not_included": _text_or_list(raw.get("not_included")),
         "organizer_name": str(raw.get("organizer_name") or raw.get("organizer") or "").strip() or None,
         "organizer_type": "external",
         "booking_url": str(raw.get("booking_url") or raw.get("url") or "").strip() or None,

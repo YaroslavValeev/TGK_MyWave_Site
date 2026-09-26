@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional
@@ -273,17 +274,70 @@ def _program_text(raw: Dict[str, Any], normalized: Dict[str, Any]) -> Optional[s
     return None
 
 
+# Служебные пометки Tour для оператора — посетителю сайта не показываем.
+_OPERATOR_NOTE_RE = re.compile(r"\s*Требует ручного заполнения оператором\.?", re.IGNORECASE)
+_ELLIPSIS = ("…", "...")
+
+
+def _squash_spaces(text: str) -> str:
+    text = re.sub(r"[ \t]+", " ", text)
+    return re.sub(r" *\n *", "\n", text).strip()
+
+
+def _short_stem(short: Optional[str]) -> str:
+    stem = (short or "").strip()
+    for tail in _ELLIPSIS:
+        if stem.endswith(tail):
+            return stem[: -len(tail)].strip()
+    return stem
+
+
+def _clean_description(
+    description: Optional[str], short: Optional[str], included: Optional[str]
+) -> Optional[str]:
+    """Tour склеивает в description полный текст + обрезанный short + included + пометки оператора."""
+    text = _OPERATOR_NOTE_RE.sub("", description or "")
+    words = _short_stem(short).split()
+    if words:
+        # Tour может схлопнуть переносы строк в short — сравниваем с точностью до пробелов.
+        stem_re = r"\s+".join(re.escape(w) for w in words) + r"\s*(?:…|\.\.\.)"
+        text = re.sub(stem_re, "", text)
+    if included and included.strip() and text.strip() != included.strip():
+        text = text.replace(included.strip(), "")
+    return _squash_spaces(text) or None
+
+
+def _visible_short_description(short: Optional[str], description: Optional[str]) -> Optional[str]:
+    stem = " ".join(_short_stem(short).split())
+    if not stem:
+        return None
+    if description and " ".join(description.split()).startswith(stem):
+        return None
+    return short
+
+
+def _visible_gallery(gallery: List[str], cover: Optional[str]) -> List[str]:
+    seen = {cover} if cover else set()
+    result: List[str] = []
+    for url in gallery:
+        if url and url not in seen:
+            seen.add(url)
+            result.append(url)
+    return result
+
+
 def to_showcase_view(raw: Dict[str, Any], normalized: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     norm = normalized or normalize_tour_camp(raw)
     rights = norm.get("content_rights_status") or "unknown"
     owner = bool(norm.get("is_owner_camp"))
     start, end = norm.get("start_date"), norm.get("end_date")
+    description = _clean_description(norm.get("description"), norm.get("short_description"), norm.get("included"))
     return {
         "id": norm.get("external_id") or str(raw.get("id") or "").strip(),
         "slug": norm.get("slug"),
         "title": norm.get("title") or "Кемп",
-        "short_description": norm.get("short_description"),
-        "description": norm.get("description"),
+        "short_description": _visible_short_description(norm.get("short_description"), description),
+        "description": description,
         "sport": norm.get("sport"),
         "sport_label": SPORT_LABELS.get(norm.get("sport") or "", norm.get("sport") or ""),
         "level": norm.get("level"),
@@ -306,7 +360,7 @@ def to_showcase_view(raw: Dict[str, Any], normalized: Optional[Dict[str, Any]] =
         "organizer_name": norm.get("organizer_name"),
         "organizer_type": norm.get("organizer_type"),
         "program": _program_text(raw, norm),
-        "gallery": norm.get("gallery") or [],
+        "gallery": _visible_gallery(norm.get("gallery") or [], norm.get("cover_image_url")),
         "video_url": norm.get("video_url"),
         "cover_image_url": norm.get("cover_image_url"),
         "booking_url": norm.get("booking_url"),

@@ -190,33 +190,142 @@
   font-size: 0.95rem;
 }
 
-.camp-detail__cover-frame {
-  aspect-ratio: 4 / 3;
-  max-height: 70vh;
-  max-width: 720px;
-  border-radius: 12px;
-  overflow: hidden;
-  margin: 1rem 0;
+/* ---------- Страница кемпа (desktop-first; мобильная — отдельный проход) ---------- */
+.camp-showcase-detail.section {
+  max-width: 1100px;
+  margin: 24px auto 48px;
+  padding: 0 20px;
 }
 
-.camp-detail__facts {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0;
+.camp-detail__header {
+  margin-bottom: 1.25rem;
+}
+
+.camp-detail__back {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+.camp-detail__back a {
+  color: var(--color-muted, #64748b);
+  text-decoration: none;
+}
+
+.camp-detail__back a:hover {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.camp-detail__title {
+  font-size: clamp(1.5rem, 2.2vw, 1.9rem);
+  line-height: 1.25;
+  margin: 0.4rem 0 0.6rem;
+  text-align: left;
+}
+
+.camp-detail__header .camp-rights-notice {
+  margin: 0;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+.camp-detail__layout {
   display: grid;
-  gap: 0.35rem;
+  grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.camp-detail__aside {
+  position: sticky;
+  top: 90px;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.camp-detail__cover-frame {
+  aspect-ratio: 4 / 5;
+  border-radius: 14px;
+  overflow: hidden;
+  margin: 0;
 }
 
 .camp-gallery__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
 }
 
 .camp-gallery__item {
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1 / 1;
   border-radius: 8px;
   overflow: hidden;
+}
+
+.camp-detail__main {
+  min-width: 0;
+}
+
+.camp-detail__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem 1.25rem;
+  margin: 0 0 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.camp-detail__facts dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted, #64748b);
+}
+
+.camp-detail__facts dd {
+  margin: 0.1rem 0 0;
+  font-weight: 600;
+}
+
+.camp-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin: 0 0 1.25rem;
+}
+
+.camp-detail__price {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.camp-detail__source {
+  font-size: 0.9rem;
+}
+
+.camp-detail__lead {
+  font-size: 1.05rem;
+  margin: 0 0 0.75rem;
+}
+
+.camp-detail__body,
+.camp-detail__richtext {
+  white-space: pre-line;
+  line-height: 1.6;
+  color: var(--color-text, #334155);
+}
+
+.camp-detail__block {
+  margin-top: 1.5rem;
+}
+
+.camp-detail__block h2 {
+  font-size: 1.1rem;
+  margin: 0 0 0.4rem;
+  text-align: left;
 }
 
 .camp-video__embed {
@@ -225,8 +334,15 @@
   overflow: hidden;
 }
 
-.camp-detail__booking {
-  margin-top: 1.5rem;
+@media (max-width: 860px) {
+  .camp-detail__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .camp-detail__aside {
+    position: static;
+    max-width: 420px;
+  }
 }
 
 .camp-home-section .camp-grid {
