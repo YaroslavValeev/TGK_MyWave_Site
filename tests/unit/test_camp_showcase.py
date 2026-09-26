@@ -40,6 +40,9 @@ MVP_CAMP = {
     "source_url": "https://mywavetour.ru/camp/partner",
 }
 
+# fetch_showcase_detail сверяется с date.today(): фиксированные даты MVP_CAMP со временем «истекают».
+UPCOMING_CAMP = {**MVP_CAMP, "start_date": "2099-08-01", "end_date": "2099-08-08"}
+
 SYNTHETIC_CAMP = {
     **MVP_CAMP,
     "id": "tour_camp_api_mvp_wakesurf_v1",
@@ -118,8 +121,8 @@ def test_fetch_showcase_camps_server_error():
 
 
 def test_fetch_showcase_detail_ok():
-    with patch("app.services.camps.showcase.fetch_tour_camp_detail", return_value=MVP_CAMP):
-        result = fetch_showcase_detail(MVP_CAMP["id"])
+    with patch("app.services.camps.showcase.fetch_tour_camp_detail", return_value=UPCOMING_CAMP):
+        result = fetch_showcase_detail(UPCOMING_CAMP["id"])
     assert result.state == "ok"
     assert result.camp["title"] == "Partner Wakesurf Camp"
 
@@ -145,10 +148,10 @@ def test_fetch_showcase_detail_falls_back_to_list_on_404(caplog):
         side_effect=TourCampFetchError(404, "missing", kind="client"),
     ), patch(
         "app.services.camps.showcase.fetch_tour_camps",
-        return_value=[MVP_CAMP],
+        return_value=[UPCOMING_CAMP],
     ):
         with caplog.at_level("WARNING"):
-            result = fetch_showcase_detail(MVP_CAMP["id"])
+            result = fetch_showcase_detail(UPCOMING_CAMP["id"])
     assert result.state == "ok"
-    assert result.camp["id"] == MVP_CAMP["id"]
+    assert result.camp["id"] == UPCOMING_CAMP["id"]
     assert any("camp_detail_fallback_list" in r.message for r in caplog.records)

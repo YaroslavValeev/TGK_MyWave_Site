@@ -46,37 +46,55 @@
 }
 
 /*
- * Фото кемпов из Tour почти всегда вертикальные (Telegram/Instagram).
- * Общий card-media-fit.js вписывает портрет через contain — получается узкая полоса
- * на сером фоне. На витрине кемпов всегда заполняем рамку, фокус чуть выше центра.
+ * Фото кемпов из Tour почти всегда вертикальные, и композиция непредсказуема:
+ * cover срезает сюжет (остаётся небо), contain даёт узкую полосу на сером.
+ * Поэтому фото показываем целиком, а поля заполняем размытой копией того же кадра.
  * image-effects.js может обернуть img в .service-image-container — растягиваем и его.
  */
-.camp-card__media .service-image-container,
-.camp-detail__cover-frame .service-image-container,
-.camp-gallery__item .service-image-container {
+.card-media-frame.camp-media {
+  position: relative;
+  overflow: hidden;
+  background: #1e293b;
+}
+
+.camp-media > img.camp-media__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(18px) brightness(0.8) saturate(1.15);
+  transform: scale(1.2);
+  pointer-events: none;
+}
+
+.camp-media > .service-image-container,
+.camp-media > img:not(.camp-media__backdrop) {
+  position: relative;
+  z-index: 1;
+}
+
+.camp-media .service-image-container {
   aspect-ratio: auto;
   width: 100%;
   height: 100%;
   border-radius: 0;
   box-shadow: none;
+  background: transparent;
 }
 
-.camp-card__media img.service-image,
-.camp-card__media img.card-media--contain,
-.camp-detail__cover-frame img,
-.camp-detail__cover-frame img.card-media--contain,
-.camp-gallery__item img,
-.camp-gallery__item img.card-media--contain {
+.camp-media img:not(.camp-media__backdrop),
+.camp-media img.card-media--contain:not(.camp-media__backdrop),
+.camp-media img.card-media--cover:not(.camp-media__backdrop) {
   width: 100%;
   height: 100%;
-  /* !important: общий .service-image-container > .service-image.card-media--contain специфичнее */
-  object-fit: cover !important;
-  object-position: center 35% !important;
+  /* !important: общие правила .service-image-container > .service-image.card-media--* специфичнее */
+  object-fit: contain !important;
+  object-position: center !important;
+  background: transparent !important;
 }
 
-.camp-card__media img,
-.camp-detail__cover-frame img,
-.camp-gallery__item img,
 .camp-video__embed iframe,
 .camp-video__embed video {
   width: 100%;

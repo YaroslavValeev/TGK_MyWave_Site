@@ -6,7 +6,7 @@
   {% if seo.canonical_url %}<link rel="canonical" href="{{ seo.canonical_url }}">{% endif %}
 {% endblock %}
 {% block extra_head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/camps.css') }}?v=3" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/camps.css') }}?v=4" />
 {% endblock %}
 {% block content %}
 <article class="camp-detail section camp-showcase-detail">
@@ -17,11 +17,13 @@
   <p class="camp-rights-notice" role="note">{{ camp.content_rights_notice }}</p>
   {% endif %}
 
-  <div class="card-media-frame camp-detail__cover-frame">
+  {% set cover_src = (camp.cover_image_url or url_for('static', filename=cover_fallback))|mw_img %}
+  <div class="card-media-frame camp-detail__cover-frame camp-media">
+    <img class="camp-media__backdrop" src="{{ cover_src }}" alt="" aria-hidden="true">
     <img
       class="camp-detail__cover"
       data-card-media-fit
-      src="{{ (camp.cover_image_url or url_for('static', filename=cover_fallback))|mw_img }}"
+      src="{{ cover_src }}"
       alt="{{ camp.title }}"
       loading="eager"
       data-fallback="{{ url_for('static', filename=cover_fallback) }}"
@@ -73,7 +75,8 @@
     <h2>Галерея</h2>
     <div class="camp-gallery__grid">
       {% for image in camp.gallery %}
-      <div class="card-media-frame camp-gallery__item">
+      <div class="card-media-frame camp-gallery__item camp-media">
+        <img class="camp-media__backdrop" src="{{ image|mw_img }}" alt="" aria-hidden="true" loading="lazy">
         <img src="{{ image|mw_img }}" alt="" loading="lazy" data-card-media-fit data-fallback="{{ url_for('static', filename=cover_fallback) }}">
       </div>
       {% endfor %}
