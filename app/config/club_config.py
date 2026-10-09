@@ -82,14 +82,16 @@ def load_club_yaml(*, validate: bool = False) -> dict[str, Any] | None:
         return None
     if validate:
         schema = _schema_path()
-        if schema:
-            try:
-                import jsonschema
+        if schema is None:
+            return None
+        try:
+            import jsonschema
 
-                schema_obj = json.loads(schema.read_text(encoding="utf-8"))
-                jsonschema.Draft202012Validator(schema_obj).validate(data)
-            except Exception:
-                return None
+            schema_obj = json.loads(schema.read_text(encoding="utf-8"))
+            jsonschema.Draft202012Validator.check_schema(schema_obj)
+            jsonschema.Draft202012Validator(schema_obj).validate(data)
+        except Exception:
+            return None
     return data
 
 
@@ -112,7 +114,9 @@ def is_module_enabled(module: str, club: dict[str, Any] | None = None) -> bool:
     return bool(enabled.get(module, False))
 
 
-def filter_services_config(services: list[dict[str, Any]], club: dict[str, Any] | None) -> list[dict[str, Any]]:
+def filter_services_config(
+    services: list[dict[str, Any]], club: dict[str, Any] | None
+) -> list[dict[str, Any]]:
     enabled = get_enabled_modules(club)
     if enabled is None:
         return services
@@ -157,7 +161,7 @@ def load_club_config_into_app(app: Flask) -> None:
         return
 
     club = load_club_yaml(validate=validate)
-    if explicit and club is None:
+    if club is None and (explicit or (validate and path is not None)):
         app.config["CLUB"] = _deny_all_modules_club()
         app.config["CLUB_CONFIG_ERROR"] = "invalid_or_unreadable"
         app.logger.error(
@@ -185,5 +189,7 @@ def register_club_module_guards(app: Flask) -> None:
         return {
             "club_config": club,
             "club_modules": get_enabled_modules(club),
-            "club_brand_name": branding.get("brand_name") or (club.get("club") or {}).get("name") or "",
+            "club_brand_name": branding.get("brand_name")
+            or (club.get("club") or {}).get("name")
+            or "",
         }
