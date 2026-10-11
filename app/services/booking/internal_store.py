@@ -268,7 +268,13 @@ class InternalBookingStore:
             return self._find(connection, booking_id)
 
     def move(
-        self, booking_id: str, *, boat_id: str, start: datetime, duration_minutes: int
+        self,
+        booking_id: str,
+        *,
+        boat_id: str,
+        start: datetime,
+        duration_minutes: int,
+        validator=None,
     ) -> dict:
         boat = _identifier(boat_id)
         begin, end = _interval(start, duration_minutes)
@@ -276,6 +282,14 @@ class InternalBookingStore:
             row = self._find(connection, booking_id)
             if row["status"] != "booked":
                 raise BookingConflict("cancelled booking cannot be moved")
+            if (row["boat_id"], row["start_epoch"], row["end_epoch"]) == (
+                boat,
+                begin,
+                end,
+            ):
+                return row
+            if validator is not None:
+                validator(row)
             if self._occupied(connection, boat, begin, end, exclude=booking_id):
                 raise BookingConflict("boat slot occupied")
             connection.execute(
@@ -285,9 +299,13 @@ class InternalBookingStore:
             )
             return self._find(connection, booking_id)
 
-    def cancel(self, booking_id: str) -> dict:
+    def cancel(self, booking_id: str, *, validator=None) -> dict:
         with self._write() as connection:
-            self._find(connection, booking_id)
+            row = self._find(connection, booking_id)
+            if row["status"] == "cancelled":
+                return row
+            if validator is not None:
+                validator(row)
             connection.execute(
                 bookings.update()
                 .where(bookings.c.id == booking_id)
