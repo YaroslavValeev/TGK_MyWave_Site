@@ -211,7 +211,8 @@ def create_internal_booking_blueprint(engine, *, club, schema, secret):
             "date": start.date().isoformat(),
             "time": start.strftime("%H:%M"),
             "datetime": start.isoformat(),
-            "seance_length": (row["end_epoch"] - row["start_epoch"]) // 60,
+            "seance_length": row["end_epoch"] - row["start_epoch"],
+            "duration_minutes": (row["end_epoch"] - row["start_epoch"]) // 60,
         }
 
     @bp.get("/health")
@@ -293,10 +294,13 @@ def create_internal_booking_blueprint(engine, *, club, schema, secret):
         # Interpret it only through the configured club zone; slot() rejects
         # ambiguous/nonexistent local times instead of guessing a DST fold.
         local = target if target.tzinfo is None else target.astimezone(zone)
-        duration = data.get(
-            "seance_length", (row["end_epoch"] - row["start_epoch"]) // 60
-        )
-        _integer(duration, 1, 1440)
+        # The real Telegram gateway client uses legacy seance_length seconds.
+        # Keep the storage API in minutes and reject ambiguous partial minutes.
+        seconds = data.get("seance_length", row["end_epoch"] - row["start_epoch"])
+        _integer(seconds, 1, 86400)
+        if seconds % 60:
+            raise ValueError("whole-minute duration required")
+        duration = seconds // 60
         step = boats[boat]["slot_minutes"]
         if duration % step:
             raise ValueError("duration must include whole occupancy slots")

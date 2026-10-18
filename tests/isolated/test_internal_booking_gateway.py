@@ -167,7 +167,7 @@ def test_create_retry_move_cancel_and_slots(runtime):
     assert slots[0]["available"] is False
     response = env.client.patch(
         PREFIX + "/bookings/" + record,
-        json={"datetime": "2027-06-01T10:30:00+03:00", "seance_length": 30},
+        json={"datetime": "2027-06-01T10:30:00+03:00", "seance_length": 1800},
         headers=env.headers,
     )
     assert response.status_code == 200
@@ -211,6 +211,38 @@ def test_conflict_and_failed_move_preserve_booking(runtime):
     assert second != first
 
 
+@pytest.mark.parametrize("sets", [1, 2])
+def test_legacy_gateway_duration_is_seconds_on_the_wire(runtime, sets):
+    created = create(runtime, {**CREATE, "set_count": sets})
+    assert created.status_code == 201
+    record = created.json["record_id"]
+    assert created.json["raw"]["seance_length"] == sets * 1800
+    assert created.json["raw"]["duration_minutes"] == sets * 30
+    response = runtime.client.patch(
+        PREFIX + "/bookings/" + record,
+        json={"datetime": "2027-06-01T10:30:00+03:00", "seance_length": sets * 1800},
+        headers=runtime.headers,
+    )
+    assert response.status_code == 200
+    assert response.json["raw"]["seance_length"] == sets * 1800
+    assert response.json["raw"]["duration_minutes"] == sets * 30
+
+
+@pytest.mark.parametrize("duration", [30, 0, -1800, True, 1800.0, "1800", 1801, 86401])
+def test_invalid_wire_duration_does_not_move_booking(runtime, duration):
+    record = create(runtime).json["record_id"]
+    response = runtime.client.patch(
+        PREFIX + "/bookings/" + record,
+        json={"datetime": "2027-06-01T10:30:00+03:00", "seance_length": duration},
+        headers=runtime.headers,
+    )
+    assert response.status_code == 400
+    row = runtime.client.get(
+        PREFIX + "/bookings/" + record, headers=runtime.headers
+    ).json["record"]
+    assert row["time"] == "10:00"
+
+
 @pytest.mark.parametrize(
     "changes",
     [
@@ -232,7 +264,7 @@ def test_invalid_booking_is_rejected(runtime, changes):
 def test_change_windows_and_retry_of_completed_change(runtime, monkeypatch):
     env = runtime
     record = create(env).json["record_id"]
-    move = {"datetime": "2027-06-01T10:30:00+03:00", "seance_length": 30}
+    move = {"datetime": "2027-06-01T10:30:00+03:00", "seance_length": 1800}
     assert (
         env.client.patch(
             PREFIX + "/bookings/" + record, json=move, headers=env.headers
@@ -269,7 +301,7 @@ def test_naive_move_uses_club_timezone(runtime):
     record = create(env).json["record_id"]
     response = env.client.patch(
         PREFIX + "/bookings/" + record,
-        json={"datetime": "2027-06-01T10:30:00", "seance_length": 30},
+        json={"datetime": "2027-06-01T10:30:00", "seance_length": 1800},
         headers=env.headers,
     )
     assert response.status_code == 200
