@@ -41,8 +41,12 @@ an external provider and are not persisted as audit events by this component.
   A PATCH datetime without offset is interpreted in that configured zone;
   an offset-bearing datetime is converted to it. Windows runtime includes tzdata.
   Past slots, malformed dates, non-minute timestamps and partial occupancy
-  durations are rejected. `seance_length` counts occupied minutes, including
-  the buffer, rather than ride-only minutes.
+  durations are rejected. On the wire, `seance_length` is occupied **seconds**,
+  including the buffer, matching the actual Telegram client's legacy contract.
+  For a 30-minute booking send 1800. Responses also expose `duration_minutes`
+  explicitly. Storage and slot-grid calculations continue to use minutes.
+  Omitted PATCH duration preserves the existing occupied interval. Partial
+  minutes and values such as 30 (seconds, not minutes) are rejected.
 - Nonempty schedule overrides are refused until their contract is defined;
   they are never silently ignored. Bad setup must be corrected before startup.
 - Creation uses internal_id, then Idempotency-Key, then a deterministic request
