@@ -65,6 +65,7 @@ jobs:
           PARSER_SHEET_NAME: ${{ secrets.PARSER_SHEET_NAME }}
         run: |
           mkdir -p "$PROMETHEUS_MULTIPROC_DIR" reports
+          SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')" \
           python scripts/blog_raw_feed_smoke_check.py \
             --json \
             --out-json reports/blog_health.json \
