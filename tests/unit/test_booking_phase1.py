@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from app.services.booking import pipeline
 from app.services.booking.calendar_writer import build_event_summary
 from app.services.booking.client_resolver import resolve_client
 from app.services.booking.constants import SHEETS_STATUS_CONFIRMED
@@ -14,6 +15,78 @@ from app.services.booking.pipeline import (
     DuplicateBookingError,
     execute_web_booking,
 )
+
+
+@pytest.mark.parametrize(
+    "mode,provider,service",
+    [
+        ("1", "calendar", "boat"),
+        ("true", "yclients", "boat"),
+        ("YES", "calendar", "gym"),
+        ("on", "calendar", "boat"),
+        ("0", "site_internal", "boat"),
+        ("0", " SITE_INTERNAL ", "boat"),
+    ],
+)
+def test_unwired_internal_mode_stops_before_external_io(
+    monkeypatch, mode, provider, service
+):
+    monkeypatch.setenv("CLUB_BOX_MODE", mode)
+    monkeypatch.setenv("BOAT_PROVIDER", provider)
+    calls = []
+    for name in (
+        "is_duplicate_web_booking",
+        "resolve_client",
+        "assert_booking_available",
+        "create_calendar_event",
+        "write_workout_row",
+        "write_client_workout_row",
+        "_execute_boat_yclients_booking",
+    ):
+        call = MagicMock(side_effect=AssertionError("external IO must not run"))
+        monkeypatch.setattr(pipeline, name, call)
+        calls.append(call)
+
+    with pytest.raises(
+        pipeline.CalendarBookingError, match="club_box_web_writer_not_configured"
+    ):
+        pipeline.execute_web_booking(
+            date="2027-06-01",
+            time="10:00",
+            name="Synthetic",
+            phone="79990000001",
+            service_type=service,
+        )
+    for call in calls:
+        call.assert_not_called()
+
+
+def test_legacy_calendar_writer_still_works_when_internal_mode_is_off(monkeypatch):
+    monkeypatch.setenv("CLUB_BOX_MODE", "0")
+    monkeypatch.setenv("BOAT_PROVIDER", "calendar")
+    monkeypatch.setattr(pipeline, "is_phase2_availability_enabled", lambda: False)
+    monkeypatch.setattr(pipeline, "is_duplicate_web_booking", lambda *a, **k: False)
+    monkeypatch.setattr(pipeline, "generate_booking_id", lambda: "web-intent-1")
+    monkeypatch.setattr(
+        pipeline, "resolve_client", lambda *a: MagicMock(client_id="client-1")
+    )
+    calendar = MagicMock(return_value="calendar-record-1")
+    journal = MagicMock(return_value="journal-1")
+    monkeypatch.setattr(pipeline, "create_calendar_event", calendar)
+    monkeypatch.setattr(pipeline, "_write_sheets_journal", journal)
+
+    result = pipeline.execute_web_booking(
+        date="2027-06-01",
+        time="10:00",
+        name="Synthetic",
+        phone="79990000001",
+        service_type="boat",
+    )
+    assert result.workout_id == "calendar-record-1"
+    assert result.booking_id == "web-intent-1"
+    assert result.client_workout_id == "journal-1"
+    calendar.assert_called_once()
+    journal.assert_called_once()
 
 
 class TestPhone:
@@ -79,8 +152,16 @@ class TestIdempotency:
                         }
                     ],
                     [
-                        {"workout_id": "evt_old", "workout_type": "gym", "duration": "Зал"},
-                        {"workout_id": "evt_other", "workout_type": "boat", "duration": "60"},
+                        {
+                            "workout_id": "evt_old",
+                            "workout_type": "gym",
+                            "duration": "Зал",
+                        },
+                        {
+                            "workout_id": "evt_other",
+                            "workout_type": "boat",
+                            "duration": "60",
+                        },
                     ],
                 ],
             ):

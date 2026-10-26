@@ -8,6 +8,7 @@ from typing import Optional
 
 from app.config.booking_features import is_phase2_availability_enabled
 from app.config.booking_schedule import boat_provider
+from app.config.club_box import is_club_box_mode
 from app.config.yclients_config import (
     is_yclients_read_enabled,
     is_yclients_write_enabled,
@@ -139,7 +140,10 @@ def _execute_boat_yclients_booking(
         # SoT already created — do not fail the user booking; journal is best-effort.
         logger.error(
             "booking_yclients_sheets_journal_failed",
-            extra={"record_id_tail": record_id[-8:], "telegram": bool(telegram_user_id)},
+            extra={
+                "record_id_tail": record_id[-8:],
+                "telegram": bool(telegram_user_id),
+            },
         )
         cw_id = ""
 
@@ -242,18 +246,30 @@ def execute_web_booking(
       YCLIENTS SoT → Sheets journal (yc-{record_id}) → GCal via mirror.
     Else boat: legacy Calendar path (Phase1/Phase2).
     """
+    # Internal routing is not wired into this pipeline yet. Never let an
+    # explicit Club Box/internal selection silently create a second ledger.
+    # Check before duplicate/client lookups, which can also access Sheets.
+    if is_club_box_mode() or (
+        (service_type or "gym").strip().lower() == "boat"
+        and boat_provider() == "site_internal"
+    ):
+        raise CalendarBookingError("club_box_web_writer_not_configured")
+
     normalized_phone = normalize_phone(phone)
     svc = (service_type or "gym").strip().lower()
     time_norm = time.strip()[:5]
     sc = _normalize_set_count(svc, set_count)
     use_yclients_boat = svc == "boat" and _boat_uses_yclients()
 
-    if is_duplicate_web_booking(
-        normalized_phone, date, time_norm, svc, set_count=sc
-    ):
+    if is_duplicate_web_booking(normalized_phone, date, time_norm, svc, set_count=sc):
         logger.info(
             "booking_duplicate_detected",
-            extra={"service_type": svc, "date": date, "time": time_norm, "set_count": sc},
+            extra={
+                "service_type": svc,
+                "date": date,
+                "time": time_norm,
+                "set_count": sc,
+            },
         )
         raise DuplicateBookingError("duplicate slot for phone")
 
