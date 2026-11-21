@@ -100,6 +100,9 @@ class Config:
     SPOTMAP_EMBED_ORIGIN = (
         os.getenv('SPOTMAP_EMBED_ORIGIN') or 'https://map.mywavewake.ru'
     ).strip().rstrip('/')
+    SPOTMAP_EMBED_TITLE = (
+        os.getenv('SPOTMAP_EMBED_TITLE') or 'Карта спотов SpotMap'
+    ).strip()
     # GA / Yandex Metrika / GTM: выключены по умолчанию для dev/testing; включаются в ProductionConfig или явным env=1
     ENABLE_PUBLIC_ANALYTICS = False
     # Sitemap build timestamp (optional override)

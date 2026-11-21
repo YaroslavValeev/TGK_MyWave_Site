@@ -427,34 +427,27 @@ h1, h2, h3, h4, p {
   margin-bottom: 2rem;
 }
 
-/* SpotMap embed на /projects (внешний /embed, не копия кода карты) */
-.spotmap-section {
-  margin-top: 0.5rem;
-}
-.spotmap-section__lead {
-  text-align: center;
-  max-width: 42rem;
-  margin: -0.5rem auto 1.25rem;
-  color: #556;
-  line-height: 1.45;
-}
+/* SpotMap: iframe внутри раскрытой карточки проекта (внешний /embed) */
 .spotmap-embed {
   width: 100%;
   overflow: hidden;
   border-radius: 12px;
   background: #e8ecef;
 }
+.spotmap-embed--in-card {
+  margin: 0.75rem 0 1rem;
+}
 .spotmap-embed iframe {
   display: block;
   width: 100%;
   min-height: 480px;
-  height: 720px;
+  height: 70vh;
   border: 0;
   border-radius: 12px;
 }
 @media (max-width: 768px) {
   .spotmap-embed iframe {
-    height: 560px;
+    height: 60vh;
     min-height: 420px;
   }
 }

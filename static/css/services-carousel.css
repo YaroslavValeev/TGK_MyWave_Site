@@ -464,7 +464,8 @@
 .project-card--wake-challenge,
 .project-card--ruza-camp,
 .project-card--wakesurf-safari,
-.project-card--checklist {
+.project-card--checklist,
+.project-card--spotmap {
   min-width: 300px;
   max-width: 360px;
   width: 100%;
@@ -489,13 +490,15 @@
   overflow: visible;
 }
 /* Свёрнуто: видны заголовок, список и кнопки; «Что это» и ниже — только в .project-card__expanded */
-.project-card--checklist:not(.is-expanded) .project-card__expanded {
+.project-card--checklist:not(.is-expanded) .project-card__expanded,
+.project-card--spotmap:not(.is-expanded) .project-card__expanded {
   display: none !important;
 }
 .project-card--wake-challenge .project-card__subtitle,
 .project-card--ruza-camp .project-card__subtitle,
 .project-card--wakesurf-safari .project-card__subtitle,
-.project-card--checklist .project-card__subtitle {
+.project-card--checklist .project-card__subtitle,
+.project-card--spotmap .project-card__subtitle {
   font-size: 0.9em;
   color: #666;
   margin: 0.25em 0 0.5em;
@@ -553,8 +556,16 @@
 .project-card--wake-challenge.is-expanded .project-card__expanded,
 .project-card--ruza-camp.is-expanded .project-card__expanded,
 .project-card--wakesurf-safari.is-expanded .project-card__expanded,
-.project-card--checklist.is-expanded .project-card__expanded {
+.project-card--checklist.is-expanded .project-card__expanded,
+.project-card--spotmap.is-expanded .project-card__expanded {
   display: block;
+}
+/* SpotMap: при раскрытии — почти на всю ширину карусели, карта крупно */
+.projects-carousel .project-card--spotmap.is-expanded {
+  min-width: min(100%, 960px);
+  max-width: 100%;
+  width: 100%;
+  flex: 1 1 100%;
 }
 .project-card__bullets {
   margin: 0.4em 0;

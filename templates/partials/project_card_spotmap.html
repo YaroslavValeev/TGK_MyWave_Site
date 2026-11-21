@@ -1,0 +1,45 @@
+{# SpotMap — карточка в карусели; карта в iframe только после раскрытия #}
+{% set _fallback_img = url_for('static', filename='images/Place1Logo.png') %}
+{% set cover_src = url_for('static', filename='images/hero-wakesurf.webp') %}
+<div class="project-card project-card--spotmap js-expandable-card" id="spotmap" data-project="spotmap">
+  <div class="service-image-container">
+    <img
+      class="service-image project-card__cover"
+      src="{{ cover_src }}"
+      alt="SpotMap — карта вейк-спотов"
+      loading="lazy"
+      decoding="async"
+      data-fallback="{{ _fallback_img }}"
+    >
+  </div>
+
+  <div class="project-card__collapsed">
+    <h4 class="project-card__title">SpotMap</h4>
+    <p class="project-card__subtitle">Карта вейк-спотов</p>
+    <p class="project-card__lead project-card__summary">Карточки мест и запись у клуба — откройте карту прямо здесь.</p>
+    <div class="service-card-actions project-card__actions">
+      <button type="button" class="btn btn-primary js-spotmap-expand">Открыть карту</button>
+      <a class="btn btn-secondary" href="{{ spotmap_embed_origin|default('https://map.mywavewake.ru') }}" target="_blank" rel="noopener noreferrer">На всю страницу</a>
+    </div>
+  </div>
+
+  <div class="project-card__expanded">
+    <div class="project-card-expanded__block">
+      <h5>Карта спотов</h5>
+      <p>Ищите спот, клуб или дисциплину. Запись — у клуба на карте.</p>
+    </div>
+    <div class="spotmap-embed spotmap-embed--in-card">
+      <iframe
+        data-spotmap-src="{{ spotmap_embed_url }}"
+        title="{{ spotmap_embed_title|default('SpotMap — карта вейк-спотов') }}"
+        style="width:100%;height:70vh;min-height:480px;border:0;border-radius:12px"
+        allow="geolocation"
+        referrerpolicy="strict-origin-when-cross-origin"
+      ></iframe>
+    </div>
+    <div class="project-card-expanded__cta">
+      <a class="btn btn-secondary" href="{{ spotmap_embed_origin|default('https://map.mywavewake.ru') }}" target="_blank" rel="noopener noreferrer">Открыть SpotMap отдельно</a>
+      <button type="button" class="btn btn-outline-brand js-spotmap-collapse">Свернуть</button>
+    </div>
+  </div>
+</div>

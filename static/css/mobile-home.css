@@ -256,7 +256,8 @@
   .project-card--wake-challenge,
   .project-card--ruza-camp,
   .project-card--wakesurf-safari,
-  .project-card--checklist {
+  .project-card--checklist,
+  .project-card--spotmap {
     min-width: var(--mw-card-width) !important;
     max-width: var(--mw-card-width) !important;
   }

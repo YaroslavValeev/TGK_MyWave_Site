@@ -39,18 +39,26 @@ def test_projects_page_cards_have_consistent_structure():
         assert card.select_one('.project-card__actions'), "блок действий"
 
 
-def test_projects_page_includes_spotmap_iframe():
-    """SpotMap на /projects — iframe на публичный /embed, не локальный код карты."""
+def test_projects_page_includes_spotmap_card():
+    """SpotMap — карточка в карусели; iframe ленивый (data-spotmap-src), не отдельная секция."""
     app = create_app(config_name='testing')
     client = app.test_client()
     resp = client.get('/projects')
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
     assert 'id="spotmap"' in html
+    assert 'project-card--spotmap' in html
     assert 'map.mywavewake.ru/embed' in html
     assert 'host=mywave' in html
+    assert 'spotmap-section' not in html
     soup = BeautifulSoup(html, 'html.parser')
-    iframe = soup.select_one('#spotmap iframe')
+    card = soup.select_one('#spotmap.project-card--spotmap')
+    assert card is not None
+    assert card.select_one('.project-card__cover')
+    assert card.select_one('.project-card__summary')
+    assert card.select_one('.project-card__actions')
+    iframe = card.select_one('iframe[data-spotmap-src]')
     assert iframe is not None
+    assert 'map.mywavewake.ru/embed' in iframe.get('data-spotmap-src', '')
+    assert iframe.get('src') in (None, '')
     assert iframe.get('allow') == 'geolocation'
-    assert iframe.get('loading') == 'lazy'

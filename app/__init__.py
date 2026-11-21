@@ -651,6 +651,11 @@ def create_app(config_name="development"):
                 'SPOTMAP_EMBED_URL',
                 'https://map.mywavewake.ru/embed?host=mywave',
             ),
+            spotmap_embed_title=app.config.get('SPOTMAP_EMBED_TITLE', 'Карта спотов SpotMap'),
+            spotmap_embed_origin=app.config.get(
+                'SPOTMAP_EMBED_ORIGIN',
+                'https://map.mywavewake.ru',
+            ),
         )
 
     # Явный маршрут ДО /projects/<slug> — иначе slug перехватывает
