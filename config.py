@@ -92,6 +92,14 @@ class Config:
     COMPETITIONS_SHEETS_CACHE_TTL = int(os.getenv("COMPETITIONS_SHEETS_CACHE_TTL", "300"))
     # CSP toggle — allow enabling/disabling strict CSP rules via env
     CSP_ENABLED = os.getenv('CSP_ENABLED', 'True') in ('1', 'true', 'True')
+    # SpotMap: iframe на /projects (код карты не копируем — только публичный /embed)
+    SPOTMAP_EMBED_ENABLED = os.getenv('SPOTMAP_EMBED_ENABLED', '1').lower() in ('1', 'true', 'yes', 'on')
+    SPOTMAP_EMBED_URL = (
+        os.getenv('SPOTMAP_EMBED_URL') or 'https://map.mywavewake.ru/embed?host=mywave'
+    ).strip()
+    SPOTMAP_EMBED_ORIGIN = (
+        os.getenv('SPOTMAP_EMBED_ORIGIN') or 'https://map.mywavewake.ru'
+    ).strip().rstrip('/')
     # GA / Yandex Metrika / GTM: выключены по умолчанию для dev/testing; включаются в ProductionConfig или явным env=1
     ENABLE_PUBLIC_ANALYTICS = False
     # Sitemap build timestamp (optional override)
@@ -314,6 +322,8 @@ class DevelopmentConfig(Config):
             "https://t.me",
             "https://telegram.me",
             "https://www.t.me",
+            # SpotMap embed на /projects
+            "https://map.mywavewake.ru",
         ],
         'object-src': ["'none'"],
         'base-uri': ["'self'"],
@@ -423,6 +433,8 @@ class ProductionConfig(Config):
             "https://t.me",
             "https://telegram.me",
             "https://www.t.me",
+            # SpotMap embed на /projects
+            "https://map.mywavewake.ru",
         ],
         'media-src': ["'self'", "blob:", "https:", "http:"],
         'object-src': ["'none'"],

@@ -26,6 +26,23 @@
   </div>
 </section>
 
+{% if spotmap_embed_enabled and spotmap_embed_url %}
+<section class="container projects-section spotmap-section" id="spotmap" aria-labelledby="spotmap-title">
+  <h2 id="spotmap-title" class="section-title">SpotMap</h2>
+  <p class="spotmap-section__lead">Карта вейк-спотов: карточки мест и запись у клуба.</p>
+  <div class="spotmap-embed">
+    <iframe
+      src="{{ spotmap_embed_url }}"
+      style="width:100%;height:720px;border:0;border-radius:12px"
+      loading="lazy"
+      title="SpotMap — карта вейк-спотов"
+      allow="geolocation"
+      referrerpolicy="strict-origin-when-cross-origin"
+    ></iframe>
+  </div>
+</section>
+{% endif %}
+
 {% if showcase_graph %}
 <script type="application/ld+json" nonce="{{ csp_nonce }}">
 {{ showcase_graph|tojson(indent=2) }}

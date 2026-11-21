@@ -642,7 +642,16 @@ def create_app(config_name="development"):
 
         projects = get_project_cards()
         jsonld = get_projects_graph()
-        return render_template('projects.html', projects=projects, showcase_graph=jsonld)
+        return render_template(
+            'projects.html',
+            projects=projects,
+            showcase_graph=jsonld,
+            spotmap_embed_enabled=bool(app.config.get('SPOTMAP_EMBED_ENABLED', True)),
+            spotmap_embed_url=app.config.get(
+                'SPOTMAP_EMBED_URL',
+                'https://map.mywavewake.ru/embed?host=mywave',
+            ),
+        )
 
     # Явный маршрут ДО /projects/<slug> — иначе slug перехватывает
     @app.route('/projects/wakesurf-challenge-2025', methods=['GET'])
