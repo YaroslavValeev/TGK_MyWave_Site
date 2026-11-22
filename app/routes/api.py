@@ -696,25 +696,30 @@ def get_knowledge(type):
             current_app.logger.error(f"Error reading tricks file: {str(e)}")
     
     elif type == 'projects':
-        """Загружает информацию о проектах (Safari, Challenge, Wake Industry)"""
+        # Allowlist only — orphan *.txt must not leak into chat snippets
+        PROJECT_KB_ALLOWLIST = (
+            'wakesurf_safari.txt',
+            'wake_challenge.txt',
+            'mywave_ruza_camp.txt',
+        )
         projects_info = []
         projects_path = os.path.join(base_path, 'projects')
-        
+
         if os.path.exists(projects_path):
-            for filename in os.listdir(projects_path):
-                if filename.endswith('.txt'):
-                    full_path = os.path.join(projects_path, filename)
-                    try:
-                        with open(full_path, 'r', encoding='utf-8') as f:
-                            content = f.read()
-                            # Разбиваем на параграфы
-                            paragraphs = [p.strip() for p in content.split('\n\n') if p.strip()]
-                            projects_info.extend(paragraphs)
-                    except Exception as e:
-                        current_app.logger.error(f"Error reading {filename}: {e}")
+            for filename in PROJECT_KB_ALLOWLIST:
+                full_path = os.path.join(projects_path, filename)
+                if not os.path.isfile(full_path):
+                    continue
+                try:
+                    with open(full_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                        paragraphs = [p.strip() for p in content.split('\n\n') if p.strip()]
+                        projects_info.extend(paragraphs)
+                except Exception as e:
+                    current_app.logger.error(f"Error reading {filename}: {str(e)}")
         else:
             current_app.logger.warning(f"Projects directory not found: {projects_path}")
-        
+
         return jsonify(projects_info)
     
     elif type == 'shop':
