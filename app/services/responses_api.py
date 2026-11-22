@@ -283,6 +283,15 @@ def _collect_knowledge_snippets(
             out = v2_snippets + out
     except Exception as exc:
         current_app.logger.debug("kb_v2_snippets_failed", extra={"err": str(exc)})
+
+    # safari_only_filter: do not leak Challenge/championship brand FAQ into Safari answers
+    project_keys = _detect_project_keys(prompt_lower, mw_chat_context)
+    if project_keys == ["wakesurf_safari"]:
+        out = [
+            s for s in out
+            if "wake challenge" not in s.lower()
+            and "соревновательный проект" not in s.lower()
+        ]
     return out
 
 
