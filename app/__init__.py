@@ -210,6 +210,16 @@ def create_app(config_name="development"):
             blog_preview_posts=blog_preview_posts,
             competitions_ticker=competitions_ticker,
             hero_booking_external_url=current_app.config.get("HERO_BOOKING_EXTERNAL_URL", ""),
+            spotmap_embed_enabled=bool(app.config.get('SPOTMAP_EMBED_ENABLED', True)),
+            spotmap_embed_url=app.config.get(
+                'SPOTMAP_EMBED_URL',
+                'https://map.mywavewake.ru/embed?host=mywave',
+            ),
+            spotmap_embed_title=app.config.get('SPOTMAP_EMBED_TITLE', 'Карта спотов SpotMap'),
+            spotmap_embed_origin=app.config.get(
+                'SPOTMAP_EMBED_ORIGIN',
+                'https://map.mywavewake.ru',
+            ),
         )
 
     @app.route('/favicon.ico')

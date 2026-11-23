@@ -40,7 +40,7 @@ def test_projects_page_cards_have_consistent_structure():
 
 
 def test_projects_page_includes_spotmap_card():
-    """SpotMap — карточка в карусели; iframe ленивый (data-spotmap-src), не отдельная секция."""
+    """SpotMap — 3-я карточка в карусели; обложка карты; iframe ленивый."""
     app = create_app(config_name='testing')
     client = app.test_client()
     resp = client.get('/projects')
@@ -51,10 +51,17 @@ def test_projects_page_includes_spotmap_card():
     assert 'map.mywavewake.ru/embed' in html
     assert 'host=mywave' in html
     assert 'spotmap-section' not in html
+    assert 'spotmap_cover.webp' in html
     soup = BeautifulSoup(html, 'html.parser')
+    cards = soup.select('.projects-carousel .project-card')
+    assert len(cards) >= 3
+    # 3-я по счёту (index 2)
+    assert 'project-card--spotmap' in (cards[2].get('class') or [])
     card = soup.select_one('#spotmap.project-card--spotmap')
     assert card is not None
-    assert card.select_one('.project-card__cover')
+    cover = card.select_one('.project-card__cover')
+    assert cover is not None
+    assert 'spotmap_cover.webp' in (cover.get('src') or '')
     assert card.select_one('.project-card__summary')
     assert card.select_one('.project-card__actions')
     iframe = card.select_one('iframe[data-spotmap-src]')
@@ -62,3 +69,18 @@ def test_projects_page_includes_spotmap_card():
     assert 'map.mywavewake.ru/embed' in iframe.get('data-spotmap-src', '')
     assert iframe.get('src') in (None, '')
     assert iframe.get('allow') == 'geolocation'
+
+
+def test_home_page_includes_spotmap_third():
+    """На главной SpotMap видна 3-й карточкой в блоке Проекты."""
+    app = create_app(config_name='testing')
+    client = app.test_client()
+    resp = client.get('/')
+    assert resp.status_code == 200
+    html = resp.get_data(as_text=True)
+    assert 'project-card--spotmap' in html
+    assert 'spotmap_cover.webp' in html
+    soup = BeautifulSoup(html, 'html.parser')
+    cards = soup.select('#projects .projects-carousel .project-card')
+    assert len(cards) >= 3
+    assert 'project-card--spotmap' in (cards[2].get('class') or [])

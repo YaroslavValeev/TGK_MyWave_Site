@@ -20,8 +20,12 @@
         {% else %}
         {% include 'partials/project_card.html' %}
         {% endif %}
+        {# SpotMap — 3-я карточка (после двух первых проектов) #}
+        {% if spotmap_embed_enabled and spotmap_embed_url and loop.index == 2 %}
+          {% include 'partials/project_card_spotmap.html' %}
+        {% endif %}
       {% endfor %}
-      {% if spotmap_embed_enabled and spotmap_embed_url %}
+      {% if spotmap_embed_enabled and spotmap_embed_url and (projects|length) < 2 %}
         {% include 'partials/project_card_spotmap.html' %}
       {% endif %}
     </div>

@@ -149,7 +149,15 @@
         {% else %}
         {% include 'partials/project_card.html' %}
         {% endif %}
+        {# SpotMap — 3-я карточка на главной (после двух первых проектов) #}
+        {% if spotmap_embed_enabled and spotmap_embed_url and loop.index == 2 %}
+          {% set project_media_loading = 'eager' %}
+          {% include 'partials/project_card_spotmap.html' %}
+        {% endif %}
         {% endfor %}
+        {% if spotmap_embed_enabled and spotmap_embed_url and (projects|length) < 2 %}
+          {% include 'partials/project_card_spotmap.html' %}
+        {% endif %}
       </div>
       <button class="carousel-next" aria-label="Следующие проекты">▶</button>
     </div>

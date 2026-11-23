@@ -1,13 +1,13 @@
 {# SpotMap — карточка в карусели; карта в iframe только после раскрытия #}
 {% set _fallback_img = url_for('static', filename='images/Place1Logo.png') %}
-{% set cover_src = url_for('static', filename='images/hero-wakesurf.webp') %}
+{% set cover_src = url_for('static', filename='images/Project/Cards/spotmap/spotmap_cover.webp') %}
 <div class="project-card project-card--spotmap js-expandable-card" id="spotmap" data-project="spotmap">
   <div class="service-image-container">
     <img
       class="service-image project-card__cover"
       src="{{ cover_src }}"
-      alt="SpotMap — карта вейк-спотов"
-      loading="lazy"
+      alt="SpotMap — карта вейк-спотов на карте Москвы"
+      loading="{{ project_media_loading|default('lazy') }}"
       decoding="async"
       data-fallback="{{ _fallback_img }}"
     >
