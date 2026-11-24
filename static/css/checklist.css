@@ -165,8 +165,12 @@
   min-width: 0;
   height: 100%;
   overflow: hidden;
-  padding: 0.85rem 0.95rem 0.75rem;
+  padding: 0.85rem 0.95rem 1rem;
   background: #fff;
+}
+.wake-checklist__card--has-more .wake-checklist__card-inner,
+.wake-checklist__card--participant-compact .wake-checklist__card-inner {
+  padding-bottom: 1.15rem;
 }
 .wake-checklist__card.wake-checklist__card--expanded {
   max-height: none;
@@ -372,6 +376,7 @@
 
 .wake-checklist__card--has-more:not(.wake-checklist__card--expanded) .wake-checklist__card-body {
   position: relative;
+  flex: 0 1 auto;
 }
 .wake-checklist__card--has-more:not(.wake-checklist__card--expanded) .wake-checklist__card-body::after {
   content: "";
@@ -386,8 +391,11 @@
 
 .wake-checklist__card-more {
   flex-shrink: 0;
-  margin-top: auto;
-  padding-top: 0.3rem;
+  /* Под текстом, а не у нижнего края: свободное место уходит вниз */
+  margin-top: 0.55rem;
+  margin-bottom: auto;
+  padding-top: 0.4rem;
+  padding-bottom: 0.15rem;
   border-top: 1px solid rgba(128, 157, 168, 0.22);
   background: #fff;
   z-index: 3;
@@ -398,7 +406,7 @@
   justify-content: center;
   gap: 0.45rem;
   width: 100%;
-  padding: 0.28rem 0.35rem;
+  padding: 0.35rem 0.35rem;
   border: 0;
   background: transparent;
   color: #2a6f7a;
@@ -450,7 +458,7 @@
   max-height: var(--checklist-card-height);
 }
 .wake-checklist__card--participant-compact.wake-checklist__card--collapsed .wake-checklist__card-inner {
-  padding: 0.65rem 0.75rem 0.45rem;
+  padding: 0.65rem 0.75rem 1rem;
 }
 .wake-checklist__card--participant-compact.wake-checklist__card--collapsed .wake-checklist__card-art {
   min-height: 100%;
@@ -668,8 +676,10 @@
   }
 
   .wake-checklist__card-more {
-    margin-top: 0.5rem;
-    padding-top: 0.45rem;
+    margin-top: 0.45rem;
+    margin-bottom: auto;
+    padding-top: 0.4rem;
+    padding-bottom: 0.2rem;
     position: relative;
     z-index: 4;
   }
